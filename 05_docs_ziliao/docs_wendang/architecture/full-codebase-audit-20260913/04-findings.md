@@ -3794,6 +3794,20 @@
 | 验证/回滚 | fixture覆盖self/permission/input/active-suspended-offboarded与exact RPC scope/evidence；回滚为revert独立测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0198｜商品发布状态关键写入没有直接行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce-api / admin product status；P2；高 |
+| 类型 | 测试覆盖缺口、商品上下架授权与幂等写入正确性 |
+| 位置 | `01_core_hexin/services/commerce-api/src/api/adminRoutes.ts:52-84`；现有`adminRoutes.test.ts` |
+| 当前/预期 | 状态写入先验证product.publish，再以product ID加载server resource scope，要求idempotency key、status和request hash/evidence。现有test只有粗粒度permission拒绝。预期验证resource scope拒绝、缺/过长idempotency、invalid status与active/inactive成功RPC body。 |
+| 直接证据 | `adminRoutes.test.ts`只调用`handleSetProductStatus`一次且无publish permission；没有mock resource scope或write RPC、headers/body成功断言。 |
+| 调用链/影响 | authenticated admin compatibility router → product status route → authorization scope RPC → status mutation RPC。越权、重复或状态映射回归不能由当前suite直接捕获。 |
+| 建议方向 | 从修复时最新`zdt-next`建立独立product status route test批；回滚为撤回测试提交。 |
+| 验证/回滚 | fixture覆盖coarse/resource denial、idempotency/input、active/inactive exact RPC scope/hash/evidence；回滚为revert独立测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

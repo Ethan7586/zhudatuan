@@ -2048,3 +2048,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | status | active使用role.update，disabled使用role.delete，且都要求fresh step-up | [FACT][E-AU-189-003] |
 
 [FACT][E-AU-189-004] 2 文件、225 行完成深审；compat admin router注册roles collection/item/status路径，当前正式Worker未装载完整authenticated admin router。
+
+## 195. AU-190 Admin catalog/status 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| catalog | `catalog.read`下的mall catalog读取 | [FACT][E-AU-190-001] |
+| overview | admin target加catalog/order read；self-only限定当前user订单/售后scope | [FACT][E-AU-190-002] |
+| product status | coarse publish permission→server product scope→idempotency/hash/evidence写入 | [FACT][E-AU-190-003] |
+
+[FACT][E-AU-190-004] 2 文件、156 行完成深审；compat admin router注册products、overview和product status路径，当前正式Worker未装载完整authenticated admin router。

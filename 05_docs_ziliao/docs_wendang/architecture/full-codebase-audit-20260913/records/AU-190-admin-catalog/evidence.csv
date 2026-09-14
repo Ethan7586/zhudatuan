@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-190-001,src/api/adminRoutes.ts,10-20,catalog,Admin catalog requires catalog.read and reads only current tenant/mall.
+E-AU-190-002,src/api/adminRoutes.ts,23-50,overview,Overview requires admin target catalog/order permissions and passes current user only for self-scoped membership.
+E-AU-190-003,src/api/adminRoutes.ts,52-84,status mutation,Status writes require coarse and server resource authorization idempotency request hash and actor evidence.
+E-AU-190-004,src/api/routes/adminRouter.ts,22-25;78-80,runtime registration,Compatibility admin router registers product catalog overview and status endpoints.
+E-AU-190-005,src/api/adminRoutes.test.ts,1-72,tests,Read and coarse denial paths are direct-tested; status resource and success write paths are not.
