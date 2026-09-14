@@ -66,7 +66,7 @@ env:
 jobs:
   prepared:
     name: ${{ inputs.operation }} OSS artifact → ${{ inputs.release_node }}/${{ inputs.release_target }}
-    runs-on: [self-hosted, linux, x64, zdt-release]
+    runs-on: [self-hosted, linux, x64, zdt-aliyun-release]
     timeout-minutes: 5
     steps:
       - name: Validate exact request

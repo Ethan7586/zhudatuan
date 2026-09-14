@@ -61,7 +61,7 @@ env:
 jobs:
   deploy:
     name: GitHub → Aliyun ${{ inputs.release_node }}/${{ inputs.release_target }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, zdt-aliyun-release]
     timeout-minutes: 12
     steps:
       - name: Validate exact single-target request
