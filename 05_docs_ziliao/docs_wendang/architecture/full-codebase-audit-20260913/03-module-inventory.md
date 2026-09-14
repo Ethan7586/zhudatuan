@@ -2622,3 +2622,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | predicate/fixture | predicate缺失`contract`且fixture未覆盖false | [FACT][E-AU-249-003,004] |
 
 [FACT][E-AU-249-005] F-0227/P1双轮确认；不改生产代码。
+
+## 255. AU-250 Node runtime token 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| manifest token | 为当前node manifest提供唯一类型化容器身份 | [FACT][E-AU-250-001] |
+| database role token | 为当前node运行database role提供唯一类型化容器身份 | [FACT][E-AU-250-001] |
+| bindings and consumers | 各node API runtime写入，health/realm context读取 | [FACT][E-AU-250-002..004] |
+
+[FACT][E-AU-250-005] 1 文件、5 行完成深审；无P0–P3新问题。

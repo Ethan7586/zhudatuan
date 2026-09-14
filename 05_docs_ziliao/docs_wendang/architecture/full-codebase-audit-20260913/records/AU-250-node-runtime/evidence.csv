@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-250-001,src/bootstrap/NodeRuntime.ts,1-5,container tokens,Defines runtime.node-manifest and runtime.node-database-role as typed container token identities only.
+E-AU-250-002,src/bootstrap/IdentityRegistrationApiRuntime.ts,135-159,API binding,Identity runtime binds both tokens after startup compatibility and manifest checks.
+E-AU-250-003,src/bootstrap/PurchaseApiRuntime.ts;src/bootstrap/WebBusinessApiRuntime.ts;src/bootstrap/PaymentWebhookApiRuntime.ts,148-159;138-149;110-119,API bindings,Other node-specific API runtimes bind the same pair after their own preflight.
+E-AU-250-004,src/modules/runtime/IdentityRegistrationRuntimeOperations.ts;src/modules/identity/05_interface_jieru/http/RealmOperationContext.ts,17-24;17-18,consumers,Health operations read both tokens while realm context reads manifest only when it is present.

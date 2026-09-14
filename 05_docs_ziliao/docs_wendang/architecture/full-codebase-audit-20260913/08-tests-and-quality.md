@@ -839,3 +839,7 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 复核直接确认fixture只使用`contract:true`，生产入口和factory不存在替代contract gate。
 - F-0227/P1双轮一致；审计工作树未运行Vitest。
+
+## 250. AU-250 Node runtime token 深审
+
+- 只有类型化token声明，无独立行为；由runtime/module fixture间接消费。审计工作树未运行Vitest。
