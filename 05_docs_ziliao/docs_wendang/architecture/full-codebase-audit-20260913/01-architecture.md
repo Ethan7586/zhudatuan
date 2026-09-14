@@ -717,3 +717,24 @@ flowchart LR
 [FACT][E-AU-020-004/005/006] 出站请求和所有provider响应均签名验证；入站通知验签、解密、商户/应用/金额/引用核对后才进入数据库去重与状态机。退款用稳定退款号并在写响应不确定时转查询，是当前最强的异步资金恢复边界。
 
 [CONFLICT][E-AU-020-007/008/009] 密钥只做PEM外壳预检，正文流错误逃逸统一ProtocolError，公共Client callback override又绕过配置URL验证，形成F-0091–F-0093。当前生产runtime与Gateway缓解callback问题，但不能修复密钥和Transport错误分类。
+
+## 19. AU-021 增量：Provider Core
+
+[FACT][E-AU-021-002/003] Provider Core把数据库installation投影、静态factory definition、Manifest签名、scope registry、VendorClient和九类业务port连接起来。它随Commerce进程运行，不拥有数据库或独立发布单元。
+
+~~~mermaid
+flowchart LR
+  DB[(extension installation)] --> Loader[RuntimeExtensionLoader]
+  Secrets[Secret store] --> Loader
+  Factories[11 Provider factories] --> Loader
+  Loader --> Registry[ExtensionRegistry by provider+scope]
+  Registry --> Ports[Catalog/Order/Refund/etc ports]
+  Ports --> Vendor[VendorClient]
+  Vendor --> External[External providers]
+  External --> Hook[Channel webhook route]
+  Hook --> Inbox[(channel.webhookinbox)]
+  Inbox --> Job[ChannelWebhookJob]
+  Job --> Outbox[(runtime.outbox)]
+~~~
+
+[CONFLICT][E-AU-021-005/006] 通用Webhook HMAC不覆盖数据库去重身份event ID，5分钟内改ID重放可产生独立inbox/job/outbox，形成F-0094/P1候选。测试命中的又是无生产caller的另一套Webhook包装器（F-0095/DC-0026）。

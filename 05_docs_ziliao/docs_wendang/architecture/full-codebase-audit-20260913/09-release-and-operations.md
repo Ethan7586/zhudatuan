@@ -214,3 +214,10 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - 三个runtime都在构造Gateway前读取payment secret并校验Node Manifest绑定，但F-0091的密钥语义错误仍会越过启动配置检查。后续治理需验证三个进程ready和首个合成签名/验签，不得读取真实私钥内容。
 - F-0092属于共享Transport错误分类，修复时应分别验证read重试、write不盲重试和circuit计数；不能把支付业务修改混入同一批。
 - 本AU未构建OCI、访问微信/secret store/线上进程、推送、合并或部署。
+
+## 24. AU-021 Provider Core发布与运维边界
+
+- `@shop/providercore`没有独立镜像、进程、端口或target；11类provider factory随Commerce OCI装载，数据库enabled installation和secret决定运行实例。
+- 启动register对Manifest签名和health fail closed；canary stage保留degraded结果，EnableExtension只允许healthy candidate激活。该发布切换边界值得保留。
+- F-0094若治理，必须先按provider协议分批确认event ID来源，不能把一套HMAC规则强加给全部供应商；数据库约束与API兼容迁移也应独立于测试清理。
+- 本AU未构建OCI、连接provider/secret/数据库、激活/停用extension、推送、合并或部署。

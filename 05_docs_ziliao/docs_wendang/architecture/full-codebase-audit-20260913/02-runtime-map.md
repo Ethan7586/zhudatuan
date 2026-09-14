@@ -750,3 +750,10 @@ sequenceDiagram
 - 三个runtime启动时从secret store读取application/payment配置，并以Node Manifest校验secret binding、callback API host和data scope；适配包本身不读取环境或数据库。
 - 同步出站Transport总deadline来自Executor；响应头前超时会映射为retryable ProtocolError，但响应正文阶段超时/断流以原始异常传播，见F-0092。
 - webhook失败在进入数据库状态转换前返回；合法重复通知由数据库provider event consumer去重。线上secret、provider事件与运行版本仍未验证。
+
+## 26. AU-021｜渠道Provider Core运行链
+
+- 启动：`extension.enabled_installations()`→RuntimeExtensionLoader读取secret/connection→静态factory→Manifest闭合比较→Registry验签/start/health→按`provider:scope`注册并freeze。
+- 同步：Channel/Catalog/Fulfillment consumer指定`capability + port`→Registry双检查→Provider port→VendorClient限流、并发、断路器、deadline和条件重试→外部provider。
+- 异步：公网Channel webhook→服务端接收时间+header event ID→通用HMAC/normalize→KMS加密→`channel.accept_webhook`→channelwebhook job→provider operation/outbox。
+- [CONFLICT] HMAC签名材料只有`timestamp.body`，event ID却是唯一去重键；改ID重放绕过数据库replayed路径，见F-0094。

@@ -186,3 +186,10 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 正式test/typecheck在固定工作树分别因缺`vitest`/`tsc`以127退出；没有安装依赖或执行build。
 - 现有测试没有畸形PEM DER、响应头后body超时/断流、64KiB响应、fatal UTF-8、caller callback override和畸形provider时间反事实。合成WebCrypto与本地流探针已复现F-0091/F-0092，但不替代正式套件。
 - 详见`records/AU-020-wechat-payment/tests.csv`与`validation-results.md`。
+
+## 20. AU-021 Provider Core质量
+
+- 包仅有3个Vitest用例：Provider start/health/require、旧Webhook accepted/replayed和invalid signature；正式test/typecheck因缺vitest/tsc在源码加载前127退出。
+- 唯一Webhook测试命中无生产caller的`src/Webhook.ts`，未覆盖生产`createPorts` HMAC、5分钟窗口、event ID绑定、normalize、2MiB HTTP边界或数据库去重，形成F-0095。
+- 合成HMAC和静态DB链已证明F-0094；仍需独立复核真实provider协议和下游幂等，不能用当前单测通过替代。
+- 详见`records/AU-021-provider-core/tests.csv`、`validation-results.md`和`independent-review-queue.csv`。

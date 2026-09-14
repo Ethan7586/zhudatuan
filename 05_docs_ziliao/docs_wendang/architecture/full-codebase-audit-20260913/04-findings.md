@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-020 结束时累计：P0 0、P1 候选 10、P2 46、P3 36、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-021 结束时累计：P0 0、P1 候选 11、P2 46、P3 37、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -2278,3 +2278,56 @@
 ## 20. AU-020 新增未定级事项
 
 - [UNKNOWN] 线上支付secret是否包含可导入密钥、平台轮换状态、真实provider超时分布和当前运行制品版本；本AU未访问线上。
+
+## F-0094｜通用Provider Webhook签名未绑定event ID，可改ID绕过去重
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Provider Core / Channel Webhook |
+| 类型 | 重放保护、消息身份、异步幂等 |
+| 严重级别 | **P1 候选**；未完成RV-0013前不作最终P1 |
+| 置信度 | 高：签名材料、request类型、route和数据库唯一键均直接可证；线上启用协议与下游最终影响未知 |
+| 文件和精确位置 | `01_core_hexin/extensions/providers/core/src/PortFactory.ts:36-53`；`packages/contract/src/provider/Ports.ts:39-57`；`services/commerce/.../ApplyWebhook.ts:18-39`；`02_platform_pingtai/database/supabase/migrations/20260821044000_channel_lifecycle.sql:6-59` |
+| 当前行为 | [FACT][E-AU-021-005/006] HMAC仅覆盖`timestamp.body`；`x-provider-event-id`不在Verifier request或签名材料内，却是`unique(connection_id,external_id)`唯一去重身份。5分钟内保持正文/时间戳/签名不变、只换ID即可再次验签并插入新inbox/job/outbox |
+| 预期行为 | 被持久化为消息身份并驱动幂等的event ID必须受可信签名绑定，或数据库还需按签名覆盖的稳定内容阻止同体改ID重放 |
+| 直接证据 | E-AU-021-004–006、TC-AU-021-003/004 |
+| 调用链或运行入口 | 公网channel webhook→ApplyWebhook→createPorts webhook verify→KMS→channel.accept_webhook→ChannelWebhookJob→runtime.outbox |
+| 用户影响 | [INFERENCE] 攻击者或错误网关可在窗口内制造重复渠道状态事件；重复通知、任务和运营记录会增加，具体业务动作取决于下游consumer |
+| 数据影响 | 新inbox和outbox必然可产生；provideroperation同reference会覆盖状态。是否进一步重复履约/退款尚未完成下游复核 |
+| 安全影响 | 可绕过设计中的消息重放去重，但仍需取得一份合法签名请求；不构成无密钥任意伪造 |
+| 根因 | 验签契约与持久化幂等契约分别设计，event ID没有进入被认证消息 |
+| 建议方向 | 后续独立批次先按真实provider协议决定签名绑定event ID、从已签正文派生ID或增加raw/signature稳定去重；不得统一假设所有provider协议相同 |
+| 预计修改范围 | ProviderWebhookRequest/PortFactory、provider-specific verifier、ApplyWebhook/数据库约束和反事实测试；可能需分provider迁移 |
+| 验证方式 | 同请求同ID重放、改ID重放、同ID不同body碰撞、时间窗边界、合法provider重试、并发双投矩阵；核对每个下游consumer只产生一次可观察效果 |
+| 回滚方式 | 修复批次保留原header/DB键兼容窗口和迁移回滚方案；本审计未实施 |
+| 是否需要独立复核 | 是，RV-0013 |
+
+为什么不是P0：没有证据显示该重放正在造成严重线上、资金或安全事故，也未确认哪些provider在线启用和下游是否有额外幂等。按定义只能保留P1候选。
+
+## F-0095｜Provider Core唯一Webhook测试没有命中生产验签实现
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Provider Core tests / Webhook |
+| 类型 | 测试可信度、平行实现 |
+| 严重级别 | P3 |
+| 置信度 | 高：测试import与生产factory/route调用链全仓核对 |
+| 文件和精确位置 | `01_core_hexin/extensions/providers/core/src/Provider.test.ts:37-50`；`src/Webhook.ts:3-23`；`src/PortFactory.ts:36-53` |
+| 当前行为 | [FACT][E-AU-021-007] 测试构造`src/Webhook.ts`，其request含externalId且verifier收到完整request；生产使用Contract `ProviderWebhookVerifier`，request不含externalId，实际HMAC在PortFactory内且没有测试 |
+| 预期行为 | 生产HMAC材料、时间窗、header格式、normalize、event ID与数据库去重关系应由反事实测试直接覆盖 |
+| 直接证据 | E-AU-021-007/008、TC-AU-021-005 |
+| 调用链或运行入口 | npm test→Provider.test→非生产Webhook；生产factory→createPorts webhook完全未执行 |
+| 用户影响 | 测试可保持绿色而F-0094等生产重放缺陷存在，降低发布门禁可信度 |
+| 数据影响 | 测试本身不写业务数据；间接遗漏重复inbox/outbox风险 |
+| 安全影响 | 重放边界没有测试保护 |
+| 根因 | 早期Webhook ingress wrapper与后续Channel route/contract并行保留，测试未迁移到真实入口 |
+| 建议方向 | 后续测试批次直接实例化createPorts verifier并跨ApplyWebhook/DB contract验证；旧wrapper去留另做候选复核 |
+| 预计修改范围 | Provider Core测试与Channel集成测试 |
+| 验证方式 | 破坏timestamp/body/event ID任一受信字段时测试稳定失败；重复投递只产生一个效果 |
+| 回滚方式 | 回退单一测试批次 |
+| 是否需要独立复核 | 否；F-0094本身需要 |
+
+## 21. AU-021 新增未定级事项
+
+- [UNKNOWN] 线上启用provider及其真实Webhook网关是否用其它层绑定event ID；需RV-0013重新追踪。
+- [UNKNOWN] F-0094产生的重复outbox下游是否全部幂等；当前只证明消息重复可观察，不扩大为资金重复事实。

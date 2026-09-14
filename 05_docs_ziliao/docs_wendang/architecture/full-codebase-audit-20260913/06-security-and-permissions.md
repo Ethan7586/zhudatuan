@@ -140,3 +140,10 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - 所有provider响应和通知必须由已知KeyID签名，通知还受300秒时间窗、64KiB正文、AES-GCM和商户/应用/金额/引用核对约束；未发现验签绕过。
 - F-0091表明密钥有效性未在启动阶段证明，会造成延迟拒绝服务和原始错误，不代表密钥泄露。F-0093公共callback override当前被生产Gateway/Manifest边界缓解。
 - 本AU仅使用合成密钥，没有读取、打印、修改或轮换任何真实支付凭据。
+
+## 18. AU-021 Provider Webhook消息身份
+
+- Manifest在Registry注册前经签名验证，数据库installation与静态factory definition逐字段闭合；scope registry调用还要求manifest capability和实际port同时存在。
+- [P1-CANDIDATE][E-AU-021-005/006] 通用Webhook HMAC不覆盖`x-provider-event-id`，而该header决定数据库去重身份。持有一份合法请求即可在5分钟窗口内改ID重放，见F-0094/RV-0013。
+- 原始正文先验签后由KMS加密，审计只保存raw/signature hash；无效签名不持久化。未发现secret输出或Manifest验签绕过。
+- 本AU使用合成HMAC材料，没有读取任何真实provider secret、Webhook载荷或线上记录。

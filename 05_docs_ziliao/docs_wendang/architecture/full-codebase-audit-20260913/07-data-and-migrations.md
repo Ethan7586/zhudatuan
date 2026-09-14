@@ -106,3 +106,10 @@
 - 支付意图、退款、provider event、job和outbox由Commerce payment/runtime数据库contract拥有。Webhook在本地scope、金额、currency、payer/application hash和intent/refund证据匹配后才接受事件，并按`consumer + event_id`去重。
 - 退款申请使用稳定`outRefundNo`；provider响应不确定时转查询而非重复申请，降低重复资金写入风险。F-0092可能延迟查询恢复，但未证明重复扣款或账务写错。
 - 本AU未连接数据库、运行迁移、重放通知或修改支付数据。
+
+## 16. AU-021 Channel Webhook数据边界
+
+- Provider Core本身不拥有表；`channel.webhookinbox`以`connection_id + external_id`唯一，原文由KMS加密保存，raw/signature hash用于证据，新增inbox原子排入channelwebhook job。
+- Job按inbox ID幂等，但不同event ID会产生不同inbox/job/outbox。F-0094证明相同签名正文改ID可越过唯一键；数据库当前没有同connection+raw hash或signature hash去重。
+- provideroperation按provider+external reference更新，能缓解部分重复状态覆盖；outbox仍按inbox ID独立产生，下游最终幂等尚未确认。
+- 本AU只读迁移和调用SQL，没有连接数据库、执行迁移、插入或重放事件。

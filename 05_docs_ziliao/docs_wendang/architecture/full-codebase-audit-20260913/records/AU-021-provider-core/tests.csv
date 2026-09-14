@@ -1,0 +1,8 @@
+"编号","验证","入口/命令","结果","结论"
+"TC-AU-021-001","正式包测试","npm test -- --reporter=dot","BLOCKED exit127；vitest not found","未验证；未安装依赖"
+"TC-AU-021-002","正式类型检查","npm run typecheck","BLOCKED exit127；tsc not found","未验证；未安装依赖"
+"TC-AU-021-003","event ID签名绑定反事实","Node crypto合成HMAC(timestamp.body)，仅改变event ID","event:A与event:B签名完全相同","F-0094密码学前提成立"
+"TC-AU-021-004","生产去重键追踪","ApplyWebhook→channel.accept_webhook→unique(connection_id,external_id)","event ID改变即产生不同inbox/job/outbox ID","F-0094持久化边界成立"
+"TC-AU-021-005","测试对象追踪","Provider.test→Webhook；全仓production imports","只测非生产Webhook，createPorts verifier无用例","F-0095成立"
+"TC-AU-021-006","构建","npm run build","未执行","会进入typecheck且当前缺tsc；不生成/改变制品"
+

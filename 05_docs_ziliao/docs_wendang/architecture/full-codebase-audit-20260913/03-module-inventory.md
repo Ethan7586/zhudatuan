@@ -393,3 +393,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | 28个密码学和协议行为 | Vitest | 环境缺工具；异常流缺口 |
 
 [FACT][E-AU-020-001] 18/18文件、1,873/1,873行均已深入审阅。模块不拥有数据库或独立进程，随Commerce OCI制品发布。
+
+## 27. AU-021 Provider Core 模块清单
+
+| 子模块 | 职责 | 真实入口/调用者 | 当前边界 |
+| --- | --- | --- | --- |
+| Factory/Provider | installation闭合、生命周期、health和port | 11个factory、Loader、Registry | 主干清晰 |
+| PortFactory | 九类VendorClient port与通用Webhook verifier | 7个远程provider factory | F-0094 |
+| Mapper/ErrorMap | 最小JSON shape和VendorFailure投影 | Provider-specific wrappers | 具体语义待逐provider核对 |
+| Limits | 通用连接/响应/deadline/并发/重试参数 | manifests/tests | 无独立运行状态 |
+| Webhook wrapper | verifier→sha256→ingress包装 | 单测和多包转发导出 | 无生产caller；F-0095/DC-0026 |
+
+[FACT][E-AU-021-001] 11/11文件、354/354行均已深入审阅。数据由extension/channel/runtime数据库拥有，包随Commerce OCI发布。

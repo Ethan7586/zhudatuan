@@ -56,12 +56,6 @@ AU-005 首次建立候选总账。零静态引用、零正式target或测试只�
 | 可否删除 | 否；零仓内调用不等于无公共契约 |
 | 二次复核 | G1不强制 |
 
-## 20. AU-020 微信支付候选复核
-
-- 18个文件均有包入口、生产调用、测试、配置或构建职责；没有仅凭零静态引用即可成立的删除对象。
-- `notifyUrl` override虽形成F-0093契约边界问题，但仍被当前生产Gateway使用，不能列垃圾代码候选。
-- 本AU新增G0/G1/G2/G3/GX均为0；累计G0 2、G1 21、G2 2、G3 0、GX 2。
-
 ## DC-0004｜minimumLength 与 base64ByteLength 公共 helper
 
 | 字段 | 记录 |
@@ -344,3 +338,26 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 未排除项 | 线上旧HTML/缓存、外部引用、视觉回滚、品牌迁移 |
 | 可否删除 | 否；必须视觉/网络/发布和第二次复核后才可能升级 |
 | 二次复核 | G1不强制 |
+
+## 20. AU-020 微信支付候选复核
+
+- 18个文件均有包入口、生产调用、测试、配置或构建职责；没有仅凭零静态引用即可成立的删除对象。
+- `notifyUrl` override虽形成F-0093契约边界问题，但仍被当前生产Gateway使用，不能列垃圾代码候选。
+- 本AU新增G0/G1/G2/G3/GX均为0；累计G0 2、G1 21、G2 2、G3 0、GX 2。
+
+## DC-0026｜Provider Core旧Webhook ingress包装器及转发导出
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `extensions/providers/core/src/Webhook.ts`及多个`providers/*/Webhook.ts`改名转发 |
+| 疑似原因 | [FACT][E-AU-021-007/008] 固定源码只由Provider.test实例化；生产factory、Loader、Registry和Channel route使用PortFactory的另一套ProviderWebhookVerifier |
+| 保留证据 | core barrel与多个provider package公共导出仍保存API；测试是其唯一行为规格；仓外consumer未排除 |
+| 未排除项 | 仓外插件、历史集成、迁移/回滚用途、provider包API兼容承诺 |
+| 可否删除 | 否；没有满足无公共API、无契约、无历史兼容责任和第二次复核条件 |
+| 二次复核 | G1不强制；若拟删除必须升级专项并与F-0095测试迁移分开 |
+
+## 21. AU-021 Provider Core候选复核
+
+- 新增DC-0026/G1；没有G2、G3或GX新增项。
+- 当前累计G0 2、G1 22、G2 2、G3 0、GX 2。公共barrel和仓外consumer未排除前不得升级删除结论。
