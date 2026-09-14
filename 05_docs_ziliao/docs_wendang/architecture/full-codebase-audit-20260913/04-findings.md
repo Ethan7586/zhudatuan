@@ -4415,7 +4415,7 @@
 | 文件和精确位置 | `commerce-api/src/api/memberOperationsRoutes.ts:81-105`；`commerce-api/src/api/auth.ts:18-36`；`storefront-compatibility/.../20260813010000_member_operations_center.sql:188-213` |
 | 当前行为 | `handleUpdateMemberProfile` 对 `member.update` 调用不传目标资源范围，因而使用当前操作者的 `contextResourceScope`。随后把 URL 中的 `membershipId` 直接交给 RPC；RPC 对目标仅限定 `tenant_id` 与 `enterprise_id`，没有限定 `target.mall_id = p_mall_id`，也没有核对操作人对目标范围的授权。 |
 | 预期行为 | 资源特定写入应先加载目标 membership 的服务器范围并以其调用授权，数据库写入也应拒绝当前商城/授权范围之外的目标。 |
-| 直接证据 | `auth.ts:18-20` 明确要求资源特定路由先加载目标行并把其 scope 传给 `authorize()`；本路由未执行该步骤。`api_update_member_profile` 的目标查询为同租户同企业 membership，而更新用户资料及审计写入均不比较 target mall。 |
+| 直接证据 | `auth.ts:18-20` 明确要求资源特定路由先加载目标行并把其 scope 传给 `authorize()`；本路由未执行该步骤。`api_update_member_profile` 的目标查询为同租户同企业 membership，而更新用户资料及审计写入均不比较 target mall。`member_operations_contract.sql:35-51` 仅验证同商城 Owner 的正常更新与 Owner 保护，未构造跨商城拒绝场景。 |
 | 调用链/运行入口 | `adminRouter` 的 `/api/v1/admin/member-operations/members/:id` → `handleUpdateMemberProfile` → service-role `api_update_member_profile` → `users` / `memberships` / audit log。 |
 | 用户影响 | 若商城范围管理员取得同一企业其他商城的 membership ID，可能修改该会员显示名、邮箱或部门；部门变更还会递增该成员所有 membership 的授权版本。目标 ID 的实际跨商城可获得性尚未验证。 |
 | 数据/安全影响 | 用户资料、部门归属和审计记录可能在越权范围内被改写；未见本次静态审计证据表明已造成线上事故。 |
