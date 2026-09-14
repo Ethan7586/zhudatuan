@@ -4466,3 +4466,21 @@
 | 预计修改范围 | Admin 路由、退款/对账 RPC 参数与授权证据、迁移/发布配置、定向退款与对账集成测试。 |
 | 验证/回滚 | 隔离数据库应用目标迁移，以最小管理员身份调用退款和对账，验证成功、幂等回放及审计事实；回滚为撤回独立修复提交。 |
 | 独立复核 | 建议；先确认实际部署数据库、migration ledger、函数定义和 grant。 |
+
+## F-0240｜登录快速路径投影未被应用消费
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Supabase 登录候选 / Commerce API 本地登录 |
+| 类型 | 性能、维护性、契约漂移 |
+| 严重级别 | **P3** |
+| 置信度 | 高 |
+| 文件和精确位置 | `database/supabase/migrations/20260817120000_login_runtime_fast_path.sql:7-47`；`commerce-api/src/api/publicRoutes.ts:230-257` |
+| 当前行为 | 候选 RPC 为每个 active entrance 构建 `runtime=api_resolve_membership_context(...)`；应用仅检查 entrances 是否为单项，随后仍调用 `resolveMembershipRuntimeByIds` 取得会话运行时。 |
+| 预期行为 | 若保留快速路径，应用应消费经验证的 runtime 投影；若继续单独解析，则候选 RPC 不应计算且返回未消费的每入口 runtime。 |
+| 直接证据 | SQL 的 `entrances.runtime` 字段；TypeScript 只读取 `Array.isArray(candidate.entrances)` 与 `length`，最后无条件调用 `resolveMembershipRuntimeByIds`。 |
+| 用户影响 | 多 entrance 成员登录多出无效数据库计算和一次 runtime RPC；未见静态证据表明改变身份或权限结果。 |
+| 根因 | 数据库快速路径与应用会话创建路径未一起迁移。 |
+| 建议方向 | 独立小批次选择唯一方案：消费并校验候选 runtime，或删除未消费的 runtime 子投影；先核验仓外 service-role 消费者。 |
+| 验证/回滚 | 对单/多入口登录测量 RPC 数与会话身份一致性；回滚为 revert 独立提交。 |
+| 独立复核 | 否；若改动公共候选响应，需兼容性复核。 |
