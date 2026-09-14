@@ -73,10 +73,13 @@ export const ConsumerIdentityPage: React.FC<{
 
   const submitLogin = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const loginMobile = mobile.trim();
+    if (!loginMobile) return setFormError('请输入登录手机号');
+    if (!password) return setFormError('请输入密码');
     setFormError('');
     identityActions.run(
       'consumer-login',
-      (signal) => loginCanonicalStorefrontEntry(mobile, password, application, signal),
+      (signal) => loginCanonicalStorefrontEntry(loginMobile, password, application, signal),
       {
         completionStages: ['server-response', 'session-exchange', 'redirect'],
         onSuccess: (result) => window.location.assign(result.redirectUrl),
