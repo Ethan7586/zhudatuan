@@ -1,0 +1,6 @@
+"id","failure","trigger","effect","rating"
+"FM-AU-025-001","非末页短页","供应商返回1..199条且total未完成","后续页按200偏移，静默漏商品","P2/F-0105"
+"FM-AU-025-002","重复全量扫描","超过500 keys或Price/Stock连续run","调用量和deadline按批次放大","P2/F-0106"
+"FM-AU-025-003","全量扫描中途deadline","供应商目录较大","整批Price/Stock失败并重试","P2/F-0106"
+"FM-AU-025-004","禁用Order误接","未来导出/注册OrderRequest","未证明履约协议进入生产","GX/DC-0031"
+"FM-AU-025-005","测试假阳性","仅正常fixture","短页和放大不失败","P3/F-0107"

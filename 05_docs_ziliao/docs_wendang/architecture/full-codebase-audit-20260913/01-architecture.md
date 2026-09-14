@@ -764,3 +764,11 @@ flowchart LR
 - 当前静态caller中Catalog、Statement、Webhook可达；Fulfillment请求`Order/order`而manifest只有Issue，Price既无manifest能力也无port。其余能力没有固定caller证据。
 - 当前通用Catalog要求`records[{externalId,version,payload}]`，已移除同仓历史中Cakeuncle `code/msg/data`专用转换；health只探单独endpoint，不能证明业务operation，形成F-0103。
 - 该required provider无独立数据所有权或进程，错误随Commerce Channel/Fulfillment作业传播。
+
+## 31. AU-025 Cake Provider真实边界
+
+`ChannelSyncJob → ExtensionRegistry → CakeReadClient → CakeuncleClient → categories/products`。manifest与factory只发布Catalog/Price/Inventory，endpoint和唯一root category在构造期闭合。
+
+- Catalog逐页获取；Price/Stock没有点查能力，每个500-key批次重新全量扫描所有叶分类，形成F-0106通信放大。
+- 固定请求size=200，但非末页短页不会fail closed，可能静默跳过记录（F-0105）。
+- OrderRequest和旧Webhook不在barrel/Provider中，保持禁用；前者是GX协议资产。

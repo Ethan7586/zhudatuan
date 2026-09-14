@@ -444,3 +444,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | required ID和manifest签名 | Vitest；根contract | F-0104 |
 
 [FACT][E-AU-024-001] 9/9文件、79/79行均已深入审阅；包随Commerce OCI发布，不拥有表、进程或独立target。
+
+## 31. AU-025 Cake Provider 模块清单
+
+| 子模块 | 职责 | 入口 | 边界 |
+| --- | --- | --- | --- |
+| CakeReadClient | Catalog分页、Price/Stock快照 | Channel jobs | F-0105/F-0106 |
+| Mapper | 分类树、商品/spec、金额库存 | ReadClient | 严格fail closed |
+| Provider/manifest | 三只读能力装配 | Runtime loader | 闭合 |
+| OrderRequest | 履约body构造 | 仅测试 | GX/DC-0031 |
+| tests | mock响应与builder | Vitest | F-0107 |
+
+[FACT][E-AU-025-001] 13文件807行深入审阅；随Commerce OCI发布。

@@ -242,3 +242,9 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - health只探connection.healthOperation，无法发现Catalog Mapper、Price缺失、Statement或Webhook协议错配；健康通过不能替代业务canary。
 - 当前release contract测试可在业务不可执行时通过，不能作为Foodvoucher上线证据（F-0104）。
 - 本AU未构建制品、读取线上installation/run、激活或停用provider、推送、合并或部署。
+
+## 28. AU-025 Cake Provider发布与运维边界
+
+- Cake是required provider，随Commerce OCI发布；实际运行取决于enabled installation和health。
+- health验证分类树，但不验证商品分页规模、短页或Price/Stock全扫成本；需业务canary而非仅health。
+- 本AU未build、访问线上、激活provider、推送、合并或部署。

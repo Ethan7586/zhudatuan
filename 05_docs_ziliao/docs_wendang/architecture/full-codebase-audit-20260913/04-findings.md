@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-024 结束时累计：P0 0、P1 候选 15、P2 47、P3 41、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-025 结束时累计：P0 0、P1 候选 15、P2 49、P3 42、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -2565,3 +2565,49 @@
 
 - [UNKNOWN] Foodvoucher线上是否enabled、最近Channel run/Job结果及当前供应商响应；审计未访问线上。
 - [UNKNOWN] 产品最终选择是恢复只读Catalog/Price还是完整实现Issue/Bind/Verify/Void/Extend；历史文档不能替Ethan定稿。
+
+## F-0105｜Cake分页接受非末页短页并静默漏商品
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Cake Catalog；分页正确性、数据完整性 |
+| 严重级别/置信度 | P2；高 |
+| 文件和位置 | `extensions/providers/cake/CakeuncleClient.ts:41-50,105-113,157-160` |
+| 当前/预期行为 | [FACT][E-AU-025-003] 请求size=200，但total尚未完成时1–199条短页仍通过并直接进入下一页；非末页应满页或使用服务端cursor，否则失败关闭 |
+| 证据/调用链 | TC-AU-025-003；Channel Catalog job→pullCatalog→productPage→assertPage→nextCursor |
+| 用户/数据/安全影响 | 商品或spec可能静默漏导；不直接删除既有数据；无安全影响 |
+| 根因/建议范围 | 只拒绝0条不完整页；后续独立分页批次补完整页不变量和测试 |
+| 验证/回滚 | 1/199/200/末页/total变化矩阵；回退单一分页提交 |
+| 独立复核 | 否 |
+
+## F-0106｜Cake Price/Stock按key批次重复全量扫描供应商目录
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Cake Price/Inventory；通信放大、deadline |
+| 严重级别/置信度 | P2；高 |
+| 文件和位置 | `extensions/providers/cake/CakeuncleClient.ts:53-87`；`services/commerce/src/modules/channel/05_interface_jieru/job/ChannelSyncJob.ts:89-116` |
+| 当前/预期行为 | [FACT][E-AU-025-004/005] 每次Price或Stock调用都拉categories并遍历最多10,000商品页；Channel每500 keys分批且两类run分开。应复用同步周期快照、点查或增量结果 |
+| 调用链 | Channel run→500-key batch→Price/Stock→snapshot→全部叶分类/分页 |
+| 用户/数据/安全影响 | 大目录下易超deadline、限流或断路，价格库存延迟；无已证实数据损坏或安全影响 |
+| 根因/建议范围 | canonical key port与全目录供应商API直接适配；后续单独设计快照所有权和一致性 |
+| 验证/回滚 | 供应商调用数、10k页、并发Price/Stock、过期快照矩阵；回退单一优化提交 |
+| 独立复核 | 否 |
+
+## F-0107｜Cake测试未覆盖分页短页与扫描放大
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Cake tests；测试缺口 |
+| 严重级别/置信度 | P3；高 |
+| 文件和位置 | `extensions/providers/cake/tests/CakeuncleClient.test.ts:14-68`；`Provider.test.ts:6-12` |
+| 当前/预期行为 | 仅正常单页/空末页、映射和字段错误；应覆盖短页、跨页重复、deadline、10k上限、调用数和Channel job |
+| 证据/调用链 | E-AU-025-008、TC-AU-025-001–004；npm test→Vitest（当前缺工具） |
+| 影响 | F-0105/F-0106可在测试绿色时存在；无直接数据/安全写入 |
+| 建议/范围 | 单一测试批次补分页和规模反事实，不混实现修改 |
+| 验证/回滚 | 破坏分页/调用预算时测试失败；回退测试提交 |
+| 独立复核 | 否 |
+
+## 25. AU-025 新增未定级事项
+
+- [UNKNOWN] 线上Cake目录页数、短页行为、Price/Stock运行频率和供应商限流指标；未访问线上。

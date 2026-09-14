@@ -214,3 +214,9 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 根provider contract在遇到未映射capability时回退手写port清单，只做`has()`；不执行Catalog/Statement/Webhook，不拒绝额外port，也不校验capability-port配对（F-0104）。
 - 正式test/typecheck因缺vitest/tsc在源码加载前127退出；未安装依赖或build。
 - 历史行为测试曾覆盖专用Catalog/Price与畸形供应商字段，但已不在固定基线。详见`records/AU-024-foodvoucher-provider/`。
+
+## 24. AU-025 Cake Provider质量
+
+- 7个read-client用例与2个Order builder用例覆盖正常映射和部分字段反事实；Provider测试只核ID/签名。
+- 无非末页短页、跨页重复、deadline/10k上限、供应商调用数或Channel job集成，见F-0107。
+- test/typecheck因缺vitest/tsc退出127；未build。详见`records/AU-025-cake-provider/`。

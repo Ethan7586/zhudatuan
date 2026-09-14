@@ -1,0 +1,6 @@
+"consumer","capability","behavior","boundary"
+"Channel catalog job","Catalog","按cursor一页一叶分类","F-0105"
+"Channel price job","Price","每最多500 keys调用一次","F-0106全量快照"
+"Channel stock job","Inventory","每最多500 keys调用一次","F-0106全量快照"
+"CatalogSourceProjection","cakeuncle.physical-sku.v1","创建源商品/媒体任务","不校验URL协议"
+"Package tests","三只读port/Order builder","mock transport","F-0107"

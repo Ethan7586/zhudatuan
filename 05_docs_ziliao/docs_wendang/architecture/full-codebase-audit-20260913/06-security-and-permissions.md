@@ -168,3 +168,9 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - Registry把capability存在与port存在分开检查，没有全局capability-port映射。Foodvoucher的Issue/Bind/Verify/Void/Extend等词汇可与任意现有port组合请求，当前caller虽有限，边界本身不自证语义。
 - 可达Webhook使用Provider Core header-HMAC，不是Cakeuncle包已知的body签名/unsigned callback模型；未发现无密钥绕过，但合法回调和权威状态边界未证明（F-0100）。
 - 本AU没有读取真实secret、Webhook载荷、permission assignment或线上installation。
+
+## 22. AU-025 Cake权限边界
+
+- manifest只声明`channel.cake.operate`与Catalog/Price/Inventory；Provider无写入或Webhook port。
+- OrderRequest和旧Webhook未导出/注册，避免未完成协议进入权限面；DC-0031禁止直接启用。
+- 本AU未读取secret、权限assignment或线上connection。

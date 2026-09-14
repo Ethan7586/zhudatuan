@@ -134,3 +134,9 @@
 - F-0103主要造成目录/价格缺失或同步失败，不直接删除既有数据。F-0100的Statement/Webhook可达链可能造成对账或状态停滞，但线上启用与真实数据影响未知。
 - 历史专用Mapper曾校验产品ID唯一、金额精度和字段shape；当前通用Mapper仅要求canonical records字段，这些供应商特定不变量不再存在于运行代码。
 - 本AU未查询、写入或迁移任何数据库，也未调用供应商。
+
+## 20. AU-025 Cake数据边界
+
+- Cake只产生Catalog/Price/Stock observation；Catalog/Channel/Inventory拥有落库数据，包无表或迁移。
+- F-0105可漏掉源商品且无error记录；F-0106造成更新停滞/延迟，未证明覆盖或删除既有数据。
+- 本AU未执行SQL、迁移、同步或供应商调用。

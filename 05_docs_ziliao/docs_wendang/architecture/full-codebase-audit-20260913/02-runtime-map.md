@@ -781,3 +781,11 @@ sequenceDiagram
 - Price路径在manifest和Provider中均不存在；Fulfillment固定请求`Order/order`，无法通过只有`Issue`的manifest。
 - Statement与Webhook在manifest/Provider/caller三侧可达，但供应商operation与header-HMAC协议尚无行为证据。
 - Provider health只调用connection.healthOperation；business endpoint缺失或响应shape错误不会在启动健康门禁中暴露。
+
+## 30. AU-025 Cake运行关系
+
+`catalog/price/stock run → CakeProvider → CakeReadClient → categories → root叶分类 → products page → strict Mapper → Catalog/Pricing/Inventory`。
+
+- Catalog每次处理一个cursor页；非末页短页仍生成下一页cursor，见F-0105。
+- Price与Stock每批都调用categories并遍历完整商品目录，Channel每500 key分批，见F-0106。
+- OrderRequest仅测试直引；无Order/Webhook生产port。
