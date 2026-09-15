@@ -40,6 +40,22 @@ retryable、attempts 和 nextSafeAction。sing-box 仅承载 GitHub 出站；阿
 Runner 状态读取使用独立的 `ZDT_RUNNER_READ_TOKEN`，其 fine-grained 权限只允许仓库 Administration read；默认
 `GITHUB_TOKEN` 不被假定拥有 Runner 管理视图，权限拒绝也不得通过重试掩盖。
 
+### Release Writer Lease 与冷备接管
+
+候选验证、Seal 和 Deploy 在连接生产节点前，必须取得 `ai.delivery.release-writer-lease.v1`。锁粒度固定为
+project + physical node + release target。第三批 Runner request ID 保留来源链；候选校验和 Deploy 再分别派生不同的
+Release request ID，并绑定第二批 Seal Key、control-plane SHA、writer identity 和 primary/standby 类别。租约、续约及
+释放均写入 OSS 不可变分代对象；执行期间按租期自动续约。Runner 标签和在线数量只是观察信息，
+不能产生写者权威。远端 Agent 的目标目录锁继续作为事务内第二层互斥。
+
+Primary 有效租约期间 Standby 只能等待。Primary 失联且租约过期后，Standby 仅能以相同 Runner request ID、Release
+request ID、Seal Key 和 control-plane SHA 创建下一 generation；接管后 Primary 不得抢回当前任务。健康检查失败后的指针恢复、重启和回滚
+验证仍在同一 Writer Lease 内完成。相同请求完成后重复到达直接复用结果；不同请求面对已部署的相同 Seal，仍由
+远端幂等检查返回“无需重复切换”。数据库迁移保持 forward-only，本协议不增加快照或伪造数据库自动回滚。
+
+Primary 与 Standby 当前位于同一物理 ECS，只能称为进程级冗余。没有第二台独立主机、独立故障域和真实接管演练
+之前，不得称为物理高可用。本批协议本身不启停 Runner，也不修改 systemd、云资源、网络或生产状态。
+
 1.4 是仓库唯一默认发布协议：GitHub 负责任务调度；系统级 Prepare 在阿里云 Build 槽有容量时优先使用阿里云，两个槽都忙或离线时将新任务送往 GitHub 托管 Runner，选择后不再迁移；候选封板与发布固定由阿里云 Release Runner 执行。`Prepare Artifact 1.4 - Aliyun` 生成不可变 OSS 制品并封板，`Deploy 1.4 - Aliyun Sealed Artifact` 只消费已封板制品。候选验证必须证明当前生产 source SHA 是候选 source SHA 的 Git 祖先，并把精确制品、候选目录、当前生产指针、Agent 和策略摘要写入封板记录；正式部署不能临时下载候选、安装依赖或构建。两条正常入口一次只接受一个物理 target，固定从 `zdt-next` 触发，source SHA 必须属于精确 `zdt-next` 历史。
 
 默认分支当前使用文件名带 `-aliyun` 的工作流，新分支从 `zdt-next` 创建后自然继承 1.4；历史分支中的旧 YAML 只是历史快照，不是可执行入口。旧 GitHub workflow ID 已删除。1.2 仅以两个名称明确的恢复入口保留，不再要求重复确认字符串；普通“部署”仍进入 1.4。

@@ -1,6 +1,6 @@
 # GitHub Actions Runner（1.4 阿里云版）
 
-Prepare 的系统级入口自动选择构建位置：北京 ECS 上有空闲 Build 槽时优先阿里云；两个槽都忙或离线时，新任务直接使用 GitHub 标准托管 `ubuntu-24.04`。候选封板及生产切换仍由阿里云 Release Runner 执行。
+Prepare 的系统级入口和自动封板共用 OSS 原子租约选择构建位置：北京 ECS 上有可领取 Build 逻辑槽时优先阿里云；两个槽都忙、离线或租约已满时，新任务使用 GitHub 标准托管 `ubuntu-24.04`。候选封板及生产切换仍由取得 Release Writer Lease 的阿里云 Release Runner 执行。
 
 ## Build Runner 选择
 
@@ -10,13 +10,13 @@ Prepare 的系统级入口自动选择构建位置：北京 ECS 上有空闲 Bui
 ZDT_PREPARE_RUNNER=github /Users/Ethan/.codex/bin/zdt-delivery prepare <target> <full-source-sha> <physical-node>
 ```
 
-省略 `ZDT_PREPARE_RUNNER` 时使用自动模式：系统在提交任务前读取两个阿里云 Build 槽及其等待队列，有可用容量就选阿里云，否则选 GitHub Hosted。下一次阿里云恢复空闲后会自然重新成为首选。GitHub 页面手工触发 Prepare 时仍默认 `build_runner=aliyun`；页面不能执行自动探测。两种构建使用同一份工作流、Node 22.22.0、npm 10.9.4、双冷构建及运行证据，并写入现有 OSS 制品路径；GitHub 构建不配置生产 SSH。选择只发生在提交前，任务开始或排队后不会中途迁移，也不会重复创建；Seal、候选验证、Release、Deploy 和生产 SSH 始终只走阿里云 Release Runner。
+省略 `ZDT_PREPARE_RUNNER` 时使用自动模式；手工与自动入口都由 `prepare-artifact-aliyun.yml` 内的同一 request ID、请求租约和槽位 claim 选择 Runner。两种构建使用同一份工作流、Node 22.22.0、npm 10.9.4、双冷构建及运行证据，并写入现有 OSS 制品路径；GitHub 构建不配置生产 SSH。任务写入 started 后不能迁移，进入 UPLOADED 后直接恢复 Seal 生命周期。
 
 ## 固定拓扑
 
 - 构建 Runner：标签 `self-hosted, linux, x64, zdt-aliyun-build`，只执行质量检查与 Prepare。
 - 发布 Runner：标签 `self-hosted, linux, x64, zdt-aliyun-release`，只执行候选封板、基线登记和生产切换。
-- 发布冷备用：同样位于 staging ECS，只备份发布角色；完成注册后保持停止且禁用。通过 `switch-release-runner.sh standby` 切换时会先停止主发布 Runner，避免两个发布进程同时消费 `zdt-aliyun-release`。
+- 发布冷备用：与主发布位于同一台 staging ECS，只提供进程级冗余；启停状态和共同标签不是唯一写者证明。真正执行候选验证、Seal 或 Deploy 前必须通过 OSS Release Writer Lease 取得唯一写权，Standby 只能在 Primary 不可用且原租约过期后按相同请求身份接管。
 - 同一物理目标由 GitHub concurrency 和远端目标锁共同串行化；增加 Runner 数量不能绕过目标锁。
 
 两个现役 Runner 均以系统服务常驻。Runner 注册令牌只在安装时短暂使用，不写入仓库、工作流、日志或长期配置。访问 GitHub 的特殊线路由 ECS 本机网络层管理；阿里云 OSS、ECS 内网和生产业务流量保持直连。

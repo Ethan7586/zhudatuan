@@ -23,6 +23,10 @@ on:
         description: Validate a candidate or atomically deploy it
         required: true
         type: string
+    secrets:
+      ZDT_RUNNER_READ_TOKEN:
+        description: Fine-grained token limited to repository Administration read for Primary health observation
+        required: true
   workflow_dispatch:
     inputs:
       head_sha:
@@ -185,6 +189,43 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
 
+      - name: Classify the Release writer without treating labels as authority
+        env:
+          GH_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          primary='aliyun-staging-zdt-release'
+          standby='aliyun-staging-zdt-release-standby'
+          case "$RUNNER_NAME" in
+            "$primary")
+              printf 'WRITER_CLASS=primary\nPRIMARY_AVAILABLE=true\nTAKEOVER_REASON=none\n' >> "$GITHUB_ENV"
+              echo '主Release执行中。'
+              ;;
+            "$standby")
+              mkdir -p .prepared-release
+              for attempt in 1 2 3; do
+                if gh api "repos/${GITHUB_REPOSITORY}/actions/runners" > .prepared-release/release-runners.json 2> .prepared-release/release-runners.error; then break; fi
+                if ! grep -Eqi 'reset|timed out|temporar|502|503|504' .prepared-release/release-runners.error || [ "$attempt" -eq 3 ]; then
+                  echo "code=RELEASE_PRIMARY_STATUS_UNAVAILABLE stage=release-writer-selection retryable=false attempts=${attempt} next_safe_action=stop-without-production-connection" >&2
+                  exit 1
+                fi
+                sleep "$((attempt * 2))"
+              done
+              primary_status="$(node -e "const r=require('./.prepared-release/release-runners.json');const x=r.runners.find(v=>v.name===process.argv[1]);process.stdout.write(x?.status??'missing')" "$primary")"
+              if [ "$primary_status" = online ]; then
+                echo '无法证明唯一写者，发布已停止。' >&2
+                exit 1
+              fi
+              printf 'WRITER_CLASS=standby\nPRIMARY_AVAILABLE=false\nTAKEOVER_REASON=primary-release-%s-after-lease-expiry\n' "$primary_status" >> "$GITHUB_ENV"
+              echo 'Standby将在主租约过期后尝试安全接管。'
+              ;;
+            *)
+              echo "code=RELEASE_WRITER_IDENTITY_UNKNOWN stage=release-writer-selection retryable=false attempts=1 next_safe_action=stop-without-production-connection" >&2
+              exit 1
+              ;;
+          esac
+
       - name: Refuse logical aliases for a different physical node
         shell: bash
         run: |
@@ -243,10 +284,14 @@ jobs:
             --github-run-attempt "$GITHUB_RUN_ATTEMPT" \
             --expected-remote-agent-sha256 "$expected_agent_sha256" \
             --expected-remote-policy-sha256 "$expected_policy_sha256" \
+            --writer-identity "$RUNNER_NAME" \
+            --writer-class "$WRITER_CLASS" \
+            --primary-available "$PRIMARY_AVAILABLE" \
+            --takeover-reason "$TAKEOVER_REASON" \
             --node "$RELEASE_NODE" \
             --target "$RELEASE_TARGET" \
             --format json | tee .prepared-release/envelope.json
-          EXPECTED_STATUS="$expected_status" node -e "const r=require('./.prepared-release/envelope.json');const x=r.result;if(!r.ok||x.finalStatus!==process.env.EXPECTED_STATUS)process.exit(1);process.stdout.write(x.finalStatus+': artifact='+x.artifactSourceSha+' control='+x.controlPlane.sourceSha+' agent='+x.controlPlane.remoteAgentSha256+' policy='+x.controlPlane.remotePolicySha256+' '+x.timings.total+'ms\\n')" \
+          EXPECTED_STATUS="$expected_status" node -e "const r=require('./.prepared-release/envelope.json');const x=r.result;if(!r.ok||x.finalStatus!==process.env.EXPECTED_STATUS)process.exit(1);const w=x.writerLease;const message=x.repeatedDeployment?'目标已是当前版本，无需重复切换。':w.writerClass==='standby'?'Standby已安全接管。':'主Release执行中。';process.stdout.write(message+' '+x.finalStatus+': artifact='+x.artifactSourceSha+' control='+x.controlPlane.sourceSha+' writer='+w.activeWriter+' lease='+w.leaseGeneration+'/'+w.leaseStatus+' switched='+x.actualSwitch+' '+x.timings.total+'ms\\n')" \
             >> "$GITHUB_STEP_SUMMARY"
 
       - name: Preserve candidate or deployment receipt

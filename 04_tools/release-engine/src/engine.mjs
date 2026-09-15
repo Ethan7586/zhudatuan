@@ -13,7 +13,10 @@ import { finalizePreparedSeal, inspectPreparedArtifact, ossClientFromEnvironment
 import { createPlan } from './planner.mjs';
 import { runCommand } from './runner.mjs';
 import { markRunnerFinished, markRunnerStarted, routeBuildRequest } from './runner-routing.mjs';
+import { createRunnerRequest } from './runner-routing.mjs';
 import { withFiniteRetry } from './retry.mjs';
+import { createReleaseWriterLeaseStore, createReleaseWriterRequest } from './release-writer-lease.mjs';
+import { createSealKey } from './seal-lifecycle.mjs';
 import { createRun, readJson, statePaths, writeJson } from './state.mjs';
 
 const SHA256_PATTERN = /^sha256:[a-f0-9]{64}$/;
@@ -339,6 +342,28 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
   const authoritativeSeal = candidateOnly ? null : await requireFinalSealReceipt(adapter, {
     ...options, sourceSha, target, node: requestedNode, artifactDigest: artifact.sha256, controlPlaneSha: controlSha,
   });
+  const runnerRequest = createRunnerRequest({ sourceSha, releaseTarget: target, physicalNode: requestedNode, controlPlaneSha: controlSha });
+  const sealIdentity = createSealKey({ sourceSha, releaseTarget: target, physicalNode: requestedNode, artifactDigest: artifact.sha256, controlPlaneSha: controlSha });
+  const releaseRequest = createReleaseWriterRequest({
+    runnerRequestId: runnerRequest.request_id,
+    operation: candidateOnly ? 'validate-candidate' : 'deploy',
+    sealKey: sealIdentity.seal_key,
+  });
+  if (authoritativeSeal?.receipt?.routing?.request_id) {
+    invariant(authoritativeSeal.receipt.routing.request_id === runnerRequest.request_id, 'RELEASE_WRITER_REQUEST_ID_MISMATCH', 'Final Seal routing identity differs from the canonical request ID');
+  }
+  invariant(authoritativeSeal === null || authoritativeSeal.key.seal_key === sealIdentity.seal_key,
+    'RELEASE_WRITER_SEAL_KEY_MISMATCH', 'Final Seal key differs from the Writer Lease identity');
+  const writerIdentity = required(options.writerIdentity ?? process.env.RUNNER_NAME, 'RELEASE_WRITER_IDENTITY_REQUIRED');
+  const writerClass = required(options.writerClass, 'RELEASE_WRITER_CLASS_REQUIRED');
+  const writerOptions = {
+    actorRole: 'release', writerIdentity, writerClass, requestId: releaseRequest.request_id, runnerRequestId: runnerRequest.request_id,
+    controlPlaneSha: controlSha, sealKey: sealIdentity.seal_key, leaseSeconds: Number(options.writerLeaseSeconds ?? 900),
+    primaryAvailable: options.primaryAvailable === false || options.primaryAvailable === 'false' ? false : true,
+    takeoverReason: options.takeoverReason ?? 'primary-release-unavailable-after-lease-expiry',
+  };
+  const writerStore = createReleaseWriterLeaseStore(publicClient, { project: adapter.project, physicalNode: requestedNode, releaseTarget: target });
+  const writerExecution = await writerStore.run(writerOptions, async (writerLease) => {
   const remoteAction = candidateOnly ? 'validate-oss-candidate-v3' : 'deploy-sealed-candidate-v3';
   const remoteIdentityArgs = [
     '--project',
@@ -431,7 +456,7 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
     node: requestedNode,
     artifactDigest: artifact.sha256,
     controlPlaneSha: controlSha,
-    requestId: `${githubRunId}:${githubRunAttempt}`,
+    requestId: runnerRequest.request_id,
     actorRole: 'release',
     releaseRunner: options.releaseRunner ?? process.env.RUNNER_NAME ?? 'zdt-aliyun-release',
     validationReceipt: { remote: remoteResult, lineage, candidateSeal, controlPlane },
@@ -473,6 +498,27 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
       : { receipt: remoteResult.activation.receipt, finalSealReceipt: authoritativeSeal.receipt }),
     completedAt: new Date().toISOString(),
   };
+  });
+  if (writerExecution.value?.reusedWriterResult === true) {
+    const finalSeal = await requireFinalSealReceipt(adapter, {
+      ...options, sourceSha, target, node: requestedNode, artifactDigest: artifact.sha256, controlPlaneSha: controlSha,
+    });
+    return {
+      schema: candidateOnly ? 'ai.delivery.prepared-candidate.v1' : 'ai.delivery.prepared-deploy.v1',
+      project: adapter.project, sourceSha, artifactSourceSha: sourceSha,
+      controlPlane: { sourceSha: controlSha, github: { runId: githubRunId, runAttempt: githubRunAttempt },
+        remoteAgentSha256: expectedRemoteAgentSha256, remotePolicySha256: expectedRemotePolicySha256 },
+      target, requestedNode,
+      node: resolvedDeployment.executionNode, artifactIdentity: artifact.sha256, releaseManifestObject: resolution.releaseManifestObject,
+      sealKey: finalSeal.key.seal_key, finalSealReceiptObject: finalSeal.object, finalSealReceipt: finalSeal.receipt,
+      finalStatus: candidateOnly ? 'sealed' : 'success', cacheStatus: 'writer-result-reused', repeatedDeployment: !candidateOnly,
+      actualSwitch: false, writerLease: writerExecution.writer,
+      timings: { artifactLookup: resolution.timings.artifactLookup, download: 0, candidate: 0, cutover: 0, restart: 0, health: 0, rollback: 0, remoteTotal: 0, total: elapsed(started) },
+      traffic: { artifactBytes: artifact.bytes + runtimeManifest.bytes, downloadedBytes: 0, reusedBytes: artifact.bytes + runtimeManifest.bytes },
+      completedAt: new Date().toISOString(),
+    };
+  }
+  return { ...writerExecution.value, actualSwitch: candidateOnly ? false : writerExecution.value.repeatedDeployment !== true, writerLease: writerExecution.writer };
 }
 
 async function verifyPreparedSourceLineage(adapter, options, current, candidateSourceSha) {
