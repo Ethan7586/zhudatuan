@@ -2144,3 +2144,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 新建独立生产证据批次，验证 Worker 路由、Host/NodeContext、登录、购买/支付、停止 Tunnel 的隔离与回滚；不得复用历史 deadline 或状态。 |
 
 - SFL L0/L1 兼容边界历史清单归 DC-0111。累计 G0 62、G1 116、G2 5、G3 0、GX 51；未删除任何文件。
+
+## DC-0112｜Android 原型评估与早期移动总板
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `mobile/ANDROID-CANDIDATE-COMPARISON.md`、`mobile/design-previews/smart-wing-mobile-v1-full-board.png` 与 `smart-wing-unified-mall-01-browse.png`。 |
+| 证据 | mobile/README 明确将 Android 两套原型和第一版移动总板降为历史参考，并把浏览旧版保留为设计变更追溯；不存在运行/构建消费者。 |
+| 保留原因 | 记录 Android 原型取舍、早期视觉路线与后续 V2 变化背景，不能从没有程序入口推断可删除。 |
+| 可否删除 | 否；由 Product/Design Owner 决定设计历史保留期与归档位置。 |
+| 二次复核 | 在任何归档/删除前，确认没有外部设计、产品、合规或资产交接引用。 |
+
+- Android 原型评估与早期移动总板归 DC-0112。累计 G0 62、G1 117、G2 5、G3 0、GX 51；未删除任何文件。
