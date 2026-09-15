@@ -2482,3 +2482,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 从最新主线重核端口、matrix、quality/delivery gate、真实端入口与外部发布交接；不得构建、发布或访问外部平台。 |
 
 - 多端并行交付标准归 DC-0136。累计 G0 65、G1 138、G2 5、G3 0、GX 52；未删除任何文件。
+
+## DC-0137｜旧 Smart 外壳与新 Operation API 融合方案
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `SMART-SHELL-OPERATION-API-INTEGRATION-PLAN.md`。 |
+| 证据 | 文件明确待批准/历史候选分支；当前 Console 路径和拟议 Operation 不对应，未发现 current consumer。 |
+| 保留原因 | 保存新旧 API/数据库隔离、会话、安全、迁移、回滚和组织开通的目标约束。 |
+| 可否删除 | 否；先由 Console、组织、数据和发布 Owner 核对外部批准、旧系统退役期与交接材料。 |
+| 二次复核 | 从最新主线独立追踪当前入口、contract、组织树、运行 policy 与外部域名/切换批准；不得执行数据库、DNS、发布或组织写入。 |
+
+- Smart Shell 融合方案归 DC-0137。累计 G0 65、G1 139、G2 5、G3 0、GX 52；未删除任何文件。

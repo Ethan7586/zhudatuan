@@ -6715,3 +6715,26 @@
 | 验证方式 | 文档命令存在并运行；matrix 每项 evidence 可解析；releaseReady 只在 required platform 真实实现和定向结果证据齐全时允许。 |
 | 回滚方式 | 回退独立文档/matrix/gate 提交，保留历史快照。 |
 | 是否需要独立复核 | 否（P3）；F-0063 的 P2 修复由产品、多端和发布 Owner 复核。 |
+
+## F-0349｜Smart Shell 融合施工计划仍把历史候选分支和未注册 Operation 写作当前实施入口
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Console / 组织开通 / 发布迁移文档 |
+| 类型 | 历史目标计划漂移、实施/切换误导 |
+| 严重级别 | **P3** |
+| 置信度 | 高（文档状态/基线、当前路径/contract 检索与 release domain 直接证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/SMART-SHELL-OPERATION-API-INTEGRATION-PLAN.md:1-58,129-174,270-320`；`01_core_hexin/apps/console/src/shell/ScopeShell.tsx`；`01_core_hexin/packages/contract/definitions/operations.yml`；`02_platform_pingtai/infrastructure/release/zdt-next.release.json:21`。 |
+| 当前行为 | 文件标为 `Shop/smart-wing`、待批准实施，列出已不存在的 `src/app`/`adminBff`/CockpitApi 路径及拟新增组织/Experience Operation；当前 ScopeShell 已在 `src/shell`，拟议 Operation 未在 contract/服务注册。受控 release 清单含 smart/t 域，但不证明文中灰度/切换已执行。 |
+| 预期行为 | 历史施工计划应冻结其候选分支、路径和拟议 scope；任何现行组织、Console 或发布操作必须从 current contract/运行图和授权工作包开始。 |
+| 直接证据 | [FACT][E-AU-899-001] 文档状态/基线与路径/拟议 Operation；[FACT][E-AU-899-002] 当前 ScopeShell 路径；[FACT][E-AU-899-003] contract 未见四个拟议 Operation；[FACT][E-AU-899-004] release domains 仅证明域名受控。 |
+| 调用链或运行入口 | 人工实施/切换 → 历史计划；实际 Console/组织/发布 → 当前 source/contract/release policy。 |
+| 用户影响 | 维护者可能在错误分支或历史路径上实施，误认为组织开通/灰度能力已可用，或对受控域执行未经批准的切换。 |
+| 数据影响 | 错误执行文中迁移/组织创建会触及真实层级、绑定与业务事实；本审计未执行。 |
+| 安全影响 | 文档中的 Cookie/CORS/旧 API 隔离建议具有安全意义，但不构成当前授权；错误执行可能扩大域名或会话边界。 |
+| 根因 | 历史候选分支施工计划未随当前 Console 重组、contract 演进和受控发布模型更新为 current/historical 双入口。 |
+| 建议方向 | 从修复时最新 `zdt-next` 建立单一 smart-shell-plan-currentness 批次：冻结历史计划，链接当前 Console/contract/release authority，并把任何仍需的组织/切换目标拆为独立批准工作包；不得在同批改代码、组织、数据库、域名、Cookie 或发布。 |
+| 预计修改范围 | 本计划及人工入口/链接。 |
+| 验证方式 | 历史路径/分支/目标均明确标注；现行链接可解析；任何拟实施 Operation 在 contract、权限、handler、迁移、测试和发布计划中有完整独立证据。 |
+| 回滚方式 | 回退独立文档/链接提交，保留冻结快照。 |
+| 是否需要独立复核 | 否（P3）；若重新批准 Console 切换，Console、组织、数据与发布 Owner 专项复核。 |
