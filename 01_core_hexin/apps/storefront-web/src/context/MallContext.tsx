@@ -7,7 +7,7 @@ import type { AndroidAppPage, AppMode, LaptopPage, LoginCredentials, MallContext
 import { useDeviceNavigation } from './useDeviceNavigation';
 import { checkoutSelectedCartRequest, PaymentPhoneVerificationRequired, prepareCheckoutSelection, refreshRejectedCheckoutCart } from './checkoutSelectedCart';
 import { useProductionSync } from './useProductionSync';
-import { purchaseAvailabilityMessage } from './purchaseAvailabilityMessage';
+import { canAttemptAuthenticatedCartAdd, purchaseAvailabilityMessage } from './purchaseAvailabilityMessage';
 import { useToasts } from './useToasts';
 import { guestStorefrontProfile } from './guestStorefrontProfile';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
@@ -417,7 +417,11 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
       showToast('商品可以直接浏览；登录后才能确认会员价与加入购物车', 'warning');
       return false;
     }
-    if (product.purchasable === false) {
+    if (product.purchasable === false && !canAttemptAuthenticatedCartAdd(
+      product.purchasable,
+      product.qualificationReason,
+      sessionStatus === 'authenticated',
+    )) {
       showToast(purchaseAvailabilityMessage(product.qualificationReason), 'warning');
       return false;
     }
