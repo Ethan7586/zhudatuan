@@ -2716,7 +2716,7 @@
 | --- | --- |
 | 模块 | Foodvoucher Provider / Cakeuncle Catalog |
 | 类型 | 业务契约、能力回归、健康检查 |
-| 严重级别 | **P1 候选**；未完成RV-0018前不作最终P1 |
+| 严重级别 | **P1（RV-0018 已独立复核确认）** |
 | 置信度 | 中高：当前代码、当前包声明和祖先专用契约闭合；供应商最新协议与线上enabled状态未知 |
 | 文件和精确位置 | `01_core_hexin/extensions/providers/foodvoucher/Provider.ts:6-16`；`Mapper.ts:1`；`manifest.ts:4-19`；`extensions/providers/core/src/PortFactory.ts:56-65`；`Mapper.ts:11-17,31-34`；`extensions/vendors/cakeuncle/README.md:7-27`；`Client.ts:51-63,159-164` |
 | 当前行为 | [CONFLICT][E-AU-024-006–008] 当前Catalog通用port读取`value.records`并要求canonical字段，Price完全不存在；Cakeuncle Client只剥离business error而返回原始envelope。当前README与同仓祖先专用实现记录Foodvoucher产品响应为`code/msg/data`并要求Catalog/Price。Provider health只探connection.healthOperation，不执行catalog/price mapping，因此可健康启动后首个业务调用失败 |
@@ -2731,9 +2731,11 @@
 | 预计修改范围 | Foodvoucher Provider/Mapper/manifest/tests与connection health canary；不得混入其他provider |
 | 验证方式 | 供应商沙箱或录制fixture的Catalog/Price全链、畸形字段/重复ID/金额精度、health后首个operation；线上只读核enabled/run状态 |
 | 回滚方式 | 单一只读适配提交可回退；保留现有installation与manifest版本迁移方案 |
-| 是否需要独立复核 | 是，RV-0018 |
+| 是否需要独立复核 | 已完成：RV-0018（2026-09-15）从需求生成、发布校验、同步任务、Provider ports 与健康路径重新取证，确认 P1 |
 
 为什么不是P0：没有线上enabled、失败作业、用户影响规模或当前供应商响应的直接证据；不能从required清单和历史实现推断正在发生严重事故。
+
+[FACT][RV-0018][2026-09-15] 独立复核从`RequirementSource.PROVIDERS`的priority-one Foodvoucher定义重新追至`RequirementGenerator`、`REQUIRED_PROVIDER_IDS`、正式stage的provider证据校验、`ChannelSyncJob`和当前Provider：Foodvoucher被要求纳入正式交付；同步任务固定分别请求`Catalog/catalog`和`Price/price`。当前manifest不声明Price，`FoodvoucherProvider`的operations亦没有price，故Price run在Registry能力检查前即不可用。其Catalog使用`CanonicalSourceMapper`，要求`externalId/version/payload`和`value.records`；Cakeuncle Client只校验`code===200`后返回原始envelope。健康检查只请求安装配置的`healthOperation`，未执行上述任一业务映射。契约测试仅检查`has(port)`，且对Foodvoucher的手写期望也没有price，不会阻止该退化。未读取线上安装、Job记录或供应商响应，故不认定已有实际商品/价格丢失，也不构成P0。
 
 ## F-0104｜Provider契约测试会把Foodvoucher能力错配判为可执行
 
