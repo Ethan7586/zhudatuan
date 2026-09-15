@@ -4794,6 +4794,28 @@
 | 验证/回滚 | 在隔离构建中人为超过对应 app budget，确认 gate 失败；若已下线，确认 config schema/文档不再宣称保护。回滚为撤回单一 quality-policy change。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0330｜机器规则台账把历史快照统计称为“当前”，遗漏固定基线新增入口
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Documentation / machine-rule governance |
+| 类型 | 调用图基线、发布入口与测试入口漂移 |
+| 严重级别 | **P3** |
+| 置信度 | 高（台账自带历史 SHA；固定审计基线的精确文件计数、diff 和 package/workflow 入口为直接证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/governance/zdt-rule-rebuild/06-第三批-机器规则调用图与标准对齐总台账.md:3-16,29-46,97-129,159-174`；`.github/workflows/deploy-oss.yml:1-114`；`package.json:76,119`。 |
+| 当前/预期 | 台账明确基于 `cc8ab201` 的 2026-09-12 快照，却在结论和物理清单中将 2 workflows、50 check、33 audit 写为“当前”。固定审计基线实际有 3 workflows、52 个 check `.mjs`、32 个 audit `.mjs/.sql`：新增 `deploy-oss.yml` 是可手动触发的 OSS→ECS Console 发布路径；新增 session-membership fixture 和 password-login fixture 已有 package 入口。预期是任何后续复用该台账时以其 SHA/日期作为强制边界，或由当前调用图重新生成入口/数量，不能把旧表作删除、门禁或发布完整性依据。 |
+| 直接证据 | [FACT][E-AU-853-001] 台账 3-4 声明 `cc8ab201` 快照，7-10、35-44、97-129 却使用“当前”计数；[FACT][E-AU-853-002] 固定基线实数为 workflow=3、check=52、audit=32；[FACT][E-AU-853-003] `cc8ab201..5a1ce71` 新增 `deploy-oss.yml`、`identity-notification-recovery.test.mjs`、`session-membership-permission-consumption.pg17-fixture.mjs`、`password-login-stability.pg17-fixture.mjs`；[FACT][E-AU-853-004] package 76、119 已将后两项接入根脚本。独立 OSS pointer writer 的运行风险已有 F-0016，不在此重复定级。 |
+| 调用链或运行入口 | 治理/清理决策者 → 第三批台账 → 判断 workflow、check/audit 或候选删除入口；遗漏的 `deploy-oss.yml` 自身为 workflow_dispatch → OSS upload → ECS Console pointer 的独立发布链。 |
+| 用户影响 | 若把该快照误作当前调用图，维护者可能漏审后续测试入口或独立 Console 发布通道，导致错误的门禁、清理或发布判断。 |
+| 数据影响 | 本问题本身不写数据；遗漏发布路径会妨碍对 Console 制品切换风险的完整判断。 |
+| 安全影响 | 无新增直接漏洞证据；遗漏含 OSS 凭据与 root SSH 的手动 workflow 会削弱发布面审阅完整性。 |
+| 根因 | 快照报告虽保留基线元数据，但未将“当前物理树”文案和清单字段严格限定为 as-of `cc8ab201`，也没有当前调用图跳转。 |
+| 建议方向 | 从当时最新 `zdt-next` 建立单一 docs-machine-map-refresh batch：保留历史台账，所有表头改为 as-of SHA/日期并链接可重算的当前调用图；任何更新须重新枚举 workflow、package 入口、check/audit 和发布 writer，不改运行脚本或 workflow 行为。 |
+| 预计修改范围 | 本台账的快照标识/导航和可选的机器调用图生成校验。 |
+| 验证方式 | 独立复核以同一 SHA 重算文档计数；当前图能列出三条 workflow 和新增包入口，并把 OSS Console 通道与既有 F-0016 关联。 |
+| 回滚方式 | 回退独立文档/生成校验提交；不触及发布控制面。 |
+| 是否需要独立复核 | 是（发布与质量 Owner；需独立重算入口并复查 F-0016 的 writer/lock 关系）。 |
+
 ## F-0329｜治理重建目录仍把已完成的第二批称为“当前阶段”
 
 | 字段 | 记录 |
