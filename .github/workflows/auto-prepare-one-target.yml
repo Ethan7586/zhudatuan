@@ -42,6 +42,8 @@ jobs:
     uses: ./.github/workflows/prepare-artifact-aliyun.yml
     with:
       build_runner: auto
+      auth_mode: static-access-key
+      role_kind: builder
       head_sha: ${{ inputs.head_sha }}
       release_target: ${{ inputs.release_target }}
       release_node: ${{ inputs.prepare_node }}
@@ -61,6 +63,8 @@ jobs:
         release_node: ${{ fromJSON(inputs.seal_nodes_json) }}
     uses: ./.github/workflows/deploy-prepared-aliyun.yml
     with:
+      auth_mode: static-access-key
+      role_kind: releaser
       head_sha: ${{ inputs.head_sha }}
       release_target: ${{ inputs.release_target }}
       release_node: ${{ matrix.release_node }}

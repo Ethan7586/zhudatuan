@@ -3,9 +3,11 @@ import { lstat, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
 import { resolvePackageArtifactPaths } from './artifact.mjs';
+import { resolveStaticAccessKeyCredentials } from './credential-provider.mjs';
 import { DeliveryError, invariant } from './errors.mjs';
 import { createSealKey, createSealLifecycleStore, sealObjectPaths } from './seal-lifecycle.mjs';
-import { withFiniteRetry } from './retry.mjs';
+import { classifySealCheckpoint } from './seal-recovery.mjs';
+import { isTransientNetworkFailure, withFiniteRetry } from './retry.mjs';
 import { digest, prettyStableJson, sha256 } from './stable.mjs';
 
 const DEFAULT_PREFIX = '';
@@ -16,6 +18,11 @@ const ARTIFACT_RECIPE = 'r4-seal-lifecycle';
 const CURRENT_RELEASE_INDEX = `release-index-${ARTIFACT_RECIPE}.json`;
 const PREVIOUS_RELEASE_INDEX = 'release-index-r3-normalized-runtime-modes.json';
 const LEGACY_RELEASE_INDEX = 'release-index.json';
+
+export function releaseIndexObjectPath(project, target, sourceSha, prefix = '') {
+  exactSourceSha(sourceSha, 'OSS_SOURCE_SHA_INVALID');
+  return `${objectRoot(project, target, sourceSha, prefix)}/${CURRENT_RELEASE_INDEX}`;
+}
 
 export async function publishPreparedArtifact(adapter, options, dependencies = {}) {
   const started = performance.now();
@@ -377,11 +384,24 @@ export async function requireFinalSealReceipt(adapter, options, dependencies = {
     project: adapter.project, sourceSha: options.sourceSha, releaseTarget: options.target, physicalNode: options.node,
     artifactDigest: options.artifactDigest, controlPlaneSha: options.controlPlaneSha,
   });
-  const state = await lifecycle.read();
+  const state = await lifecycle.readExactFinal();
+  const recovery = classifySealCheckpoint({ exactResource: lifecycle.paths.final, finalSeal: state.status === 'SEALED',
+    uploaded: Boolean(state.uploaded), validated: Boolean(state.validated), safeCheckpoint: state.status });
   invariant(state.status === 'SEALED', 'FINAL_SEAL_RECEIPT_MISSING', 'OSS final Seal receipt is missing; Action success is not Seal authority', {
-    status: state.status, sealKey: lifecycle.key.seal_key, finalSealReceiptObject: lifecycle.paths.final,
+    status: state.status, sealKey: lifecycle.key.seal_key, finalSealReceiptObject: lifecycle.paths.final, ...recovery,
   });
   return { key: lifecycle.key, object: lifecycle.paths.final, receipt: state.final, reused: true };
+}
+
+export async function resolveExactFinalSealReceipt(adapter, options, dependencies = {}) {
+  const client = dependencies.client ?? ossClientFromEnvironment(options.endpoint, dependencies);
+  const prepared = await resolvePreparedArtifact(adapter, { ...options, allowLegacy: false }, { ...dependencies, client });
+  invariant(prepared.provenance?.controlPlaneSha, 'OSS_PROVENANCE_CONTROL_SHA_MISSING', 'Build provenance does not identify the control plane');
+  return requireFinalSealReceipt(adapter, {
+    ...options,
+    artifactDigest: prepared.manifest.artifact.sha256,
+    controlPlaneSha: prepared.provenance.controlPlaneSha,
+  }, { ...dependencies, client });
 }
 
 export async function findFinalSealReceipt(adapter, options, dependencies = {}) {
@@ -489,11 +509,19 @@ export async function publishWorkflowEvidence(adapter, options, dependencies = {
 
 export function ossClientFromEnvironment(endpoint, dependencies = {}) {
   const environment = dependencies.environment ?? process.env;
+  const credentials = resolveStaticAccessKeyCredentials({
+    mode: dependencies.authMode ?? environment.AI_DELIVERY_AUTH_MODE,
+    roleKind: dependencies.roleKind ?? environment.AI_DELIVERY_ROLE_KIND,
+    allowStatic: dependencies.allowStatic ?? environment.AI_DELIVERY_ALLOW_STATIC_ACCESS_KEY === 'true',
+    accessKeyId: environment.ALIYUN_OSS_ACCESS_KEY_ID,
+    accessKeySecret: environment.ALIYUN_OSS_ACCESS_KEY_SECRET,
+    securityToken: environment.ALIYUN_OSS_SECURITY_TOKEN || null,
+  }, { warning: dependencies.warning ?? ((message) => process.stderr.write(`${message}\n`)) });
   return createOssClient(
     {
-      accessKeyId: required(environment.ALIYUN_OSS_ACCESS_KEY_ID, 'ALIYUN_OSS_ACCESS_KEY_ID_REQUIRED'),
-      accessKeySecret: required(environment.ALIYUN_OSS_ACCESS_KEY_SECRET, 'ALIYUN_OSS_ACCESS_KEY_SECRET_REQUIRED'),
-      securityToken: environment.ALIYUN_OSS_SECURITY_TOKEN || null,
+      accessKeyId: credentials.accessKeyId,
+      accessKeySecret: credentials.accessKeySecret,
+      securityToken: credentials.securityToken,
       bucket: required(environment.ALIYUN_OSS_BUCKET, 'ALIYUN_OSS_BUCKET_REQUIRED'),
       endpoint: endpoint ?? required(environment.ALIYUN_OSS_ENDPOINT, 'ALIYUN_OSS_ENDPOINT_REQUIRED'),
     },
@@ -556,19 +584,21 @@ export function createOssClient(configuration, dependencies = {}) {
       invariant(!/<IsTruncated>true<\/IsTruncated>/.test(xml), 'OSS_LIST_TRUNCATED', 'Prepared artifact prefix contains too many objects');
       return [...xml.matchAll(/<Key>([^<]*)<\/Key>/g)].map((match) => decodeURIComponent(decodeXml(match[1]))).sort();
     },
-    async putImmutable(object, body, contentType = 'application/octet-stream') {
+    async putImmutable(object, body, contentType = 'application/octet-stream', putOptions = {}) {
       const bytes = Buffer.isBuffer(body) ? body : Buffer.from(body);
       const contentSha256 = sha256(bytes);
       const contentMd5 = createHash('md5').update(bytes).digest('base64');
-      const response = await request('PUT', object, {
-        body: bytes,
-        contentMd5,
-        contentType,
-        ossHeaders: {
-          'x-oss-forbid-overwrite': 'true',
-          'x-oss-meta-sha256': contentSha256,
-        },
-      });
+      const requestOptions = { body: bytes, contentMd5, contentType, ossHeaders: {
+        'x-oss-forbid-overwrite': 'true', 'x-oss-meta-sha256': contentSha256,
+      }, ...(putOptions.verifyAfterUncertain ? { maxAttempts: 1 } : {}) };
+      let response;
+      try { response = await request('PUT', object, requestOptions); }
+      catch (error) {
+        if (!putOptions.verifyAfterUncertain || !(error?.details?.retryable || isTransientNetworkFailure(error))) throw error;
+        const existing = await this.headObject(object);
+        if (existing.exists) return { ...(await verifyExisting(this, existing, object, bytes, contentSha256)), readbackRecovered: true };
+        response = await request('PUT', object, { ...requestOptions, maxAttempts: Number(dependencies.networkMaxAttempts ?? 3) });
+      }
       if (response.status === 409) {
         const existing = await this.headObject(object);
         return verifyExisting(this, existing, object, bytes, contentSha256);
@@ -629,7 +659,7 @@ export function createOssClient(configuration, dependencies = {}) {
       return response;
     }, {
       stage: `oss-${method.toLowerCase()}`,
-      maxAttempts: Number(dependencies.networkMaxAttempts ?? 3),
+      maxAttempts: Number(options.maxAttempts ?? dependencies.networkMaxAttempts ?? 3),
       delaysMs: dependencies.networkRetryDelaysMs ?? [250, 1000, 3000],
       sleep: dependencies.sleep,
     });

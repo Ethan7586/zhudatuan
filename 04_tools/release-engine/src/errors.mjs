@@ -82,9 +82,9 @@ export function diagnoseAccessDenial(status, detail) {
 }
 
 function errorCategory(code, status, detail) {
-  if (status === 401 || status === 403 || /DENIED|FORBIDDEN|UNAUTHORIZED/.test(code) || /AccessDenied/i.test(detail)) return 'SECURITY_DENIAL';
+  if (status === 401 || status === 403 || /DENIED|FORBIDDEN|UNAUTHORIZED|SUBJECT_NOT_ALLOWED|AUDIENCE_MISMATCH|ROLE_CAPABILITY/.test(code) || /AccessDenied/i.test(detail)) return 'SECURITY_DENIAL';
   if (/CONFLICT|MISMATCH|DIGEST|TAMPER/.test(code)) return 'INTEGRITY_CONFLICT';
-  if (/REQUIRED|INVALID|CONFIG|BUCKET|ENDPOINT|PREFIX/.test(code)) return 'CONFIGURATION';
+  if (/REQUIRED|INVALID|CONFIG|BUCKET|ENDPOINT|PREFIX|NOT_EXPLICITLY_ALLOWED|CREDENTIAL_EXPIRED|TRUST_RELATIONSHIP/.test(code)) return 'CONFIGURATION';
   if (status === 408 || status === 429 || (status >= 500 && status <= 504) || /TIMEOUT|RESET|UNREACH|TRANSIENT/.test(code)) return 'TRANSIENT';
   return 'DEPENDENCY_UNAVAILABLE';
 }

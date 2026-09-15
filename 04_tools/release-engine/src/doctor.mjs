@@ -1,12 +1,13 @@
 import { deliveryErrorContract, invariant } from './errors.mjs';
-import { createOssClient } from './oss.mjs';
+import { createOssClient, releaseIndexObjectPath, resolveExactFinalSealReceipt } from './oss.mjs';
+import { AUTH_MODES, ROLE_CAPABILITIES } from './credential-provider.mjs';
 import { createRunnerRequest } from './runner-routing.mjs';
 import { auditWorkflowSecretContracts, loadWorkflowDocuments } from './secret-contract.mjs';
 import { assertGitAncestor } from './git.mjs';
 
 const SHA = /^[a-f0-9]{40}$/;
 const NAME = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/;
-const REQUIRED_OSS = ['ALIYUN_OSS_ACCESS_KEY_ID', 'ALIYUN_OSS_ACCESS_KEY_SECRET', 'ALIYUN_OSS_BUCKET', 'ALIYUN_OSS_ENDPOINT'];
+const REQUIRED_OSS = ['ALIYUN_OSS_BUCKET', 'ALIYUN_OSS_ENDPOINT'];
 const RUNNERS = Object.freeze(['aliyun-staging-zdt-build', 'aliyun-staging-zdt-build-2', 'aliyun-staging-zdt-release', 'aliyun-staging-zdt-release-standby']);
 
 export const DOCTOR_SCHEMA = 'ai.delivery.readiness-doctor.v1';
@@ -24,6 +25,8 @@ export async function doctorCommand(adapter, options, dependencies = {}) {
   const secretValues = Object.values(environment).filter((value) => typeof value === 'string');
   const checks = [];
   const errors = [];
+  const authMode = String(options.authMode ?? environment.AI_DELIVERY_AUTH_MODE ?? '');
+  const roleKind = String(options.roleKind ?? environment.AI_DELIVERY_ROLE_KIND ?? '');
 
   const requestValid = SHA.test(sourceSha) && SHA.test(controlSha) && NAME.test(target) && NAME.test(node)
     && Boolean(adapter.targets?.[target]) && Boolean(adapter.nodes?.[node]?.deployments?.[target]);
@@ -85,39 +88,48 @@ export async function doctorCommand(adapter, options, dependencies = {}) {
     errors.push(deliveryErrorContract(error, { stage: 'doctor-workflow-secrets', requestId, affectedCapability: 'workflow-secret-chain', secretValues }));
   }
 
-  const missingOss = REQUIRED_OSS.filter((name) => !environment[name]);
+  const authValid = AUTH_MODES.includes(authMode) && ['observer', 'builder', 'releaser'].includes(roleKind) && authMode !== 'fixture';
+  const staticAllowed = authMode !== 'static-access-key' || environment.AI_DELIVERY_ALLOW_STATIC_ACCESS_KEY === 'true';
+  const oidcRoleName = `ALIYUN_ROLE_ARN_${roleKind.toUpperCase()}`;
+  const credentialNames = authMode === 'static-access-key'
+    ? ['ALIYUN_OSS_ACCESS_KEY_ID', 'ALIYUN_OSS_ACCESS_KEY_SECRET']
+    : authMode === 'oidc-sts' ? ['ALIYUN_OIDC_PROVIDER_ARN', 'ALIYUN_OIDC_AUDIENCE', oidcRoleName] : [];
+  const missingOss = [...REQUIRED_OSS, ...credentialNames].filter((name) => !environment[name]);
   const ossFormatValid = missingOss.length === 0 && /^[A-Za-z0-9][A-Za-z0-9.-]{2,62}$/.test(environment.ALIYUN_OSS_BUCKET)
-    && /^https?:\/\/[A-Za-z0-9.-]+(?::\d+)?\/?$/.test(environment.ALIYUN_OSS_ENDPOINT);
+    && /^https?:\/\/[A-Za-z0-9.-]+(?::\d+)?\/?$/.test(environment.ALIYUN_OSS_ENDPOINT) && authValid && staticAllowed;
   add(checks, 'oss-configuration', ossFormatValid ? 'PASS' : 'FAIL', 'oss-configuration', {
     requiredPresent: missingOss.length === 0, missing: missingOss, bucketConfigured: Boolean(environment.ALIYUN_OSS_BUCKET),
-    endpointConfigured: Boolean(environment.ALIYUN_OSS_ENDPOINT), credentialsRedacted: true,
+    endpointConfigured: Boolean(environment.ALIYUN_OSS_ENDPOINT), credentialsRedacted: true, authMode, roleKind,
+    staticAccessKeyDeprecated: authMode === 'static-access-key', roleCapabilities: ROLE_CAPABILITIES[roleKind] ?? [],
   });
   if (!ossFormatValid) errors.push(contract('OSS_CONFIGURATION_INVALID', 'CONFIGURATION', 'doctor-oss', requestId,
     'oss-configuration', secretValues, 'repair-bucket-endpoint-or-credential-configuration-and-rerun-doctor', { missing: missingOss }));
 
   if (ossFormatValid && requestValid) {
-    const prefix = `${adapter.project}/${target}/${sourceSha}/`;
+    const exactReleaseIndex = releaseIndexObjectPath(adapter.project, target, sourceSha);
     try {
       const client = dependencies.ossClient ?? createOssClient({
         accessKeyId: environment.ALIYUN_OSS_ACCESS_KEY_ID, accessKeySecret: environment.ALIYUN_OSS_ACCESS_KEY_SECRET,
         securityToken: environment.ALIYUN_OSS_SECURITY_TOKEN || null, bucket: environment.ALIYUN_OSS_BUCKET, endpoint: environment.ALIYUN_OSS_ENDPOINT,
       }, dependencies.ossDependencies);
-      const objects = await client.listPrefix(prefix);
-      add(checks, 'oss-read', 'PASS', 'oss-read', { prefix, objectCount: objects.length, operation: 'ListObjectsV2', readOnly: true });
-      const finalObjects = objects.filter((object) => object.includes(`/seals/v1/${node}/`) && object.endsWith('/final-seal.json'));
-      if (finalObjects.length > 0) await client.getObject(finalObjects[0]);
-      add(checks, 'final-seal-read', finalObjects.length > 0 ? 'PASS' : 'UNVERIFIED', 'final-seal-read', {
-        readable: finalObjects.length > 0, missingIsNotCreated: true, object: finalObjects[0] ?? null,
+      const indexHead = await client.headObject(exactReleaseIndex);
+      add(checks, 'oss-read', 'PASS', 'oss-read', { object: exactReleaseIndex, exists: indexHead.exists, operation: 'HeadObject', readOnly: true, listUsed: false });
+      if (indexHead.exists) {
+        const sealed = await (dependencies.exactSealProbe ?? resolveExactFinalSealReceipt)(adapter,
+          { sourceSha, target, node }, { client });
+        add(checks, 'final-seal-read', 'PASS', 'final-seal-read', { readable: true, object: sealed.object, listUsed: false });
+      } else add(checks, 'final-seal-read', 'UNVERIFIED', 'final-seal-read', {
+        readable: false, missingIsNotCreated: true, reason: 'exact release index is absent', listUsed: false,
       });
     } catch (error) {
-      const exactReleaseIndex = `${prefix}release-index-r4-seal-lifecycle.json`;
       add(checks, 'oss-read', 'FAIL', 'oss-read', {
-        prefix, operation: 'ListObjectsV2', exactReadAlternative: exactReleaseIndex,
+        object: exactReleaseIndex, operation: 'HeadObject/GetObject', listUsed: false,
         listStillRequiredFor: ['runner-lease-generation-discovery', 'seal-artifact-digest-discovery', 'writer-renewal-generation-discovery'],
       });
-      errors.push(deliveryErrorContract(error, { stage: 'doctor-oss', requestId, affectedCapability: 'oss-read', secretValues,
-        details: { prefix, exactHeadGetAlternative: exactReleaseIndex } }));
-      add(checks, 'final-seal-read', 'UNVERIFIED', 'final-seal-read', { reason: 'OSS prefix was not readable; no Seal was created' });
+      const code = Number(error?.status ?? error?.details?.status) === 403 ? 'OSS_EXACT_OBJECT_ACCESS_DENIED' : error.code;
+      errors.push(deliveryErrorContract(Object.assign(error, { code }), { stage: 'doctor-oss', requestId, affectedCapability: 'oss-read', secretValues,
+        details: { exactObject: exactReleaseIndex } }));
+      add(checks, 'final-seal-read', 'UNVERIFIED', 'final-seal-read', { reason: 'exact OSS object was not readable; no Seal was created' });
     }
   } else {
     add(checks, 'oss-read', 'UNVERIFIED', 'oss-read', { reason: 'request or OSS configuration invalid' });
@@ -125,6 +137,9 @@ export async function doctorCommand(adapter, options, dependencies = {}) {
   }
 
   add(checks, 'oss-write-capability', 'UNVERIFIED', 'oss-write', { code: 'UNVERIFIED_WRITE_CAPABILITY', reason: 'Doctor never creates, overwrites or deletes an OSS object' });
+  add(checks, 'oidc-trust-relationship', authMode === 'oidc-sts' ? 'UNVERIFIED' : 'UNVERIFIED', 'cloud-trust', {
+    code: 'TRUST_RELATIONSHIP_UNVERIFIED', reason: authMode === 'oidc-sts' ? 'Doctor did not perform a real STS exchange' : 'Static compatibility mode does not prove OIDC trust',
+  });
   const channel = adapter.nodes?.[node]?.deployments?.[target] ?? null;
   add(checks, 'target-channel', channel ? 'PASS' : 'FAIL', 'target-channel', {
     target, physicalNode: node, pointerRoot: channel?.pointerRoot ?? null, service: channel?.service ?? null,

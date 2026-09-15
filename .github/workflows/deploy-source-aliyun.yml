@@ -108,6 +108,8 @@ jobs:
       matrix: ${{ fromJSON(needs.resolve.outputs.migrations) }}
     uses: ./.github/workflows/deploy-prepared-aliyun.yml
     with:
+      auth_mode: static-access-key
+      role_kind: releaser
       head_sha: ${{ inputs.head_sha }}
       release_target: ${{ matrix.target }}
       release_node: ${{ matrix.node }}
@@ -131,6 +133,8 @@ jobs:
       matrix: ${{ fromJSON(needs.resolve.outputs.runtimes) }}
     uses: ./.github/workflows/deploy-prepared-aliyun.yml
     with:
+      auth_mode: static-access-key
+      role_kind: releaser
       head_sha: ${{ inputs.head_sha }}
       release_target: ${{ matrix.target }}
       release_node: ${{ matrix.node }}
@@ -154,6 +158,8 @@ jobs:
       matrix: ${{ fromJSON(needs.resolve.outputs.frontends) }}
     uses: ./.github/workflows/deploy-prepared-aliyun.yml
     with:
+      auth_mode: static-access-key
+      role_kind: releaser
       head_sha: ${{ inputs.head_sha }}
       release_target: ${{ matrix.target }}
       release_node: ${{ matrix.node }}

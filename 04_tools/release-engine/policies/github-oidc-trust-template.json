@@ -1,0 +1,12 @@
+{
+  "schema": "ai.delivery.github-oidc-trust-template.v1",
+  "issuer": "https://token.actions.githubusercontent.com",
+  "audience": "${ALIYUN_OIDC_AUDIENCE}",
+  "repository": "Ethan7586/zhudatuan",
+  "subjects": ["repo:Ethan7586/zhudatuan:ref:refs/heads/zdt-next", "repo:Ethan7586/zhudatuan:environment:production"],
+  "workflowRefs": ["Ethan7586/zhudatuan/.github/workflows/prepare-artifact-aliyun.yml@refs/heads/zdt-next", "Ethan7586/zhudatuan/.github/workflows/deploy-prepared-aliyun.yml@refs/heads/zdt-next"],
+  "events": ["push", "workflow_dispatch"],
+  "pullRequestSubjectsAllowed": false,
+  "providerArn": "acs:ram::${ACCOUNT_ID}:oidc-provider/${OIDC_PROVIDER_NAME}",
+  "roleArnByKind": { "observer": "acs:ram::${ACCOUNT_ID}:role/${OBSERVER_ROLE}", "builder": "acs:ram::${ACCOUNT_ID}:role/${BUILDER_ROLE}", "releaser": "acs:ram::${ACCOUNT_ID}:role/${RELEASER_ROLE}" }
+}
