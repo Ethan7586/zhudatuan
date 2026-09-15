@@ -5598,3 +5598,25 @@
 | 验证方式 | 故意移除无关 migration 的 `deadletter` 或 `check` 文本、保留目标表缺约束，确认新 tests 对目标链路失败；在 isolated DB 对选定写操作验证幂等、scope denial、事务回滚和 outbox/dead-letter。 |
 | 回滚方式 | 回退独立 test/label 变更；保留原 static traceability suite，避免短期丢失需求索引。 |
 | 是否需要独立复核 | 否。 |
+
+## F-0298｜Console release 测试直接覆盖应用工作树的 `dist` 产物
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Quality / recovery / Console release artifact |
+| 类型 | 测试隔离、开发者工作区安全 |
+| 严重级别 | **P3** |
+| 置信度 | 高（test 的 `spawnSync`、Vite config 和清理范围为直接源码证据；未实际运行该会写入工作树的测试） |
+| 文件和精确位置 | `03_quality_ceshi/tests/recovery/console-release.spec.ts:29-59,63-104`；`01_core_hexin/apps/console/vite.config.ts:15-30,58-67`。 |
+| 当前/预期 | 当前第一个 test 以 Console 应用目录为 cwd 执行 `vite build`，随后从固定 `apps/console/dist` 读取制品；该 test 只清理另两个临时目录。Vite config 没有设置替代 `outDir`，plugin 也默认/跟随 `config.build.outDir` 写入该 `dist`。预期是测试构建只能写入自己的临时输出目录，并在 finally 中清理。 |
+| 直接证据 | [FACT][E-AU-757-001] spec 31-43 调用 `node_modules/vite/bin/vite.js build`，cwd 固定为 `apps/console`；[FACT][E-AU-757-002] 45 直接读取 `apps/console/dist`；[FACT][E-AU-757-003] 61-104 的 `rmSync` 只覆盖 `shop-console-artifact-*`、`shop-console-tampered-*` 临时目录；[FACT][E-AU-757-004] config 29 仅设置 `manifest: true`，plugin 60-67 以 Vite 的 `build.outDir` 解析输出目录。 |
+| 调用链或运行入口 | `npm run test:integration` → `node --import tsx --test .../recovery/*.spec.ts` → Console recovery spec → Vite build → 应用工作树 `dist`。 |
+| 用户影响 | 在开发者已有未跟踪 Console build 产物或并行本地构建时，定向测试可能覆盖其制品，令复现/调试输入不稳定。 |
+| 数据影响 | 仅工作树生成制品；无数据库、线上或客户数据写入。 |
+| 安全影响 | 无直接权限或凭据影响。 |
+| 根因 | 把真实生产构建作为 test fixture，但没有把 Vite 输出重定向到 test-owned temporary directory。 |
+| 建议方向 | 从最新 `zdt-next` 创建单一 test-isolation 批次：支持显式、受控的临时 outDir，spec 使用 `mkdtemp` 并在 finally 清理；保留同一制品 digest/manifest 断言。不要在审计分支修改测试或清理任何现有 `dist`。 |
+| 预计修改范围 | Console Vite build test 和必要的 build-output 参数/fixture；不改变发布制品契约或线上 Console。 |
+| 验证方式 | 在含预置 sentinel 文件的临时 outDir 与应用 `dist` 并存时运行该 spec；断言 sentinel 未变、临时目录被清理，并保留 artifact tamper/dual-node 断言。 |
+| 回滚方式 | 回退独立测试隔离提交；不触及已发布客户端制品。 |
+| 是否需要独立复核 | 否。 |
