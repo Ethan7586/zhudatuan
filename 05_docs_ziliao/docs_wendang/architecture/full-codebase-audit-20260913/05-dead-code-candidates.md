@@ -1887,3 +1887,15 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 收敛前确认Performance Owner入口、artifact provenance和是否已有替代基准。 |
 
 - Console performance benchmark归 DC-0091。累计 G0 62、G1 101、G2 5、G3 0、GX 46；未删除任何文件。
+
+## DC-0092｜Console release build 的高风险制品职责
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除，需专项设计 |
+| 对象 | `04_tools/scripts/release/build-console.mjs`。 |
+| 风险/保留证据 | 构建Console、复制外部制品并启动浏览器验证；以clean worktree、commit、不可变摘要与输出目录隔离形成发布前证据链。 |
+| 可否删除 | 否；任何替换需独立验证制品来源、失败清理、回滚与发布控制面对齐。 |
+| 二次复核 | 是；由Release Owner确认最新控制面和制品封板流程。 |
+
+- Console release build归 DC-0092。累计 G0 62、G1 101、G2 5、G3 0、GX 47；未删除任何文件。
