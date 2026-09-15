@@ -2,10 +2,10 @@
 
 - 基线：`5a1ce71eebbefaa826368a9e1dc17730f9363bc4`
 - 建立日期：2026-09-15
-- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011 至 RV-0018、RV-0024 至 RV-0077 已完成；另有 6 条早期 P1 尚待纳入复核队列，及两个无对象标识的历史计数差额待追溯。**
+- 状态：**已定位 P1 与 GX 均已完成对象级独立复核；早期 P1 的 AU-046/050/077/082/134/163 已补入索引。另有两个无对象标识的历史 GX 计数差额待追溯。**
 - 规则：每项复核从当前固定审计基线的运行入口/调用链重新取证；不得只复述首审报告。任何分歧保守保留，不降低风险等级。
 
-## 高优先级复核队列（23 已定位 + 6 待补录）
+## 高优先级复核队列（29）
 
 | 首审问题 | RV | 模块 | 第二轮最小入口 |
 | --- | --- | --- | --- |
@@ -32,6 +32,12 @@
 | F-0119 | RV-0077（已完成，降为 P2） | Directcharge 履约 capability | enabled installation → submit/track → capability gate |
 | F-0122 | RV-0077（已完成，降为 P2） | Jdfresh 库存与 tracking capability | enabled installation → Inventory/Logistics → capability gate |
 | F-0127 | RV-0077（已完成，降为 P2） | Private tracking capability | enabled installation → Logistics/tracking → capability gate |
+| F-0138 | AU-046（已完成，确认 P1） | 资格策略条件版本 | operation expectedVersion → policy update → active version/checkout |
+| F-0143 | AU-050（已完成，确认 P1） | 通知 dispatch 领取恢复 | claim → KMS/template failure → job retry/dispatch state |
+| F-0158 | AU-077（已完成，确认 P1） | 发票签发 worker 写边界 | shopjob → invoice lifecycle RPC → grants/worker retry |
+| F-0159 | AU-082（已完成，确认 P1） | Pricing Rule 金额演算 | rule create/publish → QuoteReader → quote amount/evidence |
+| F-0173 | AU-134（已完成，确认 P1） | Catalog 媒体 URL 边界 | provider image paths → job → fetch/body/redirect boundary |
+| F-0186 | AU-163（已完成，确认 P1） | Support 附件元数据授权 | message read → authorized ticket → attachment predicate |
 
 ## GX（50 个已枚举）
 
