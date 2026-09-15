@@ -1337,7 +1337,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 直接证据 | 对 17 个 cart/checkout/order/benefit/voucher/invoice/support/payment/catalog/pricing/inventory operation 设置 `audience='member'`，并断言精确数量与运行契约 checksum。 |
 | 运行边界 | 后续 `access.resource_scope` 明确用 capability audience 决定成员个人 scope；所列操作均由生产模块注册。 |
 | 可否删除 | 否；承担前后端/鉴权/路由三处共用的成员与运营受众契约责任。 |
-| 二次复核 | 是；须逐操作验证身份、scope、permission、前端调用方、错误码与 operator 边界。 |
+| 二次复核 | RV-0046 已完成：维持 GX；静态复核确认 17 条受众由精确断言保护，后续 scope resolver 以 `audience='member'` 选择个人范围。真实调用、权限、前端和恢复未验证。 |
 
 ## 465. AU-465 成员操作受众复核
 
