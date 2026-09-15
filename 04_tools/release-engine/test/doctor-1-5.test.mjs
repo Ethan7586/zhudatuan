@@ -126,9 +126,10 @@ test('Doctor emits one stable machine schema and preserves the production score 
 
 test('every readiness error uses the complete stable error contract', async () => {
   const result = await doctorCommand(adapter, options, deps({ environment: environment({ ZDT_RUNNER_READ_TOKEN: '' }) }));
-  const required = ['code', 'category', 'stage', 'retryable', 'attempts', 'requestId', 'affectedCapability', 'evidence',
-    'nextSafeAction', 'resumeAllowed', 'redactedDetails'];
+  const required = ['code', 'category', 'stage', 'failureClass', 'retryable', 'attempts', 'requestId', 'attemptId',
+    'affectedCapability', 'evidence', 'nextSafeAction', 'resumeAllowed', 'resumeFrom', 'redactedDetails'];
   for (const item of result.errors) assert.deepEqual(Object.keys(item), required);
+  for (const item of result.errors) assert.ok(item.requestId && item.attemptId && item.failureClass);
 });
 
 test('closure Resume requires both failed-run evidence and base-to-source ancestry', async () => {

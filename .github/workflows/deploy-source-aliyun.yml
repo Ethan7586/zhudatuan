@@ -1,5 +1,5 @@
-name: Deploy Sealed Source 1.4.3 - Reusable
-run-name: Deploy sealed source 1.4.3 ${{ inputs.head_sha }}
+name: Deploy Sealed Source 1.5 - Reusable
+run-name: Deploy sealed source 1.5 ${{ inputs.head_sha }}
 
 # This explicit deployment consumes the successful post-merge closure manifest. It never
 # prepares artifacts, builds code, edits configuration, or discovers a new deployment scope.
@@ -130,6 +130,7 @@ jobs:
       seal_artifact_digest: ${{ matrix.artifact_digest }}
       seal_key: ${{ matrix.seal_key }}
       seal_receipt_object: ${{ matrix.final_seal_receipt_object }}
+      seal_digest: ${{ matrix.final_seal_digest }}
     secrets:
       ZDT_RUNNER_READ_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
       ZDT_RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
@@ -159,6 +160,7 @@ jobs:
       seal_artifact_digest: ${{ matrix.artifact_digest }}
       seal_key: ${{ matrix.seal_key }}
       seal_receipt_object: ${{ matrix.final_seal_receipt_object }}
+      seal_digest: ${{ matrix.final_seal_digest }}
     secrets:
       ZDT_RUNNER_READ_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
       ZDT_RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
@@ -188,6 +190,7 @@ jobs:
       seal_artifact_digest: ${{ matrix.artifact_digest }}
       seal_key: ${{ matrix.seal_key }}
       seal_receipt_object: ${{ matrix.final_seal_receipt_object }}
+      seal_digest: ${{ matrix.final_seal_digest }}
     secrets:
       ZDT_RUNNER_READ_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
       ZDT_RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}

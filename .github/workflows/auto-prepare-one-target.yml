@@ -1,4 +1,4 @@
-name: Prepare and Seal One Target 1.4.3 - Reusable
+name: Prepare and Seal One Target 1.5 - Reusable
 
 on:
   workflow_call:
@@ -38,7 +38,55 @@ permissions:
   contents: read
 
 jobs:
+  inspect:
+    name: Reconcile exact 1.5 component checkpoint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      action: ${{ steps.resume.outputs.action }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.22.0
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Resolve exact Seal or resumable checkpoint
+        id: resume
+        env:
+          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+          ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+          SEAL_NODES_JSON: ${{ inputs.seal_nodes_json }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .component-resume
+          index=0
+          while read -r release_node; do
+            npm run --silent release -- inspect-closure-component \
+              --source-sha "${{ inputs.head_sha }}" \
+              --control-sha "$GITHUB_SHA" \
+              --target "${{ inputs.release_target }}" \
+              --node "$release_node" \
+              --format json > ".component-resume/${index}.json"
+            index=$((index + 1))
+          done < <(node -e "for(const n of JSON.parse(process.env.SEAL_NODES_JSON))console.log(n)")
+          node <<'NODE'
+          const fs = require('node:fs');
+          const actions = fs.readdirSync('.component-resume').map((name) => require(`./.component-resume/${name}`).result.action);
+          const action = actions.includes('PREPARE') ? 'PREPARE' : actions.includes('RESUME_FINAL_SEAL_WRITE') ? 'RESUME_FINAL_SEAL_WRITE' : 'NOOP_ALREADY_SEALED';
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `action=${action}\n`);
+          NODE
+
   prepare:
+    needs: inspect
+    if: needs.inspect.outputs.action == 'PREPARE'
     uses: ./.github/workflows/prepare-artifact-aliyun.yml
     with:
       build_runner: auto
@@ -56,7 +104,8 @@ jobs:
       ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
 
   seal:
-    needs: prepare
+    needs: [inspect, prepare]
+    if: ${{ always() && needs.inspect.result == 'success' && needs.inspect.outputs.action != 'NOOP_ALREADY_SEALED' && (needs.prepare.result == 'success' || needs.prepare.result == 'skipped') }}
     strategy:
       fail-fast: false
       matrix:

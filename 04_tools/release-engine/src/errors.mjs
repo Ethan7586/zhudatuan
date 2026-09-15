@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 export class DeliveryError extends Error {
   constructor(code, message, details = {}) {
     super(message);
@@ -35,19 +37,28 @@ export function deliveryErrorContract(error, context = {}) {
   const nextSafeAction = context.nextSafeAction ?? (value.code === 'OSS_LIST_FAILED' && securityDenial
     ? 'repair-minimal-ram-policy-and-rerun-doctor'
     : transient ? 'retry-same-readiness-check' : 'stop-and-review-readiness-evidence');
+  const exactResource = value.details?.exactResource ?? value.details?.finalSealReceiptObject ?? null;
+  const requestId = context.requestId ?? value.details?.requestId ?? stableFailureRequestId(value.code, exactResource);
   return Object.freeze({
     code: value.code,
     category,
     stage: context.stage ?? value.details?.stage ?? 'unknown',
-    retryable: context.retryable ?? (transient && status !== 401 && status !== 403),
+    failureClass: context.failureClass ?? value.details?.failureClass ?? value.code,
+    retryable: context.retryable ?? value.details?.retryable ?? (transient && status !== 401 && status !== 403),
     attempts: Number(context.attempts ?? value.details?.attempts ?? 1),
-    requestId: context.requestId ?? null,
+    requestId,
+    attemptId: String(context.attemptId ?? value.details?.attemptId ?? process.env.GITHUB_RUN_ATTEMPT ?? '1'),
     affectedCapability: context.affectedCapability ?? 'unknown',
     evidence: context.evidence ?? evidenceSummary(value.code, status, diagnosis),
-    nextSafeAction,
-    resumeAllowed: context.resumeAllowed ?? false,
-    redactedDetails: redactDeliveryDetails({ status: status || undefined, diagnosis, ...context.details }, context.secretValues),
+    nextSafeAction: value.details?.nextSafeAction ?? nextSafeAction,
+    resumeAllowed: context.resumeAllowed ?? value.details?.resumeAllowed ?? false,
+    resumeFrom: context.resumeFrom ?? value.details?.resumeFrom ?? null,
+    redactedDetails: redactDeliveryDetails({ status: status || undefined, diagnosis, exactResource, ...context.details }, context.secretValues),
   });
+}
+
+function stableFailureRequestId(code, exactResource) {
+  return `failure-${createHash('sha256').update(`${code}\0${exactResource ?? 'unknown'}`).digest('hex').slice(0, 16)}`;
 }
 
 export function redactDeliveryDetails(value, secretValues = []) {

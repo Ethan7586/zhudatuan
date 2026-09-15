@@ -29,6 +29,7 @@ import {
 } from './src/engine.mjs';
 import { layerCommand } from './src/layer.mjs';
 import { verifyReproducibilityCommand } from './src/reproducibility.mjs';
+import { inspectClosureComponentCommand } from './src/production-orchestrator.mjs';
 import { classifyDeliveryFailure } from './src/retry.mjs';
 
 const DEFAULT_ADAPTER = '02_platform_pingtai/infrastructure/release/zdt-next.release.json';
@@ -63,6 +64,7 @@ const commands = Object.freeze({
   channel: channelCommand,
   'accept-e06': e06SovereignCommand,
   doctor: doctorCommand,
+  'inspect-closure-component': inspectClosureComponentCommand,
 });
 
 let activeCommand = null;
@@ -89,8 +91,10 @@ try {
   const error = asDeliveryError(unknown);
   const classification = classifyDeliveryFailure(error, commandStage(activeCommand));
   process.stderr.write(`${JSON.stringify({ ok: false, error: deliveryErrorContract(error, {
-    stage: classification.stage, retryable: classification.retryable,
+    stage: classification.stage, retryable: error.details?.retryable ?? classification.retryable,
     attempts: Number(error.details?.attempts ?? 1), nextSafeAction: error.details?.nextSafeAction ?? classification.nextSafeAction,
+    requestId: error.details?.requestId, attemptId: error.details?.attemptId,
+    failureClass: error.details?.failureClass, resumeAllowed: error.details?.resumeAllowed, resumeFrom: error.details?.resumeFrom,
     affectedCapability: activeCommand ?? 'argument-parsing', secretValues: Object.values(process.env),
   }) }, null, 2)}\n`);
   process.exitCode = 1;

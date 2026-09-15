@@ -35,6 +35,7 @@ test('sealed-source deployment is explicit, consumes one closure manifest and ne
       workflow.jobs[jobName].with.seal_receipt_object,
       '${{ matrix.final_seal_receipt_object }}',
     );
+    assert.equal(workflow.jobs[jobName].with.seal_digest, '${{ matrix.final_seal_digest }}');
   }
 });
 
@@ -54,7 +55,7 @@ test('deployment waves stop forward progress after a failed earlier wave', () =>
 });
 
 test('automatic closure preserves its exact machine-readable deployment scope', () => {
-  assert.equal(auto.on.workflow_dispatch.inputs.base_sha.required, false);
+  assert.equal(auto.on.workflow_dispatch.inputs.base_sha.required, true);
   const planUpload = auto.jobs.plan.steps.find((step) => step.uses === 'actions/upload-artifact@v6');
   assert.equal(planUpload.with.name, 'automatic-artifact-plan-${{ steps.matrix.outputs.source_sha }}');
   assert.equal(planUpload.with.path, '.automatic-artifact-closure/closure.json');

@@ -102,6 +102,42 @@ export function verifyProductionClosureManifest(value, expectedSourceSha = null)
   return Object.freeze({ ...value, deploymentEntries: Object.freeze(entries) });
 }
 
+export async function inspectClosureComponentCommand(adapter, options, dependencies = {}) {
+  const sourceSha = exact(options.sourceSha, SHA, 'CLOSURE_SOURCE_SHA_INVALID');
+  const controlPlaneSha = exact(options.controlSha, SHA, 'CLOSURE_CONTROL_SHA_INVALID');
+  const target = exact(options.target, NAME, 'CLOSURE_TARGET_INVALID');
+  const physicalNode = exact(options.node ?? options.nodes?.[0], NAME, 'CLOSURE_NODE_INVALID');
+  const requestId = `closure-${digest({ sourceSha, controlPlaneSha, target, physicalNode }).slice(7, 23)}`;
+  try {
+    const prepared = await (dependencies.resolvePrepared ?? resolvePreparedArtifact)(adapter,
+      { sourceSha, target, node: physicalNode, allowLegacy: false }, dependencies);
+    const artifactDigest = prepared.manifest.artifact.sha256;
+    const seal = await (dependencies.requireSeal ?? requireFinalSealReceipt)(adapter, {
+      sourceSha, controlPlaneSha, target, node: physicalNode, artifactDigest, requestId,
+      attemptId: process.env.GITHUB_RUN_ATTEMPT ?? '1',
+    }, dependencies);
+    return componentCheckpoint({ requestId, sourceSha, controlPlaneSha, target, physicalNode,
+      state: 'SEALED', action: 'NOOP_ALREADY_SEALED', failureClass: null, retryable: false,
+      resumeAllowed: false, resumeFrom: null, nextSafeAction: 'reuse-exact-final-seal', exactResource: seal.object });
+  } catch (error) {
+    if (error?.code === 'FINAL_SEAL_RECEIPT_MISSING') return componentCheckpoint({
+      requestId: error.details?.requestId ?? requestId, sourceSha, controlPlaneSha, target, physicalNode,
+      state: error.details?.status ?? 'VALIDATED', action: 'RESUME_FINAL_SEAL_WRITE',
+      failureClass: error.details?.failureClass ?? error.code, retryable: error.details?.retryable ?? true,
+      resumeAllowed: error.details?.resumeAllowed ?? true, resumeFrom: error.details?.resumeFrom ?? 'RESUME_FROM_FINAL_SEAL_WRITE',
+      nextSafeAction: error.details?.nextSafeAction ?? 'write-final-seal-once-then-exact-readback',
+      exactResource: error.details?.exactResource ?? error.details?.finalSealReceiptObject });
+    if (error?.code === 'OSS_ARTIFACT_NOT_FOUND') return componentCheckpoint({ requestId, sourceSha, controlPlaneSha,
+      target, physicalNode, state: 'ABSENT', action: 'PREPARE', failureClass: null, retryable: true,
+      resumeAllowed: true, resumeFrom: 'UPLOAD', nextSafeAction: 'prepare-with-canonical-build-path', exactResource: null });
+    throw error;
+  }
+}
+
+function componentCheckpoint(value) {
+  return Object.freeze({ schema: 'ai.delivery.component-resume.v1', attemptId: process.env.GITHUB_RUN_ATTEMPT ?? '1', ...value });
+}
+
 function componentId(entry) { return `${entry.wave}:${entry.target}:${entry.node}`; }
 
 export async function createProductionReleaseRequest(spec, dependencies = {}) {

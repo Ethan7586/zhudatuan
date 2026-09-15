@@ -121,16 +121,16 @@ test('only one normal workflow is user-dispatchable and reusable children have n
   }
 });
 
-test('every active user-visible workflow name identifies Delivery Control 1.4.3', async () => {
+test('every active user-visible workflow name identifies Delivery Control 1.5', async () => {
   for (const file of ['delivery-1-4-3.yml', 'prepare-artifact-aliyun.yml', 'deploy-prepared-aliyun.yml',
     'deploy-source-aliyun.yml', 'auto-prepare-one-target.yml', 'auto-prepare-artifacts.yml']) {
     const firstLines = (await readFile(join(root, '.github/workflows', file), 'utf8')).split('\n').slice(0, 2).join('\n');
-    assert.match(firstLines, /1\.4\.3/, file);
-    assert.doesNotMatch(firstLines, /1\.4(?!\.3)/, file);
+    assert.match(firstLines, /1\.5/, file);
+    assert.doesNotMatch(firstLines, /1\.4\.3/, file);
   }
 });
 
-test('system entry maps all writes to one 1.4.3 dispatcher and recovery remains isolated', async () => {
+test('system entry maps all writes to one 1.5 dispatcher and recovery remains isolated', async () => {
   const [dispatcher, internal, directRecovery, ossRecovery] = await Promise.all([
     readFile(join(root, '02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery'), 'utf8'),
     readFile(join(root, 'scripts/delivery-dispatch.sh'), 'utf8'),

@@ -51,8 +51,9 @@ test('parses only conflicted paths from git merge-tree output', () => {
 
 test('matches only the exact physical placement in an automatic closure', () => {
   const closure = {
-    schemaVersion: 'zdt-automatic-artifact-closure/v1',
+    schemaVersion: 'zdt-automatic-artifact-closure/v2',
     sourceSha: 'a'.repeat(40),
+    bundleGate: { allowDeploy: true },
     waves: { migrations: [], runtimes: [{ target: 'support-api', node: 'zhudatuan-l0' }], frontends: [] },
   };
   assert.equal(automaticClosureIncludes(closure, { sourceSha: 'a'.repeat(40), target: 'support-api', node: 'zhudatuan-l0' }), true);

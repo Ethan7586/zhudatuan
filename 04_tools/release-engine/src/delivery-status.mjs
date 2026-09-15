@@ -146,7 +146,8 @@ export function parseMergeTreeConflictFiles(output) {
 }
 
 export function automaticClosureIncludes(closure, { sourceSha, target, node }) {
-  if (closure?.schemaVersion !== 'zdt-automatic-artifact-closure/v1' || closure.sourceSha !== sourceSha) return false;
+  if (closure?.schemaVersion !== 'zdt-automatic-artifact-closure/v2' || closure.sourceSha !== sourceSha
+    || closure.bundleGate?.allowDeploy !== true) return false;
   return ['migrations', 'runtimes', 'frontends']
     .flatMap((wave) => Array.isArray(closure.waves?.[wave]) ? closure.waves[wave] : [])
     .some((entry) => entry?.target === target && entry?.node === node);

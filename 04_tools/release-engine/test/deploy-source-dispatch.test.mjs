@@ -8,7 +8,7 @@ import test from 'node:test';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../../..');
 
-test('one sealed-source command uses the sole 1.4.3 orchestration and never prepares directly', async () => {
+test('one sealed-source command uses the sole 1.5 orchestration and never prepares directly', async () => {
   const [dispatcher, workflow] = await Promise.all([
     readFile(join(root, 'scripts/delivery-dispatch.sh'), 'utf8'),
     readFile(join(root, '.github/workflows/delivery-1-4-3.yml'), 'utf8'),
@@ -35,7 +35,7 @@ test('the unified dispatcher waits for delayed run visibility without redispatch
   await writeFile(join(bin, 'gh'), `#!${process.execPath}
 const fs=require('node:fs');const a=process.argv.slice(2);fs.appendFileSync(process.env.CALL_LOG,JSON.stringify(a)+'\\n');
 if(a[0]==='api')console.log('${sha}');
-if(a[0]==='workflow'&&a[1]==='view')console.log('name: Delivery Control 1.4.3');
+if(a[0]==='workflow'&&a[1]==='view')console.log('name: Delivery Control 1.5');
 if(a[0]==='run'&&a[1]==='list'){if(a[a.indexOf('--limit')+1]==='1')console.log('100');else{let n=fs.existsSync(process.env.OBSERVATIONS)?Number(fs.readFileSync(process.env.OBSERVATIONS)):0;n++;fs.writeFileSync(process.env.OBSERVATIONS,String(n));if(n>=3)console.log('101')}}
 `, { mode: 0o755 });
   const source = (await readFile(join(root, 'scripts/delivery-dispatch.sh'), 'utf8')).replace(/^export PATH=.*$/m, '');

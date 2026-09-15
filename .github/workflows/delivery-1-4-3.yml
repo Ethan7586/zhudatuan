@@ -1,5 +1,5 @@
-name: Delivery Control 1.4.3
-run-name: Delivery 1.4.3 ${{ inputs.operation }} ${{ inputs.head_sha }} ${{ inputs.release_target }} ${{ inputs.physical_node }}
+name: Delivery Control 1.5
+run-name: Delivery 1.5 ${{ inputs.operation }} ${{ inputs.head_sha }} ${{ inputs.release_target }} ${{ inputs.physical_node }}
 
 # The only user-dispatchable normal delivery workflow. The system-level zdt-delivery
 # command is the supported user entry; reusable jobs below are implementation details.
@@ -29,12 +29,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: zdt-next-delivery-1-4-3-${{ inputs.operation }}-${{ inputs.head_sha }}-${{ inputs.physical_node }}-${{ inputs.release_target }}
+  group: zdt-next-delivery-1-5-${{ inputs.operation }}-${{ inputs.head_sha }}-${{ inputs.physical_node }}-${{ inputs.release_target }}
   cancel-in-progress: false
 
 jobs:
   validate:
-    name: Validate one 1.4.3 request
+    name: Validate one 1.5 request
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
@@ -59,7 +59,7 @@ jobs:
           esac
 
   prepare:
-    name: Prepare and Seal through 1.4.3
+    name: Prepare and Seal through 1.5
     needs: validate
     if: inputs.operation == 'prepare'
     uses: ./.github/workflows/auto-prepare-one-target.yml
@@ -79,7 +79,7 @@ jobs:
       ALIYUN_OSS_INTERNAL_ENDPOINT: ${{ secrets.ALIYUN_OSS_INTERNAL_ENDPOINT }}
 
   deploy:
-    name: Deploy one sealed target through 1.4.3
+    name: Deploy one sealed target through 1.5
     needs: validate
     if: inputs.operation == 'deploy'
     uses: ./.github/workflows/deploy-prepared-aliyun.yml
@@ -101,7 +101,7 @@ jobs:
       ALIYUN_OSS_INTERNAL_ENDPOINT: ${{ secrets.ALIYUN_OSS_INTERNAL_ENDPOINT }}
 
   deploy-source:
-    name: Deploy sealed source through 1.4.3
+    name: Deploy sealed source through 1.5
     needs: validate
     if: inputs.operation == 'deploy-source'
     uses: ./.github/workflows/deploy-source-aliyun.yml
