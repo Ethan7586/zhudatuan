@@ -33,6 +33,14 @@ test('automatic closure runs after zdt-next pushes or an exact historical replay
   assert.doesNotMatch(source, /operation[^}]*deploy|zdt-delivery deploy|deploy-sealed-candidate/);
 });
 
+test('zero-target closure finalization does not require npm cache metadata on the release runner', async () => {
+  const automatic = await readWorkflow('auto-prepare-artifacts.yml');
+  const setupNode = automatic.jobs.finalize.steps.find((step) => step.uses === 'actions/setup-node@v6');
+
+  assert.ok(setupNode);
+  assert.equal(setupNode.with.cache, undefined);
+});
+
 test('one 1.4.3 workflow dispatches manual Prepare and Deploy through reusable children', async () => {
   const entry = await readWorkflow('delivery-1-4-3.yml');
   const prepare = await readWorkflow('prepare-artifact-aliyun.yml');
