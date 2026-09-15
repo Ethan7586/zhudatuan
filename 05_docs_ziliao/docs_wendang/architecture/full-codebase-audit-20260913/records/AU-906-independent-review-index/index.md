@@ -2,7 +2,7 @@
 
 - 基线：`5a1ce71eebbefaa826368a9e1dc17730f9363bc4`
 - 建立日期：2026-09-15
-- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0016、RV-0018、RV-0024 至 RV-0063 已完成；未定位高风险差额的第二轮结论尚未开始。**
+- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0018、RV-0024 至 RV-0064 已完成；其余未编号高风险对象待复核。**
 - 规则：每项复核从当前固定审计基线的运行入口/调用链重新取证；不得只复述首审报告。任何分歧保守保留，不降低风险等级。
 
 ## P1 候选（17）
@@ -69,6 +69,7 @@
 | GX-0039 | Platform Owner Cockpit catalog/inventory read（RV-0061 已完成，维持 GX） | permission grant → read handlers → scope boundary |
 | GX-0040 | Reporting Cockpit 跨域汇总（RV-0062 已完成，维持 GX） | Dashboard → repository → cockpit overload/RLS |
 | GX-0041 | 历史测试登录材料（RV-0063 已完成，维持 GX） | 文档 → current domain/account governance/rotation evidence；禁止尝试登录 |
+| GX-0042 | Cakeuncle 专用 Webhook/签名（RV-0064 已完成，维持 GX） | verifier → barrel → provider registration → protocol/recovery |
 
 ## 未编号高风险台账差额（12 个对象 + 2 个计数未知项）
 

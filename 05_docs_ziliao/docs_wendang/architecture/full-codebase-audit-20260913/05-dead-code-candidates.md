@@ -2327,6 +2327,19 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - 历史测试验收单登录材料归 GX-0041。累计 G0 62、G1 129、G2 5、G3 0、GX 52；未删除任何文件。
 
+## GX-0042｜Cakeuncle 专用 Webhook/签名协议边界
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除、导出或接线，需专项设计 |
+| 对象 | `01_core_hexin/extensions/vendors/cakeuncle/Webhook.ts`（原 DC-0028） |
+| 保留证据 | 专用 verifier 校验 body 内 channel/timestamp/sign、时钟窗口与大小；payload hash 排除认证字段，且 public barrel 刻意不导出。 |
+| 运行结论 | 当前 Foodvoucher 使用通用 Webhook；若直接接线专用 verifier，会改变供应商签名语义与回调事件约束。 |
+| 可否删除 | 禁止 |
+| 二次复核 | RV0064 已完成：重查签名、barrel 与 provider 注册；GX 维持。 |
+
+- Cakeuncle Webhook 归 GX-0042；未改变历史累计，待 AU-962 的未编号项整体收口。
+
 ## DC-0125｜296 条需求修改点人工展开索引
 
 | 字段 | 记录 |
