@@ -1187,7 +1187,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 直接证据 | 迁移从 `support.case` 建立 conversation 并改名 ticket，回填 message/history/assignment/evidence/escalation 的 scope 与会话关系，随后删除旧 case 外键及 ticket 中已迁出的字段。 |
 | 运行边界 | Support API 通过 conversation/ticket 处理建单、消息、附件、分配和关闭；`supportsla`/`supportscan` Worker 处理升级和附件扫描；消息/历史有 append-only 触发器和 scope RLS。 |
 | 可否删除 | 否；承担客户数据、工单历史、授权范围、SLA、审计和恢复责任。 |
-| 二次复核 | 是；必须独立核验每条旧 case 的 conversation/ticket/message/history/evidence 映射、RLS、附件访问、SLA 重排、备份恢复和部署 ledger。 |
+| 二次复核 | RV-0036 已完成：维持 GX；静态复核确认迁移重写资源 scope 解析，当前命令、证据扫描与 SLA 作业仍依赖 ticket/conversation 边界。生产映射、RLS、附件、SLA、任务恢复和部署 ledger 未验证。 |
 
 ## 455. AU-455 客服生命周期复核
 
