@@ -1806,3 +1806,17 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 是；任何运行或退役前必须在只读 production snapshot 核验四个 account、realm/mobile token、credential collision、profile/session 映射、最近登录/业务影响和备份/恢复方案，并由 Identity Owner 独立批准。 |
 
 - Identity mobile consistency repair 归 DC-0085。累计 G0 62、G1 96、G2 5、G3 0、GX 44；未删除任何文件。
+
+## DC-0086｜AutoNode 候选节点隔离证据生成器的自动入口缺口
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `04_tools/scripts/check/autonode-candidate.mjs`。 |
+| 疑似原因 | 固定基线未发现根 package script、GitHub workflow、release manifest 或其它生产入口对该 CLI 的静态调用；脚本注释要求人工提供 candidate output root 或 Console artifact。 |
+| 保留证据 | 它调用 candidate-only `FileNodeProvisioningEngine`，验证三个不同 node/realm/data-scope/manifest、唯一端口、同一 immutable artifact、五次并发幂等和单节点 rollback 隔离；治理台账明确将其归入人工隔离预览、无根自动入口，不能从无自动入口推断无业务/恢复责任。 |
+| 未排除项 | 仓外候选验收、人工发布负责人流程、历史/未来 node provisioning 演练，以及其作为 `autonode-engine` 高层隔离规格的唯一性。 |
+| 可否删除 | 否；未满足公共/运维契约、替代、可观察行为和第二次复核条件。 |
+| 二次复核 | G1不强制；拟收敛前必须确认当前 Node Delivery Owner 的候选验收入口、artifact provenance 要求、受控临时目录策略与最近隔离演练回执。 |
+
+- AutoNode candidate evidence generator 归 DC-0086。累计 G0 62、G1 97、G2 5、G3 0、GX 44；未删除任何文件。
