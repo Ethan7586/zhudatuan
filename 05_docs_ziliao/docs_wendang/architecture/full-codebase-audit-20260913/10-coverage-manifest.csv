@@ -4193,7 +4193,7 @@
 "05_docs_ziliao/docs_wendang/strategy/zhudatuan-主打团-战略全景图.canvas","文档/strategy","Canvas 战略图","已结构性审阅","2026-09-15","AU-859；节点、边、文本差异与入口核验","strategy 图组；人工战略阅读","中/G1","[FACT] 59 节点基础 Canvas；与主载体同主题，非运行入口，归 DC-0113","是（治理/产品/架构 Owner）"
 "05_docs_ziliao/docs_wendang/strategy/zhudatuan-主打团-战略全景图.md","文档/strategy","文档","已深入审阅","2026-09-15","AU-859；全文、现行标准引用、运行入口反查","architecture 标准引用；人工战略阅读","中/G1","[FACT] 战略说明载体；L 段语义与现行标准同向，权威措辞问题已由 F-0327 覆盖；归 DC-0113","是（治理/产品/架构 Owner）"
 "05_docs_ziliao/docs_wendang/strategy/zhudatuan-主打团-战略全景图.svg","文档/strategy","静态资源/矢量战略图","已结构性审阅","2026-09-15","AU-859；结构与 PNG/Markdown 对应抽样","strategy 图组；人工战略阅读","低/G1","[FACT] 与 2840×5343 PNG 预览和 Markdown 对应的矢量图件；非运行入口，归 DC-0113","是（治理/产品/架构 Owner）"
-"05_docs_ziliao/docs_wendang/testdata/InternalMallDataset.md","文档/testdata","文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","人工/审计流程；运行引用待检索","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
+"05_docs_ziliao/docs_wendang/testdata/InternalMallDataset.md","文档/testdata","操作/数据集文档","已深入审阅","2026-09-15","AU-860；全文命令、数据隔离、写入入口与 AU-720 交叉核验","local:dataset:*；dataset:import:test；人工数据集操作","P2/F-0293","[FACT] 保留真实 seed/import/verify/cleanup 操作契约，G0；import target guard 与文档安全声明漂移由 F-0293 覆盖","是（F-0293 数据安全）"
 "05_docs_ziliao/docs_wendang/voucher/Architecture.md","文档/voucher","文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","人工/审计流程；运行引用待检索","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "05_docs_ziliao/docs_wendang/voucher/Delivery.md","文档/voucher","文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","人工/审计流程；运行引用待检索","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "05_docs_ziliao/docs_wendang/voucher/Domain.md","文档/voucher","文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","人工/审计流程；运行引用待检索","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
