@@ -7,8 +7,8 @@ import { WebBusinessScopeResolver } from './WebBusinessScopeResolver';
 const actor: Actor = {
   id: 'principal:member',
   realm: 'realm:test',
-  membershipClient: 'operator',
-  governanceOrganization: 'organization:test',
+  membershipClient: 'storefront',
+  governanceOrganization: 'mall:one',
   session: 'session:member',
   membership: 'membership:member',
   credentialVersion: 1,
@@ -33,8 +33,13 @@ describe('WebBusinessScopeResolver', () => {
       await expect(resolver.resolve(actor, operation, 'untrusted-address-id')).resolves.toEqual(owner);
     }
     expect(queries).toHaveLength(6);
-    expect(queries.every(({ sql, values }) => sql === 'select access.web_member_scope($1,$2) scope'
-      && values?.[0] === actor.membership && values[1] === actor.session)).toBe(true);
+    expect(queries.every(({ sql, values }) => sql === 'select scope from access.resolve_session_scope($1,$2,$3,$4,$5,$6,$7)'
+      && values?.[0] === actor.membership && values[1] === actor.realm
+      && values[2] === actor.membershipClient && values[3] === actor.governanceOrganization)).toBe(true);
+    expect(queries.map(({ values }) => values?.[4])).toEqual([
+      'member.profile.read', 'member.addresses.read', 'member.addresses.manage',
+      'cart.current.read', 'cart.items.put', 'cart.items.batch',
+    ]);
   });
 
   it('resolves storefront browsing operations to the session-bound mall', async () => {
@@ -49,8 +54,31 @@ describe('WebBusinessScopeResolver', () => {
       await expect(resolver.resolve(actor, operation)).resolves.toEqual(mall);
     }
     expect(queries).toHaveLength(3);
-    expect(queries.every(({ sql, values }) => sql === 'select access.web_storefront_scope($1,$2) scope'
-      && values?.[0] === actor.membership && values[1] === actor.session)).toBe(true);
+    expect(queries.every(({ sql, values }) => sql === 'select scope from access.resolve_session_scope($1,$2,$3,$4,$5,$6,$7)'
+      && values?.[0] === actor.membership && values[1] === actor.realm
+      && values[2] === actor.membershipClient && values[3] === actor.governanceOrganization)).toBe(true);
+    expect(queries.map(({ values }) => values?.[4])).toEqual([
+      'catalog.listings.read', 'pricing.offers.read', 'inventory.availability.read',
+    ]);
+  });
+
+  it('validates an owner operation against the same realm-aware storefront mall', async () => {
+    const mall: Scope = { kind: 'mall', id: 'mall:one', path: [] };
+    const pool = { query: async (sql: string, values?: readonly unknown[]) => {
+      expect(sql).toBe('select scope from access.resolve_session_scope($1,$2,$3,$4,$5,$6,$7)');
+      expect(values).toEqual([
+        actor.membership,
+        actor.realm,
+        actor.membershipClient,
+        actor.governanceOrganization,
+        'catalog.listings.read',
+        null,
+        null,
+      ]);
+      return result([{ scope: mall }]);
+    } } as unknown as DatabasePool;
+
+    await expect(new WebBusinessScopeResolver(pool).resolveStorefrontScope(actor)).resolves.toEqual(mall);
   });
 
   it('retains the requested console scope for shared member-audience business reads', async () => {
