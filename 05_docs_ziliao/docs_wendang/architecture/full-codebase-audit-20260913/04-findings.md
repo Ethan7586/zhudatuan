@@ -2529,7 +2529,7 @@
 | --- | --- |
 | 模块 | Vendor Core / Channel Connection |
 | 类型 | 信任边界、目的地绑定、凭据使用 |
-| 严重级别 | **P1 候选**；未完成RV-0014前不作最终P1 |
+| 严重级别 | **P1**；RV-0014 已于 2026-09-15 从 connection create/update、signed install 与 runtime client 重新取证确认 |
 | 置信度 | 高：配置写入、安装校验、运行装载和请求发送链均已核对；线上值、出口策略和secret ACL未知 |
 | 文件和精确位置 | `01_core_hexin/extensions/vendors/core/src/Connection.ts:12-21`；`src/Client.ts:68-93`；`services/commerce/src/modules/channel/03_application_yingyong/command/CreateConnection.ts:14-70`；`services/commerce/src/modules/extension/03_application_yingyong/command/InstallExtension.ts:24-70`；`packages/authz/src/PermissionCatalog.ts:48` |
 | 当前行为 | [FACT][E-AU-022-004/005] connection只要求baseUrl可解析且协议为HTTPS；未与provider Manifest或批准主机绑定，也未排除userinfo、回环、私网和链路本地地址。持有`channel.connection.manage`的critical operator可同时选择secretRef和任意HTTPS目的地，health与业务请求会向其发送认证证明及业务正文 |
@@ -2544,7 +2544,9 @@
 | 预计修改范围 | Manifest/connection contract、安装与更新命令、Runtime loader、迁移兼容和网络反事实测试 |
 | 验证方式 | 批准origin、错误host、userinfo、loopback/private/link-local、重定向、IPv6和既有连接迁移矩阵；确认真实provider端点兼容 |
 | 回滚方式 | 保留旧连接配置与兼容读取，按provider灰度；回退单一治理提交 |
-| 是否需要独立复核 | 是，RV-0014 |
+| 是否需要独立复核 | 已完成 RV-0014；未来 endpoint policy 变更仍须独立变更后复核 |
+
+**RV-0014（二次独立复核，2026-09-15）：确认 P1。** create/update、InstallExtension 与 VendorConnection 都仅要求 HTTPS；已签 Manifest 不约束 origin，runtime client 会向该 URL 发送认证 headers、标识和业务正文。详见 `records/AU-917-rv-0014-vendor-endpoint-trust-boundary/summary.md`；未读取真实连接或凭据。
 
 为什么不是P0：没有证据显示线上连接已被恶意或错误绑定，也没有正在发生的严重事故；critical权限、secret ACL和出口网络仍是待核实缓解项。
 
