@@ -5554,3 +5554,25 @@
 | 验证方式 | 独立分支确认实际 `zdt-delivery` 与 staging runbook 的唯一入口、目标主机运行单元和现有 PM2 inventory；分别验证 legacy 专项路径与 Full systemd path 不可交叉启动。 |
 | 回滚方式 | 回退独立文档/control-plane 变更；保留当前 active release 与受控 legacy 配置，除非另获专门退役授权。 |
 | 是否需要独立复核 | 是；复核者需独立检查当前 staging 主机的 PM2/systemd/Caddy 状态、发布控制面和实际操作者 runbook。 |
+
+## F-0296｜Purchase 发布门禁仍锚定已移除的 `api.zhudatuan.com` Caddy block
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Purchase release gate / Caddy routing |
+| 类型 | 发布验证正确性、运行配置漂移 |
+| 严重级别 | **P2** |
+| 置信度 | 高（固定基线的 checker、Caddyfile 和定向执行失败为直接证据；实际在线 Caddy/购买流量未验证） |
+| 文件和精确位置 | `04_tools/scripts/check/purchase-deployment.mjs:43,355-359`；`02_platform_pingtai/infrastructure/zhudatuan/aliyun/Caddyfile:97-111`。 |
+| 当前/预期 | checker 用 `api.zhudatuan.com {` 到 `media.zhudatuan.com {` 截取 Caddy block，再断言 purchase routes 的 503 gate；当前 Caddy 已只有 `api.fufu.wang {`，因此 checker 在任何后续断言前抛 `CADDY_HOST_BOUNDARY_MISSING`。预期是 release gate 的 host boundary 与当前受控 Caddy 真值一致，或明确把该 gate 标为历史不可执行。 |
+| 直接证据 | [FACT][E-AU-746-001] checker 43 使用硬编码 `api.zhudatuan.com`/`media.zhudatuan.com` marker；[FACT][E-AU-746-002] current Caddy 97 开始 `api.fufu.wang`，112 才有 media block，未含旧 marker；[FACT][E-AU-746-003] 在固定基线执行 `node 04_tools/scripts/check/purchase-deployment.mjs`，实际退出并报 `CADDY_HOST_BOUNDARY_MISSING`。 |
+| 调用链或运行入口 | purchase release/pre-cutover verification → `purchase-deployment.mjs` → Caddy public-route/503 assertions；当前在 source parsing 阶段失败。 |
+| 用户影响 | 团队无法依赖该正式检查证明 public purchase API 在 cutover blocked 状态被精确 503 拦截；若有人忽略失败，域名/路由变化可绕过预期发布安全验证。 |
+| 数据影响 | 当前 release YAML 仍标记 public cutover blocked，未证明有直接数据写入；缺失 gate 会增加后续错误开放支付/订单入口的风险。 |
+| 安全影响 | 购买 API 的公开暴露、负向路由和 503 fail-closed 约束没有被可运行的自动检查覆盖。 |
+| 根因 | 域名/Caddy 拓扑已迁移至 fufu.wang，purchase checker 仍把旧 zhudatuan.com Caddy 文本当作唯一边界。 |
+| 建议方向 | 从最新 `zdt-next` 建立单一 purchase-release-gate alignment batch：先确认当前正式公开域名、purchase upstream 和 blocked route owner；再以 parser/明确 site identity 重写 checker，保留精确 POST/OPTIONS 503 与负向路由断言。不要在审计分支修改 Caddy、release YAML 或执行 reload。 |
+| 预计修改范围 | purchase check、受控 Caddy/release contract、必要的 fixture 与定向 tests；不改业务付款实现。 |
+| 验证方式 | 在隔离 release candidate 上运行修正后的 checker；验证当前 selected host 的每个 purchase path 对 POST/OPTIONS 的预期 503/allowed 行为、非 purchase 路径及 Caddy syntax，并保留 `publicCutover=blocked` 直到 E2E receipt 满足。 |
+| 回滚方式 | 回退独立 gate/Caddy contract commit；保持当前 public cutover blocked，不通过绕过 check 恢复发布。 |
+| 是否需要独立复核 | 是；复核者须独立确认生产与候选 Caddy site、DNS、purchase API port/route owner及当前 cutover receipt 状态。 |

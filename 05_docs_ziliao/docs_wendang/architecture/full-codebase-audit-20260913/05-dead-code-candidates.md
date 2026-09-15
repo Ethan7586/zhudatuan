@@ -1715,3 +1715,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | G1 不强制；拟变更前只读检查 hbbtzn 节点 active Caddy import、alias Worker header 发放、访问日志、release history 与恢复 runbook。 |
 
 - hbbtzn L1 Caddy 片段归 DC-0078。累计 G0 62、G1 92、G2 5、G3 0、GX 41；未删除任何文件。
+
+## DC-0079｜Storefront compatibility 旧 PM2/备份运行面
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除，需专项设计 |
+| 对象 | `02_platform_pingtai/infrastructure/storefront-compatibility/aliyun/` 的 legacy PM2 configs、backup env、`smart-wing-postgres-backup.service`/`.timer`、部署文档及关联 `deploy.sh`。 |
+| 不能按闲置处理的证据 | current `zhudatuan` delivery 把该目录列为 forbidden input，但 `purchase-deployment.mjs` 仍读取 legacy `deploy.sh`，以断言旧 Caddy reload 路径未重新进入新 release control-plane；timer/service 可由仓外 systemd 注册；文档保留异云 PostgreSQL恢复步骤。 |
+| 高风险原因 | 资产涉及 root systemd、数据库备份 DSN、OSS/RAM 凭据、Caddy reload、PM2 进程与历史 hbbtzn 域名；仅凭当前新控制面排除它不能证明不存在回滚、备份恢复或仓外主机消费者。 |
+| 可否删除 | 否；必须先在独立 legacy-runtime retirement design 中只读核验主机 PM2/systemd timer、OSS bucket/备份恢复链、release history、实际运营 runbook和现有 smart-wing consumers。 |
+| 二次复核 | 是；专项复核必须独立确认旧基础设施是否仍存在，以及移除后如何保留可恢复备份和已发布版本。 |
+
+- Storefront compatibility 旧运行面归 DC-0079。累计 G0 62、G1 92、G2 5、G3 0、GX 42；未删除任何文件。
