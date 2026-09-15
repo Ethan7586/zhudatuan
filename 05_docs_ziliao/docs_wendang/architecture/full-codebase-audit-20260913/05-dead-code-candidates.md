@@ -1504,7 +1504,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 运行结论 | 这是身份生命周期和敏感操作 step-up 的必要发布边界。 |
 | 数据/契约责任 | 约束高权限成员管理、会话失效和密码重新验证事实。 |
 | 可否删除 | 禁止 |
-| 二次复核 | 是：owner target、事务原子性、session revoke、assurance TTL/频率与日志。 |
+| 二次复核 | RV0057 已完成：Owner/高级管理员目标限制、行锁、事务幂等与审计、会话撤销、密码 assurance 的 session 绑定与 10 分钟 TTL 均已重新核对；GX 维持。 |
 
 - console member command/assurance 归 GX-0035。累计 G0 60、G1 83、G2 5、G3 0、GX 35；未删除任何文件。
 
