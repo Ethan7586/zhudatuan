@@ -4794,6 +4794,28 @@
 | 验证/回滚 | 在隔离构建中人为超过对应 app budget，确认 gate 失败；若已下线，确认 config schema/文档不再宣称保护。回滚为撤回单一 quality-policy change。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0300｜Schema 写入所有权门禁将业务目录名误作数据库 schema，固定基线 127 条失败不可判读
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Quality / schema ownership gate |
+| 类型 | 架构边界、测试/门禁可信度 |
+| 严重级别 | **P2** |
+| 置信度 | 高（规则与固定基线输出直接证据） |
+| 文件和精确位置 | `04_tools/scripts/check/ownership.mjs:8-25,30-31`；示例 `01_core_hexin/services/commerce/src/modules/payment_zhifu/03_application_yingyong/services_fuwu/PaymentSettlement.ts:54,56,59,81`。 |
+| 当前/预期 | checker 从模块路径得到 `payment_zhifu`，默认只准写同名 schema；实际本模块写 `payment.*` 即报错。预期是明确的模块→schema ownership 映射，或能够识别该模块的正式 schema owner，再以此报告真实跨域写入。 |
+| 直接证据 | [FACT][E-AU-781-001] `schemaOwners`仅登记 `finance/order` 的例外，其他模块使用目录名；[FACT][E-AU-781-002] 固定基线运行输出 `schema-write-ownership accepted=false violations=127`，并将 payment_zhifu 对 `payment` 的自有写入报告为违规。 |
+| 调用链或运行入口 | `npm run check:ownership` → `check/ownership.mjs` → 扫描 Commerce module production sources 的 SQL 写入文本。 |
+| 用户影响 | 当前失败不能作为跨模块写入风险的可靠信号，真实越界写入可被127条假阳性淹没；不会直接改变运行时行为。 |
+| 数据影响 | 检查器只读源码，不写数据库；其失效会降低未来对数据库所有权回归的发现能力。 |
+| 安全影响 | 无直接漏洞证据；不可信边界门禁会削弱对跨 tenant/schema 数据路径的预防性审查。 |
+| 根因 | 代码模块命名（含中文后缀）与 PostgreSQL schema 名不一一对应，规则只为两个英文模块手写特殊映射。 |
+| 建议方向 | 从修复时最新 `zdt-next`建立单一 schema-ownership-gate 批次：把完整 module→owned schema 关系放入可审计的显式清单；为自有写、允许的 audit/runtime 共享写和至少一个拒绝路径添加 fixture；保留逐项输出。 |
+| 预计修改范围 | ownership checker、一个 ownership manifest、定向测试；不改业务 SQL。 |
+| 验证方式 | 固定基线应对已确认自有写返回0；人为植入一个未授权 schema 写入必须失败；真实跨 schema 例外须有声明与审查来源。 |
+| 回滚方式 | 回退独立 checker/manifest/test 提交；在恢复可信门禁前不得将其“通过”当作 ownership 证明。 |
+| 是否需要独立复核 | 是（P2中的架构边界门禁）。 |
+
 ## F-0293｜Internal Mall 导入模式缺少目标数据库与本机边界
 
 | 字段 | 记录 |
