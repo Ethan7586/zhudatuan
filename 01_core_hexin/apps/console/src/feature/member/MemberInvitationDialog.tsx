@@ -5,7 +5,12 @@ import { useState, type FormEvent } from 'react';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { appConfig } from '../../shared/config/AppConfig';
 import { Icon } from '../../shared/ui/Icon';
-import { createMemberInvitation } from './MemberInvitationCommand';
+import {
+  activeMemberInvitation,
+  createMemberInvitation,
+  replaceMemberInvitation,
+  type ActiveMemberInvitation,
+} from './MemberInvitationCommand';
 import { MemberInvitationDraftSchema, type MemberInvitationDraft } from './MemberInvitationSchema';
 import './MemberInvitation.css';
 
@@ -20,10 +25,12 @@ export function MemberInvitationDialog({
   context,
   open,
   onClose,
+  onCreated,
 }: Readonly<{
   context: ConsoleContext;
   open: boolean;
   onClose: () => void;
+  onCreated?: () => void;
 }>) {
   const [governanceLevel, setGovernanceLevel] = useState<MemberInvitationDraft['governanceLevel']>('administrator');
   const [destination, setDestination] = useState('');
@@ -33,16 +40,39 @@ export function MemberInvitationDialog({
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string>();
   const [copyFeedback, setCopyFeedback] = useState<CopyFeedback>();
+  const [activeInvitation, setActiveInvitation] = useState<ActiveMemberInvitation>();
+  const [receipt, setReceipt] = useState<Awaited<ReturnType<typeof createMemberInvitation>>>();
+  const [submittedDraft, setSubmittedDraft] = useState<MemberInvitationDraft>();
   const mutation = useMutation({
     mutationFn: (draft: MemberInvitationDraft) => createMemberInvitation(context, draft),
+    onSuccess: (value) => {
+      setReceipt(value);
+      setActiveInvitation(undefined);
+      onCreated?.();
+    },
+    onError: (error) => {
+      const active = activeMemberInvitation(error);
+      setActiveInvitation(active);
+      const presentation = invitationErrorPresentation(error, context.scope.kind === 'platform');
+      setFieldErrors(presentation.fields);
+      setFormError(active === undefined ? presentation.form : undefined);
+    },
+  });
+  const replacementMutation = useMutation({
+    mutationFn: ({ draft, active }: Readonly<{ draft: MemberInvitationDraft; active: ActiveMemberInvitation }>) =>
+      replaceMemberInvitation(context, draft, active),
+    onSuccess: (value) => {
+      setReceipt(value);
+      setActiveInvitation(undefined);
+      onCreated?.();
+    },
     onError: (error) => {
       const presentation = invitationErrorPresentation(error, context.scope.kind === 'platform');
       setFieldErrors(presentation.fields);
-      setFormError(presentation.form);
+      setFormError(presentation.form ?? '邀请码重新生成失败，请重试。');
     },
   });
-  const receipt = mutation.data;
-  const submittedDraft = mutation.variables;
+  const pending = mutation.isPending || replacementMutation.isPending;
   const tenantScopes = context.scopes.filter((scope) => scope.kind === 'tenant' && scope.id === 'tenant-zhudatuan');
   const canSelectSenior = context.session.governance?.level === 'owner';
   const selectedScope = invitationScope(context, context.scope.kind === 'platform' ? tenantId : undefined);
@@ -50,6 +80,7 @@ export function MemberInvitationDialog({
 
   const reset = () => {
     mutation.reset();
+    replacementMutation.reset();
     setGovernanceLevel('administrator');
     setDestination('');
     setLabel(DEFAULT_LABEL);
@@ -58,6 +89,9 @@ export function MemberInvitationDialog({
     setFieldErrors({});
     setFormError(undefined);
     setCopyFeedback(undefined);
+    setActiveInvitation(undefined);
+    setReceipt(undefined);
+    setSubmittedDraft(undefined);
   };
 
   const resetAndClose = () => {
@@ -66,22 +100,25 @@ export function MemberInvitationDialog({
   };
 
   const requestClose = () => {
-    if (mutation.isPending) return;
+    if (pending) return;
     resetAndClose();
   };
 
   const clearError = (field: InvitationField) => {
     setFieldErrors((current) => ({ ...current, [field]: undefined }));
     setFormError(undefined);
+    setActiveInvitation(undefined);
     if (mutation.error !== null) mutation.reset();
+    if (replacementMutation.error !== null) replacementMutation.reset();
   };
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (mutation.isPending) return;
+    if (pending) return;
     setFieldErrors({});
     setFormError(undefined);
     setCopyFeedback(undefined);
+    setActiveInvitation(undefined);
     const draft = MemberInvitationDraftSchema.safeParse({
       label,
       destination,
@@ -96,7 +133,15 @@ export function MemberInvitationDialog({
       if (Object.keys(nextErrors).length === 0) setFormError('邀请信息不完整，请检查后重试。');
       return;
     }
+    setSubmittedDraft(draft.data);
     mutation.mutate(draft.data);
+  };
+
+  const regenerate = () => {
+    if (pending || activeInvitation === undefined || submittedDraft === undefined) return;
+    setFormError(undefined);
+    setCopyFeedback(undefined);
+    replacementMutation.mutate({ draft: submittedDraft, active: activeInvitation });
   };
 
   const copy = async (value: string | undefined, target: CopyTarget) => {
@@ -114,18 +159,21 @@ export function MemberInvitationDialog({
 
   const invitationLink = receipt === undefined ? undefined : memberInvitationLink(receipt.code);
   const visibleFieldErrors = fieldErrors;
-  const visibleFormError = formError ?? (mutation.error === null ? undefined : '邀请生成失败，请确认信息后重试。');
+  const visibleFormError = activeInvitation !== undefined ? undefined : formError ?? (
+    mutation.error === null && replacementMutation.error === null
+      ? undefined : '邀请生成失败，请确认信息后重试。'
+  );
 
   return (
     <Dialog
       open={open}
       title={receipt === undefined ? '邀请管理员' : '管理员邀请已生成'}
       eyebrow="HONGTAI ADMIN ACCESS"
-      dismissable={!mutation.isPending}
+      dismissable={!pending}
       onClose={requestClose}
     >
       {receipt === undefined ? (
-        <Form className={`command memberinvitationform${mutation.isPending ? ' memberinvitationformpending' : ''}`} label="邀请管理员" validationBehavior="aria" onSubmit={submit}>
+        <Form className={`command memberinvitationform${pending ? ' memberinvitationformpending' : ''}`} label="邀请管理员" validationBehavior="aria" onSubmit={submit}>
           <div className="memberinvitationbody">
             <header className="memberinvitationintro">
               <div className="memberinvitationintroicon"><Icon name="shield" /></div>
@@ -145,7 +193,7 @@ export function MemberInvitationDialog({
                       type="radio"
                       value="administrator"
                       checked={governanceLevel === 'administrator'}
-                      disabled={mutation.isPending}
+                      disabled={pending}
                       onChange={() => setGovernanceLevel('administrator')}
                     />
                     <span className="memberinvitationlevelicon"><Icon name="member" /></span>
@@ -162,7 +210,7 @@ export function MemberInvitationDialog({
                         type="radio"
                         value="senior_administrator"
                         checked={governanceLevel === 'senior_administrator'}
-                        disabled={mutation.isPending}
+                        disabled={pending}
                         onChange={() => setGovernanceLevel('senior_administrator')}
                       />
                       <span className="memberinvitationlevelicon"><Icon name="shield" /></span>
@@ -184,10 +232,9 @@ export function MemberInvitationDialog({
                       id="memberinvitationtenant"
                       name="tenantId"
                       value={tenantId}
-                      disabled={mutation.isPending}
+                      disabled={pending}
                       aria-invalid={visibleFieldErrors.tenantId === undefined ? undefined : true}
                       aria-describedby={visibleFieldErrors.tenantId === undefined ? undefined : 'memberinvitationtenanterror'}
-                      autoFocus
                       onChange={(event) => { setTenantId(event.target.value); clearError('tenantId'); }}
                     >
                       <option value="" disabled>请选择目标租户</option>
@@ -206,11 +253,10 @@ export function MemberInvitationDialog({
                     inputMode="numeric"
                     autoComplete="tel"
                     value={destination}
-                    disabled={mutation.isPending}
+                    disabled={pending}
                     placeholder="请输入受邀管理员的 11 位手机号"
                     aria-invalid={visibleFieldErrors.destination === undefined ? undefined : true}
                     aria-describedby={`memberinvitationdestinationhint${visibleFieldErrors.destination === undefined ? '' : ' memberinvitationdestinationerror'}`}
-                    autoFocus={context.scope.kind !== 'platform'}
                     onChange={(event) => { setDestination(event.target.value); clearError('destination'); }}
                   />
                   <small id="memberinvitationdestinationhint" className="memberinvitationfieldhint">该邀请仅限此手机号完成注册。</small>
@@ -223,7 +269,7 @@ export function MemberInvitationDialog({
                     id="memberinvitationlabel"
                     name="label"
                     value={label}
-                    disabled={mutation.isPending}
+                    disabled={pending}
                     maxLength={80}
                     aria-invalid={visibleFieldErrors.label === undefined ? undefined : true}
                     aria-describedby={visibleFieldErrors.label === undefined ? undefined : 'memberinvitationlabelerror'}
@@ -238,7 +284,7 @@ export function MemberInvitationDialog({
                     id="memberinvitationvalidity"
                     name="validityDays"
                     value={validityDays}
-                    disabled={mutation.isPending}
+                    disabled={pending}
                     onChange={(event) => setValidityDays(Number(event.target.value))}
                   >
                     <option value="1">1 天</option>
@@ -265,16 +311,31 @@ export function MemberInvitationDialog({
               </dl>
             </section>
 
+            {activeInvitation === undefined ? null : (
+              <section className="memberinvitationactive" role="status">
+                <strong>该手机号已有一张未使用的管理员邀请</strong>
+                <p>
+                  {activeInvitation.destinationMasked ?? maskPhone(destination)} · 有效至 {formatDate(activeInvitation.expiresAt)}。
+                  原邀请码只保存安全摘要，无法再次读取。重新生成后会立即显示新邀请码，旧邀请码同时失效。
+                </p>
+              </section>
+            )}
             {visibleFormError === undefined ? null : <p className="memberinvitationerror" role="alert">{visibleFormError}</p>}
           </div>
 
           <footer className="memberinvitationfooter">
             <p className="memberinvitationfootnote">邀请码仅显示一次，请生成后立即复制或发送。</p>
             <div className="memberinvitationactions">
-              <Button type="button" onPress={requestClose} isDisabled={mutation.isPending}>取消</Button>
-              <Button type="submit" tone="primary" isPending={mutation.isPending} isDisabled={mutation.isPending}>
-                {mutation.isPending ? '正在生成…' : '生成管理员邀请'}
-              </Button>
+              <Button type="button" onPress={requestClose} isDisabled={pending}>取消</Button>
+              {activeInvitation === undefined ? (
+                <Button type="submit" tone="primary" isPending={pending} isDisabled={pending}>
+                  {pending ? '正在生成…' : '生成管理员邀请'}
+                </Button>
+              ) : (
+                <Button type="button" tone="primary" onPress={regenerate} isPending={pending} isDisabled={pending}>
+                  {pending ? '正在重新生成…' : '重新生成并显示邀请码'}
+                </Button>
+              )}
             </div>
           </footer>
         </Form>
@@ -301,7 +362,7 @@ export function MemberInvitationDialog({
             <div><dt>管理员身份</dt><dd>{governanceLabel(receipt.governanceLevel ?? submittedDraft?.governanceLevel ?? 'administrator')}</dd></div>
             <div><dt>绑定手机号</dt><dd>{maskPhone(submittedDraft?.destination ?? '')}</dd></div>
             <div><dt>授权范围</dt><dd>{submittedScope.name}</dd></div>
-            <div><dt>使用次数</dt><dd>{receipt.max_uses} 次</dd></div>
+            <div><dt>当前状态</dt><dd>{receipt.use_count === 0 ? '未使用' : `已使用 ${receipt.use_count} 次`}</dd></div>
             <div><dt>到期时间</dt><dd>{formatDate(receipt.expires_at)}</dd></div>
           </dl>
 

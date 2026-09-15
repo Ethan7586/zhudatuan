@@ -200,7 +200,25 @@ function secure(status: number, body: unknown, requestId: string, origin?: strin
     if (name === 'x-set-cookie') output.append('set-cookie', value);
     else output.set(name, value);
   }
-  return new Response(body === undefined ? null : JSON.stringify(body), { status, headers: output });
+  const responseBody = status >= 400 ? errorContractBody(body, requestId) : body;
+  return new Response(responseBody === undefined ? null : JSON.stringify(responseBody), { status, headers: output });
+}
+
+function errorContractBody(body: unknown, requestId: string): Readonly<Record<string, unknown>> {
+  const record = body !== null && typeof body === 'object' && !Array.isArray(body)
+    ? body as Readonly<Record<string, unknown>> : {};
+  const code = typeof record.code === 'string' && record.code.length > 0 ? record.code : 'INTERNAL_ERROR';
+  const message = typeof record.message === 'string' && record.message.length > 0 ? record.message : code;
+  const responseRequestId = typeof record.requestId === 'string' && record.requestId.length > 0 ? record.requestId : requestId;
+  const details = record.details !== null && typeof record.details === 'object' && !Array.isArray(record.details)
+    ? record.details as Readonly<Record<string, unknown>> : undefined;
+  return {
+    code,
+    message,
+    requestId: responseRequestId,
+    ...(typeof record.retryable === 'boolean' ? { retryable: record.retryable } : {}),
+    ...(details === undefined ? {} : { details }),
+  };
 }
 
 function preflight(request: Request, requestId: string, origin: string | null): Response {
