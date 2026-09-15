@@ -5152,6 +5152,28 @@
 | 回滚方式 | 回退独立文档/校验提交；不涉及制品、代码或线上状态。 |
 | 是否需要独立复核 | 是（生产交付说明）。 |
 
+## F-0321｜身份安全实施说明把 demo 认证环境和迁移定位写成过期/不完整事实
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Documentation / identity security |
+| 类型 | 身份运行说明、文档漂移 |
+| 严重级别 | **P3** |
+| 置信度 | 高（文档与环境门禁/文件路径直接比对） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/07-ACCOUNT-SECURITY-CENTER-IMPLEMENTATION.md:9-11,39`；`08-USERNAME-PASSWORD-REGISTRATION.md:39`；`09-MEMBER-IDENTITY-ASSURANCE.md:43`；`01_core_hexin/services/commerce-api/src/api/demoAuth.ts:20-22`。 |
+| 当前/预期 | 安全中心说明称测试用户名只在 `APP_ENV=test` 且 `AUTH_MODE=test` 可用，但真实 `isDemoAuthEnabled` 同时允许匹配的 development 环境。三份说明还把 migration 写成 `database/supabase/...`，其从文档所在目录不可解析；真实仓内路径前缀为 `02_platform_pingtai/`。预期应准确标记开发/test demo 范围，并提供仓库可解析的迁移位置或明确这是逻辑路径。 |
+| 直接证据 | [FACT][E-AU-829-001] demo 开关源码为 development/development 或 test/test；[FACT][E-AU-829-002] PBKDF2、用户名注册默认关闭、phone assurance migration 与三份文档的核心安全陈述相符；[FACT][E-AU-829-003] 三个对应迁移均存在于 `02_platform_pingtai/database/supabase/migrations/`。 |
+| 调用链或运行入口 | 人工安全配置/上线判断 → 实施说明；实际认证行为 → public/registration routes → demo auth、registered credential 与数据库 assurance。 |
+| 用户影响 | 开发人员可能误判 demo 认证在 development 的可用性，或无法从文档定位迁移；未见生产环境 demo 放行证据。 |
+| 数据影响 | 无。 |
+| 安全影响 | 文档误导降低环境审查清晰度；生产路径仍由 `isDemoAuthEnabled` 环境合取拒绝。 |
+| 根因 | 实施快照未和环境 gate/仓库目录迁移保持同一文档契约。 |
+| 建议方向 | 从最新主线建立 identity-doc-accuracy batch：更正 demo 环境条件、使用完整仓库路径或相对链接，并将历史测试数字标明日期/快照。 |
+| 预计修改范围 | 三份文档，必要时加入文档路径存在性检查；不改认证代码、数据库或环境配置。 |
+| 验证方式 | 文档中所有迁移路径可解析；development/test/production 的 demo 开关描述与单元测试一致。 |
+| 回滚方式 | 回退独立文档/校验提交。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0302｜MVP 交付门禁的状态枚举与当前需求矩阵不兼容，首条即失败
 
 | 字段 | 记录 |
