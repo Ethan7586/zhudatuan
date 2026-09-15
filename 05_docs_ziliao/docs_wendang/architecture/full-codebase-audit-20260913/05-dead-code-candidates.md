@@ -1382,7 +1382,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 直接证据 | 回填 self/owner/组织 scope 的 canonical id/path，为 active membership 补 self、为 storefront 补 owner allow，随后按 membership/kind/scope/effect 去重并断言 kind 一致。 |
 | 运行边界 | access scope object/resolver、session context 与 RLS 使用 scopegrant；grant 保留 membership access_version。 |
 | 可否删除 | 否；承担授权范围、个人/组织边界、历史数据、会话访问版本与恢复责任。 |
-| 二次复核 | 是；须验证所有 scope kind、active/inactive membership、storefront owner、冲突去重、access version、RLS 和备份恢复。 |
+| 二次复核 | RV-0049 已完成：维持 GX；静态复核确认 canonical scope 回填、活跃成员补 grant、去重和 kind 断言，当前 Access/启动链仍使用该事实。生产 grant、RLS 和恢复未验证。 |
 
 ## 468. AU-468 Membership scope 规范化复核
 
