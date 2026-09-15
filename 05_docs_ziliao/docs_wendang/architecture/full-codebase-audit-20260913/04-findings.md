@@ -4794,6 +4794,28 @@
 | 验证/回滚 | 在隔离构建中人为超过对应 app budget，确认 gate 失败；若已下线，确认 config schema/文档不再宣称保护。回滚为撤回单一 quality-policy change。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0333｜卡券操作矩阵把冻结契约的 named schema 写成 structural
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Contract documentation / Voucher target matrix |
+| 类型 | 契约语义、设计—生成追踪准确性 |
+| 严重级别 | **P3** |
+| 置信度 | 高（矩阵 prose、YAML 定义与 Target Contract 测试为直接证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/voucher/Operations.md:7-13`；`01_core_hexin/packages/contract/src/VoucherTargetContract.test.ts:16-27`；`packages/contract/definitions/operations.yml` target 定义。 |
+| 当前/预期 | 矩阵称全部 74 个 frozen target operation 使用 `schema=structural`，但 Target Contract 断言每项为 `availability=frozen && schema=named`，YAML 定义同样为 `named`。预期是文档准确描述当前冻结 schema 语义，或明确其只是未来提案。 |
+| 直接证据 | [FACT][E-AU-866-001] Operations:10 写 `schema=structural`；[FACT][E-AU-866-002] Target Contract:18 断言全部 frozen target 为 `schema=named`；[FACT][E-AU-866-003] YAML 的定义条目均声明 `schema: named`。测试读取矩阵以核对 route/permission/policy/requirements，但不解析该 prose。 |
+| 调用链或运行入口 | 设计/契约维护者 → Operations 矩阵 → YAML/ContractGenerator/SDK；`VoucherTargetContract` 对矩阵表行执行 design-to-contract 验证。 |
+| 用户影响 | 后续 DTO/生成器实现者可能把已命名的冻结 schema 误认为可延后收紧的结构 schema，产生错误的契约实现或评审判断；当前 API 路由和运行权限不因此改变。 |
+| 数据影响 | 无直接数据写入或迁移影响。 |
+| 安全影响 | 无直接外部越权证据；错误 schema 理解可降低未来输入契约评审准确性。 |
+| 根因 | 冻结规则的设计叙述未随实际 YAML/Target Contract 的 named schema 定稿同步；测试只验证矩阵表格字段，不验证规则 prose。 |
+| 建议方向 | 从当时最新 `zdt-next` 建立单一 voucher-target-matrix-docs batch：修正文档 schema 描述，并考虑添加最小文本或结构断言以锁定冻结规则；不修改 target operation、路由、权限、生成器或运行注册。 |
+| 预计修改范围 | 单一 Markdown 文档和可选单一 contract text assertion。 |
+| 验证方式 | 文档与 YAML/Target Contract 的 `schema` 一致；故意将规则写回 structural 时新增断言必须失败；74 项 target 仍 frozen、named 且不进入 runtime controller/capability。 |
+| 回滚方式 | 回退独立文档/测试提交。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0332｜卡券目标架构把重组前路径与占位迁移写成升级清单
 
 | 字段 | 记录 |
