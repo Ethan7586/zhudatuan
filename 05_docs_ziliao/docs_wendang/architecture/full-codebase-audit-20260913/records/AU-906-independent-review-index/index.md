@@ -2,7 +2,7 @@
 
 - 基线：`5a1ce71eebbefaa826368a9e1dc17730f9363bc4`
 - 建立日期：2026-09-15
-- 状态：**RV-0001 至 RV-0004 已完成；其余第二轮结论尚未开始。**
+- 状态：**RV-0001 至 RV-0005 已完成；其余第二轮结论尚未开始。**
 - 规则：每项复核从当前固定审计基线的运行入口/调用链重新取证；不得只复述首审报告。任何分歧保守保留，不降低风险等级。
 
 ## P1 候选（17）
@@ -13,7 +13,7 @@
 | F-0015 | RV-0002（已完成，确认 P1） | 正式发布 workflow | workflow → delivery 控制面 → 就绪/回滚 |
 | F-0021 | RV-0003（已完成，确认 P1） | Secret Store/KMS | 生产入口 → 工作负载授权 → 密钥解析 |
 | F-0022 | RV-0004（已完成，确认 P1） | Outbox/Runtime Scheduler | target 注册 → Jobs/relay producer-consumer |
-| F-0023 | RV-0005 | PostgreSQL 编排 | compose/init → 实际版本/迁移前置 |
+| F-0023 | RV-0005（已完成，确认 P1） | PostgreSQL 编排 | compose/init → 实际版本/迁移前置 |
 | F-0029 | RV-0007 | Console node domain | manifest domain → runtime URL → target/health |
 | F-0036 | RV-0008 | Storefront member 写权限 | route → authorization → DB 写入/RLS |
 | F-0053 | RV-0009 | 自定义角色委派 | role grant → capability ceiling → 数据库/契约 |

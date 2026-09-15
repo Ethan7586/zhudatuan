@@ -728,7 +728,7 @@
 | --- | --- |
 | 模块 | 共享状态 / PostgreSQL 创建与恢复 |
 | 类型 | 版本契约、首次初始化、灾难恢复路径 |
-| 严重级别 | **P1 候选**；未完成 RV-0005 前不作最终 P1 |
+| 严重级别 | **P1**；RV-0005 已于 2026-09-15 从 Compose、init hook、SQL guard、env 与检查 fixture 重新取证确认 |
 | 置信度 | 高（显式major条件）；现有非空volume不受首次init路径影响 |
 | 文件和精确位置 | `02_platform_pingtai/infrastructure/zhudatuan/aliyun/registration-compose.yml:3-35`；`postgres-init-registration.sh:3-28,54-115`；`postgres.env.example:1-15`；`04_tools/scripts/check/registration-deployment.mjs:5-22,73-118,160-190`；`audit/postgres-init-registration.pg16-fixture.mjs` |
 | 当前行为 | [CONFLICT][E-AU-005-010] Compose固定`postgres:17-alpine`并把init脚本挂到`docker-entrypoint-initdb.d`；脚本明确拒绝`server_version_num>=170000`，还要求expected RDS address及预建的`zhudatuanregistrationboundary`。env example不含expected address，Compose也未见空卷脚本前置role creator；检查器只要求PG16 fixture覆盖 |
@@ -743,7 +743,9 @@
 | 预计修改范围 | Compose/init/env/check/恢复文档中的单一兼容组合；不能与业务迁移变更混批 |
 | 验证方式 | 第二审计者在隔离临时volume穷举PG17当前配置、权威major、缺键、错误地址、非空target和成功路径；记录首个失败且不输出secret |
 | 回滚方式 | 现有production volume保持不动；未来配置提交可回退，数据库迁移仍按forward-only处理 |
-| 是否需要独立复核 | 是，RV-0005；P1和恢复路径强制100%重追 |
+| 是否需要独立复核 | 已完成 RV-0005；未来恢复设计变更仍须独立变更后复核 |
+
+**RV-0005（二次独立复核，2026-09-15）：确认 P1。** Compose 固定 PG17，init guard 却明确拒绝 PG17；空卷路径还缺少脚本要求的预建 boundary role、精确 RDS 地址与 env 契约。详见 `records/AU-911-rv-0005-registration-postgres-recovery/summary.md`；未运行容器或执行 SQL。
 
 ## F-0024｜通用 job claim 不回收过期 running，正式 Catalog export 使用该分支
 
