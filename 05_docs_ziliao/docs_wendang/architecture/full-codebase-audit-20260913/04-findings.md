@@ -6669,3 +6669,26 @@
 | 验证方式 | 每一“已部署”单元在 release policy/制品/健康检查中可解析；可选配置明确不代表运行；缓存缺失时定向目录读仍安全回源。 |
 | 回滚方式 | 回退独立文档/链接提交；不影响缓存或运行服务。 |
 | 是否需要独立复核 | 否（P3）；若决定正式启用/退休 sidecar，缓存与发布 Owner 专项复核。 |
+
+## F-0347｜数据与微信支付预案仍将已完成的路由和 UnionID 身份工作写作待办
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 商品同源 / 微信支付 / 身份文档 |
+| 类型 | 文档事实漂移、实施与验收误导 |
+| 严重级别 | **P3** |
+| 置信度 | 高（文档日期/待办陈述、当前 router/handler/migration 直接证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/DATA-AND-PAYMENT-EXECUTION-PLAN.md:23-96,158-185,263-296`；`01_core_hexin/services/commerce-api/src/api/routes/storefrontRouter.ts:9,46-50`；`01_core_hexin/services/commerce-api/src/api/wechatAuthRoutes.ts:36-74`；`02_platform_pingtai/database/supabase/migrations/20260814130000_wechat_order_payment_compliance.sql:18-38,186-214`。 |
+| 当前行为 | 预案称微信路由接线未纳入 Git、UnionID 仍等待 Ethan 决定后才可落地；当前 router 已注册订单/预支付/状态 handler，认证文件已有会话/绑定 handler，当前迁移已有 `member_wechat_identities` 与 `union_id` 的约束、索引和处理逻辑。未发现当前消费者。 |
+| 预期行为 | 实施前预案应冻结基线并把已完成/仍未验证/真实待决项区分清楚；当前支付与身份验收必须以现行契约、迁移、运行图和受控凭据流程为准。 |
+| 直接证据 | [FACT][E-AU-896-001] 预案 38-64、158-185 的待接线/未决陈述；[FACT][E-AU-896-002] 当前 handler 注册与实现；[FACT][E-AU-896-003] 两套受控迁移均含 union identity 结构。线上商户配置、微信开放平台状态和真实支付验收为 [UNVERIFIED]。 |
+| 调用链或运行入口 | 人工支付实施/验收 → 历史预案；真实 API → storefront/public router → Wechat handlers → 当前数据库迁移/运行配置。 |
+| 用户影响 | 维护者可能重复实施已存在的结构、按旧路径/命令评估支付 readiness，或错误地把历史决策阻塞当成当前未完成项。 |
+| 数据影响 | 不直接写数据；按陈旧方案重做身份/支付迁移可能引入重复 identity 或支付链风险。 |
+| 安全影响 | 文档列出凭据变量但不含实值；错误的旧流程可能削弱当前受控凭据/发布审查，未发现泄露或当前利用证据。 |
+| 根因 | 2026-08-14 预实施计划没有在后续路由、迁移和身份实现合入后冻结或链接 current authority。 |
+| 建议方向 | 从修复时最新 `zdt-next` 建立单一 data-payment-plan-currentness 批次：冻结历史快照，链接当前 API/identity/payment authority，逐项标记已完成、未验证和真实待决项；不得在同批改支付代码、迁移、密钥、微信配置或发布。 |
+| 预计修改范围 | 本预案及明确人工入口/链接。 |
+| 验证方式 | 每项 current 链接可解析；已完成与未验证状态由可复现证据区分；任何真机支付/凭据验证只在单独授权的隔离流程进行。 |
+| 回滚方式 | 回退独立文档/链接提交，保留历史版本。 |
+| 是否需要独立复核 | 否（P3）；若外部支付验收或合同使用该计划，支付、身份与发布 Owner 复核。 |
