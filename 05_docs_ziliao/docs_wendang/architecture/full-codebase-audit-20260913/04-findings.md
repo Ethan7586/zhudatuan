@@ -6462,3 +6462,26 @@
 | 验证方式 | 使用真实 session/membership/scope 数据分别调用敏感 controller，验证跨 tenant/mall、过期 access version、缺 step-up、CSRF/Origin 与 SQL RLS 都 fail-closed；故意移除其中一个 boundary 时测试必须失败。 |
 | 回滚方式 | 回退独立测试/fixture 提交，保留现有快速 policy/HTTP 单测。 |
 | 是否需要独立复核 | 否。 |
+
+## F-0300｜微信支付唯一执行文档的责任树与复跑命令仍指向已移除目录
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 微信支付 / 验收与运行文档 |
+| 类型 | 文档执行路径漂移、支付验收可复核性 |
+| 严重级别 | **P3** |
+| 置信度 | 高（固定文档行号、路径存在性与当前支付入口直接证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/微信支付生产接入与MVP验收.md:828-932,950-966`。 |
+| 当前行为 | 文档第14节将 `apps/storefront`、`services/commerce`、`database/supabase` 列为完整责任树，第15.2节以 `npx vite ... apps/storefront` 作为复跑命令；固定基线中三条路径均不存在。当前支付实现位于 `01_core_hexin/services/commerce-api/src/api/wechatPayment*.ts`、`01_core_hexin/services/commerce/src/entry/Payment*Main.ts`、`01_core_hexin/extensions/payment/wechat/` 与 `02_platform_pingtai/`。 |
+| 预期行为 | 被另一验收说明指定为微信支付唯一执行文档的责任树、命令和入口应解析到当前正式运行/测试路径，或明确标记为历史快照并提供当前受控入口。 |
+| 直接证据 | [FACT][E-AU-879-001] 文档 828-932/950-966 的旧路径与命令；[FACT][E-AU-879-002] 三个旧路径在固定基线均不存在；[FACT][E-AU-879-003] 当前微信支付 API、Webhook、Jobs、extension 与 MvpServer 路径存在。 |
+| 调用链或运行入口 | `测试环境验收-会员与支付.md` → 本文档作为唯一执行文档 → 人工复跑/验收/发布取证；当前实际入口为 payment API/Webhook/Jobs runtime。 |
+| 用户影响 | 评审或验收人员可能无法复跑浏览器编排、错误定位支付职责或把旧目录的状态当成当前交付证据。 |
+| 数据影响 | 不直接改变支付或财务数据；错误验收结论可能影响资金功能的发布判断。 |
+| 安全影响 | 真实资金与密钥前置条件仍在文档中明确未完成；未发现凭据泄露或当前可利用路径。 |
+| 根因 | 仓库重组后，长期作为唯一执行说明的目录树和本地启动命令未随当前支付运行单元同步。 |
+| 建议方向 | 从修复时最新 `zdt-next` 建立单一 payment-document-paths 批次，逐条解析并更新责任树、复跑命令、测试入口和历史标记；不得在同一批变更支付协议、密钥、数据库或发布状态。 |
+| 预计修改范围 | 本文档及其唯一引用/受控运行说明；不改支付业务实现。 |
+| 验证方式 | 自动或人工逐条验证文档中每个源码/命令路径存在且入口可解析；旧路径应明确标为历史，MvpServer 命令仅在隔离本地环境验证。 |
+| 回滚方式 | 回退单一文档/链接更新提交，保留原历史快照引用。 |
+| 是否需要独立复核 | 否（P3）；若文档被外部正式验收或发布系统消费，升为发布 Owner 专项复核。 |
