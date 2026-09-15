@@ -16,7 +16,7 @@ TARGET="$1"
 SHA="$2"
 NODE="$3"
 REQUESTED_BUILD_RUNNER="${ZDT_PREPARE_RUNNER:-auto}"
-BUILD_RUNNER=""
+BUILD_RUNNER="$REQUESTED_BUILD_RUNNER"
 WORKFLOW_PREPARE="prepare-artifact-aliyun.yml"
 WORKFLOW_DEPLOY="deploy-prepared-aliyun.yml"
 
@@ -54,31 +54,8 @@ for workflow in "$WORKFLOW_PREPARE" "$WORKFLOW_DEPLOY"; do
   fi
 done
 
-select_build_runner() {
-  if [ "$REQUESTED_BUILD_RUNNER" != auto ]; then
-    printf '%s\n' "$REQUESTED_BUILD_RUNNER"
-    return
-  fi
-
-  local idle_slots queued_runs
-  idle_slots="$(gh api repos/{owner}/{repo}/actions/runners \
-    --jq '[.runners[] | select(.status == "online" and .busy == false and ([.labels[].name] | index("zdt-aliyun-build")))] | length' \
-    2>/dev/null || true)"
-  queued_runs="$(gh run list --workflow "$WORKFLOW_PREPARE" --status queued --limit 100 \
-    --json displayTitle \
-    --jq '[.[] | select((.displayTitle | endswith(" [github]")) | not)] | length' \
-    2>/dev/null || true)"
-
-  if [[ "$idle_slots" =~ ^[0-9]+$ && "$queued_runs" =~ ^[0-9]+$ ]] && (( idle_slots > queued_runs )); then
-    printf 'aliyun\n'
-  else
-    printf 'github\n'
-  fi
-}
-
-BUILD_RUNNER="$(select_build_runner)"
 if [ "$REQUESTED_BUILD_RUNNER" = auto ]; then
-  echo "Build route auto-selected: ${BUILD_RUNNER}."
+  echo 'Runner 将由统一 OSS 租约协议自动选择。'
 fi
 
 find_dispatched_run() {
@@ -86,16 +63,28 @@ find_dispatched_run() {
   local title="$2"
   local previous_id="$3"
   local run_id=""
-  for _ in {1..30}; do
-    run_id="$(gh run list --workflow "$workflow" --event workflow_dispatch --limit 30 \
+  local output="" error_file="${TMPDIR:-/tmp}/zdt-dispatch-observation-$$"
+  for attempt in {1..30}; do
+    if ! output="$(gh run list --workflow "$workflow" --event workflow_dispatch --limit 30 \
       --json databaseId,displayTitle \
-      --jq ".[] | select(.displayTitle == \"$title\" and .databaseId > $previous_id) | .databaseId" | head -1)"
+      --jq ".[] | select(.displayTitle == \"$title\" and .databaseId > $previous_id) | .databaseId" 2>"$error_file")"; then
+      if ! grep -Eqi 'reset|timed out|temporar|502|503|504' "$error_file"; then
+        rm -f -- "$error_file"
+        return 2
+      fi
+      echo '网络暂时失败，正在安全重试。' >&2
+      sleep "$(( attempt < 3 ? attempt : 3 ))"
+      continue
+    fi
+    run_id="$(head -1 <<<"$output")"
     if [ -n "$run_id" ]; then
+      rm -f -- "$error_file"
       printf '%s\n' "$run_id"
       return 0
     fi
     sleep 1
   done
+  rm -f -- "$error_file"
   return 1
 }
 
@@ -107,14 +96,18 @@ gh workflow run "$WORKFLOW_PREPARE" --ref zdt-next \
   -f build_runner="$BUILD_RUNNER" \
   -f release_node="$NODE"
 prepare_title="Prepare 1.4 ${SHA} ${TARGET}"
-if [ "$BUILD_RUNNER" = github ]; then prepare_title+=" [github]"; fi
 prepare_run_id="$(find_dispatched_run "$WORKFLOW_PREPARE" "$prepare_title" "$last_prepare_id")" || {
-  echo "未封板：classification=BUILD_ACTION_NOT_FOUND retryable=true" >&2
+  status=$?
+  if [ "$status" -eq 2 ]; then
+    echo "未封板：code=BUILD_ACTION_OBSERVATION_DENIED stage=dispatch-observation retryable=false attempts=1 next_safe_action=review-github-permissions" >&2
+  else
+    echo "未封板：code=BUILD_ACTION_NOT_FOUND stage=dispatch-observation retryable=true attempts=30 next_safe_action=repeat-query-without-redispatch" >&2
+  fi
   exit 1
 }
 echo "Prepare run: $prepare_run_id"
 if ! gh run watch "$prepare_run_id" --exit-status; then
-  echo "未封板：classification=BUILD_ACTION_FAILED retryable=true request=${prepare_run_id}" >&2
+  echo "构建失败，未自动重试：code=BUILD_ACTION_FAILED stage=build retryable=false attempts=1 next_safe_action=inspect-build-evidence request=${prepare_run_id}" >&2
   exit 1
 fi
 
@@ -127,12 +120,17 @@ gh workflow run "$WORKFLOW_DEPLOY" --ref zdt-next \
   -f operation=validate-candidate
 seal_title="Deploy 1.4 validate-candidate ${SHA} ${NODE} ${TARGET}"
 seal_run_id="$(find_dispatched_run "$WORKFLOW_DEPLOY" "$seal_title" "$last_seal_id")" || {
-  echo "未封板：classification=SEAL_ACTION_NOT_FOUND retryable=true" >&2
+  status=$?
+  if [ "$status" -eq 2 ]; then
+    echo "未封板：code=SEAL_ACTION_OBSERVATION_DENIED stage=dispatch-observation retryable=false attempts=1 next_safe_action=review-github-permissions" >&2
+  else
+    echo "未封板：code=SEAL_ACTION_NOT_FOUND stage=dispatch-observation retryable=true attempts=30 next_safe_action=repeat-query-without-redispatch" >&2
+  fi
   exit 1
 }
 echo "Candidate seal run: $seal_run_id"
 if ! gh run watch "$seal_run_id" --exit-status; then
-  echo "未封板：classification=VALIDATION_OR_SEAL_ACTION_FAILED retryable=true request=${seal_run_id}" >&2
+  echo "未封板：code=VALIDATION_OR_SEAL_ACTION_FAILED stage=candidate-validation retryable=false attempts=1 next_safe_action=inspect-validation-evidence request=${seal_run_id}" >&2
   exit 1
 fi
 
@@ -146,7 +144,7 @@ const fs=require("node:fs");
 const p=process.argv[1];
 const envelope=JSON.parse(fs.readFileSync(p,"utf8"));
 if(!envelope.ok||envelope.result?.finalStatus!=="sealed"||envelope.result?.finalSealReceipt?.schema!=="ai.delivery.final-seal.v1") {
-  console.error("未封板：classification=FINAL_SEAL_RECEIPT_MISSING retryable=true");
+  console.error("未封板：code=FINAL_SEAL_RECEIPT_MISSING stage=seal-receipt retryable=false attempts=1 next_safe_action=inspect-oss-seal-evidence");
   process.exit(1);
 }
 const x=envelope.result;
@@ -155,6 +153,8 @@ console.log(JSON.stringify({
   target:x.target, physicalNode:x.node, artifactDigest:x.artifactIdentity,
   sealKey:x.sealKey, finalSealReceiptObject:x.finalSealReceiptObject,
   buildRunner:x.finalSealReceipt.build_runner, releaseRunner:x.finalSealReceipt.release_runner,
+  runnerRouting:x.finalSealReceipt.routing,
+  reusedExistingTask:x.reusedSeal || x.finalSealReceipt.routing?.reused_existing_task === true,
   reusedArtifact:x.finalSealReceipt.reused_artifact, reusedReceipt:x.reusedSeal,
   productionSwitched:false
 },null,2));

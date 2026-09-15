@@ -12,6 +12,8 @@ import { acquireLocks } from './lock.mjs';
 import { finalizePreparedSeal, inspectPreparedArtifact, ossClientFromEnvironment, publishPreparedArtifact, publishWorkflowEvidence, requireFinalSealReceipt, resolveDownloadEndpoint, resolvePreparedArtifact } from './oss.mjs';
 import { createPlan } from './planner.mjs';
 import { runCommand } from './runner.mjs';
+import { markRunnerFinished, markRunnerStarted, routeBuildRequest } from './runner-routing.mjs';
+import { withFiniteRetry } from './retry.mjs';
 import { createRun, readJson, statePaths, writeJson } from './state.mjs';
 
 const SHA256_PATTERN = /^sha256:[a-f0-9]{64}$/;
@@ -111,6 +113,51 @@ export async function inspectPreparedCommand(adapter, options) {
 
 export async function publishEvidenceCommand(adapter, options) {
   return publishWorkflowEvidence(adapter, options);
+}
+
+export async function selectRunnerCommand(adapter, options) {
+  const node = options.node ?? options.nodes?.[0];
+  invariant(Boolean(adapter.targets[options.target]) && Boolean(adapter.nodes[node]?.deployments?.[options.target]),
+    'RUNNER_REQUEST_TARGET_MAPPING_INVALID', 'Runner request must name one real target and physical node');
+  const observation = JSON.parse(await readFile(resolve(options.runnerObservation), 'utf8'));
+  const client = ossClientFromEnvironment(options.endpoint);
+  return routeBuildRequest(client, {
+    project: adapter.project, sourceSha: options.sourceSha, releaseTarget: options.target, physicalNode: node,
+    controlPlaneSha: options.controlSha, requestedRunnerClass: options.runnerClass ?? 'auto', runners: observation.runners ?? observation,
+    retryCount: Number(options.retryCount ?? 0),
+  }, {
+    verifyRunnerAvailable: async (runner) => {
+      const checked = await withFiniteRetry(async () => {
+        try {
+          return await runCommand({ name: 'recheck-runner-capacity', argv: ['gh', 'api', 'repos/{owner}/{repo}/actions/runners'], timeoutMs: 30_000 }, basicContext(adapter));
+        } catch (error) {
+          if (/reset|timed out|temporar|502|503|504/i.test(error?.details?.outputTail ?? '')) {
+            throw Object.assign(new Error('GitHub Runner recheck failed transiently'), { code: 'ECONNRESET' });
+          }
+          throw error;
+        }
+      }, { stage: 'github-runner-recheck', maxAttempts: 3 });
+      const current = JSON.parse(checked.value.output).runners ?? [];
+      const exact = current.find((candidate) => candidate.name === runner.name);
+      return exact?.status === 'online' && exact?.busy === false;
+    },
+  });
+}
+
+export async function runnerStartedCommand(adapter, options) {
+  const client = ossClientFromEnvironment(options.endpoint);
+  return markRunnerStarted(client, {
+    project: adapter.project, sourceSha: options.sourceSha, releaseTarget: options.target, physicalNode: options.node ?? options.nodes?.[0],
+    controlPlaneSha: options.controlSha, leaseGeneration: options.leaseGeneration, selectedRunnerName: options.selectedRunnerName,
+  });
+}
+
+export async function runnerFinishedCommand(adapter, options) {
+  const client = ossClientFromEnvironment(options.endpoint);
+  return markRunnerFinished(client, {
+    project: adapter.project, sourceSha: options.sourceSha, releaseTarget: options.target, physicalNode: options.node ?? options.nodes?.[0],
+    controlPlaneSha: options.controlSha, leaseGeneration: options.leaseGeneration, status: options.status,
+  });
 }
 
 export async function validatePreparedCommand(adapter, options) {

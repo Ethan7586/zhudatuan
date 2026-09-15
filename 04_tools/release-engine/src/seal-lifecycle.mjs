@@ -129,7 +129,7 @@ export function createSealLifecycleStore(client, options) {
     return { ...(await read()), action: current.status === 'ABSENT' ? 'build' : 'recover', owner: true };
   }
 
-  async function markUploaded({ requestId, actorRole = 'build', artifact, provenance, buildRunner, reused = false }) {
+  async function markUploaded({ requestId, actorRole = 'build', artifact, provenance, buildRunner, routing = null, reused = false }) {
     assertRole(actorRole, ['build'], 'SEAL_UPLOAD_ROLE_FORBIDDEN');
     const current = await read();
     if (['UPLOADED', 'VALIDATED', 'SEALED'].includes(current.status)) {
@@ -142,7 +142,7 @@ export function createSealLifecycleStore(client, options) {
     invariant(typeof provenance?.object === 'string' && DIGEST_PATTERN.test(provenance?.digest ?? ''), 'SEAL_PROVENANCE_INVALID', 'Build provenance is missing or invalid');
     const receipt = {
       schema: 'ai.delivery.uploaded.v1', seal_key: key.seal_key, request_id: requestId, actor_role: actorRole,
-      artifact, provenance, build_runner: requiredText(buildRunner, 'SEAL_BUILD_RUNNER_REQUIRED'), reused: reused === true,
+      artifact, provenance, build_runner: requiredText(buildRunner, 'SEAL_BUILD_RUNNER_REQUIRED'), routing, reused: reused === true,
       completed_stages: ['BUILDING', 'UPLOADED'], updated_at: now().toISOString(),
     };
     const publication = await putJson(paths.uploaded, receipt);
@@ -163,7 +163,8 @@ export function createSealLifecycleStore(client, options) {
     const receipt = {
       schema: 'ai.delivery.candidate-validation.v1', seal_key: key.seal_key, request_id: requestIdValue(requestId), actor_role: actorRole,
       artifact: current.uploaded.artifact, provenance: current.uploaded.provenance, validation,
-      build_runner: current.uploaded.build_runner, release_runner: requiredText(releaseRunner, 'SEAL_RELEASE_RUNNER_REQUIRED'), reused: reused === true,
+      build_runner: current.uploaded.build_runner, routing: current.uploaded.routing ?? null,
+      release_runner: requiredText(releaseRunner, 'SEAL_RELEASE_RUNNER_REQUIRED'), reused: reused === true,
       completed_stages: ['BUILDING', 'UPLOADED', 'VALIDATED'], updated_at: now().toISOString(),
     };
     const publication = await putJson(paths.validated, receipt);
@@ -180,7 +181,7 @@ export function createSealLifecycleStore(client, options) {
       request_id: requestIdValue(requestId), actor_role: actorRole,
       artifact: current.uploaded.artifact, provenance: current.uploaded.provenance,
       candidate_validation: { object: paths.validated, digest: digest(current.validated) },
-      build_runner: current.uploaded.build_runner, release_runner: current.validated.release_runner,
+      build_runner: current.uploaded.build_runner, routing: current.uploaded.routing ?? null, release_runner: current.validated.release_runner,
       reused_artifact: current.uploaded.reused, reused_validation: current.validated.reused,
       completed_stages: ['BUILDING', 'UPLOADED', 'VALIDATED', 'SEALED'], updated_at: now().toISOString(),
     };
@@ -297,7 +298,7 @@ function result(store, current, reused) {
     schema: 'ai.delivery.seal-result.v1', sourceSha: store.key.source_sha, controlPlaneSha: store.key.control_plane_sha,
     target: store.key.release_target, physicalNode: store.key.physical_node, artifactDigest: store.key.artifact_digest,
     sealKey: store.key.seal_key, finalSealReceiptObject: store.paths.final, buildRunner: current.uploaded?.build_runner ?? null,
-    releaseRunner: current.validated?.release_runner ?? null, status: current.status, reused: reused === true,
+    releaseRunner: current.validated?.release_runner ?? null, routing: current.uploaded?.routing ?? null, status: current.status, reused: reused === true,
     failure: current.failure ? { classification: current.failure.classification, retryable: current.failure.retryable, reason: current.failure.reason } : null,
   });
 }

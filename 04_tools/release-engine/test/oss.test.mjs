@@ -139,6 +139,11 @@ test('OSS final Seal receipt is the reusable authority for status and deployment
     controlPlaneSha: 'b'.repeat(40),
   }, { client });
   assert.equal(required.receipt.schema, 'ai.delivery.final-seal.v1');
+  assert.deepEqual(required.receipt.routing, {
+    request_id: 'fixture-request', selected_runner_class: 'aliyun', selected_runner_name: 'fixture-build',
+    lease_generation: 1, lease_expires_at: '2026-09-16T00:03:00.000Z', overflow_reason: null,
+    retry_count: 0, build_host: 'aliyun-ecs-202', reused_existing_task: false,
+  });
   assert.equal((await findFinalSealReceipt(fixture.adapter, {
     sourceSha: fixture.sourceSha, target: 'app', node: 'node-a',
   }, { client })).object, required.object);
@@ -369,6 +374,13 @@ function publishOptions(fixture, overrides = {}) {
     requestId: 'fixture-request',
     actorRole: 'build',
     buildRunner: 'fixture-build',
+    runnerClass: 'aliyun',
+    leaseGeneration: '1',
+    leaseExpiresAt: '2026-09-16T00:03:00.000Z',
+    overflowReason: 'none',
+    retryCount: '0',
+    buildHost: 'aliyun-ecs-202',
+    reusedExistingTask: 'false',
     npmVersion: '10.9.4',
     runnerImage: 'ubuntu24',
     repository: 'owner/repository',

@@ -99,7 +99,8 @@ test('Console retains optional public acceptance metadata while Prepare and Depl
   assert.match(prepareWorkflow, /ubuntu-24\.04/);
   assert.match(prepareWorkflow, /NPM_VERSION: 10\.9\.4/);
   assert.match(prepareWorkflow, /export PATH="\$node_bin:\$PATH"/);
-  assert.doesNotMatch(prepareWorkflow, /uses: actions\//);
+  assert.match(prepareWorkflow, /runs-on: ubuntu-24\.04[\s\S]*uses: actions\/checkout@v6/);
+  assert.doesNotMatch(prepareWorkflow, /actions\/cache|cache: npm/);
   assert.match(prepareWorkflow, /checkout_exact "\$control_root" "\$CONTROL_SHA"/);
   assert.match(prepareWorkflow, /checkout_exact "\$workspace" "\$RELEASE_SHA"/);
   assert.match(prepareWorkflow, /test "\$\(git rev-parse HEAD\)" = "\$RELEASE_SHA"/);

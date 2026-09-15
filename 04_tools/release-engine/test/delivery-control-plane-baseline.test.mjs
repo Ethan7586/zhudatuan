@@ -64,7 +64,8 @@ test('official orchestration preserves Build, seal, and Deploy separation', asyn
   assert.match(automatic, /push:\n\s+branches:\n\s+- zdt-next/);
   assert.match(oneTarget, /uses: \.\/\.github\/workflows\/prepare-artifact-aliyun\.yml/);
   assert.match(oneTarget, /operation: validate-candidate/);
-  assert.match(prepare, /\["self-hosted","linux","x64","zdt-aliyun-build"\]/);
+  assert.match(prepare, /select-runner/);
+  assert.match(prepare, /runs-on: \$\{\{ fromJSON\(needs\.route\.outputs\.runs_on\) \}\}/);
   assert.match(prepare, /--actor-role build/);
   assert.match(prepare, /--build-runner "\$RUNNER_NAME"/);
   assert.doesNotMatch(prepare, /\$HOME\/\.ssh|operation:\s*deploy/);

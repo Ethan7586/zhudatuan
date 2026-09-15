@@ -22,6 +22,24 @@ Build 角色只能创建构建来源、制品和 `uploaded.json`；Release 角�
 均不能单独产生 `SEALED`。状态查询直接读取并校验 OSS 最终回执；OSS 不可用或回执缺失时明确显示“未封板”。
 Deploy 在连接生产目标前必须取得与 source、目标、物理节点、artifact digest 和 control-plane SHA 完全一致的最终回执。
 
+### Runner 自动择路与网络恢复
+
+手动 Prepare 和 Automatic Artifact Closure 都把 `auto` 请求交给 `prepare-artifact-aliyun.yml` 内的同一个
+`select-runner` 协议。request ID 固定绑定 source SHA、target、真实物理 node 和 control-plane SHA。选择器使用
+OSS 不可变对象保存分代请求租约及两个槽位的原子 claim：阿里云槽可领取时优先阿里云；两槽繁忙、离线或已被
+租约领取时只溢出到标准 `ubuntu-24.04` Hosted Runner。两个阿里云 Build 槽都位于同一台 202 ECS，只是逻辑双槽。
+
+同一 request ID 的有效租约只能被观察，不能重复派发；领取前离线可写入 abandoned 证据并换新 generation，
+写入 started 后不得换 Runner。已经进入 `UPLOADED`、`VALIDATED` 或 `SEALED` 时直接沿用 Seal 生命周期。
+租约只解决调度竞态，不是全局交付门禁。GitHub API 状态仅为观察信息，不能代替 OSS 原子 claim。
+
+GitHub API、Git fetch 和 OSS 的瞬时网络错误最多有限重试三次；构建、测试、类型检查、摘要或 provenance 冲突、
+Seal Key/control-plane 冲突、候选验证失败、权限拒绝和无效输入不自动重试。错误回执固定包含 code、stage、
+retryable、attempts 和 nextSafeAction。sing-box 仅承载 GitHub 出站；阿里云 OSS、ECS 元数据、生产节点与业务域名
+继续由 `NO_PROXY` 直连，本协议不修改线上代理、Runner、systemd 或云网络。
+Runner 状态读取使用独立的 `ZDT_RUNNER_READ_TOKEN`，其 fine-grained 权限只允许仓库 Administration read；默认
+`GITHUB_TOKEN` 不被假定拥有 Runner 管理视图，权限拒绝也不得通过重试掩盖。
+
 1.4 是仓库唯一默认发布协议：GitHub 负责任务调度；系统级 Prepare 在阿里云 Build 槽有容量时优先使用阿里云，两个槽都忙或离线时将新任务送往 GitHub 托管 Runner，选择后不再迁移；候选封板与发布固定由阿里云 Release Runner 执行。`Prepare Artifact 1.4 - Aliyun` 生成不可变 OSS 制品并封板，`Deploy 1.4 - Aliyun Sealed Artifact` 只消费已封板制品。候选验证必须证明当前生产 source SHA 是候选 source SHA 的 Git 祖先，并把精确制品、候选目录、当前生产指针、Agent 和策略摘要写入封板记录；正式部署不能临时下载候选、安装依赖或构建。两条正常入口一次只接受一个物理 target，固定从 `zdt-next` 触发，source SHA 必须属于精确 `zdt-next` 历史。
 
 默认分支当前使用文件名带 `-aliyun` 的工作流，新分支从 `zdt-next` 创建后自然继承 1.4；历史分支中的旧 YAML 只是历史快照，不是可执行入口。旧 GitHub workflow ID 已删除。1.2 仅以两个名称明确的恢复入口保留，不再要求重复确认字符串；普通“部署”仍进入 1.4。

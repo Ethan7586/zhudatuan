@@ -22,6 +22,7 @@ test('automatic closure runs after zdt-next pushes, allows historical closure re
   assert.equal(automatic.jobs.close.with.head_sha, '${{ needs.plan.outputs.source_sha }}');
   assert.equal(automatic.jobs.close.uses, './.github/workflows/auto-prepare-one-target.yml');
   assert.equal(oneTarget.jobs.prepare.uses, './.github/workflows/prepare-artifact-aliyun.yml');
+  assert.equal(oneTarget.jobs.prepare.with.build_runner, 'auto');
   assert.equal(oneTarget.jobs.seal.uses, './.github/workflows/deploy-prepared-aliyun.yml');
   assert.equal(oneTarget.jobs.seal.with.operation, 'validate-candidate');
   assert.match(source, /automaticClosureSelection/);
@@ -37,7 +38,7 @@ test('manual Prepare and Deploy remain callable after becoming reusable', async 
   assert.ok(prepare.on.workflow_call);
   assert.ok(deploy.on.workflow_dispatch);
   assert.ok(deploy.on.workflow_call);
-  assert.equal(prepare.on.workflow_call.inputs.build_runner.default, 'aliyun');
+  assert.equal(prepare.on.workflow_call.inputs.build_runner.default, 'auto');
   assert.equal(deploy.on.workflow_call.inputs.operation.type, 'string');
 });
 

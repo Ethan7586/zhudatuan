@@ -57,6 +57,11 @@ test('workflow evidence receives its exact --file argument', () => {
   assert.equal(result.status, 1);
   assert.doesNotMatch(result.stderr, /EVIDENCE_FILE_REQUIRED/);
   assert.match(result.stderr, /ENOENT/);
+  const failure = JSON.parse(result.stderr).error;
+  assert.equal(failure.stage, 'publish-evidence');
+  assert.equal(failure.retryable, false);
+  assert.equal(failure.attempts, 1);
+  assert.equal(failure.nextSafeAction, 'stop-and-review-evidence');
 });
 
 test('prepared commands require exact control provenance and expected remote digests', async () => {

@@ -38,7 +38,7 @@ test('deployment waves stop forward progress after a failed earlier wave', () =>
 
 test('automatic closure preserves its exact machine-readable deployment scope', () => {
   const upload = auto.jobs.plan.steps.find((step) => step.uses === 'actions/upload-artifact@v6');
-  assert.equal(upload.with.name, 'automatic-artifact-closure-${{ github.sha }}');
+  assert.equal(upload.with.name, 'automatic-artifact-closure-${{ steps.matrix.outputs.source_sha }}');
   assert.equal(upload.with.path, '.automatic-artifact-closure/closure.json');
   assert.equal(upload.with['if-no-files-found'], 'error');
 });

@@ -5,6 +5,7 @@ import { dirname, resolve } from 'node:path';
 import { resolvePackageArtifactPaths } from './artifact.mjs';
 import { DeliveryError, invariant } from './errors.mjs';
 import { createSealKey, createSealLifecycleStore, sealObjectPaths } from './seal-lifecycle.mjs';
+import { withFiniteRetry } from './retry.mjs';
 import { digest, prettyStableJson, sha256 } from './stable.mjs';
 
 const DEFAULT_PREFIX = '';
@@ -26,6 +27,18 @@ export async function publishPreparedArtifact(adapter, options, dependencies = {
   const requestId = required(options.requestId, 'PREPARE_REQUEST_ID_REQUIRED');
   const buildRunner = required(options.buildRunner, 'PREPARE_BUILD_RUNNER_REQUIRED');
   invariant(options.actorRole === 'build', 'PREPARE_ROLE_FORBIDDEN', 'Only the Build role may publish prepared artifacts');
+  const routing = {
+    request_id: requestId,
+    selected_runner_class: required(options.runnerClass, 'PREPARE_RUNNER_CLASS_REQUIRED'),
+    selected_runner_name: buildRunner,
+    lease_generation: positiveInteger(options.leaseGeneration, 'PREPARE_RUNNER_LEASE_GENERATION_INVALID'),
+    lease_expires_at: exactTimestamp(options.leaseExpiresAt, 'PREPARE_RUNNER_LEASE_EXPIRY_INVALID'),
+    overflow_reason: options.overflowReason === 'none' ? null : options.overflowReason ?? null,
+    retry_count: nonnegativeInteger(options.retryCount ?? 0, 'PREPARE_RUNNER_RETRY_COUNT_INVALID'),
+    build_host: required(options.buildHost, 'PREPARE_BUILD_HOST_REQUIRED'),
+    reused_existing_task: options.reusedExistingTask === 'true' || options.reusedExistingTask === true,
+  };
+  invariant(['aliyun', 'github'].includes(routing.selected_runner_class), 'PREPARE_RUNNER_CLASS_INVALID', 'Prepared artifact must record Aliyun or GitHub Runner class');
   const packagePath = resolve(required(options.package, 'PREPARE_PACKAGE_REQUIRED'));
   const packageSet = await resolvePackageArtifactPaths(packagePath, JSON.parse(await readFile(packagePath, 'utf8')));
   invariant(packageSet.project === adapter.project, 'PREPARE_PROJECT_MISMATCH', 'Package belongs to another project');
@@ -160,7 +173,7 @@ export async function publishPreparedArtifact(adapter, options, dependencies = {
       sealKey: lifecycle.key.seal_key, ownerRequestId: begun.lease?.request_id, retryable: true,
     });
     const uploaded = await lifecycle.markUploaded({
-      requestId, actorRole: 'build', buildRunner,
+      requestId, actorRole: 'build', buildRunner, routing,
       artifact: { object: archiveObject, digest: artifact.archive.sha256, bytes: artifact.archive.bytes, releaseManifestObject },
       provenance: { object: provenanceObject, digest: `sha256:${provenanceSha256}` },
       reused: objects.every((item) => item.status === 'hit_remote'),
@@ -524,7 +537,21 @@ export function createOssClient(configuration, dependencies = {}) {
     const canonicalResource = object === null ? `/${auth.bucket}/` : `/${auth.bucket}/${object}`;
     const value = `${method}\n${options.contentMd5 ?? ''}\n${options.contentType ?? ''}\n${date}\n${canonicalOssHeaders}${canonicalResource}`;
     headers.Authorization = `OSS ${auth.accessKeyId}:${signature(auth.accessKeySecret, value)}`;
-    return fetchImpl(url, { method, headers, body: options.body });
+    const retried = await withFiniteRetry(async () => {
+      const response = await fetchImpl(url, { method, headers, body: options.body });
+      if (response.status === 408 || response.status === 429 || (response.status >= 500 && response.status <= 504)) {
+        const error = new Error(`OSS returned transient HTTP ${response.status}`);
+        error.status = response.status;
+        throw error;
+      }
+      return response;
+    }, {
+      stage: `oss-${method.toLowerCase()}`,
+      maxAttempts: Number(dependencies.networkMaxAttempts ?? 3),
+      delaysMs: dependencies.networkRetryDelaysMs ?? [250, 1000, 3000],
+      sleep: dependencies.sleep,
+    });
+    return retried.value;
   }
 }
 
@@ -743,6 +770,23 @@ function escapeRegExp(value) {
 function required(value, code) {
   if (value === undefined || value === null || value === '') throw new DeliveryError(code, code.replaceAll('_', ' ').toLowerCase());
   return value;
+}
+
+function positiveInteger(value, code) {
+  const number = Number(value);
+  invariant(Number.isSafeInteger(number) && number > 0, code, 'Expected a positive integer');
+  return number;
+}
+
+function nonnegativeInteger(value, code) {
+  const number = Number(value);
+  invariant(Number.isSafeInteger(number) && number >= 0, code, 'Expected a non-negative integer');
+  return number;
+}
+
+function exactTimestamp(value, code) {
+  invariant(typeof value === 'string' && Number.isFinite(Date.parse(value)), code, 'Expected an ISO timestamp');
+  return new Date(value).toISOString();
 }
 
 function elapsed(started) {
