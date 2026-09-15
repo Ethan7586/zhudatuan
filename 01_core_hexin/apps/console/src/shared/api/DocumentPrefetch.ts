@@ -328,14 +328,24 @@ export function startDocumentPrefetch(
 }
 
 function preloadDirectRoute(): void {
-  const route = location.pathname.match(/\/settings\/(members|access|qualification|notification)\/?$/)?.[1];
-  const loading = route === 'members' ? import('../../feature/member/MemberRoute')
-    : route === 'access' ? import('../../feature/access/AccessRoute')
-      : route === 'qualification' ? import('../../feature/qualification/QualificationRoute')
-        : route === 'notification' ? import('../../feature/notification/NotificationRoute')
+  const settingsRoute = location.pathname.match(/\/settings\/(members|access|qualification|notification)\/?$/)?.[1];
+  const entryRoute = location.pathname.match(/^\/scopes\/(platform|distributor|tenant|enterprise|mall)\/[^/]+\/(cockpit|products|supply-chain|orders|storefront-members)(?:\/[^/]+)?\/?$/)?.[2];
+  const selectionWorkspace = ['selection', 'pending'].includes(new URLSearchParams(location.search).get('workspace') ?? '');
+  const loading = settingsRoute === 'members' ? import('../../feature/member/MemberRoute')
+    : settingsRoute === 'access' ? import('../../feature/access/AccessRoute')
+      : settingsRoute === 'qualification' ? import('../../feature/qualification/QualificationRoute')
+        : settingsRoute === 'notification' ? import('../../feature/notification/NotificationRoute')
           : /^\/scopes\/(platform|distributor|tenant|enterprise|mall)\/[^/]+\/support(?:\/[^/]+)?\/?$/.test(location.pathname)
             ? import('../../feature/support/SupportRoute')
-          : undefined;
+            : entryRoute === 'cockpit' ? import('../../feature/cockpit/CockpitRoute')
+              : entryRoute === 'products' ? Promise.all([
+                import('../../feature/product/ProductRoute'),
+                selectionWorkspace ? import('../../feature/product/ProductSelectionRoute') : import('../../feature/product/ProductCatalogRoute'),
+              ])
+                : entryRoute === 'supply-chain' ? import('../../feature/supply-chain/SupplyChainRoute')
+                  : entryRoute === 'orders' ? import('../../feature/order/OrderRoute')
+                    : entryRoute === 'storefront-members' ? import('../../feature/storefront-member/StorefrontMemberRoute')
+                      : undefined;
   void loading?.catch(() => undefined);
 }
 

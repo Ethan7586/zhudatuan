@@ -69,6 +69,14 @@ describe('console bootstrap document', () => {
     expect(prefetch).toContain("import('../../feature/access/AccessRoute')");
   });
 
+  it('preloads only the current high-frequency workspace code', () => {
+    expect(prefetch).toContain("import('../../feature/cockpit/CockpitRoute')");
+    expect(prefetch).toContain("import('../../feature/product/ProductRoute')");
+    expect(prefetch).toContain("import('../../feature/product/ProductCatalogRoute')");
+    expect(prefetch).toContain("import('../../feature/order/OrderRoute')");
+    expect(prefetch).toContain("import('../../feature/storefront-member/StorefrontMemberRoute')");
+  });
+
   it('starts the exact qualification or notification read alongside scope hydration', () => {
     expect(prefetch).toContain('window.__consoleQualificationPrefetch = tracked(');
     expect(prefetch).toContain('window.__consoleNotificationPrefetch = tracked(');
