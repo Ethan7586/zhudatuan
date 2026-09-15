@@ -6646,3 +6646,26 @@
 | 验证方式 | 每个文档角色均可追溯到版本化定义，runtime/migration/bootstrap 类别无遗漏；线上实际成员关系仅由获授权数据库 Owner 只读复核。 |
 | 回滚方式 | 回退文档/引用提交，不改变数据库角色。 |
 | 是否需要独立复核 | 否（P3）；若作为合规/生产 runbook，身份与数据库 Owner 复核。 |
+
+## F-0346｜读镜像说明将未列入当前发布单元的可选 sidecar 写作已落地服务
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 公开目录缓存 / 运行文档 |
+| 类型 | 文档运行事实漂移、缓存部署可复核性 |
+| 严重级别 | **P3** |
+| 置信度 | 高（文档断言、当前源码/部署配置/release policy 和 AU-172 直接证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/CORE-BUSINESS-READ-MIRROR.md:157-175,178-193`；`01_core_hexin/services/commerce-api/src/api/coreReadCache.ts:25-104`；`02_platform_pingtai/infrastructure/storefront-compatibility/aliyun/ecosystem.core-cache.config.cjs:4-9`；`02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json:18-37`。 |
+| 当前行为 | 文档声称独立 `services/core-read-cache`、Tair 链路和备份程序已落地；当前源码树未发现该服务实现，只有 Commerce API 的可选 cache client 和 compatibility 部署目录的 loopback PM2 sidecar 配置；现行 release policy 未列该 target。AU-172 证明 client 在缓存缺失/失败时安全回源。 |
+| 预期行为 | 读镜像文档必须区分已部署运行单元、可选兼容性配置、客户端能力和目标计划；当前部署判断以受控 release policy 为准。 |
+| 直接证据 | [FACT][E-AU-895-001] 文档 157-175 的“已落地”列举；[FACT][E-AU-895-002] 当前 cache client 与 AU-172 回源证据；[FACT][E-AU-895-003] sidecar 仅存于 compatibility 配置，当前 release policy 无该单元。 |
+| 调用链或运行入口 | public catalog → `coreReadCache` client → （配置时）私有 cache endpoint；当前受控部署 → release policy targets，未注册 core-read-cache。 |
+| 用户影响 | 操作者可能误以为跨区域缓存、Tair、备份和性能指标已受控上线，导致错误的容量、故障或数据新鲜度判断。 |
+| 数据影响 | 客户端回源路径不写缓存失败；未发现当前缓存双写、资金或订单一致性事故。 |
+| 安全影响 | 错误地启用历史 PM2/Tair 配置可能绕开当前发布控制面；未发现当前外露端口、密钥或可利用路径。 |
+| 根因 | 早期兼容性 sidecar/目标架构未与后续受控多单元发布模型同步标记。 |
+| 建议方向 | 从修复时最新 `zdt-next` 建立单一 core-read-mirror-currentness 批次：标注历史/目标，链接现行 cache client 与 release policy，并裁决该 sidecar 是否正式产品化或退休；不在同批创建 Tair、部署服务、改缓存逻辑或删除兼容性文件。 |
+| 预计修改范围 | 读镜像说明及当前运行/兼容性入口链接。 |
+| 验证方式 | 每一“已部署”单元在 release policy/制品/健康检查中可解析；可选配置明确不代表运行；缓存缺失时定向目录读仍安全回源。 |
+| 回滚方式 | 回退独立文档/链接提交；不影响缓存或运行服务。 |
+| 是否需要独立复核 | 否（P3）；若决定正式启用/退休 sidecar，缓存与发布 Owner 专项复核。 |
