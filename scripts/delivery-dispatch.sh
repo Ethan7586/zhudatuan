@@ -47,10 +47,20 @@ echo "1.4.3 ${operation}: ${source_sha}${target:+ -> ${physical_node}/${target}}
 gh workflow run "$workflow" --ref zdt-next \
   -f operation="$operation" -f head_sha="$source_sha" -f release_target="$target" -f physical_node="$physical_node"
 
+# Another task can dispatch the same workflow concurrently. Correlate the
+# resulting run with every immutable dispatch input rather than using only
+# its creation order.
+if [ -n "$target" ]; then
+  expected_title="Delivery 1.4.3 ${operation} ${source_sha} ${target} ${physical_node}"
+  run_selector=".[] | select(.databaseId > ${previous_id} and .displayTitle == \\\"${expected_title}\\\") | .databaseId"
+else
+  run_selector=".[] | select(.databaseId > ${previous_id} and (.displayTitle | test(\\\"^Delivery 1\\\\.4\\\\.3 ${operation} ${source_sha}( *)$\\\"))) | .databaseId"
+fi
+
 run_id=''
 for attempt in {1..30}; do
-  run_id="$(gh_read run list --workflow "$workflow" --event workflow_dispatch --limit 30 --json databaseId \
-    --jq ".[] | select(.databaseId > $previous_id) | .databaseId" | head -1 || true)"
+  run_id="$(gh_read run list --workflow "$workflow" --event workflow_dispatch --limit 30 --json databaseId,displayTitle \
+    --jq "$run_selector" | head -1 || true)"
   [ -z "$run_id" ] || break
   sleep "$(( attempt < 3 ? attempt : 3 ))"
 done

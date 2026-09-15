@@ -25,4 +25,6 @@ test('the sole normal dispatcher submits exactly one 1.4.3 workflow', async () =
   assert.equal((source.match(/gh workflow run/g) ?? []).length, 1);
   assert.doesNotMatch(source, /prepare-artifact-aliyun|deploy-prepared-aliyun|deploy-source-aliyun|legacy-.*recovery/);
   assert.match(source, /query status without redispatching/);
+  assert.match(source, /databaseId,displayTitle/);
+  assert.match(source, /expected_title=/);
 });
