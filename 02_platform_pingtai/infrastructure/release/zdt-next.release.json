@@ -520,10 +520,14 @@
     {"id":"auth-web","targets":["auth-web"],"include":["01_core_hexin/apps/auth-web/**"],"reason":"auth static client change"},
     {"id":"console","targets":["console"],"include":["01_core_hexin/apps/console/**"],"reason":"console static client change"},
     {
-      "id": "session-resolver-compat",
-      "targets": ["identity-api","web-api"],
-      "include": ["01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers*.ts"],
-      "reason": "identity and web session database compatibility"
+      "id": "browser-auth-runtime-coherence",
+      "targets": ["identity-api","mall-provisioning-api","support-api","purchase-api","web-api","catalog-api"],
+      "include": [
+        "01_core_hexin/services/commerce/src/foundation/interface/HttpApp*.ts",
+        "01_core_hexin/services/commerce/src/foundation/security/AuthSessionCookies*.ts",
+        "01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers*.ts"
+      ],
+      "reason": "shared browser session transport and resolver changes require one coherent authenticated runtime rollout"
     },
     {
       "id": "mall-provisioning-isolation",
@@ -607,7 +611,7 @@
       "id": "commerce-shared",
       "targets": [],
       "include": ["01_core_hexin/services/commerce/**"],
-      "exclude": ["01_core_hexin/services/commerce/src/foundation/infrastructure/MigrationRunner.ts","01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers*.ts","01_core_hexin/services/commerce/src/modules/provisioning/03_application_yingyong/CreateMall.ts","01_core_hexin/services/commerce/src/entry/IdentityRegistrationApi*","01_core_hexin/services/commerce/src/bootstrap/IdentityRegistrationApiRuntime*","01_core_hexin/services/commerce/src/entry/IdentityNotificationJobs*","01_core_hexin/services/commerce/src/bootstrap/IdentityNotificationJobsRuntime*","01_core_hexin/services/commerce/src/entry/MallProvisioningApi*","01_core_hexin/services/commerce/src/bootstrap/MallProvisioningApiRuntime*","01_core_hexin/services/commerce/src/bootstrap/RuntimeCompatibility*","01_core_hexin/services/commerce/src/entry/ConsoleSupport*","01_core_hexin/services/commerce/src/bootstrap/ConsoleSupportRuntime*","01_core_hexin/services/commerce/src/entry/PurchaseApi*","01_core_hexin/services/commerce/src/bootstrap/PurchaseApiRuntime*","01_core_hexin/services/commerce/src/entry/WebBusinessApi*","01_core_hexin/services/commerce/src/bootstrap/WebBusinessApiRuntime*","01_core_hexin/services/commerce/src/entry/CatalogOperatorApi*","01_core_hexin/services/commerce/src/bootstrap/CatalogOperatorApiRuntime*","01_core_hexin/services/commerce/src/entry/CatalogJobs*","01_core_hexin/services/commerce/src/bootstrap/CatalogJobsRuntime*","01_core_hexin/services/commerce/src/entry/PaymentWebhookApi*","01_core_hexin/services/commerce/src/bootstrap/PaymentWebhookApiRuntime*","01_core_hexin/services/commerce/src/entry/PaymentJobs*","01_core_hexin/services/commerce/src/bootstrap/PaymentJobsRuntime*"],
+      "exclude": ["01_core_hexin/services/commerce/src/foundation/infrastructure/MigrationRunner.ts","01_core_hexin/services/commerce/src/foundation/interface/HttpApp*.ts","01_core_hexin/services/commerce/src/foundation/security/AuthSessionCookies*.ts","01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers*.ts","01_core_hexin/services/commerce/src/modules/provisioning/03_application_yingyong/CreateMall.ts","01_core_hexin/services/commerce/src/entry/IdentityRegistrationApi*","01_core_hexin/services/commerce/src/bootstrap/IdentityRegistrationApiRuntime*","01_core_hexin/services/commerce/src/entry/IdentityNotificationJobs*","01_core_hexin/services/commerce/src/bootstrap/IdentityNotificationJobsRuntime*","01_core_hexin/services/commerce/src/entry/MallProvisioningApi*","01_core_hexin/services/commerce/src/bootstrap/MallProvisioningApiRuntime*","01_core_hexin/services/commerce/src/bootstrap/RuntimeCompatibility*","01_core_hexin/services/commerce/src/entry/ConsoleSupport*","01_core_hexin/services/commerce/src/bootstrap/ConsoleSupportRuntime*","01_core_hexin/services/commerce/src/entry/PurchaseApi*","01_core_hexin/services/commerce/src/bootstrap/PurchaseApiRuntime*","01_core_hexin/services/commerce/src/entry/WebBusinessApi*","01_core_hexin/services/commerce/src/bootstrap/WebBusinessApiRuntime*","01_core_hexin/services/commerce/src/entry/CatalogOperatorApi*","01_core_hexin/services/commerce/src/bootstrap/CatalogOperatorApiRuntime*","01_core_hexin/services/commerce/src/entry/CatalogJobs*","01_core_hexin/services/commerce/src/bootstrap/CatalogJobsRuntime*","01_core_hexin/services/commerce/src/entry/PaymentWebhookApi*","01_core_hexin/services/commerce/src/bootstrap/PaymentWebhookApiRuntime*","01_core_hexin/services/commerce/src/entry/PaymentJobs*","01_core_hexin/services/commerce/src/bootstrap/PaymentJobsRuntime*"],
       "dynamicImpact": "commerce-services",
       "reason": "shared commerce dependency"
     },
