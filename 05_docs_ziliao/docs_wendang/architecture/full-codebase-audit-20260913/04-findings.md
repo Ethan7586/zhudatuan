@@ -4816,6 +4816,72 @@
 | 回滚方式 | 回退独立 checker/manifest/test 提交；在恢复可信门禁前不得将其“通过”当作 ownership 证明。 |
 | 是否需要独立复核 | 是（P2中的架构边界门禁）。 |
 
+## F-0301｜代码行数门禁仍扫描重组前的顶层目录，固定基线无法启动
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Quality / source line budget |
+| 类型 | 质量门禁、仓库结构漂移 |
+| 严重级别 | **P2** |
+| 置信度 | 高（脚本 roots 与 ENOENT 运行输出直接证据） |
+| 文件和精确位置 | `04_tools/scripts/check-line-budget.mjs:7-8,19-31`。 |
+| 当前/预期 | 脚本以仓库根的 `apps/services/packages/extensions` 为扫描根；当前源码位于 `01_core_hexin/*`，运行时在第一个 `apps` 目录抛 ENOENT。预期是扫描当前正式源码根，或由共享 source inventory 派生。 |
+| 直接证据 | [FACT][E-AU-783-001] `node .../check-line-budget.mjs` 固定基线报 `scandir .../zdt-next/apps ENOENT`；[FACT][E-AU-783-002] 当前应用、服务、包、扩展目录均在 `01_core_hexin/`。 |
+| 调用链或运行入口 | `npm run check:lines` → line budget walker → 根目录扫描。 |
+| 用户影响 | 不直接影响运行产品；任何超行文件都不会被当前门禁测量，质量声明不可验证。 |
+| 数据影响 | 无。 |
+| 安全影响 | 无直接证据。 |
+| 根因 | 仓库目录重组后静态扫描根未同步。 |
+| 建议方向 | 从最新 `zdt-next`建立单一 line-budget-root 批次，使用现有 repository/source inventory 作为唯一根定义，并加入当前路径与不存在路径的 fixture。 |
+| 预计修改范围 | 单一 checker 与定向测试。 |
+| 验证方式 | 在固定基线统计实际源码；新增300行受控 fixture必须失败，忽略目录/测试/生成物必须不计入。 |
+| 回滚方式 | 回退独立 checker/test 提交。 |
+| 是否需要独立复核 | 否。 |
+
+## F-0302｜MVP 交付门禁的状态枚举与当前需求矩阵不兼容，首条即失败
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Release / MVP delivery evidence |
+| 类型 | 发布可验证性、需求契约漂移 |
+| 严重级别 | **P2** |
+| 置信度 | 高（状态枚举、矩阵值与运行输出直接证据） |
+| 文件和精确位置 | `04_tools/scripts/check-platform-delivery.mjs:9-23`；`05_docs_ziliao/docs_wendang/requirements/mvp.yml:6,143`。 |
+| 当前/预期 | checker 只准 `Implemented/Integrated/Accepted/Released`，MVP03 及当前矩阵条目为 `Designed`，因此在首条抛 `MVP_STATUS_INVALID:MVP03`，后续路线、模块、表与证据检查不执行。预期是状态语义与需求矩阵版本一致，或非完成状态被明确地作为不发布结果处理而非执行错误。 |
+| 直接证据 | [FACT][E-AU-783-003] 正式定向执行在 MVP03 失败；[FACT][E-AU-783-004] 21条 status 字段为 `Designed`。 |
+| 调用链或运行入口 | `npm run check:delivery` → MVP matrix/evidence/artifact static validation。 |
+| 用户影响 | 不直接改变上线流量；无法从该门禁证明 MVP 交付证据是否齐全或状态是否允许发布。 |
+| 数据影响 | 无。 |
+| 安全影响 | 无直接证据。 |
+| 根因 | checker将完成态作为唯一合法枚举，而需求矩阵仍以设计态作为当前基线。 |
+| 建议方向 | 从最新主线拆出 delivery-status-contract 批次，先确定状态机与“不可发布”的正常输出语义，再检查每条 evidence，不要仅把 `Designed` 批量替换为完成态。 |
+| 预计修改范围 | MVP schema/checker、定向 fixture；可能需要经过产品/发布负责人确认。 |
+| 验证方式 | 对 Designed、Implemented、Released 和未知值分别有稳定预期；完成态才验证发布证据，非完成态应给可判读的阻断结果。 |
+| 回滚方式 | 回退独立 checker/fixture 提交。 |
+| 是否需要独立复核 | 是（发布契约）。 |
+
+## F-0303｜分页门禁的 pricing 豁免仍指向旧路径，固定上限列表被误报为无 cursor 分页
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Quality / pagination boundary |
+| 类型 | 正确性、门禁可信度 |
+| 严重级别 | **P2** |
+| 置信度 | 高（硬编码路径、真实实现路径、查询界限和运行输出直接证据） |
+| 文件和精确位置 | `04_tools/scripts/check/pagination.mjs:14-24`；`modules/pricing/03_application_yingyong/PricingOperations.ts:13-21,41-45`；`modules/webbusiness/WebPricingOperations.ts:12-20,25-29`；`modules/identity/05_interface_jieru/http/SessionTicketOperations.ts:337-345`。 |
+| 当前/预期 | checker只豁免旧的 `modules/pricing/PricingOperations.ts` 转发路径，并要求其包含 SQL proof；真实 pricing 实现已迁入 `03_application_yingyong`，因此自有 `queryValues(...,100)` 与 `limit 100` 仍报 `PAGE_RESULT_WITHOUT_CURSOR` 和 `BOUNDED_BATCH_PROOF_MISSING`。预期是根据查询形态/明确注解而非脆弱文件路径判断有界查找与真正分页。 |
+| 直接证据 | [FACT][E-AU-783-005] 固定基线输出4项失败；[FACT][E-AU-783-006] 真实 pricing query 同时限制输入100和 SQL `limit 100`，旧文件仅转发 export。 |
+| 调用链或运行入口 | `npm run check:pagination` → Commerce `*Operations.ts` 文本扫描。 |
+| 用户影响 | 门禁无法可靠阻止真实 offset/无界分页，且会把固定上限 session/SKU 查询混入失败结果；不直接证明现有查询错误。 |
+| 数据影响 | 无写入。 |
+| 安全影响 | 无直接证据。 |
+| 根因 | 路径迁移后例外和 proof 规则未同步，文本启发式未表达“bounded lookup”语义。 |
+| 建议方向 | 从最新主线建立 pagination-gate-contract 批次：由 shared query helper/显式 bounded annotation 描述例外，迁移 pricing 断言，并为 offset、无 cursor pageResult、有界 lookup 建最小反事实 fixture。 |
+| 预计修改范围 | checker、定向 fixture，可能加共享注解；不改业务 SQL。 |
+| 验证方式 | 当前三类有界查询不再误报；插入 offset 或无 bound/page cursor 的真实分页必须失败。 |
+| 回滚方式 | 回退独立 checker/test 提交。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0293｜Internal Mall 导入模式缺少目标数据库与本机边界
 
 | 字段 | 记录 |
