@@ -4838,6 +4838,28 @@
 | 回滚方式 | 回退独立 checker/manifest/test 提交；在恢复可信门禁前不得将其“通过”当作 ownership 证明。 |
 | 是否需要独立复核 | 是（P2中的架构边界门禁）。 |
 
+## F-0305｜支付部署声明门禁依赖过时精确源码片段，等价安全接线被误判失败
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Payment Jobs / Payment Webhook release contracts |
+| 类型 | 发布可验证性、静态门禁脆弱性 |
+| 严重级别 | **P2** |
+| 置信度 | 高（expectation、实际等价接线和运行输出直接证据） |
+| 文件和精确位置 | `check/payment-jobs-deployment.mjs:16-22,44-49`；`PaymentJobsRuntime.ts:98-137`；`check/payment-webhook-deployment.mjs:27-31`；`PaymentWebhookApiMain.ts:9-20`。 |
+| 当前/预期 | Jobs checker要求具体 literal `state.current_user !== 'shopjob'`，实际使用参数默认 `expectedRole = 'shopjob'` 并做同一比较；Webhook checker要求三参数 listen，实际调用带第四个 node context resolver。两个检查均在该文本差异处抛错，余下 service/env/delivery 断言不执行。预期是验证角色、loopback port、operation isolation 等行为/结构契约，而非完整调用文本。 |
+| 直接证据 | [FACT][E-AU-786-001] Jobs 定向命令报缺少旧 literal；实际 runtime 134-137 default role 为 shopjob且 fail-closed比较；[FACT][E-AU-786-002] Webhook 定向命令报缺少三参 literal；entry 20 行保留相同 app/port/127.0.0.1并额外传入 resolver。 |
+| 调用链或运行入口 | 两个人工/质量静态 checker → payment runtime/entry → systemd/env/delivery 交叉断言。未发现根 package/workflow自动入口。 |
+| 用户影响 | 不直接证明支付 worker 或 webhook 不安全；当前门禁不能证明完整支付发布链的其它声明仍一致，发布审计证据被阻断。 |
+| 数据影响 | 未执行数据库写入、迁移或队列。 |
+| 安全影响 | Webhook loopback/profiles/roles的静态回归保证下降；未发现签名或权限绕过。 |
+| 根因 | 实现演进（参数化角色、node context）后，检查器将历史字符串当作稳定接口。 |
+| 建议方向 | 从最新主线拆出 payment-deployment-contract 批次，将高风险事实抽为小型 parser/AST 或导出的配置断言，并为“新增合法参数”“等价默认 role”写反事实；不可通过放宽任意字符串匹配修复。 |
+| 预计修改范围 | 两个 checker与定向 fixture；不改支付运行代码、迁移或部署声明。 |
+| 验证方式 | 同一 role/port/operation isolation 的等价重构应通过；错误 role、非 loopback bind、混入 purchase operation、错误 Caddy route 必须失败。 |
+| 回滚方式 | 回退独立 checker/fixture 提交。 |
+| 是否需要独立复核 | 是（支付发布边界）。 |
+
 ## F-0301｜代码行数门禁仍扫描重组前的顶层目录，固定基线无法启动
 
 | 字段 | 记录 |
