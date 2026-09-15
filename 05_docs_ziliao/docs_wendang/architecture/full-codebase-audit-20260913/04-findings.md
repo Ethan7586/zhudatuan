@@ -5532,3 +5532,25 @@
 | 验证方式 | 在隔离环境对选定正式模板做 render + Kubernetes dry-run/schema validation；验证 release adapter 的实际输入只指向该来源；在不执行生产 cutover 的情况下运行定向 check。 |
 | 回滚方式 | 回退独立控制面变更；保留先前已签名制品和当前 active release 指针，禁止把审计分支用于部署。 |
 | 是否需要独立复核 | 是；复核者必须独立检查当前 `zdt-delivery`/release adapter 输入、ACK API discovery、实际部署命令和生产集群发布证据。 |
+
+## F-0295｜默认 staging README 仍提供绕过 Full 门禁的旧 PM2/Caddy 操作路径
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Staging operations / release control-plane |
+| 类型 | 文档与运行控制面漂移、发布安全 |
+| 严重级别 | **P2** |
+| 置信度 | 高（README 操作命令、legacy config 及 Full profile 的明确拒绝逻辑均为直接证据；实际是否仍有人按 README 操作未验证） |
+| 文件和精确位置 | `02_platform_pingtai/infrastructure/zhudatuan/aliyun/staging/README.md:7-58`；`delivery.yml:6-18`；`ecosystem.config.cjs:3-51`；`ecosystem.full.config.cjs:3-5`；`PREPARE.md:11-23,97-118`。 |
+| 当前/预期 | 默认 README 将本目录描述为隔离预发布入口，指导直接 `caddy reload` 与 `pm2 startOrReload`，使用 `/opt/zhudatuan-staging`、3101 和 default PM2 Api/Jobs；同目录 Full staging 已使用 `/opt/zhudatuan-staging-full`、九个 systemd unit、证据 P00–P12，并明确 Full 禁止 PM2。预期是操作者只有一个明确的正式候选入口，legacy profile 必须被清楚标注为历史/专项用途且不能与 Full 操作手册混淆。 |
+| 直接证据 | [FACT][E-AU-744-001] README 7-11 定义非 full 路径，40-58 直接执行 Caddy reload 与 PM2 start；[FACT][E-AU-744-002] default delivery/PM2 config 同样绑定 legacy release root、3101、ApiMain/JobsMain；[FACT][E-AU-744-003] `check.mjs` 仍 require default ecosystem 和读取 delivery，证明其不是死文件；[FACT][E-AU-744-004] full ecosystem 在加载时直接抛出 systemd-only 禁令，PREPARE 11-23、97-118 将 full 启动置于 gate/授权与 fail-closed Full Jobs 之后。 |
+| 调用链或运行入口 | 操作者阅读默认 README → 直接 Caddy/PM2 legacy profile；Full 操作者应走 PREPARE → candidate artifacts/evidence → `verify-readiness` → systemd/Caddy candidate 步骤。 |
+| 用户影响 | 操作者可能把 legacy API/Jobs 当作当前 Full staging 启动方式，跳过候选制品、主机身份、数据库角色、ACL、负向路由与 Full Jobs 的明确停机边界。 |
+| 数据影响 | legacy Jobs 若被错误启动，可能对其所配置的 staging DB/Redis/provider scope 产生异步写入；实际 host env 和运行状态未验证。 |
+| 安全影响 | 直接 reload/PM2 路径绕开 Full profile 的 source=installed、DynamicUser、root-owned evidence 和 gate checks，增加配置误接线或非预期公开入口风险。 |
+| 根因 | legacy staging profile 与 Full staging profile 同目录共存，但 README 的默认入口没有明确优先级/退役状态，仓内静态检查仍把 legacy config 当作有效输入。 |
+| 建议方向 | 在最新 `zdt-next` 建立单一 staging control-plane clarification batch：先确认 legacy profile 是否仍有正式专项消费者；若有，给 README/配置加明确 profile/owner/禁止 Full 使用标识，并让入口按 profile 显式选择；若无，制定经运行证据验证的退役计划。不要在审计分支删除 PM2/Caddy 配置，也不要直接执行 README 命令。 |
+| 预计修改范围 | 操作文档、profile manifest/check、可能的 legacy runner 保护或迁移说明；不改业务实现，不接触线上。 |
+| 验证方式 | 独立分支确认实际 `zdt-delivery` 与 staging runbook 的唯一入口、目标主机运行单元和现有 PM2 inventory；分别验证 legacy 专项路径与 Full systemd path 不可交叉启动。 |
+| 回滚方式 | 回退独立文档/control-plane 变更；保留当前 active release 与受控 legacy 配置，除非另获专门退役授权。 |
+| 是否需要独立复核 | 是；复核者需独立检查当前 staging 主机的 PM2/systemd/Caddy 状态、发布控制面和实际操作者 runbook。 |
