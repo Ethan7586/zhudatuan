@@ -5,7 +5,6 @@ import { loadAdapter } from './src/adapter.mjs';
 import { channelCommand } from './src/channel.mjs';
 import { e06SovereignCommand } from './src/e06-sovereign.mjs';
 import { asDeliveryError, deliveryErrorContract } from './src/errors.mjs';
-import { doctorCommand } from './src/doctor.mjs';
 import {
   baselineCommand,
   buildCommand,
@@ -33,6 +32,11 @@ import { verifyReproducibilityCommand } from './src/reproducibility.mjs';
 import { classifyDeliveryFailure } from './src/retry.mjs';
 
 const DEFAULT_ADAPTER = '02_platform_pingtai/infrastructure/release/zdt-next.release.json';
+async function doctorCommand(adapter, options) {
+  const doctor = await import('./src/doctor.mjs');
+  return doctor.doctorCommand(adapter, options);
+}
+
 const commands = Object.freeze({
   plan: planCommand,
   install: installCommand,
