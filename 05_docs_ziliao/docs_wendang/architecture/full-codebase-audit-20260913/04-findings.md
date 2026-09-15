@@ -4794,6 +4794,28 @@
 | 验证/回滚 | 在隔离构建中人为超过对应 app budget，确认 gate 失败；若已下线，确认 config schema/文档不再宣称保护。回滚为撤回单一 quality-policy change。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0337｜VI 1.1 证据链接把 viewport 标注与全页图尺寸混用
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Historical design evidence / VI 1.1 |
+| 类型 | 视觉验收元数据、证据可复核性 |
+| 严重级别 | **P3** |
+| 置信度 | 高（README 链接文本与 PNG 文件元数据为直接证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/evidence/vi/2026-08-28/README.md:9-10`；`zhudatuan-vi-1.1-desktop.png`、`zhudatuan-vi-1.1-mobile.png`。 |
+| 当前/预期 | README 将图像链接标为 Desktop 1440×1000、Mobile 390×844；实际 PNG 是 1440×2591 与 390×5715 的全页导出图。预期是明确标注为测试 viewport 与全页截图尺寸，或将链接文字改为实际图像尺寸。 |
+| 直接证据 | [FACT][E-AU-871-001] README:9-10 的两个尺寸标签；[FACT][E-AU-871-002] file 元数据为 desktop 1440×2591 RGB PNG、mobile 390×5715 RGB PNG；[FACT][E-AU-871-003] 视觉抽检显示两图均为全页设计板而非单屏截面。 |
+| 调用链或运行入口 | 人工设计/验收读者 → VI evidence README → Desktop/Mobile 图件；非运行时调用链。 |
+| 用户影响 | 读者可能将导出图尺寸误作为响应式视口或反过来，难以复现并比较历史无障碍/overflow 结论。 |
+| 数据影响 | 无直接数据影响。 |
+| 安全影响 | 无直接安全漏洞。 |
+| 根因 | 证据索引未区分浏览器测试 viewport 和全页导出图像尺寸。 |
+| 建议方向 | 从当时最新 `zdt-next` 建立单一 vi-evidence-metadata batch：明确两个 viewport、实际图像尺寸、浏览器/工具版本与历史状态；不调整设计 token、生产 UI 或构建。 |
+| 预计修改范围 | 单一 evidence README 与可选静态元数据校验。 |
+| 验证方式 | 链接文字/元数据准确区分 viewport 和导出尺寸；读者可复现历史证据的适用边界。 |
+| 回滚方式 | 回退独立文档元数据提交。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0336｜MVP 浏览器验收报告没有把截图绑定到其失败断言
 
 | 字段 | 记录 |
