@@ -225,7 +225,6 @@ export function startDocumentPrefetch(
     const requestedCursor = new URLSearchParams(location.search).get('cursor') ?? undefined;
     const memberCursor = route === 'members' ? requestedCursor : undefined;
     const accessCursor = route === 'access' ? requestedCursor : undefined;
-    const capabilities = Array.isArray(value.capabilities) ? value.capabilities : [];
     const headers = {
       'x-scope-hint': direct.id,
       'x-access-version': String(value.accessVersion),
@@ -240,10 +239,10 @@ export function startDocumentPrefetch(
       accessVersion: value.accessVersion!,
       memberCursor,
       accessCursor,
-      members: route === 'members' || capabilities.includes('member.members.read')
+      members: route === 'members'
         ? readJson<unknown>(`/api/v1/members?${memberParameters.toString()}`, headers).promise
         : Promise.resolve(undefined),
-      access: route === 'access' || capabilities.includes('access.center.read')
+      access: route === 'access'
         ? readJson<unknown>(`/api/v1/access/center?${accessParameters.toString()}`, headers).promise
         : Promise.resolve(undefined),
     };

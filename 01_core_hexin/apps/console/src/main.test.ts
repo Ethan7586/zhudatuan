@@ -11,11 +11,11 @@ describe('console bootstrap document', () => {
   it('loads the Host-bound NodeManifest before API prefetch or application modules', () => {
     expect(index).not.toContain('%VITE_API_BASE_URL%');
     expect(index).not.toContain('%VITE_CLIENT_VERSION%');
-    expect(runtime).toContain("fetch('/console-runtime.json'");
-    expect(runtime).toContain("fetch('/console-build.json'");
-    expect(runtime).toContain('const nodeResponsePromise = fetch(');
-    expect(runtime).toContain('const fallbackResponsePromise = fetch(');
-    expect(runtime.indexOf('const fallbackResponsePromise = fetch('))
+    expect(runtime).toContain("fetcher('/console-runtime.json'");
+    expect(runtime).toContain("fetcher('/console-build.json'");
+    expect(runtime).toContain('const nodeResponsePromise = fetcher(');
+    expect(runtime).toContain('const artifactResponsePromise = fetcher(');
+    expect(runtime.indexOf('const artifactResponsePromise = fetcher('))
       .toBeLessThan(runtime.indexOf('const nodeResponse = await nodeResponsePromise'));
     expect(prefetch).toContain('fetch(`${appConfig.apiBaseUrl}${path}`');
     expect(prefetch).toContain("'x-client-version': appConfig.clientVersion");
@@ -57,11 +57,13 @@ describe('console bootstrap document', () => {
     expect(prefetch).toContain("value.capabilities.includes('support.cases.read')");
   });
 
-  it('starts the direct member and access reads alongside scope hydration', () => {
+  it('starts only the current direct management read alongside scope hydration', () => {
     expect(prefetch).toContain('window.__consoleMemberPrefetch = tracked(');
     expect(prefetch).toContain('window.__consoleAccessPrefetch = tracked(');
     expect(prefetch).toContain('`/api/v1/members?${memberParameters.toString()}`');
     expect(prefetch).toContain('`/api/v1/access/center?${accessParameters.toString()}`');
+    expect(prefetch).toContain("members: route === 'members'");
+    expect(prefetch).toContain("access: route === 'access'");
     expect(prefetch).toContain("import('../../feature/member/MemberRoute')");
     expect(prefetch).toContain("import('../../feature/access/AccessRoute')");
   });
@@ -76,7 +78,7 @@ describe('console bootstrap document', () => {
   });
 
   it('makes every document prefetch observable and immediately abortable by navigation', () => {
-    expect(prefetch).toContain('const slot: Tracked<T> = { settled: false');
+    expect(prefetch).toContain('const slot: { settled: boolean; promise: Promise<T | undefined> } = { settled: false');
     expect(prefetch).toContain('window.__consoleAbortDocumentPrefetch = () =>');
     expect(prefetch).toContain('controller.abort(), 1_500');
     expect(prefetch).not.toContain('controller.abort(), 15_000');
