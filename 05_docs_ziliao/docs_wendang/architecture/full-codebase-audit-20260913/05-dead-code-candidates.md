@@ -1489,7 +1489,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 运行结论 | 该映射补齐平台 Owner 的已发布门店职责，后续精确 owner-role 演进不是删除依据。 |
 | 数据/契约责任 | 承担平台级门店管理操作的特权授权边界。 |
 | 可否删除 | 禁止 |
-| 二次复核 | 是：owner 权限全集、deny 覆盖、scope SQL 与审计记录。 |
+| 二次复核 | RV-0056 已完成：维持 GX；静态复核确认 partner.read/manage 是正式门店操作 capability 前提，缺少 manage 会 fail-closed，资源仍经 scope 限定。真实 deny、审计和恢复未验证。 |
 
 - platform Owner 门店授权归 GX-0034。累计 G0 60、G1 83、G2 5、G3 0、GX 34；未删除任何文件。
 
