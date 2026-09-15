@@ -73,8 +73,8 @@ describe('member administrator invitation', () => {
     await user.click(screen.getByRole('button', { name: '邀请管理员' }));
     const dialog = await screen.findByRole('dialog', { name: '邀请管理员' });
     const level = within(dialog).getByRole('group', { name: '管理员级别' });
-    expect(within(level).getByRole('radio', { name: /^普通管理员/ }).checked).toBe(true);
-    expect(within(level).getByRole('radio', { name: /^高级管理员/ }).checked).toBe(false);
+    expect((within(level).getByRole('radio', { name: /^普通管理员/ }) as HTMLInputElement).checked).toBe(true);
+    expect((within(level).getByRole('radio', { name: /^高级管理员/ }) as HTMLInputElement).checked).toBe(false);
     await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
     await user.clear(within(dialog).getByLabelText('邀请名称'));
     await user.type(within(dialog).getByLabelText('邀请名称'), '集团运营邀请');
