@@ -4794,6 +4794,28 @@
 | 验证/回滚 | 在隔离构建中人为超过对应 app budget，确认 gate 失败；若已下线，确认 config schema/文档不再宣称保护。回滚为撤回单一 quality-policy change。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0334｜告警目录把人工保护动作写成未证实的自动保护
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Operations / alert catalog |
+| 类型 | 告警自动化、运行资料可信度 |
+| 严重级别 | **P3** |
+| 置信度 | 高（目录文本、全仓反查与实际独立 alert 实现为直接证据；线上告警平台状态未验证） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/alerts/catalog.md:3-17`。 |
+| 当前/预期 | 目录将支付完整性、账务不平、跨 scope、库存超卖、订单创建失败等信号的保护动作称为“Automatic protection”。固定基线中未找到该目录、完整信号文本或这些动作的规则注册/消费者；可定位的 `IdentityNotificationBacklogMonitor` 仅为身份通知 backlog 写入独立 alert。预期是自动化动作有可追溯的规则/运行入口，或目录明确其为人工 runbook 指引及未验证自动化。 |
+| 直接证据 | [FACT][E-AU-867-001] 十份目录引用的 P0/P1 runbook 均存在，`03_quality_ceshi/tests/recovery/runbook.spec.ts:8-36` 对其存在性/内容有测试；[FACT][E-AU-867-002] 排除目录后未找到目录信号文本、自动保护语句或对应保护动作的静态消费者；[FACT][E-AU-867-003] `IdentityNotificationBacklogMonitor.ts:39-67` 仅对 identity notification queue 写入 `runtime.deadletter` alert，不能覆盖目录其他信号。 |
+| 调用链或运行入口 | 人工运维者 → alert catalog → incident runbook；独立 identity notification monitor → telemetry/deadletter。 |
+| 用户影响 | 运营人员可能误以为高风险写入已自动冻结，而实际需要人工判断和执行手册；未验证发生过事故或遗漏处置。 |
+| 数据影响 | 自动冻结不存在或失效时，潜在异常写入窗口可能比文档预期长；本审计未验证线上平台。 |
+| 安全影响 | 跨 scope 事件的会话撤销/操作冻结若仅是人工步骤，响应时效依赖人工；未发现实际披露或线上攻击证据。 |
+| 根因 | 人工 runbook 目录与自动化保护能力没有以同一可检索的规则/注册表关联，目录将期望动作表述为既有自动化。 |
+| 建议方向 | 从当时最新 `zdt-next` 建立单一 alert-catalog-automation-evidence 批次：为每项自动化列出受控规则/worker/平台证据，或将文字降为人工止损步骤；先定义每项可观测信号、执行授权、幂等与故障降级，不在审计分支添加冻结逻辑。 |
+| 预计修改范围 | 告警目录及可选自动化注册/验证测试；由运维/安全 Owner 定稿。 |
+| 验证方式 | 每个标为自动的信号均能定位到触发器、授权边界、执行日志和 fail-safe 测试；没有自动化的项明确显示人工响应，演练时不产生不可控写入。 |
+| 回滚方式 | 回退独立文档/自动化证据提交；任何真实保护变更另有独立运行回滚方案。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0333｜卡券操作矩阵把冻结契约的 named schema 写成 structural
 
 | 字段 | 记录 |
