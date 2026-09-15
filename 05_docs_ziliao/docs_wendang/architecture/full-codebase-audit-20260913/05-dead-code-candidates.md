@@ -1767,3 +1767,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 是；在专用、非生产 Linux host 上独立核验实际 launcher、root/systemd namespace、随机端口冲突、fixture cleanup receipt、受保护单元/指针只读快照和失败恢复；不得在生产节点或审计工作树执行。 |
 
 - Linux readiness fixture 归 DC-0082。累计 G0 62、G1 94、G2 5、G3 0、GX 43；未删除任何文件。
+
+## DC-0083｜数据库对象合同生成器的正式入口缺口
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `04_tools/scripts/audit/build-database-object-contract.mjs`。 |
+| 疑似原因 | 固定基线未找到 package script、GitHub workflow 或 release manifest 对该生成器的静态调用；现有 governance 台账同样登记它为 generator-no-entry。 |
+| 保留证据 | 它按 migration SQL 静态推导 schema/table/view/function/trigger/policy/grant 并重写 `database/contracts/objects.yml`；该清单被 database callgraph、mall-provisioning deployment、JourneyHarness、database-contracts 与 P0 verifier 消费。 |
+| 可否删除 | 否；生成器可能由人工/仓外数据库契约流程运行，且直接影响 3 万行对象清单和多个发布/质量 gate。 |
+| 二次复核 | G1 不强制；拟收敛前必须确认 Database Contract Owner、当前权威生成入口、migration replay/catalog diff 证据和重生成是否可得到无差异 output。 |
+
+- 数据库对象合同生成器归 DC-0083。累计 G0 62、G1 95、G2 5、G3 0、GX 43；未删除任何文件。
