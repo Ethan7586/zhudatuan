@@ -5034,6 +5034,23 @@
 | 回滚方式 | 回退独立compiler/test提交；不存在本审计产生的制品需要清理。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0315｜Console 性能脚本在候选制品初始化失败时可能遗留 baseline 本地监听器
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Tooling / Console performance benchmark |
+| 类型 | 本地资源清理、性能证据边界 |
+| 严重级别 | **P3** |
+| 置信度 | 高（控制流直接证据；未启动server/browser） |
+| 文件和精确位置 | `04_tools/scripts/perf/console-cold-start.mjs:24-49,52-70,292-366,526-538`。 |
+| 当前/预期 | baseline/candidate `target()` 在try前按序执行；baseline的`serve()`已绑定127.0.0.1随机端口后，candidate的artifact读取/serve失败会跳过49行finally。预期是每个已启动server无论后续target初始化或测量如何失败均被关闭。 |
+| 直接证据 | [FACT][E-AU-807-001] 24-27在try前await target；52-70 target内先read artifact再serve；526-538只在已进入try后关闭targets server。 |
+| 调用链或运行入口 | 人工 Node CLI + baseline/candidate Console dist → local HTTP/Chromium/mock API → optional JSON/profile。 |
+| 用户/数据/安全影响 | 仅本机性能运行失败时可能遗留loopback listener；不直接影响线上。合成Owner API不能证明真实登录、授权或后端性能。 |
+| 建议方向 | 从最新主线单独修复：以资源栈/outer finally保护增量启动的server，并加candidate init failure fixture；性能报告显式标为synthetic API benchmark。 |
+| 验证/回滚 | 构造合法baseline+无效candidate，断言端口关闭；回滚为独立工具/test提交。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0302｜MVP 交付门禁的状态枚举与当前需求矩阵不兼容，首条即失败
 
 | 字段 | 记录 |

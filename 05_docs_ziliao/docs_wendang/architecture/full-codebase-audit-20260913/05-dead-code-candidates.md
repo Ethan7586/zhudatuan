@@ -1875,3 +1875,15 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 是；由数据/财务/供应商演示负责人确认当前人工入口、目标数据库安全互锁、执行回执与cleanup演练。 |
 
 - 供应商业务模拟SQL归 DC-0090。累计 G0 62、G1 100、G2 5、G3 0、GX 46；未删除任何文件。
+
+## DC-0091｜Console cold-start 性能脚本的自动入口缺口
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `04_tools/scripts/perf/console-cold-start.mjs`。 |
+| 保留证据 | 显式读取Console artifact、在loopback服务下以受控网络/CPU及mock API复现cold-start，输出可比较性能和依赖闭包。 |
+| 可否删除 | 否；人工性能验收、release review与外部wrapper未排除。 |
+| 二次复核 | 收敛前确认Performance Owner入口、artifact provenance和是否已有替代基准。 |
+
+- Console performance benchmark归 DC-0091。累计 G0 62、G1 101、G2 5、G3 0、GX 46；未删除任何文件。
