@@ -1820,3 +1820,17 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | G1不强制；拟收敛前必须确认当前 Node Delivery Owner 的候选验收入口、artifact provenance 要求、受控临时目录策略与最近隔离演练回执。 |
 
 - AutoNode candidate evidence generator 归 DC-0086。累计 G0 62、G1 97、G2 5、G3 0、GX 44；未删除任何文件。
+
+## DC-0087｜本地预览数据库与运行时检查器的自动入口缺口
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `04_tools/scripts/check/local-preview-database.mjs`、`local-preview-runtime.mjs`。 |
+| 疑似原因 | 固定基线未发现根 package script、GitHub workflow 或 release manifest 自动调用。 |
+| 保留证据 | database checker只接受 loopback URL并使用 `begin read only`；runtime checker提供候选变更归属、lockfile、migration ledger和本地端口/worktree attribution，且治理台账标为人工隔离预览工具。 |
+| 未排除项 | 当前或未来本地 preview操作者、外部开发脚本、candidate evidence与历史兼容流程。`--prepare-runtime-config`的 local secret 改写也说明其不能被当作无职责文本删除。 |
+| 可否删除 | 否；未满足运维责任、替代、可观察行为和第二次复核条件。 |
+| 二次复核 | G1不强制；拟收敛前由 Local Preview Owner 确认当前 branch/base/preview topology、secrets policy和是否已有替代工具。 |
+
+- Local preview checkers 归 DC-0087。累计 G0 62、G1 98、G2 5、G3 0、GX 44；未删除任何文件。

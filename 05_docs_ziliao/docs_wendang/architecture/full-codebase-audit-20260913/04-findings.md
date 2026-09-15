@@ -4882,6 +4882,28 @@
 | 回滚方式 | 回退独立 checker/fixture 提交。 |
 | 是否需要独立复核 | 是（支付发布边界）。 |
 
+## F-0310｜本地预览运行时检查器锁定历史分支/base，并把正常 migration ledger 写入全部判为非法
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Local preview tooling |
+| 类型 | 开发/预览验证可信度、历史基线漂移 |
+| 严重级别 | **P3** |
+| 置信度 | 高（硬编码常量、source-only运行输出和 migration matcher直接证据） |
+| 文件和精确位置 | `04_tools/scripts/check/local-preview-runtime.mjs:10-13,35-46,75-83`。 |
+| 当前/预期 | checker默认要求历史 branch `codex/product-000a-baseline-isolation`和旧base SHA；对旧base之后 migration中所有 `insert/update/delete runtime.schemaversion`报错。当前固定审计基线在source-only模式即报branch/base mismatch、用户已有审计队列dirty files和大量 ledger mutation。预期应让当前 candidate明确提供其基线/归属，并区分合法 migration self-registration与对既有 ledger 的破坏性改写。 |
+| 直接证据 | [FACT][E-AU-797-001] `--source-only`未连接服务仍报预期branch/base不符；[FACT][E-AU-797-002] 输出将大量正常 migration列为 `MIGRATION_LEDGER_MUTATION`；[FACT][E-AU-797-003] matcher仅按SQL文本命中，未区分 migration自身 version insert和修改既有记录。 |
+| 调用链或运行入口 | 人工 local preview runtime validation；默认模式还会读取本地监听服务，`--prepare-runtime-config`会改写local secrets文件。 |
+| 用户影响 | 本地候选预览无法得到可判读的来源/迁移安全结论，可能迫使操作者忽略整批输出；不影响已部署产品。 |
+| 数据影响 | 本批未连接数据库或写配置；如果误用 `--prepare-runtime-config`，会改写 local secrets endpoint。 |
+| 安全影响 | 无线上影响证据；不可信 preview guard可能降低本地对错误worktree/服务连接的发现能力。 |
+| 根因 | Product-000A 专用基线和简单 SQL regex 被保留为通用预览检查。 |
+| 建议方向 | 从最新主线建立 local-preview-contract 批次，参数化基线/候选规则，采用 migration inventory/ledger语义区分合法self-registration与历史修改；把写配置动作独立为显式工具。 |
+| 预计修改范围 | 两个 preview checker、fixture/说明；不改生产迁移或本地 secrets值。 |
+| 验证方式 | 当前批准candidate可通过source-only；正常新migration ledger insert允许、改写历史 ledger拒绝；无数据库URL时database check fail-fast；prepare动作仅在明确临时文件上验证。 |
+| 回滚方式 | 回退独立工具/fixture提交。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0301｜代码行数门禁仍扫描重组前的顶层目录，固定基线无法启动
 
 | 字段 | 记录 |
