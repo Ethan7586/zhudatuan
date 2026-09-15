@@ -60,6 +60,16 @@ ABSENT -> BUILDING -> UPLOADED -> VALIDATED -> SEALING -> SEALED
 
 release index 到阶段回执和 final Seal 已使用 exact key。Runner request lease、slot claim、未完成 Seal lease/failure、Writer lease/renewal 的 generation 仍需限定 Prefix 的 List。OSS 条件写或等价 CAS 尚未由适配器和本地并发契约证明，因此保留这些 List；禁止用普通覆盖 current 指针冒充原子操作。
 
+## 第四批：单次触发编排候选
+
+`production-orchestrator.mjs` 把第三批 reconcile 接入一次请求的本地编排合同：Doctor → 依赖图并行 Prepare/Resume → exact final Seal → bundle gate → Release Writer → canonical Deploy → health/rollback evidence。任何实际写动作的适配器只能执行系统级 `zdt-delivery prepare/deploy`，并核对其解析的最新 control-plane SHA；Deploy 不构建、不安装、不补 Seal。
+
+请求、bundle gate、deploy receipt 和完成回执均按幂等键不可变记录。重复健康请求 no-op；不确定写先读回；临时网络与 STS 使用预算内退避；403、身份冲突、owner 冲突阻断。状态摘要输出组件 checkpoint、证据、下一动作、人工介入标志、时间线和耗时，并固定 `productionP95Claimed=false`。
+
+现有自动 Closure 已包含 exact `head_sha`、可选 `base_sha` 和 ancestry 校验，可用最新控制面重评估历史主线版本；deploy-source consumer 不以 event 类型为权威，并识别受控 `workflow_dispatch` artifact。旧提交 `5135a7de137f353bb1a36c492aa8d377424a5c96` 不应重新 cherry-pick 覆盖现行主线语义。
+
+本批仍是本地候选：没有安装一次触发系统命令，没有修改或运行真实 Workflow/RAM/OSS/Runner/生产，生产分维持 56/100。
+
 Resume 不绕过 Readiness：OSS/RAM 403、Secret 合同、Runner 可见性或祖先关系任一失败都保持 `resumeAllowed=false`；只有修复原权限并重新通过 Doctor 后，才允许重放同一 source/base，不生成替代 source，不直接进入 Deploy。
 
 ## 最小权限矩阵草案
