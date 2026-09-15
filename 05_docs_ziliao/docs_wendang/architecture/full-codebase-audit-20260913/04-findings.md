@@ -6807,3 +6807,26 @@
 | 验证方式 | 历史 commit 可解析或明确不可用；current 命令/路径可解析；当前生成/构建只能以新的受控测试结果写入。 |
 | 回滚方式 | 回退独立文档/链接提交，保留历史记录。 |
 | 是否需要独立复核 | 否（P3）；若用作正式设计门禁证据，VI/工具 Owner 复核。 |
+
+## F-0353｜VI 移植日志把历史工作树/Fresh Replay 结果保留为易被误读的完成证据
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | VI / Console 历史施工证据 |
+| 类型 | 历史执行结果漂移、验收证据误导 |
+| 严重级别 | **P3** |
+| 置信度 | 高（日志、当前 Operation 规模和当前文档哈希直接证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/VI-PORT-LOG.md:1-24`；`01_core_hexin/packages/contract/src/operations/CommerceOperations.ts`；`05_docs_ziliao/docs_wendang/福利商城代码修改清单.md`；`福利商城根治实施方案.md`；`福利商城架构和补齐修改清单.md`。 |
+| 当前行为 | 日志以“工作树”“待阶段提交”、历史 Fresh Replay/Chrome 结果记录 P0–P3，最多声称 215 Operations；当前 catalog 已达 242 Operations，日志所写三份基线文档 hash 已非当前文件 hash。未发现当前消费者。 |
+| 预期行为 | 历史施工记录应明确不可替代 current commit、current quality、current release 或生产验收；需要复用结论时必须从固定当前基线重新验证。 |
+| 直接证据 | [FACT][E-AU-903-001] 日志的工作树/待提交与 215 Operation 语义；[FACT][E-AU-903-002] 当前 242 Operation 观察；[FACT][E-AU-903-003] 当前三份文档已不匹配日志 hash。 |
+| 调用链或运行入口 | 人工历史追溯 → 日志；当前事实 → 当前 contract/source/hash/定向验证。 |
+| 用户影响 | 维护者可能误把历史本地通过、已迁移数量或页面验收当作现行可发布状态。 |
+| 数据影响 | 无直接数据写入。 |
+| 安全影响 | 无直接安全影响；错误质量判断可间接影响高风险域发布。 |
+| 根因 | 临时施工记录没有与阶段提交、重组后基线和 current evidence 建立冻结/替代关系。 |
+| 建议方向 | 从修复时最新 `zdt-next` 建立单一 vi-port-log-evidence-boundary 批次：标记所有工作树/历史结果及适用 hash，链接 current audit records；不回填通过、重跑迁移或改业务实现。 |
+| 预计修改范围 | 日志的证据标记及交叉链接。 |
+| 验证方式 | 读者可区分历史/current/未验证；任何 current completion 引用都有当前 commit、输入 hash、命令与结果。 |
+| 回滚方式 | 回退独立文档/链接提交，保留原日志。 |
+| 是否需要独立复核 | 否（P3）；若引用到外部验收，由质量/发布 Owner 复核。 |
