@@ -2,7 +2,7 @@
 
 - 基线：`5a1ce71eebbefaa826368a9e1dc17730f9363bc4`
 - 建立日期：2026-09-15
-- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0016、RV-0018、RV-0024 至 RV-0037 已完成；其余第二轮结论尚未开始。**
+- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0016、RV-0018、RV-0024 至 RV-0038 已完成；其余第二轮结论尚未开始。**
 - 规则：每项复核从当前固定审计基线的运行入口/调用链重新取证；不得只复述首审报告。任何分歧保守保留，不降低风险等级。
 
 ## P1 候选（17）
@@ -43,7 +43,8 @@
 | GX-0013 | 渠道外部对象 scope 映射（RV-0035 已完成，维持 GX） | migration → channel sync → scope/RLS/恢复 |
 | GX-0014 | 客服 case 到 conversation/ticket（RV-0036 已完成，维持 GX） | migration → command/Worker → scope/证据/恢复 |
 | GX-0015 | 通知投递与成员可见性（RV-0037 已完成，维持 GX） | migration → event/Worker → member RLS/恢复 |
-| GX-0016–0020 | 报表/扩展/导入/Membership 迁移 | migration → owning module/worker → authority/retention |
+| GX-0016 | 报表投影与导出授权（RV-0038 已完成，维持 GX） | migration → projection/export → object/RLS/恢复 |
+| GX-0017–0020 | 扩展/导入/Membership 迁移 | migration → owning module/worker → authority/retention |
 | GX-0021–0024 | 微信支付/成员 scope/webhook/member audience | contract/route → authorization → database/event boundary |
 | GX-0025–0028 | runtime contract/target-head/函数重绑 | checksum/ledger → startup/readiness/release gate |
 | GX-0029–0036 | invitation/session/store/audit/Console 契约 | API/handler → RLS/audit/outbox → tests |

@@ -1217,7 +1217,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 直接证据 | 为 export 回填 authorization snapshot，并使旧 completed 导出失效；completed 状态强制要求对象、哈希、大小、clean 扫描结果、生成和过期时间。新增投影事件去重表及 scope RLS。 |
 | 运行边界 | Projection consumer 记录 event/水位；export Worker 以 scope、筛选和授权快照读取数据、写对象和状态；资源 scope 进入统一授权解析。 |
 | 可否删除 | 否；承担敏感报表数据、导出访问控制、事件投影一致性、对象恢复和审计责任。 |
-| 二次复核 | 是；须验证历史导出失效、授权快照、对象扫描、跨 scope 过滤、投影重放/水位、过期删除与恢复。 |
+| 二次复核 | RV-0038 已完成：维持 GX；静态复核确认当前投影/导出 Worker、读取 API、scope 水位及对象 clean 条件仍依赖目标结构。历史对象、授权快照、RLS、重放和恢复未验证。 |
 
 ## 457. AU-457 报表生命周期复核
 
