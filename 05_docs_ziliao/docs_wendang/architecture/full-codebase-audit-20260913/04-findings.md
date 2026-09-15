@@ -5051,6 +5051,23 @@
 | 验证/回滚 | 构造合法baseline+无效candidate，断言端口关闭；回滚为独立工具/test提交。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0316｜Requirement Workbook 读取器对压缩包没有资源上限
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Tooling / requirement authority workbook reader |
+| 类型 | 生成期资源限制、输入健壮性 |
+| 严重级别 | **P3** |
+| 置信度 | 高（直接源码证据；未构造大工作簿或运行生成器） |
+| 文件和精确位置 | `04_tools/tools/requirementgen/src/WorkbookReader.ts:11-27`；`Authority.ts:18-32`。 |
+| 当前/预期 | Workbook构造器无条件`unzipSync(bytes)`并保存完整archive；没有压缩字节、条目数、单条/总解压字节限制。预期是权威工作簿在解压前/中受可审计的大小和条目上限约束。 |
+| 直接证据 | [FACT][E-AU-816-001] 11-27直接同步解压后读取sharedStrings/workbook relationships；无limit参数或archive size检查；[FACT][E-AU-816-002] Authority loader先验证仓内realpath与SHA-256，输入不是外部HTTP/upload但可随受审提交变化。 |
+| 调用链或运行入口 | authority XLSX → RequirementGenerator/OrderRequirementProfile → `check:requirements`/generation。 |
+| 用户/数据/安全影响 | 不影响运行用户数据或权限；异常大或高膨胀率的已提交工作簿可能耗尽本地/CI生成进程内存，阻断质量门。 |
+| 建议方向 | 从最新主线独立建立 workbook-resource-limits batch：在读取前限制压缩大小，在archive解析后限制entries/总/单条展开字节，并为正常权威文件、过大与多条目反例加测试。 |
+| 验证/回滚 | 正常workbook保持相同sheet/cell结果；超限archive稳定拒绝且不耗尽内存；回滚为独立reader/test提交。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0302｜MVP 交付门禁的状态枚举与当前需求矩阵不兼容，首条即失败
 
 | 字段 | 记录 |
