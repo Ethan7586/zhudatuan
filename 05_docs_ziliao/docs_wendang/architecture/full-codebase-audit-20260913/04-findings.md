@@ -4794,6 +4794,28 @@
 | 验证/回滚 | 在隔离构建中人为超过对应 app budget，确认 gate 失败；若已下线，确认 config schema/文档不再宣称保护。回滚为撤回单一 quality-policy change。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0325｜历史分支关闭账本索引遗漏大部分同目录记录
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Documentation / Git branch closure history |
+| 类型 | 历史记录可发现性、发布追溯 |
+| 严重级别 | **P3** |
+| 置信度 | 高（README 目录清单与同目录文件直接对照） |
+| 文件和精确位置 | architecture/branch-closures/README.md:13-25；architecture/branch-closures/002-purchase-readiness-finance-guard.md:1；003-graceful-preview-access-20260830.md:1；004-dim-denied-surfaces-20260830.md:1；005-014-inherited-branches-batch-20260902.md:1；015-025-eight-branch-consolidation-20260902.md:1。 |
+| 当前/预期 | README 的“当前进度”和“记录”仅列 001，但目录已有 002—004、005—014 和 015—025 五份关闭记录，且上层 architecture 文档直接引用其中多份。预期索引应完整列出已有记录，并将其标注为历史快照而非当前 GitHub 状态。 |
+| 直接证据 | [FACT][E-AU-839-001] README 唯一记录链接是 001；[FACT][E-AU-839-002] 同目录存在五份未列出的关闭记录；[FACT][E-AU-839-003] architecture/02、03、04 对其中记录有静态历史引用。 |
+| 调用链或运行入口 | 维护者/审计者 → README 账本索引 → 历史关闭证据；不是运行时入口。 |
+| 用户影响 | 复盘者可能误以为只关闭过一条分支，遗漏 Bundle、Tag、保留 worktree 与恢复边界，增加错误清理或错误恢复的风险。 |
+| 数据影响 | 无直接数据影响。 |
+| 安全影响 | 无直接线上安全影响。 |
+| 根因 | 关闭记录在后续批次新增，但目录索引未同步扩展。 |
+| 建议方向 | 从最新主线建立独立 docs-history-index batch：补全索引、注明全部条目均为 2026-09-02 历史快照，并链接当前分支真值来源；不执行任何 GitHub 删除、恢复、Bundle 或部署动作。 |
+| 预计修改范围 | 仅 README/architecture 历史导航与可选链接校验。 |
+| 验证方式 | README 可发现全部同目录记录；读者能区分历史分支数与当前远程状态。 |
+| 回滚方式 | 回退独立文档索引提交。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0324｜SFL 版本标准的自称权威与当前治理状态冲突
 
 | 字段 | 记录 |
