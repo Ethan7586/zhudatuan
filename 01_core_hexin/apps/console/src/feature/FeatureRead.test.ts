@@ -6,8 +6,8 @@ import type { ConsoleContext } from '../entity/session/ConsoleSession';
 import { readCockpit } from './cockpit/CockpitQuery';
 import { readControl } from './control/ControlQuery';
 import { readFinance } from './finance/FinanceQuery';
-import { readOrders } from './order/OrderQuery';
-import { readProducts } from './product/ProductQuery';
+import { ORDER_DEFAULT_PAGE_LIMIT, readOrders } from './order/OrderQuery';
+import { PRODUCT_CATALOG_DEFAULT_PAGE_LIMIT, readProducts } from './product/ProductQuery';
 
 const requests: URL[] = [];
 const empty = { items: [], count: 0 };
@@ -41,8 +41,8 @@ describe('Console named read Operations', () => {
     expect(requests.map(({ pathname }) => pathname).sort()).toEqual([
       '/api/v1/catalog/listings', '/api/v1/finance/overview', '/api/v1/orders', '/api/v1/reports/dashboard', '/health/dependency',
     ]);
-    expect(requests.find(({ pathname }) => pathname.endsWith('/listings'))?.searchParams.get('limit')).toBe('50');
-    expect(requests.find(({ pathname }) => pathname.endsWith('/orders'))?.searchParams.get('limit')).toBe('50');
+    expect(requests.find(({ pathname }) => pathname.endsWith('/listings'))?.searchParams.get('limit')).toBe(String(PRODUCT_CATALOG_DEFAULT_PAGE_LIMIT));
+    expect(requests.find(({ pathname }) => pathname.endsWith('/orders'))?.searchParams.get('limit')).toBe(String(ORDER_DEFAULT_PAGE_LIMIT));
   });
 
   it('propagates scope-navigation cancellation into the Operation request', async () => {
