@@ -4728,7 +4728,7 @@
 | --- | --- |
 | 模块 | Finance reconciliation matching → approval/settlement |
 | 类型 | 财务正确性、数据完整性、异步结算前置条件 |
-| 严重级别 | **P1 候选**；须完成独立复核后定级。 |
+| 严重级别 | **P2（RV-0026 已独立复核）**；歧义匹配缺陷成立，但当前结算快照对该来源fail-closed，不能维持 P1。 |
 | 置信度 | 高（固定基线 match SQL 与同文件 skipped fail-closed scenario 直接矛盾）；生产候选唯一约束/ingestion 数据/settlement guard 未验证。 |
 | 文件和精确位置 | `01_core_hexin/services/commerce/src/modules/finance/03_application_yingyong/command/ReconcileStatement.ts:57-83`；`.../tests/repository/FinanceReconciliation.test.ts:352-369`。 |
 | 当前/预期 | candidate CTE 可为同一 statement line 产生多条 internal fact；`distinct on(line_id) order by line_id,priority,internal_id` 静默选内部 ID 排序第一条，再按金额将其标为 matched/difference。测试中明示的多对一 provider reference 场景预期生成 `MANY_TO_ONE_UNSUPPORTED` 且不任意选择，但该 test 是 `it.skip`。预期为歧义时 fail-closed，写出明确 difference/evidence，直到有确定性匹配规则。 |
@@ -4738,7 +4738,9 @@
 | 根因 | 为选择单候选使用 deterministic sort，替代了业务所需的 ambiguity detection/explicit resolution 模型；原本计划的测试仍被跳过。 |
 | 建议方向 | 从最新主线建立独立修复分支前，先在隔离 PostgreSQL 重现并核对 provider external-reference 唯一性、RLS、operator resolution 与 settlement guard；若无其它安全门，改为多候选时生成不可审批 difference 并启用该回归测试。 |
 | 验证/回滚 | 注入同一 external reference 的多条 eligible internal facts，确认不产生 arbitrary matched item、无法 approve/settle且有明确审计 evidence；覆盖唯一候选仍可平衡；回滚为撤回单一 matching/test 小批次。 |
-| 是否需要独立复核 | **是**；已加入 `records/AU-526-finance-reconciliation-pglite-test/independent-review-queue.csv`，必须重新追踪 candidate SQL 到 settlement。 |
+| 是否需要独立复核 | 已完成：RV-0026（2026-09-15）从candidate SQL追至reconciliation状态、结算快照和批准写入；结论保守降为P2。 |
+
+[FACT][RV-0026][2026-09-15] 独立复核确认`match`对同一statement line的多个候选使用`distinct on(line_id) order by line_id,priority,internal_id`，金额相等时会静默把内部ID排序首项写成`matched`；当前源码没有多候选拒绝分支，且对应`MANY_TO_ONE_UNSUPPORTED`测试仍skip。该错误会使reconciliationitem和reconciliation摘要错误地表现为无差异。另一方面，结算决定在调用账务前会构造`SettlementSnapshot`；它只接受`matched`且evidence带`journalReferenceType`为payment成功/退款、`settlementEligible===true`的项。当前`match`写入的evidence只有externalReference/kind/rawHash/source，故`payable`为空并抛`FINANCE_SETTLEMENT_SOURCE_STALE`，不会进入结算账务。歧义的展示与审批依据问题仍真实，但固定链条不能证明会直接结算错误金额；从P1候选降为P2，未发现P0。
 
 ## F-0253｜身份并发回归将六类独立竞态压入单一超大测试
 
