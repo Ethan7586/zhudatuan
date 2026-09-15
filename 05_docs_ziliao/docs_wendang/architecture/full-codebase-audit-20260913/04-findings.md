@@ -874,7 +874,7 @@
 | --- | --- |
 | 模块 | 共享配置 / SFL Console Runtime |
 | 类型 | 节点边界、配置完整性、敏感请求目的地 |
-| 严重级别 | **P1 候选**；未完成 RV-0007 前不作最终 P1 |
+| 严重级别 | **P1**；RV-0007 已于 2026-09-15 从 manifest、runtime parser/resolver、Console loader 与 SDK request 重新取证确认 |
 | 置信度 | 高：parser、resolver、浏览器加载、SDK header和正向producer均已重追；线上runtime值与实际利用未验证 |
 | 文件和精确位置 | packages/config/src/SflNodeKernelConsole.ts:220-299,330-399,417-438；apps/console/src/shared/config/RuntimeConfig.ts:32-58；packages/sdk/src/RequestContextFactory.ts:27-38、ApiClient.ts:99-110、FetchTransport.ts:6-15；autonode-engine.mjs:397-414 |
 | 当前行为 | [CONFLICT][E-AU-006-005] api_base_url只需为HTTPS origin，identity_entry_url只需HTTPS且无认证/hash；validateNodeRuntimeReferences核对artifact/Manifest digest、resource ref与scope，却不核对两个URL属于Manifest对应surface。resolve直接安装这些URL |
@@ -889,7 +889,9 @@
 | 预计修改范围 | SflNodeKernelConsole类型/parser/resolver、registry/AutoNode runtime生成、Console tests与可能的runtime schema兼容 |
 | 验证方式 | 第二审计者构造合法Manifest、合法resource ref但外域API/Identity URL；parser/resolve必须拒绝。再覆盖正常L0/L1、激活换Manifest、旧schema兼容和真实浏览器CORS/redirect边界 |
 | 回滚方式 | 修复批次保留旧runtime schema/文件备份并可回切原解析提交；节点release pointer按正式流程回退 |
-| 是否需要独立复核 | 是，RV-0007；P1强制从producer到浏览器/SDK重新取证 |
+| 是否需要独立复核 | 已完成 RV-0007；未来 runtime schema 变更仍须独立变更后复核 |
+
+**RV-0007（二次独立复核，2026-09-15）：确认 P1。** runtime parser 仅验证 HTTPS URL，不将 API/Identity host 约束到已验证 Manifest domain binding；Console 直接安装并由 SDK 向该 URL 发出带 scope、幂等、CSRF 与 action-proof headers 的请求。详见 `records/AU-912-rv-0007-console-runtime-domain-binding/summary.md`；未读取线上 runtime 或发起业务请求。
 
 为什么不是P0：没有读取线上console-runtime.json，也没有证据证明当前正在错误路由、泄露token或造成事故。现有AutoNode正向producer从同一request.domains生成Manifest与URL，是缓解证据，但不是parser不变量。
 
