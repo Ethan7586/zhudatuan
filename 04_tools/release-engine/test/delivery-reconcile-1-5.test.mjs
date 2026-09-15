@@ -186,4 +186,5 @@ function receipts(nextIdentity) {
 }
 function component(componentId, value) { return { componentId, target: value.target, physicalNode: value.physicalNode, artifactDigest: value.artifactDigest, exactResource: `fixture/${componentId}/final-seal.json` }; }
 function state(componentId, value, stateValue) { return { componentId, sourceSha: value.sourceSha, controlPlaneSha: value.controlPlaneSha, target: value.target,
-  physicalNode: value.physicalNode, artifactDigest: value.artifactDigest, state: stateValue, exactResource: `fixture/${componentId}/final-seal.json` }; }
+  physicalNode: value.physicalNode, artifactDigest: value.artifactDigest, provenanceDigest: uploaded.provenance.digest,
+  state: stateValue, exactResource: `fixture/${componentId}/final-seal.json` }; }

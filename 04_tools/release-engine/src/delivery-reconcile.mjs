@@ -124,8 +124,11 @@ export function evaluateReleaseBundle(input) {
     const identityMatches = actual?.sourceSha === input.sourceSha && actual?.controlPlaneSha === input.controlPlaneSha
       && actual?.target === expected.target && actual?.physicalNode === expected.physicalNode
       && actual?.artifactDigest === expected.artifactDigest;
+    const provenanceMatches = /^sha256:[a-f0-9]{64}$/.test(actual?.provenanceDigest ?? '')
+      && (!expected.provenanceDigest || actual.provenanceDigest === expected.provenanceDigest);
     return Object.freeze({ componentId: expected.componentId, status: actual?.state ?? 'ABSENT', identityMatches,
-      finalSealed: actual?.state === 'SEALED' && identityMatches, exactResource: actual?.exactResource ?? expected.exactResource });
+      provenanceMatches, finalSealed: actual?.state === 'SEALED' && identityMatches && provenanceMatches,
+      exactResource: actual?.exactResource ?? expected.exactResource });
   });
   const allowDeploy = components.every((item) => item.finalSealed);
   return Object.freeze({ schema: BUNDLE_GATE_SCHEMA, sourceSha: input.sourceSha, controlPlaneSha: input.controlPlaneSha,
@@ -157,7 +160,8 @@ function output(context, state, action, decision) {
     context.final && context.resources.final].filter(Boolean);
   const raw = { schema: RECONCILE_SCHEMA, state, action, ...context.identity, requestId: context.input.requestId,
     attemptId: context.input.attemptId, expectedRole: context.input.expectedRole, owner: context.input.control?.owner ?? null,
-    lease: context.input.control?.lease ?? null, completedEvidence, ...decision, retryCount: context.retryCount,
+    lease: context.input.control?.lease ?? null, provenanceDigest: context.uploaded?.provenance?.digest ?? null,
+    completedEvidence, ...decision, retryCount: context.retryCount,
     retryBudget: context.retryBudget, timestamp: context.now.toISOString() };
   return Object.freeze(redactDeliveryDetails(raw, context.input.secretValues));
 }
