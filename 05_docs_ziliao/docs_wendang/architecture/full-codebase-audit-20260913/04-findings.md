@@ -5085,6 +5085,29 @@
 | 验证/回滚 | 对同模块多GET/多command反例，未明确绑定时输出inferred/missing；显式绑定必须解析到真实route、operation和test；回滚为独立生成器/schema/test提交。 |
 | 是否需要独立复核 | 是。 |
 
+## F-0318｜P0 静态门禁把已批准的跨源方案预览资产误判为生产替代实现
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Quality gate / Console solution preview |
+| 类型 | 发布质量门禁、静态分类冲突 |
+| 严重级别 | **P2** |
+| 置信度 | 高（正式命令运行结果与源码/批准清单交叉证据） |
+| 文件和精确位置 | `04_tools/scripts/verify-p0.mjs:58-61`；`04_tools/scripts/check/source.mjs:11-17,54-60`；`01_core_hexin/apps/console/src/feature/application/CommerceSolutionCenter.tsx:38-47,196-255`；`01_core_hexin/apps/console/public/demo/variants.js:1-116`。 |
+| 当前行为 | `npm run check:p0` 扫描所有 production source，只因路径段含 `demo` 即在 `console/public/demo/variants.js` 抛 `P0_PRODUCTION_SUBSTITUTE`。同一资产被 Console 的暖筑工坊跨源预览使用，且 `owner-approved-ui.json` 固定了四个 demo 文件哈希；`check:frontend` 又把其 CSS 作为已知债务处理。 |
+| 预期行为 | P0 门禁应拒绝会替代真实生产能力的模拟代码，但应能区分无 API/无写入的受批准视觉预览、测试夹具和真实业务替代；门禁必须在固定基线可通过，或输出可判读的受批准豁免。 |
+| 直接证据 | [FACT][E-AU-826-001] 正式 `check:p0` 在该文件稳定退出 1；[FACT][E-AU-826-002] `variants.js` 只操作 DOM/localStorage/toast，未见 API、支付、身份或数据写入；[FACT][E-AU-826-003] Solution Center 在生产未配置独立 `VITE_ZHUDIAN_SOLUTION_ORIGIN` 时拒绝同源加载；[FACT][E-AU-826-004] owner-approved UI 清单记录 demo 四文件 SHA；[FACT][E-AU-826-005] `check:frontend` 将 variants.css 列为 known debt，但其自身另有 13 个未登记 CSS token 回归，未在本单元扩展审阅。 |
+| 调用链或运行入口 | Console ApplicationRoute → CommerceSolutionCenter → 配置的独立 preview origin `/demo/index.html` → `variants.html` → `variants.js`；`npm run check:p0` 为根质量门禁。 |
+| 用户影响 | 当前正式 P0 检查不能作为基线发布判据，会在无真实 P0 的情况下阻塞提交/候选制品验证；视觉预览仍明确不写商城。 |
+| 数据影响 | 无直接数据写入证据。 |
+| 安全影响 | 无已证实线上 P0；预览 iframe 限制为显式非同源 origin 且带 sandbox/referrer policy，但分类门禁失效降低了对真实模拟替代的信噪比。 |
+| 根因 | `productionSources()` 将 app `public/demo` 作为生产源码收集，而 verify-p0 只按路径正则分类，未读取批准来源、实际调用能力或预览隔离语义。 |
+| 建议方向 | 从最新主线建立单独 `p0-gate-preview-classification` 批次：定义经过批准且无网络/写入的预览资产例外，或将其移到清晰的 preview 供应域；保留对真实 API/数据替代的语义检测，不能仅把目录名加入忽略列表。 |
+| 预计修改范围 | `verify-p0`/source 分类、owner-approved UI 契约及定向 fixture；不改业务预览行为。 |
+| 验证方式 | 合规 preview 可通过 P0 gate；在允许路径下注入 fetch、真实业务 endpoint 或写入行为仍必须被拒绝；独立 preview origin 缺失/同源仍被 Console 拒绝。 |
+| 回滚方式 | 回退独立 gate/fixture/批准契约提交；不影响生产数据或部署。 |
+| 是否需要独立复核 | 是（P0 门禁语义）。 |
+
 ## F-0302｜MVP 交付门禁的状态枚举与当前需求矩阵不兼容，首条即失败
 
 | 字段 | 记录 |
