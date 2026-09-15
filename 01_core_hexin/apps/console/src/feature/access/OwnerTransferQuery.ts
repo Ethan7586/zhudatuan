@@ -11,12 +11,9 @@ import {
   createFetchIdentityMobileChallenge,
   createFetchIdentityMobileManage,
   createFetchIdentityPasswordVerify,
-  createFetchIdentityStepupComplete,
-  createFetchIdentityStepupStart,
 } from '@shop/sdk/identity';
 import type { ConsoleContext, ConsoleSession } from '../../entity/session/ConsoleSession';
-import { SessionSchema } from '../../entity/session/ConsoleSession';
-import { consoleCommand, consoleRequest, identitySessionRead } from '../../shared/api/Client';
+import { consoleCommand, consoleRequest } from '../../shared/api/Client';
 import { appConfig } from '../../shared/config/AppConfig';
 import {
   OwnerTransferAcceptedSchema,
@@ -27,10 +24,10 @@ import {
   MobileManageReceiptSchema,
   PhoneChangeChallengeSchema,
   PasswordVerificationSchema,
-  StepUpChallengeSchema,
-  StepUpCompletionSchema,
   type FormerOwnerMode,
 } from './OwnerTransferSchema';
+
+export { completeStepUpAndReadSession, requestStepUp } from '../../entity/session/StepUpCommand';
 
 const ownershipRead = createFetchAccessOwnershipRead(appConfig.apiBaseUrl);
 const transferPreview = createFetchAccessOwnershipTransfersPreview(appConfig.apiBaseUrl);
@@ -39,8 +36,6 @@ const transferAcceptPreview = createFetchAccessOwnershipTransfersAcceptPreview(a
 const transferAccept = createFetchAccessOwnershipTransfersAccept(appConfig.apiBaseUrl);
 const transferCancelPreview = createFetchAccessOwnershipTransfersCancelPreview(appConfig.apiBaseUrl);
 const transferCancel = createFetchAccessOwnershipTransfersCancel(appConfig.apiBaseUrl);
-const stepUpStart = createFetchIdentityStepupStart(appConfig.apiBaseUrl);
-const stepUpComplete = createFetchIdentityStepupComplete(appConfig.apiBaseUrl);
 const mobileChallenge = createFetchIdentityMobileChallenge(appConfig.apiBaseUrl);
 const mobileManage = createFetchIdentityMobileManage(appConfig.apiBaseUrl);
 const passwordVerify = createFetchIdentityPasswordVerify(appConfig.apiBaseUrl);
@@ -145,18 +140,6 @@ export async function cancelTransfer(
   return OwnerTransferSchema.parse(value);
 }
 
-export async function requestStepUp(session: ConsoleSession, signal?: AbortSignal) {
-  const value = await stepUpStart(
-    { body: {} },
-    consoleCommand(undefined, {
-      ...(signal === undefined ? {} : { signal }),
-      accessVersion: session.accessVersion,
-      ...(session.csrf === undefined ? {} : { csrfToken: session.csrf }),
-    }),
-  );
-  return StepUpChallengeSchema.parse(value);
-}
-
 export async function requestCanonicalMobileChallenge(
   session: ConsoleSession,
   mainlandMobile: string,
@@ -192,28 +175,6 @@ export async function bindCanonicalMobile(
     sessionCommand(session, signal),
   );
   return MobileManageReceiptSchema.parse(value);
-}
-
-export async function completeStepUpAndReadSession(
-  current: ConsoleSession,
-  challenge: string,
-  code: string,
-  signal?: AbortSignal,
-): Promise<ConsoleSession> {
-  const completed = await stepUpComplete(
-    { body: { challenge, code } },
-    consoleCommand(undefined, {
-      ...(signal === undefined ? {} : { signal }),
-      accessVersion: current.accessVersion,
-      ...(current.csrf === undefined ? {} : { csrfToken: current.csrf }),
-    }),
-  );
-  StepUpCompletionSchema.parse(completed);
-  const refreshed = SessionSchema.parse(await identitySessionRead({}, consoleRequest(undefined, signal)));
-  if (refreshed.actor !== current.actor || refreshed.membership !== current.membership || refreshed.assurance.level < 3) {
-    throw new Error('STEP_UP_SESSION_RECEIPT_INVALID');
-  }
-  return refreshed;
 }
 
 function command(

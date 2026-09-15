@@ -1,3 +1,4 @@
+import { ApiError } from '@shop/sdk';
 import { createFetchAccessRolesManage } from '@shop/sdk/access';
 import type { ConsoleScope } from '../../entity/session/ConsoleSession';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
@@ -28,6 +29,12 @@ export function roleCommandAvailable(context: ConsoleContext): boolean {
   return context.session.csrf !== undefined
     && context.session.permissions.includes('access.role.manage')
     && context.session.capabilities.includes('access.roles.manage');
+}
+
+export function isStepUpRequired(error: unknown): boolean {
+  if (error instanceof ApiError) return error.code === 'STEPUP_REQUIRED';
+  const candidate = error as Partial<Pick<ApiError, 'code'>> | null;
+  return candidate !== null && candidate?.code === 'STEPUP_REQUIRED';
 }
 
 export async function saveAccessRole(context: ConsoleContext, draft: AccessRoleDraft, signal?: AbortSignal) {
