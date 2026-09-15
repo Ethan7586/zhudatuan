@@ -5576,3 +5576,25 @@
 | 验证方式 | 在隔离 release candidate 上运行修正后的 checker；验证当前 selected host 的每个 purchase path 对 POST/OPTIONS 的预期 503/allowed 行为、非 purchase 路径及 Caddy syntax，并保留 `publicCutover=blocked` 直到 E2E receipt 满足。 |
 | 回滚方式 | 回退独立 gate/Caddy contract commit；保持当前 public cutover blocked，不通过绕过 check 恢复发布。 |
 | 是否需要独立复核 | 是；复核者须独立确认生产与候选 Caddy site、DNS、purchase API port/route owner及当前 cutover receipt 状态。 |
+
+## F-0297｜MVP Journey suite 以全局静态字符串替代指定业务链路验证
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Quality / MVP journey traceability |
+| 类型 | 测试可信度、可维护性 |
+| 严重级别 | **P3** |
+| 置信度 | 高（JourneyHarness 与所有 MVP03–MVP23 caller 为直接证据；CI 实际执行覆盖未验证） |
+| 文件和精确位置 | `03_quality_ceshi/tests/journeys/JourneyHarness.ts:23-95`；`mvp03_platform.spec.ts:1-2`；`mvp14_malldashboard.spec.ts:1-2`；`mvp23_providers.spec.ts:5-10`。 |
+| 当前/预期 | 每个 MVP spec 只给 harness 传 operation/table/event 名称。Harness 读取整个 migration/module tree，以全局 regex 检查 `skip locked`、deadletter、foreign key、audit table 和文本 module 名；不启动 API/DB/worker/provider，也不将这些不变量限定到被声明的 operation/table。预期是这类 suite明确标为静态 traceability，关键写链路另有定向集成/契约验证。 |
+| 直接证据 | [FACT][E-AU-753-001] 23-35 只验证 catalog/SDK/module source 路径；[FACT][E-AU-753-002] 50-64 对整个 migration tree 匹配 idempotency/deadletter 文本；[FACT][E-AU-753-003] 82-95 对全局 migration text 匹配 check/foreign key/audit，不验证指定 table 的实际约束；[FACT][E-AU-753-004] 二十一个 spec 多为单行 `journey(...)` 声明。 |
+| 调用链或运行入口 | npm/node test → MVPxx spec → `journey()` static file scan → pass/fail；没有 HTTP server、PostgreSQL、队列或 provider invocation。 |
+| 用户影响 | 测试通过可能被误解为对应业务工作台已验证完整主路径、并发、失败恢复和数据约束，实际上只证明静态元数据/文本仍存在。 |
+| 数据影响 | 无直接数据写入。 |
+| 安全影响 | 权限检查只确认 operation 有 canonical permission 与授权器文本存在，不能证明真实 session/scope/DB boundary 拒绝越权调用。 |
+| 根因 | 将 requirement traceability 与运行行为验证合并到一个通用 harness，使用低成本全局 regex 作为统一证据。 |
+| 建议方向 | 从最新 `zdt-next` 建立单一 journey-test-evidence batch：保留当前 suite 但更名/报告为 static traceability；优先为支付、身份、订单、权限、provider 写链建立少量真实 PostgreSQL+HTTP/worker 定向契约测试，并让每个高风险 MVP 指向可运行证据。 |
+| 预计修改范围 | JourneyHarness 命名/断言、测试报告说明、少量高风险 module integration fixtures；不改业务功能。 |
+| 验证方式 | 故意移除无关 migration 的 `deadletter` 或 `check` 文本、保留目标表缺约束，确认新 tests 对目标链路失败；在 isolated DB 对选定写操作验证幂等、scope denial、事务回滚和 outbox/dead-letter。 |
+| 回滚方式 | 回退独立 test/label 变更；保留原 static traceability suite，避免短期丢失需求索引。 |
+| 是否需要独立复核 | 否。 |
