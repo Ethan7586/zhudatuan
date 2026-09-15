@@ -15,7 +15,7 @@ import { OrderExportWorkspace } from './OrderExportWorkspace';
 import { emptyOrderFilter, OrderFilterForm } from './OrderFilter';
 import { OrderIcon } from './OrderIcon';
 import { OrderDirectoryActions } from './OrderPageHeader';
-import { isOrderPreviewContext, orderKey, readOrders, type OrderQuery } from './OrderQuery';
+import { isOrderPreviewContext, ORDER_DEFAULT_PAGE_LIMIT, ORDER_PAGE_LIMITS, orderKey, orderPageLimit, readOrders, type OrderQuery } from './OrderQuery';
 import { defaultOrderColumns, OrderTable, type OrderColumnKey } from './OrderTable';
 import { OrderDetailTabSchema, OrderFilterSchema, OrderListFilterSchema, OrderViewSchema, type OrderDetailTab, type OrderListFilter, type OrderView } from './OrderSchema';
 import { OrderStatusTabs } from './OrderStatusTabs';
@@ -47,7 +47,8 @@ export function Component() {
   const exportOpen = search.get('mode') === 'export';
   const detailTab = readDetailTab(search);
   const cursor = search.get('cursor') ?? undefined;
-  const queryFilter: OrderQuery = { ...filter, view, ...(cursor === undefined ? {} : { cursor }) };
+  const limit = readPageLimit(search);
+  const queryFilter: OrderQuery = { ...filter, view, limit, ...(cursor === undefined ? {} : { cursor }) };
   const query = useQuery({
     queryKey: orderKey(context, queryFilter),
     queryFn: ({ signal }) => readOrders(context, queryFilter, signal),
@@ -131,6 +132,13 @@ export function Component() {
     updateSearch((next) => {
       if (value === undefined || value === 'start') next.delete('cursor');
       else next.set('cursor', value);
+      resetChecked();
+    });
+  const setPageLimit = (value: number) =>
+    updateSearch((next) => {
+      if (value === ORDER_DEFAULT_PAGE_LIMIT) next.delete('limit');
+      else next.set('limit', String(value));
+      next.delete('cursor');
       resetChecked();
     });
   const refresh = () => {
@@ -257,7 +265,7 @@ export function Component() {
                 )}
               </div>
 
-              {page === undefined ? null : <OrderPagination count={page.count} total={previewPage?.total} page={previewPage?.page} previousCursor={previewPage?.previousCursor} nextCursor={page.nextCursor} onCursor={setCursor} />}
+              {page === undefined ? null : <OrderPagination count={page.count} total={previewPage?.total} page={previewPage?.page} limit={limit} previousCursor={previewPage?.previousCursor} nextCursor={page.nextCursor} onCursor={setCursor} onLimit={setPageLimit} />}
         </section>
         {selected === undefined ? null : <OrderDrawer orderId={selected} initialOrder={selectedOrder} tab={detailTab} previewEnabled={previewEnabled} mallName={mallName}
           memberDirectoryPath={scopePath(context.scope, 'storefront-members')} productDirectoryPath={scopePath(context.scope, 'products')}
@@ -275,26 +283,30 @@ function OrderPagination({
   count,
   total,
   page,
+  limit,
   previousCursor,
   nextCursor,
   onCursor,
+  onLimit,
 }: Readonly<{
   count: number;
   total: number | undefined;
   page: number | undefined;
+  limit: number;
   previousCursor: string | undefined;
   nextCursor: string | undefined;
   onCursor: (cursor?: string) => void;
+  onLimit: (limit: number) => void;
 }>) {
-  const start = page === undefined ? undefined : (page - 1) * 50 + (count === 0 ? 0 : 1);
+  const start = page === undefined ? undefined : (page - 1) * limit + (count === 0 ? 0 : 1);
   const end = start === undefined ? undefined : start + Math.max(0, count - 1);
   return (
     <footer className="orderpagination">
       <span>{total === undefined ? `本页 ${count} 条 · 全量总数不可用` : `${start}–${end} / 共 ${total} 笔`}</span>
       <label>
         每页{' '}
-        <select aria-label="每页数量" value="50" disabled>
-          <option value="50">50</option>
+        <select aria-label="每页数量" value={limit} onChange={(event) => onLimit(Number(event.target.value))}>
+          {ORDER_PAGE_LIMITS.map((pageLimit) => <option key={pageLimit} value={pageLimit}>{pageLimit}</option>)}
         </select>
       </label>
       <div>
@@ -308,6 +320,10 @@ function OrderPagination({
       </div>
     </footer>
   );
+}
+
+function readPageLimit(search: URLSearchParams): number {
+  return orderPageLimit(Number(search.get('limit') ?? ORDER_DEFAULT_PAGE_LIMIT));
 }
 
 function readFilter(search: URLSearchParams): OrderListFilter {

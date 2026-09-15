@@ -272,10 +272,24 @@ describe('Order route', () => {
     expect(currentParams().get('campaign')).toBe('keep');
     expect(screen.getByRole('button', { name: '待付款' }).getAttribute('aria-pressed')).toBe('true');
     expect(screen.getByRole<HTMLSelectElement>('combobox', { name: '支付状态' }).value).toBe('paid');
-    const listRead = getRequests.find((url) => url.searchParams.get('limit') === '50');
+    const listRead = getRequests.find((url) => url.searchParams.get('limit') === '20');
     expect(listRead?.searchParams.get('order')).toBe('order:internal-1');
     expect(listRead?.searchParams.get('view')).toBe('unpaid');
     expect(listRead?.searchParams.get('payment')).toBe('paid');
+  });
+
+  it('uses the lightweight first page and lets operators explicitly expand it', async () => {
+    const user = userEvent.setup();
+    renderRoute('/orders?cursor=cursor%3Aold&campaign=keep');
+    await screen.findByRole('table', { name: '订单列表' });
+
+    expect(getRequests.some((url) => url.searchParams.get('limit') === '20')).toBe(true);
+    await user.selectOptions(screen.getByRole('combobox', { name: '每页数量' }), '50');
+
+    await waitFor(() => expect(currentParams().get('limit')).toBe('50'));
+    expect(currentParams().get('cursor')).toBeNull();
+    await waitFor(() => expect(getRequests.some((url) => url.searchParams.get('limit') === '50' && !url.searchParams.has('cursor'))).toBe(true));
+    expect(currentParams().get('campaign')).toBe('keep');
   });
 
   it('opens the split-view detail from both the explicit view action and the row while preserving URL state', async () => {
@@ -363,10 +377,10 @@ describe('Order route', () => {
     const user = userEvent.setup();
     renderRoute();
     await screen.findByRole('table', { name: '订单列表' });
-    await waitFor(() => expect(orderRequestCount('50')).toBe(1));
+    await waitFor(() => expect(orderRequestCount('20')).toBe(1));
 
     await user.click(screen.getByRole('button', { name: '刷新数据' }));
-    await waitFor(() => expect(orderRequestCount('50')).toBe(2));
+    await waitFor(() => expect(orderRequestCount('20')).toBe(2));
     expect(screen.getByRole<HTMLButtonElement>('button', { name: '刷新数据' }).disabled).toBe(false);
   });
 
@@ -489,7 +503,7 @@ describe('Order route', () => {
     await waitFor(() => expect(currentParams().get('order')).toBe('order:searched'));
     expect(currentParams().get('cursor')).toBeNull();
     expect(currentParams().get('campaign')).toBe('keep');
-    await waitFor(() => expect(getRequests.some((url) => url.searchParams.get('limit') === '50' && url.searchParams.get('order') === 'order:searched' && !url.searchParams.has('cursor'))).toBe(true));
+    await waitFor(() => expect(getRequests.some((url) => url.searchParams.get('limit') === '20' && url.searchParams.get('order') === 'order:searched' && !url.searchParams.has('cursor'))).toBe(true));
   });
 
   it('opens the real export workspace while keeping unrelated final actions disabled', async () => {

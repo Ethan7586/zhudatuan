@@ -4,7 +4,7 @@ import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { readOrderDetail } from './OrderDetailQuery';
-import { ORDER_PAGE_LIMIT, orderKey, readOrders, type OrderQuery } from './OrderQuery';
+import { ORDER_DEFAULT_PAGE_LIMIT, ORDER_MAX_PAGE_LIMIT, orderKey, readOrders, type OrderQuery } from './OrderQuery';
 import { OrderPageSchema, type OrderRecord } from './OrderSchema';
 
 interface CapturedRequest {
@@ -42,7 +42,7 @@ describe('Order list query', () => {
     const request = requests[0];
     expect(request?.url.pathname).toBe('/api/v1/orders');
     expect(Object.fromEntries(request?.url.searchParams ?? [])).toEqual({
-      limit: String(ORDER_PAGE_LIMIT),
+      limit: String(ORDER_DEFAULT_PAGE_LIMIT),
       exports: 'true',
       order: 'order:internal:42',
       cursor: 'cursor:50',
@@ -75,10 +75,11 @@ describe('Order list query', () => {
       orderKey(baselineContext, { ...baseline, mall: 'mall:2' }),
       orderKey(baselineContext, { ...baseline, view: 'completed' }),
       orderKey(baselineContext, { ...baseline, cursor: 'cursor:2' }),
+      orderKey(baselineContext, { ...baseline, limit: 50 }),
     ];
 
     expect(new Set(keys.map((key) => JSON.stringify(key))).size).toBe(keys.length);
-    expect(keys[0]).toContain(ORDER_PAGE_LIMIT);
+    expect(keys[0]).toContain(ORDER_DEFAULT_PAGE_LIMIT);
   });
 
   it('sends authoritative server filters to production scopes', async () => {
@@ -96,7 +97,7 @@ describe('Order list query', () => {
     await readOrders(createContext('enterprise', 'enterprise:1', 7), filter, new AbortController().signal);
 
     expect(Object.fromEntries(requests[0]?.url.searchParams ?? [])).toEqual({
-      limit: String(ORDER_PAGE_LIMIT),
+      limit: String(ORDER_DEFAULT_PAGE_LIMIT),
       exports: 'true',
       cursor: 'cursor:production',
       placed: '30days',
@@ -123,7 +124,7 @@ describe('Order list query', () => {
     await readOrders(createContext('platform', 'platform:preview', 11), filter, new AbortController().signal);
 
     expect(Object.fromEntries(requests[0]?.url.searchParams ?? [])).toEqual({
-      limit: String(ORDER_PAGE_LIMIT),
+      limit: String(ORDER_DEFAULT_PAGE_LIMIT),
       exports: 'true',
       order: 'order:preview:1',
       cursor: 'cursor:preview',
@@ -152,6 +153,12 @@ describe('Order list query', () => {
 
     await expect(pending).rejects.toThrow();
   });
+
+  it('honors an explicit larger page size without changing the lightweight default', async () => {
+    await readOrders(createContext('enterprise', 'enterprise:1', 7), { order: '', limit: 50 }, new AbortController().signal);
+
+    expect(requests[0]?.url.searchParams.get('limit')).toBe('50');
+  });
 });
 
 describe('Order detail query', () => {
@@ -179,7 +186,7 @@ describe('Order detail query', () => {
 
 describe('Order page response bounds', () => {
   it('rejects a response containing 51 rows', () => {
-    const items = Array.from({ length: ORDER_PAGE_LIMIT + 1 }, (_, index) => createOrder(`order:${index + 1}`, `SW-${index + 1}`));
+    const items = Array.from({ length: ORDER_MAX_PAGE_LIMIT + 1 }, (_, index) => createOrder(`order:${index + 1}`, `SW-${index + 1}`));
 
     expect(OrderPageSchema.safeParse({ items, count: items.length }).success).toBe(false);
   });

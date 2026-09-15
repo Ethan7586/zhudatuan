@@ -6,14 +6,20 @@ import { OrderPageSchema, type OrderFilter, type OrderListFilter, type OrderView
 import { parseOrderExportTask } from './OrderExportQuery';
 
 const ordersRead = createFetchOrderOrdersRead(appConfig.apiBaseUrl);
-export const ORDER_PAGE_LIMIT = 50;
+export const ORDER_DEFAULT_PAGE_LIMIT = 20;
+export const ORDER_MAX_PAGE_LIMIT = 50;
+export const ORDER_PAGE_LIMITS = Object.freeze([ORDER_DEFAULT_PAGE_LIMIT, ORDER_MAX_PAGE_LIMIT] as const);
 
 export interface OrderQuery extends OrderFilter, Partial<Omit<OrderListFilter, 'order'>> {
   readonly cursor?: string;
   readonly view?: OrderView;
+  readonly limit?: number;
 }
 
 export const isOrderPreviewContext = (context: ConsoleContext): boolean => context.scope.kind === 'platform' && context.scope.id === 'platform:preview';
+
+export const orderPageLimit = (limit: number | undefined): number =>
+  ORDER_PAGE_LIMITS.includes(limit as (typeof ORDER_PAGE_LIMITS)[number]) ? limit! : ORDER_DEFAULT_PAGE_LIMIT;
 
 export const orderKey = (context: ConsoleContext, filter: OrderQuery) =>
   Object.freeze([
@@ -30,14 +36,14 @@ export const orderKey = (context: ConsoleContext, filter: OrderQuery) =>
     filter.mall ?? '',
     filter.view ?? 'all',
     filter.cursor ?? null,
-    ORDER_PAGE_LIMIT,
+    orderPageLimit(filter.limit),
   ] as const);
 
 export async function readOrders(context: ConsoleContext, filter: OrderQuery, signal: AbortSignal) {
   const value = await ordersRead(
     {
       query: {
-        limit: ORDER_PAGE_LIMIT,
+        limit: orderPageLimit(filter.limit),
         ...(filter.order === '' ? {} : { order: filter.order }),
         ...(filter.cursor === undefined ? {} : { cursor: filter.cursor }),
         ...(filter.placed ? { placed: filter.placed } : {}),
