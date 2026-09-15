@@ -4802,10 +4802,10 @@
 | 类型 | 实施路径准确性、迁移与删除治理 |
 | 严重级别 | **P3** |
 | 置信度 | 高（文档路径、固定基线文件系统与当前 Voucher runtime 入口均为直接证据） |
-| 文件和精确位置 | `05_docs_ziliao/docs_wendang/voucher/Architecture.md:740-765,774-790`；实际源码根为 `01_core_hexin/services/...` 与 `01_core_hexin/apps/...`，受管迁移根为 `02_platform_pingtai/database/supabase/migrations/`。 |
-| 当前/预期 | 文档将契约、SDK、测试、迁移和旧文件列为 `packages/...`、`services/...`、`apps/...`、`database/...` 根路径；固定基线中这些根相对路径不存在，列出的四个 `20260901xxxxxx_voucher_target_*` 迁移也不存在。实际 Voucher 运行模块与 Console 文件仍位于带顶层分区前缀的路径。预期是目标态文档明确其为未实施草案，并使用当前可解析路径或单独的未来目录约定。 |
-| 直接证据 | [FACT][E-AU-862-001] 文件 740-751、760-765、774-790 的路径在固定基线均无对应对象；[FACT][E-AU-862-002] `01_core_hexin/services/commerce/src/modules/voucher/module.manifest.ts:8-43` 仍注册 19 个 operation 和四类 job；[FACT][E-AU-862-003] `VoucherTargetContract.test.ts:12-76` 固定 74 个 `frozen` target operation 并断言不进入 runtime controller/capability artifact。 |
-| 调用链或运行入口 | 人工实施者 → Voucher Architecture → 路径/迁移/旧文件处置清单；非运行时调用链。 |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/voucher/Architecture.md:740-765,774-790`；`voucher/Delivery.md:46,394-403`；实际源码根为 `01_core_hexin/services/...` 与 `01_core_hexin/apps/...`，受管迁移根为 `02_platform_pingtai/database/supabase/migrations/`。 |
+| 当前/预期 | 两份文档将契约、SDK、测试、迁移和旧文件列为 `packages/...`、`services/...`、`apps/...`、`database/...` 根路径；固定基线中这些根相对路径不存在，Architecture 中四个 `20260901xxxxxx_voucher_target_*` 迁移也不存在。实际 Voucher 运行模块与 Console 文件仍位于带顶层分区前缀的路径。预期是目标态文档明确其为未实施草案，并使用当前可解析路径或单独的未来目录约定。 |
+| 直接证据 | [FACT][E-AU-862-001] Architecture 740-751、760-765、774-790 的路径在固定基线均无对应对象；[FACT][E-AU-865-001] Delivery:46 将定义写为无前缀 `packages/...`，394-403 又要求未来受管迁移；[FACT][E-AU-862-002] `01_core_hexin/services/commerce/src/modules/voucher/module.manifest.ts:8-43` 仍注册 19 个 operation 和四类 job；[FACT][E-AU-862-003] `VoucherTargetContract.test.ts:12-76` 固定 74 个 `frozen` target operation 并断言不进入 runtime controller/capability artifact。 |
+| 调用链或运行入口 | 人工实施者 → Voucher Architecture/Delivery → 路径、迁移与旧文件处置清单；非运行时调用链。 |
 | 用户影响 | 实施者可能在不存在目录创建迁移或按不完整、无前缀的清单误定位当前运行文件；当前功能不会因阅读文档自动改变。 |
 | 数据影响 | 若误把占位迁移当作可执行步骤，可能产生与受管迁移目录脱节的后续变更；本审计未执行任何迁移。 |
 | 安全影响 | 无直接外部安全漏洞。 |
