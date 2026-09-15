@@ -3395,7 +3395,7 @@
 "04_tools/scripts/check/sfl-member-registration-progression.pg17-fixture.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "04_tools/scripts/check/sfl-multi-realm-membership.pg17-fixture.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "04_tools/scripts/check/sfl-node-context-scope.pg17-fixture.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
-"04_tools/scripts/check/sfl-node-kernel.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
+"04_tools/scripts/check/sfl-node-kernel.mjs","工具/scripts","JavaScript源码","已深入审阅","2026-09-15","AU-789 fixture/generator/digest/host/isolation/provenance; default readonly verification passed","人工SFL kernel fixture check；--write为生成模式","中","[G0] node kernel fixture gate；SFL-17/18 remain fixture-only UNKNOWN","否"
 "04_tools/scripts/check/sfl-sovereign-upgrade.pg17-fixture.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "04_tools/scripts/check/source.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "04_tools/scripts/check/supplychain.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
