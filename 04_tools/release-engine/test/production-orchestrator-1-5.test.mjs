@@ -5,7 +5,13 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 import { DeliveryError } from '../src/errors.mjs';
-import { canonicalDeliveryAdapter, createProductionReleaseRequest, orchestrateProductionClosure } from '../src/production-orchestrator.mjs';
+import {
+  canonicalDeliveryAdapter,
+  createProductionReleaseRequest,
+  finalizeProductionClosureManifest,
+  orchestrateProductionClosure,
+  verifyProductionClosureManifest,
+} from '../src/production-orchestrator.mjs';
 
 const sourceSha = 'a'.repeat(40);
 const controlPlaneSha = 'b'.repeat(40);
@@ -14,6 +20,55 @@ const components = [
   { componentId: 'console', target: 'console', physicalNode: 'node-a', dependsOn: [] },
   { componentId: 'web-api', target: 'web-api', physicalNode: 'node-a', dependsOn: [] },
 ];
+
+test('finalized closure makes exact final Seals the single deployment authority', async () => {
+  const draft = {
+    schemaVersion: 'zdt-automatic-artifact-closure/v1',
+    sourceSha,
+    beforeSha: '0'.repeat(40),
+    targets: ['database-migration', 'support-api', 'console'],
+    reconciliation: { action: 'prepare' },
+    preparations: [],
+    waves: {
+      migrations: [{ target: 'database-migration', node: 'aliyun-shanghai' }],
+      runtimes: [{ target: 'support-api', node: 'aliyun-shanghai' }],
+      frontends: [{ target: 'console', node: 'aliyun-shanghai' }],
+    },
+  };
+  const closure = await finalizeProductionClosureManifest({}, draft, { controlPlaneSha }, {
+    now: () => new Date('2026-01-01T00:00:00Z'),
+    resolveSeal: async ({ target }) => ({
+      artifactDigest: `sha256:${target === 'console' ? 'c' : target === 'support-api' ? 'a' : 'e'}`.replace(
+        /sha256:([cae])$/,
+        (_match, character) => `sha256:${character.repeat(64)}`,
+      ),
+      provenanceDigest,
+      recovered: target === 'database-migration',
+      seal: {
+        key: { control_plane_sha: controlPlaneSha, seal_key: `sha256:${'f'.repeat(64)}` },
+        object: `releases/${sourceSha}/${target}/aliyun-shanghai/seals/${controlPlaneSha}/final-seal.json`,
+        receipt: { seal_digest: `sha256:${'9'.repeat(64)}` },
+      },
+    }),
+  });
+  const verified = verifyProductionClosureManifest(closure, sourceSha);
+  assert.equal(verified.schemaVersion, 'zdt-automatic-artifact-closure/v2');
+  assert.equal(verified.bundleGate.allowDeploy, true);
+  assert.equal(verified.deploymentEntries.length, 3);
+  assert.equal(verified.waves.migrations[0].seal_recovered, true);
+  assert.equal(verified.waves.frontends[0].seal_control_sha, controlPlaneSha);
+});
+
+test('draft or tampered closure cannot authorize deployment', async () => {
+  assert.throws(() => verifyProductionClosureManifest({ schemaVersion: 'zdt-automatic-artifact-closure/v1' }, sourceSha),
+    (error) => error.code === 'SEALED_CLOSURE_SCHEMA_INVALID');
+  const empty = await finalizeProductionClosureManifest({}, {
+    schemaVersion: 'zdt-automatic-artifact-closure/v1', sourceSha, beforeSha: '0'.repeat(40), targets: [],
+    reconciliation: {}, preparations: [], waves: { migrations: [], runtimes: [], frontends: [] },
+  }, { controlPlaneSha }, { now: () => new Date('2026-01-01T00:00:00Z') });
+  assert.throws(() => verifyProductionClosureManifest({ ...empty, finalizedAt: '2027-01-01T00:00:00.000Z' }, sourceSha),
+    (error) => error.code === 'SEALED_CLOSURE_DIGEST_MISMATCH');
+});
 
 test('release request resolves latest origin control separately from business source', async () => {
   const releaseRequest = await request();

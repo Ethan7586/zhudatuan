@@ -10,23 +10,37 @@ const workflowSource = await readFile(join(root, '.github/workflows/deploy-sourc
 const workflow = parse(workflowSource);
 const autoSource = await readFile(join(root, '.github/workflows/auto-prepare-artifacts.yml'), 'utf8');
 const auto = parse(autoSource);
+const resolveStep = workflow.jobs.resolve.steps.find(
+  (step) => step.name === 'Resolve exact successful automatic closure',
+);
 
 test('sealed-source deployment is explicit, consumes one closure manifest and never builds', () => {
   assert.deepEqual(Object.keys(workflow.on), ['workflow_call']);
   assert.ok(workflow.on.workflow_call.inputs.head_sha.required);
-  assert.match(workflow.jobs.resolve.steps[0].run, /automatic-artifact-closure-\$SOURCE_SHA/);
-  assert.match(workflow.jobs.resolve.steps[0].run, /gh run list --repo "\$GITHUB_REPOSITORY"/);
-  assert.doesNotMatch(workflow.jobs.resolve.steps[0].run, /--event push/);
-  assert.match(workflow.jobs.resolve.steps[0].run, /actions\/runs\/\$\{candidate_id\}\/artifacts/);
-  assert.match(workflow.jobs.resolve.steps[0].run, /automatic-artifact-closure-\$\{SOURCE_SHA\}/);
-  assert.match(workflow.jobs.resolve.steps[0].run, /gh run download "\$run_id" --repo "\$GITHUB_REPOSITORY"/);
-  assert.doesNotMatch(workflowSource, /npm ci|prepare-artifact-aliyun|\bbuild\b|operation: validate-candidate/);
+  assert.ok(resolveStep);
+  assert.match(resolveStep.run, /automatic-artifact-closure-\$SOURCE_SHA/);
+  assert.match(resolveStep.run, /gh run list --repo "\$GITHUB_REPOSITORY"/);
+  assert.doesNotMatch(resolveStep.run, /--event push/);
+  assert.match(resolveStep.run, /actions\/runs\/\$\{candidate_id\}\/artifacts/);
+  assert.match(resolveStep.run, /automatic-artifact-closure-\$\{SOURCE_SHA\}/);
+  assert.match(resolveStep.run, /gh run download "\$candidate_id" --repo "\$GITHUB_REPOSITORY"/);
+  assert.match(resolveStep.run, /verifyProductionClosureManifest/);
+  assert.doesNotMatch(workflowSource, /prepare-artifact-aliyun|\bbuild\b|operation: validate-candidate/);
   assert.equal((workflowSource.match(/operation: deploy/g) ?? []).length, 3);
+  for (const jobName of ['migrations', 'runtimes', 'frontends']) {
+    assert.equal(workflow.jobs[jobName].with.seal_control_sha, '${{ matrix.seal_control_sha }}');
+    assert.equal(workflow.jobs[jobName].with.seal_artifact_digest, '${{ matrix.artifact_digest }}');
+    assert.equal(workflow.jobs[jobName].with.seal_key, '${{ matrix.seal_key }}');
+    assert.equal(
+      workflow.jobs[jobName].with.seal_receipt_object,
+      '${{ matrix.final_seal_receipt_object }}',
+    );
+  }
 });
 
 test('a delivery-only source closes successfully without restarting production targets', () => {
-  assert.doesNotMatch(workflow.jobs.resolve.steps[0].run, /Automatic closure contains no deployable target/);
-  assert.match(workflow.jobs.resolve.steps[0].run, /deployment completed as a no-op/);
+  assert.doesNotMatch(resolveStep.run, /Automatic closure contains no deployable target/);
+  assert.match(resolveStep.run, /deployment completed as a no-op/);
 });
 
 test('deployment waves stop forward progress after a failed earlier wave', () => {
@@ -41,8 +55,25 @@ test('deployment waves stop forward progress after a failed earlier wave', () =>
 
 test('automatic closure preserves its exact machine-readable deployment scope', () => {
   assert.equal(auto.on.workflow_dispatch.inputs.base_sha.required, false);
-  const upload = auto.jobs.plan.steps.find((step) => step.uses === 'actions/upload-artifact@v6');
-  assert.equal(upload.with.name, 'automatic-artifact-closure-${{ steps.matrix.outputs.source_sha }}');
-  assert.equal(upload.with.path, '.automatic-artifact-closure/closure.json');
-  assert.equal(upload.with['if-no-files-found'], 'error');
+  const planUpload = auto.jobs.plan.steps.find((step) => step.uses === 'actions/upload-artifact@v6');
+  assert.equal(planUpload.with.name, 'automatic-artifact-plan-${{ steps.matrix.outputs.source_sha }}');
+  assert.equal(planUpload.with.path, '.automatic-artifact-closure/closure.json');
+  assert.equal(planUpload.with['if-no-files-found'], 'error');
+
+  assert.deepEqual(auto.jobs.finalize.needs, ['plan', 'close']);
+  assert.deepEqual(auto.jobs.finalize['runs-on'], ['self-hosted', 'linux', 'x64', 'zdt-aliyun-release']);
+  assert.match(auto.jobs.finalize.if, /needs\.close\.result == 'success'/);
+  assert.match(auto.jobs.finalize.if, /needs\.close\.result == 'skipped'/);
+  const finalizeStep = auto.jobs.finalize.steps.find(
+    (step) => step.name === 'Require every exact final Seal and finalize one authority',
+  );
+  assert.match(finalizeStep.run, /finalizeProductionClosureManifest/);
+  assert.match(finalizeStep.run, /verifyProductionClosureManifest/);
+
+  const finalUpload = auto.jobs.finalize.steps.find(
+    (step) => step.uses === 'actions/upload-artifact@v6',
+  );
+  assert.equal(finalUpload.with.name, 'automatic-artifact-closure-${{ needs.plan.outputs.source_sha }}');
+  assert.equal(finalUpload.with.path, '.automatic-artifact-closure/closure.json');
+  assert.equal(finalUpload.with['if-no-files-found'], 'error');
 });

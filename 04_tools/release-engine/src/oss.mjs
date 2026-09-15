@@ -397,11 +397,12 @@ export async function resolveExactFinalSealReceipt(adapter, options, dependencie
   const client = dependencies.client ?? ossClientFromEnvironment(options.endpoint, dependencies);
   const prepared = await resolvePreparedArtifact(adapter, { ...options, allowLegacy: false }, { ...dependencies, client });
   invariant(prepared.provenance?.controlPlaneSha, 'OSS_PROVENANCE_CONTROL_SHA_MISSING', 'Build provenance does not identify the control plane');
-  return requireFinalSealReceipt(adapter, {
-    ...options,
-    artifactDigest: prepared.manifest.artifact.sha256,
-    controlPlaneSha: prepared.provenance.controlPlaneSha,
+  const exact = await findFinalSealReceipt(adapter, {
+    ...options, artifactDigest: prepared.manifest.artifact.sha256,
   }, { ...dependencies, client });
+  if (exact) return exact;
+  return requireFinalSealReceipt(adapter, { ...options, artifactDigest: prepared.manifest.artifact.sha256,
+    controlPlaneSha: prepared.provenance.controlPlaneSha }, { ...dependencies, client });
 }
 
 export async function findFinalSealReceipt(adapter, options, dependencies = {}) {
@@ -418,6 +419,7 @@ export async function findFinalSealReceipt(adapter, options, dependencies = {}) 
       sourceSha: candidate.key?.source_sha, releaseTarget: candidate.key?.release_target, physicalNode: candidate.key?.physical_node,
       artifactDigest: candidate.key?.artifact_digest, controlPlaneSha: candidate.key?.control_plane_sha,
     });
+    if (options.artifactDigest && key.artifact_digest !== options.artifactDigest) continue;
     const paths = sealObjectPaths(adapter.project, key, options.prefix);
     invariant(paths.final === object, 'FINAL_SEAL_OBJECT_PATH_MISMATCH', 'Final Seal receipt is outside its canonical path');
     const state = await createSealLifecycleStore(client, { project: adapter.project, sourceSha, releaseTarget: target, physicalNode: node,

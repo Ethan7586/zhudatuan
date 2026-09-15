@@ -31,6 +31,26 @@ on:
         description: Least-privilege role; this workflow requires releaser
         required: true
         type: string
+      seal_control_sha:
+        description: Exact control-plane SHA recorded by the finalized closure
+        required: false
+        type: string
+        default: ''
+      seal_artifact_digest:
+        description: Exact artifact digest recorded by the finalized closure
+        required: false
+        type: string
+        default: ''
+      seal_key:
+        description: Exact final Seal key recorded by the finalized closure
+        required: false
+        type: string
+        default: ''
+      seal_receipt_object:
+        description: Exact final Seal receipt object recorded by the finalized closure
+        required: false
+        type: string
+        default: ''
     secrets:
       ZDT_RUNNER_READ_TOKEN:
         description: Fine-grained token limited to repository Administration read for Primary health observation
@@ -65,6 +85,10 @@ env:
   RELEASE_NODE: ${{ inputs.release_node }}
   RELEASE_TARGET: ${{ inputs.release_target }}
   RELEASE_OPERATION: ${{ inputs.operation }}
+  SEALED_CONTROL_SHA: ${{ inputs.seal_control_sha }}
+  SEALED_ARTIFACT_DIGEST: ${{ inputs.seal_artifact_digest }}
+  SEALED_KEY: ${{ inputs.seal_key }}
+  SEALED_RECEIPT_OBJECT: ${{ inputs.seal_receipt_object }}
   CONTROL_SHA: ${{ github.sha }}
   CONTROL_REF: ${{ github.ref }}
   GIT_CONFIG_COUNT: 1
@@ -94,6 +118,12 @@ jobs:
           if [[ -z "$RELEASE_NODE" || -z "$RELEASE_TARGET" ]]; then
             echo "release_node and release_target are required" >&2
             exit 64
+          fi
+          if [ "$RELEASE_OPERATION" = deploy ] && [ -n "$SEALED_CONTROL_SHA$SEALED_ARTIFACT_DIGEST$SEALED_KEY$SEALED_RECEIPT_OBJECT" ]; then
+            [[ "$SEALED_CONTROL_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo 'seal_control_sha must be one full SHA' >&2; exit 64; }
+            [[ "$SEALED_ARTIFACT_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo 'seal_artifact_digest is invalid' >&2; exit 64; }
+            [[ "$SEALED_KEY" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo 'seal_key is invalid' >&2; exit 64; }
+            [[ "$SEALED_RECEIPT_OBJECT" == */final-seal.json ]] || { echo 'seal_receipt_object is invalid' >&2; exit 64; }
           fi
           if [ "$RELEASE_OPERATION" != validate-candidate ] && [ "$RELEASE_OPERATION" != deploy ]; then
             echo "operation must be validate-candidate or deploy" >&2
@@ -261,6 +291,11 @@ jobs:
             command=deploy-prepared
             expected_status=success
           fi
+          seal_args=()
+          if [ -n "$SEALED_CONTROL_SHA" ]; then
+            seal_args+=(--seal-control-sha "$SEALED_CONTROL_SHA" --seal-artifact-digest "$SEALED_ARTIFACT_DIGEST" \
+              --seal-key "$SEALED_KEY" --seal-receipt-object "$SEALED_RECEIPT_OBJECT")
+          fi
           expected_agent_sha256="sha256:$(sha256sum 04_tools/release-engine/remote/agent.mjs | cut -d' ' -f1)"
           expected_policy_sha256="sha256:$(sha256sum 02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json | cut -d' ' -f1)"
           npm run --silent release -- "$command" \
@@ -274,6 +309,7 @@ jobs:
             --writer-class "$WRITER_CLASS" \
             --primary-available "$PRIMARY_AVAILABLE" \
             --takeover-reason "$TAKEOVER_REASON" \
+            "${seal_args[@]}" \
             --node "$RELEASE_NODE" \
             --target "$RELEASE_TARGET" \
             --format json | tee .prepared-release/envelope.json

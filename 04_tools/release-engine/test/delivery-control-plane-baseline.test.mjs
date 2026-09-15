@@ -91,7 +91,7 @@ test('seal is atomic and deploy consumes it without downloading or rebuilding', 
   assert.match(oss, /PREVIOUS_RELEASE_INDEX = 'release-index-r3-normalized-runtime-modes\.json'/);
   assert.match(oss, /ARTIFACT_RECIPE = 'r4-seal-lifecycle'/);
   assert.match(oss, /CURRENT_RELEASE_INDEX = `release-index-\$\{ARTIFACT_RECIPE\}\.json`/);
-  const sealAuthority = engine.indexOf('const authoritativeSeal = candidateOnly ? null : await requireFinalSealReceipt');
+  const sealAuthority = engine.indexOf('const authoritativeSeal = candidateOnly ? null : manifestSealControlSha');
   const remoteExecution = engine.indexOf('const remote = await runCommand(', sealAuthority);
   assert.ok(sealAuthority >= 0, 'prepared deploy must require the authoritative OSS Seal');
   assert.ok(remoteExecution > sealAuthority, 'prepared deploy must require the OSS Seal before any remote execution');

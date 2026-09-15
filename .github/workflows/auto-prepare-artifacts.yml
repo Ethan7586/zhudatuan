@@ -85,10 +85,10 @@ jobs:
           appendFileSync(process.env.GITHUB_OUTPUT, `source_sha=${closure.sourceSha}\n`);
           console.log(entries.length === 0 ? 'No runtime artifact was affected.' : `Affected targets: ${entries.map(({ target }) => target).join(', ')}`);
           NODE
-      - name: Preserve exact closure manifest
+      - name: Preserve closure plan
         uses: actions/upload-artifact@v6
         with:
-          name: automatic-artifact-closure-${{ steps.matrix.outputs.source_sha }}
+          name: automatic-artifact-plan-${{ steps.matrix.outputs.source_sha }}
           path: .automatic-artifact-closure/closure.json
           if-no-files-found: error
           retention-days: 90
@@ -115,3 +115,62 @@ jobs:
       ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
       ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
       ALIYUN_OSS_INTERNAL_ENDPOINT: ${{ secrets.ALIYUN_OSS_INTERNAL_ENDPOINT }}
+
+  finalize:
+    name: Finalize exact sealed closure
+    needs: [plan, close]
+    if: ${{ always() && needs.plan.result == 'success' && (needs.close.result == 'success' || needs.close.result == 'skipped') }}
+    runs-on: [self-hosted, linux, x64, zdt-aliyun-release]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.22.0
+          cache: npm
+      - name: Load finalizer dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Download closure plan
+        uses: actions/download-artifact@v7
+        with:
+          name: automatic-artifact-plan-${{ needs.plan.outputs.source_sha }}
+          path: .automatic-artifact-closure
+      - name: Require every exact final Seal and finalize one authority
+        env:
+          SOURCE_SHA: ${{ needs.plan.outputs.source_sha }}
+          CONTROL_SHA: ${{ github.sha }}
+          AI_DELIVERY_AUTH_MODE: static-access-key
+          AI_DELIVERY_ROLE_KIND: releaser
+          AI_DELIVERY_ALLOW_STATIC_ACCESS_KEY: true
+          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+          ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          import { loadAdapter } from './04_tools/release-engine/src/adapter.mjs';
+          import { finalizeProductionClosureManifest, verifyProductionClosureManifest } from './04_tools/release-engine/src/production-orchestrator.mjs';
+
+          const adapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+          const path = '.automatic-artifact-closure/closure.json';
+          const draft = JSON.parse(readFileSync(path, 'utf8'));
+          const closure = await finalizeProductionClosureManifest(adapter, draft, {
+            controlPlaneSha: process.env.CONTROL_SHA,
+            releaseRunner: process.env.RUNNER_NAME ?? 'automatic-closure-finalizer',
+          });
+          verifyProductionClosureManifest(closure, process.env.SOURCE_SHA);
+          writeFileSync(path, `${JSON.stringify(closure, null, 2)}\n`);
+          NODE
+      - name: Publish finalized sealed closure
+        uses: actions/upload-artifact@v6
+        with:
+          name: automatic-artifact-closure-${{ needs.plan.outputs.source_sha }}
+          path: .automatic-artifact-closure/closure.json
+          if-no-files-found: error
+          retention-days: 90

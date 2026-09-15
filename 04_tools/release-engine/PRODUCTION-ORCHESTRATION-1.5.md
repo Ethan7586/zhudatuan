@@ -1,6 +1,6 @@
 # Delivery Control 1.5 单次发布编排运行手册
 
-状态：第四批本地候选，尚未安装到系统级入口、GitHub、阿里云或生产。生产评分维持 56/100。
+状态：已接入 GitHub 自动封板与阿里云生产部署工作流；生产证据以每次运行回执为准。
 
 ## 一次触发合同
 
@@ -35,6 +35,8 @@ final Seal 到首次 Deploy 的间隙记录为 `sealToDeployGapMs`，本地合�
 
 当前 1.5 工作流允许用最新控制面重评估历史 `zdt-next` 主线版本：手动触发必须提供 exact `head_sha`，`base_sha` 可选，缺省取 source 的第一父节点；base 必须是 source 祖先。closure artifact 绑定 exact Source SHA。deploy-source consumer 以 manifest 与 artifact 身份为权威，同时识别 push 和受控 workflow_dispatch，不把事件类型或绿色 Action 当作 Seal。
 
-## 尚未启用
+## 封板清单唯一权威
 
-第四批没有安装系统级一次触发命令，没有修改真实 Secrets/RAM/OIDC/OSS/Runner，也没有推送工作流或部署生产。真实启用与演练属于后续批次。
+自动流程先产生不可部署的 v1 计划，再由阿里云 Release Runner 精确读取每个物理落点的 final Seal。所有目标均存在匹配的 source、artifact digest、control-plane SHA、Seal Key 和 final receipt 后，才生成可部署的 `zdt-automatic-artifact-closure/v2` 清单；缺少 final Seal 时整次 closure 失败。
+
+如果 UPLOADED 与 VALIDATED 已完成、仅 final Seal 写入缺失，finalizer 只恢复该 Seal，不重建或重新上传制品。v2 清单记录每个目标的 exact Seal 身份和自身 digest；部署工作流校验整张清单后，把这些 exact 字段传给部署引擎。后续控制面升级不会改变既有版本绑定的 Seal 路径。
