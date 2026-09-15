@@ -2937,7 +2937,7 @@
 | 字段 | 记录 |
 | --- | --- |
 | 模块/类型 | Book/Fulfillment；能力契约、履约正确性 |
-| 严重级别/置信度 | P1候选；高 |
+| 严重级别/置信度 | P2（RV-0077 已独立复核）；高 |
 | 文件和位置 | `extensions/providers/book/manifest.ts:12`；`Provider.ts:6`；`fulfillment/FulfillmentJobs.ts:37-67`；`bootstrap/ExtensionRegistry.ts:76-82` |
 | 当前/预期行为 | [FACT][E-AU-028-003/004/005] Book声明Order和Shipment并发布order/tracking；Order成功后固定排入tracking，但caller请求Logistics。Registry先检查capability，Book不含Logistics，故不会调用tracking port。已提交外部订单应有可达的状态追踪闭环 |
 | 调用链 | fulfillment job→Book Order/order→accepted+enqueue tracking→Logistics/tracking→EXTENSION_CAPABILITY_MISSING |
@@ -2945,7 +2945,7 @@
 | 数据/安全影响 | 本地停留accepted/processing并反复失败；未证明数据丢失或安全绕过 |
 | 根因/建议范围 | manifest capability词汇与唯一Fulfillment caller不一致；后续独立契约批次统一规范词汇并覆盖所有provider |
 | 验证/回滚 | Book合成order receipt后运行tracking job，必须进入tracking port并可完成里程碑；回退单一契约提交 |
-| 独立复核 | 是，RV-0021；需重新核对动态caller、manifest与运行入口 |
+| 独立复核 | 已完成：RV-0077。Book factory 已在当前 ProviderFactories 注册；其启用取决于数据库 `enabled_installations()`，固定仓库未证明线上存在安装或已提交外部订单。若已启用，固定 tracking caller 必在外部调用前被 capability gate 拒绝，缺陷成立但不能维持高概率重大线上故障的 P1。 |
 
 ## F-0117｜Book Return与Refund可解锁同一refund port
 
@@ -2984,7 +2984,7 @@
 | 字段 | 记录 |
 | --- | --- |
 | 模块/类型 | Directcharge/Fulfillment；能力契约、业务可达性 |
-| 严重级别/置信度 | P1候选；高 |
+| 严重级别/置信度 | P2（RV-0077 已独立复核）；高 |
 | 文件和位置 | `extensions/providers/directcharge/manifest.ts:12`；`Provider.ts:6`；`fulfillment/FulfillmentJobs.ts:37-67`；`ExtensionRegistry.ts:76-82` |
 | 当前/预期行为 | [FACT][E-AU-029-003/004/005] factory发布order/tracking，但manifest没有Fulfillment固定请求的Order/Logistics，只有Issue/DirectCharge/Query；Registry先检查capability，核心任务在调用万联前失败。required直充provider应有可达提交和结果查询入口 |
 | 调用链 | fulfillment submit/track→Registry require(Order或Logistics, order或tracking)→EXTENSION_CAPABILITY_MISSING |
@@ -2992,7 +2992,7 @@
 | 数据/安全影响 | 外部调用前失败，未证明产生供应商侧重复写；本地失败/重试状态影响待线上核验 |
 | 根因/建议范围 | 领域capability词汇与统一Fulfillment caller不一致；后续全provider契约批次统一，不在单包增加旁路 |
 | 验证/回滚 | 合成Directcharge fulfillment必须进入order并可由tracking查询；回退单一契约提交 |
-| 独立复核 | 是，RV-0022 |
+| 独立复核 | 已完成：RV-0077。Directcharge factory 当前已注册、enabled installation 仍未在仓库中证明；启用后 submit 与 tracking 都会在外部万联调用前被拒绝。保持真实 P2，不写成已发生或高概率 P1。 |
 
 ## F-0120｜Directcharge capability与port没有唯一语义映射
 
@@ -3030,13 +3030,13 @@
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块/级别 | Jdfresh/Channel/Fulfillment；P1候选，高置信 |
+| 模块/级别 | Jdfresh/Channel/Fulfillment；P2（RV-0077 已独立复核），高置信 |
 | 位置 | `jdfresh/manifest.ts:12`；`Provider.ts:6`；`ChannelSyncJob.ts:113-126`；`FulfillmentJobs.ts:37-67` |
 | 当前/预期 | [FACT][E-AU-030-002–005] factory有stock/tracking，manifest用GeoStock/Delivery；caller用Inventory/Logistics，Registry在port前拒绝。库存与已提交订单物流应可达 |
 | 影响 | 库存同步失败；JD生鲜Order成功后tracking失败，履约状态停滞。线上是否enabled未知 |
 | 根因/方向 | 全局能力词汇未统一；后续独立契约批次治理，不加单包旁路 |
 | 验证/回滚 | 合成inventory及Order→tracking全链；回退单一契约提交 |
-| 独立复核 | RV-0023 |
+| 独立复核 | 已完成：RV-0077。Jdfresh factory 当前已注册、enabled installation 未获仓库证据；若启用，Inventory/stock 与 Logistics/tracking 均会在外部调用前被拒绝。缺陷成立，严重度保守为 P2。 |
 
 ## F-0123｜Jdfresh TimeSlot与领域能力没有唯一port映射
 
@@ -3087,13 +3087,13 @@
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块/级别 | Private Provider；P1候选，高 |
+| 模块/级别 | Private Provider；P2（RV-0077 已独立复核），高 |
 | 位置 | `extensions/providers/private/manifest.ts:12`；`extensions/providers/private/Provider.ts:6`；`services/commerce/src/modules/fulfillment/05_interface_jieru/jobs_renwu/FulfillmentJobs.ts:66-67`；`providers/core/src/ExtensionRegistry.ts:76-82` |
 | 当前/预期 | `manifest`将 `Shipment/Return` 纳入能力，但 `Provider`/`channels` 组合仅有 `tracking`；`FulfillmentJobs`对已启用 private 实例仍使用 `Logistics` capability 发起 `tracking`，`ExtensionRegistry`会在 capability 检查阶段拒绝该链路。应确保 `manifest`与caller口径一致：要么显式支持`Logistics` capability，要么移除不匹配履约入口。 |
 | 影响 | private provider 的履约更新阶段可能在启用后卡在 tracking 查询；履约状态可被长期停滞。 |
 | 根因/方向 | capability 与 port 字符串域未闭合，且未保留版本级禁用/迁移策略。后续统一 provider 契约批次治理，不在本次单 provider 内做临时旁路。 |
 | 验证/回滚 | 构造 private 履约/tracking反事实，确认 `extension.require` 在 capability/port 上的拒绝与成功路径；回退仅改契约提交。 |
-| 独立复核 | 是，RV-0024 |
+| 独立复核 | 已完成：RV-0077。此前指向 RV-0024 的编号与券资金复核冲突，现以本次矩阵复核取代。Private 由 Loader 的 enabled installation 动态注册；若启用，tracking 固定调用 Logistics 会被 manifest capability 拒绝。无安装或线上履约证据，保守降为 P2。 |
 
 ## F-0128｜Private Provider 声明能力与端口映射失配
 
