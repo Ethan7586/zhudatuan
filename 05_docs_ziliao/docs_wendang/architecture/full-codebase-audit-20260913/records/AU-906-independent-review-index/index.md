@@ -75,6 +75,7 @@
 | GX-0045 | 公司模板克隆（RV-0065 静态复核完成，专项验证待授权） | DB function → role/RLS → topology/identity clone/recovery |
 | GX-0046 | Storefront compatibility legacy 运维（RV-0066 已完成，维持 GX） | legacy deploy → purchase guard → systemd/backup recovery |
 | GX-0047 | Linux readiness fixture（RV-0067 已完成，维持 GX） | isolated unit → readiness/rollback → protected snapshots |
+| GX-0048 | Identity mobile consistency repair（RV-0068 已完成，维持 GX） | precondition/collision → credential version → session revoke |
 
 ## 未编号高风险台账差额（12 个对象 + 2 个计数未知项）
 
