@@ -213,6 +213,55 @@ describe('member directory pagination', () => {
     expect(screen.queryByRole('row', { name: '查看管理员 高级管理员 · 7586' })).toBeNull();
   });
 
+  it('completes SMS step-up before offboarding and never exposes STEPUP_REQUIRED as the final UI state', async () => {
+    let offboarded = false;
+    let roleWrites = 0;
+    const owner = ownerContext();
+    const stepUpOwner = { ...owner, session: { ...owner.session, assurance: { level: 2 } } };
+    server.use(
+      http.get('*/api/v1/members', () => HttpResponse.json(offboarded
+        ? { items: [], count: 0 }
+        : { items: [{ ...member('target', '高级管理员 · 7586'), mobile: '19287247586' }], count: 1 })),
+      http.get('*/api/v1/access/center', () => HttpResponse.json(offboarded
+        ? { items: [], count: 0, roles: [] }
+        : { items: [accessMembership('membership:target', '高级管理员 · 7586', true)], count: 1, roles: [] })),
+      http.post('*/api/v1/identity/stepup/challenges', () => HttpResponse.json({
+        id: 'challenge:administrator-action', purpose: 'stepup', expires_at: new Date(Date.now() + 300_000).toISOString(),
+      }, { status: 202 })),
+      http.post('*/api/v1/identity/stepup/verifications', async ({ request }) => {
+        expect(await request.json()).toEqual({ challenge: 'challenge:administrator-action', code: '123456' });
+        return HttpResponse.json({ id: 'session:owner', assurance_level: 3 });
+      }),
+      http.get('*/api/v1/identity/session', () => HttpResponse.json({
+        ...stepUpOwner.session, assurance: { level: 3, verified: new Date().toISOString() }, csrf: 'csrf:elevated-owner',
+      })),
+      http.put('*/api/v1/access/roles/:roleid', ({ request }) => {
+        roleWrites += 1;
+        expect(request.headers.get('x-csrf-token')).toBe('csrf:elevated-owner');
+        offboarded = true;
+        return HttpResponse.json({ action: 'offboard', changed: true, membership: 'membership:target',
+          status: 'offboarded', access_version: 8 });
+      }),
+    );
+    const user = userEvent.setup();
+    renderWorkspace(stepUpOwner);
+    await user.click(await screen.findByRole('row', { name: '查看管理员 高级管理员 · 7586' }));
+
+    await user.click(screen.getByRole('button', { name: '删除管理员' }));
+    await user.click(screen.getByRole('button', { name: '确认移除管理员' }));
+
+    expect(roleWrites).toBe(0);
+    expect(await screen.findByRole('dialog', { name: '验证后删除管理员' })).toBeTruthy();
+    expect(screen.queryByText(/STEPUP_REQUIRED/)).toBeNull();
+    await user.click(screen.getByRole('button', { name: '发送本人短信验证码' }));
+    await user.type(await screen.findByLabelText('6 位短信验证码'), '123456');
+    await user.click(screen.getByRole('button', { name: '验证并移除' }));
+
+    expect(await screen.findByText('暂无管理员')).toBeTruthy();
+    expect(roleWrites).toBe(1);
+    expect(screen.queryByRole('dialog', { name: '验证后删除管理员' })).toBeNull();
+  });
+
   it('lets a senior administrator remove an ordinary administrator without exposing peer-governance controls', async () => {
     let offboarded = false;
     const target = { ...member('target', '普通管理员 · 7586'), mobile: '19287247586' };
@@ -321,6 +370,7 @@ function ownerContext(extraScope?: ConsoleScope): ConsoleContext {
       capabilities: ['member.members.read', 'access.center.read', 'access.roles.manage'],
       csrf: 'csrf:owner',
       governance: { level: 'owner', organization: 'tenant-zhudatuan', exactOwner: true },
+      assurance: { level: 3, verified: '2026-09-02T11:13:00.000Z' },
       scopes: extraScope === undefined ? context.session.scopes : [...context.session.scopes, extraScope],
     },
   };
