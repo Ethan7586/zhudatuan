@@ -1,9 +1,9 @@
 import { Empty, ResourceState, type ResourceCondition } from '@shop/design';
-import { keepPreviousData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import type { ConsoleContext, ConsoleScope } from '../../entity/session/ConsoleSession';
+import type { ConsoleContext, ConsoleScope, ConsoleSession } from '../../entity/session/ConsoleSession';
 import { safeQueryError } from '../../shared/api/QueryState';
 import { formatDate } from '../../shared/ui/Format';
 import { pageCursor } from '../../shared/url/PageCursor';
@@ -16,7 +16,8 @@ import { isManagementRole } from './ManagementRole';
 import type { Member } from '../member/MemberSchema';
 import '../storefront-member/storefront-member.css';
 import { ACCESS_QUERY_STALE_TIME_MS, accessKey, readAccess } from './AccessQuery';
-import { offboardAdministrator, roleCommandAvailable, saveAccessRoleAssignment, verifyAccessRoleAssignment } from './AccessRoleCommand';
+import { offboardAdministrator, isStepUpRequired, roleCommandAvailable, saveAccessRoleAssignment, verifyAccessRoleAssignment } from './AccessRoleCommand';
+import { AdministratorStepUpDialog, type AdministratorCriticalAction } from './AdministratorStepUpDialog';
 import type { AccessMembership, AccessRole } from './AccessSchema';
 import { invitationRecordsAvailable, invitationRecordsKey, readInvitationRecords } from './InvitationRecordsQuery';
 import type { InvitationRecord } from './InvitationRecordsSchema';
@@ -38,6 +39,7 @@ interface MemberAccessRow {
 
 export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAccessPrimary }) {
   const context = useConsoleContext();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [search, setSearch] = useSearchParams();
   const [draft, setDraft] = useState('');
@@ -253,7 +255,12 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
         </div>
       </section>
 
-      <MemberInvitationDialog context={context} open={invitationOpen} onClose={() => setInvitationOpen(false)} />
+      <MemberInvitationDialog
+        context={context}
+        open={invitationOpen}
+        onClose={() => setInvitationOpen(false)}
+        onCreated={() => { void queryClient.invalidateQueries({ queryKey: invitationRecordsKey(context) }); }}
+      />
       <MemberRegistrationResetDialog context={context} target={resetTarget} onClose={() => setResetTarget(undefined)} onReset={() => void memberQuery.refetch()} onInvite={() => setInvitationOpen(true)} />
     </>
   );
@@ -334,12 +341,16 @@ function MemberDetail({
   const detailRef = useRef<HTMLElement>(null);
   const [tab, setTab] = useState<MemberDetailTab>('profile');
   const [offboardArmed, setOffboardArmed] = useState(false);
+  const [pendingAction, setPendingAction] = useState<AdministratorCriticalAction>();
+  const [elevatedSession, setElevatedSession] = useState<ConsoleSession>();
   useEffect(() => {
     if (open) detailRef.current?.focus({ preventScroll: true });
   }, [open]);
   useEffect(() => {
     setTab('profile');
     setOffboardArmed(false);
+    setPendingAction(undefined);
+    setElevatedSession(undefined);
   }, [row?.id]);
   const administrator = row === undefined ? false : isAdministrator(row);
   const roles = row?.managementRoles ?? [];
@@ -370,43 +381,90 @@ function MemberDetail({
   const canOffboardAdministrator = targetManageable && (actorGovernanceLevel === 'owner'
     || (actorGovernanceLevel === 'senior_administrator' && seniorAssignment === undefined));
   const upgradeMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (session: ConsoleSession) => {
       if (row?.access === undefined || seniorRole === undefined || seniorScope === undefined) {
         throw new Error('SENIOR_ADMINISTRATOR_ASSIGNMENT_NOT_AVAILABLE');
       }
       const draft = { action: 'assign' as const, role: seniorRole.id, membership: row.access.id,
         scope: seniorScope, scopeSource: 'direct' as const, accessVersion: row.access.access_version };
-      const receipt = await saveAccessRoleAssignment(context, draft);
+      const receipt = await saveAccessRoleAssignment({ ...context, session }, draft);
       const reread = await onRefresh();
       verifyAccessRoleAssignment(draft, receipt, row.access, reread.roles, reread.access);
       return receipt;
     },
+    onError: (error) => {
+      if (isStepUpRequired(error)) {
+        setElevatedSession(undefined);
+        setPendingAction('upgrade');
+      }
+    },
   });
   const demoteMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (session: ConsoleSession) => {
       if (row?.access === undefined || seniorAssignment === undefined) throw new Error('SENIOR_ADMINISTRATOR_ASSIGNMENT_NOT_FOUND');
       const draft = { action: 'revoke' as const, role: seniorAssignment.role, membership: row.access.id,
         scope: seniorAssignment.scope, scopeSource: seniorAssignment.scope_source === 'inherited' ? 'inherited' as const : 'direct' as const,
         accessVersion: row.access.access_version };
-      const receipt = await saveAccessRoleAssignment(context, draft);
+      const receipt = await saveAccessRoleAssignment({ ...context, session }, draft);
       const reread = await onRefresh();
       verifyAccessRoleAssignment(draft, receipt, row.access, reread.roles, reread.access);
       return receipt;
     },
+    onError: (error) => {
+      if (isStepUpRequired(error)) {
+        setElevatedSession(undefined);
+        setPendingAction('demote');
+      }
+    },
   });
   const offboardMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (session: ConsoleSession) => {
       if (row?.access === undefined) throw new Error('ADMINISTRATOR_ACCESS_RECORD_NOT_FOUND');
-      const receipt = await offboardAdministrator(context, row.access.id, row.access.access_version);
+      const receipt = await offboardAdministrator({ ...context, session }, row.access.id, row.access.access_version);
       const reread = await onRefresh();
       if (reread.members.some((member) => member.membership_id === row.id)
         || reread.access.some((membership) => membership.id === row.id)) throw new Error('ADMINISTRATOR_OFFBOARD_VERIFICATION_FAILED');
       return receipt;
     },
     onSuccess: onRemoved,
+    onError: (error) => {
+      if (isStepUpRequired(error)) {
+        setElevatedSession(undefined);
+        setPendingAction('offboard');
+      }
+    },
   });
   const actionPending = upgradeMutation.isPending || demoteMutation.isPending || offboardMutation.isPending;
-  const actionError = safeQueryError(upgradeMutation.error ?? demoteMutation.error ?? offboardMutation.error);
+  const mutationError = upgradeMutation.error ?? demoteMutation.error ?? offboardMutation.error;
+  const actionError = mutationError !== null && isStepUpRequired(mutationError) ? undefined : safeQueryError(mutationError);
+  const resetActionErrors = () => {
+    upgradeMutation.reset();
+    demoteMutation.reset();
+    offboardMutation.reset();
+  };
+  const runAction = (action: AdministratorCriticalAction, session: ConsoleSession) => {
+    resetActionErrors();
+    if (action === 'upgrade') upgradeMutation.mutate(session);
+    else if (action === 'demote') demoteMutation.mutate(session);
+    else offboardMutation.mutate(session);
+  };
+  const beginAction = (action: AdministratorCriticalAction) => {
+    const session = elevatedSession ?? context.session;
+    if (session.assurance.level < 3) {
+      resetActionErrors();
+      setPendingAction(action);
+      return;
+    }
+    runAction(action, session);
+  };
+  const executeElevatedAction = async (session: ConsoleSession) => {
+    if (pendingAction === undefined) return;
+    setElevatedSession(session);
+    resetActionErrors();
+    if (pendingAction === 'upgrade') await upgradeMutation.mutateAsync(session);
+    else if (pendingAction === 'demote') await demoteMutation.mutateAsync(session);
+    else await offboardMutation.mutateAsync(session);
+  };
   return (
     <aside ref={detailRef} className="storefrontmemberdetail" aria-hidden={!open} aria-label={administrator ? '管理员详情' : '成员详情'} tabIndex={-1}>
       <header className="storefrontmemberpanelheading">
@@ -487,25 +545,19 @@ function MemberDetail({
               {canManageAdministratorLevel && seniorAssignment === undefined && seniorRole !== undefined && seniorScope !== undefined ? (
                 <button type="button" disabled={actionPending} onClick={() => {
                   setOffboardArmed(false);
-                  demoteMutation.reset();
-                  offboardMutation.reset();
-                  upgradeMutation.mutate();
+                  beginAction('upgrade');
                 }}>{upgradeMutation.isPending ? '正在升级并核对…' : '升级为高级管理员'}</button>
               ) : null}
               {!canManageAdministratorLevel || seniorAssignment === undefined ? null : (
                 <button type="button" disabled={actionPending} onClick={() => {
                   setOffboardArmed(false);
-                  upgradeMutation.reset();
-                  offboardMutation.reset();
-                  demoteMutation.mutate();
+                  beginAction('demote');
                 }}>{demoteMutation.isPending ? '正在降级并核对…' : '降级为普通管理员'}</button>
               )}
               {canOffboardAdministrator ? (
                 <button type="button" data-tone="danger" disabled={actionPending} onClick={() => {
-                  upgradeMutation.reset();
-                  demoteMutation.reset();
-                  offboardMutation.reset();
-                  if (offboardArmed) offboardMutation.mutate();
+                  resetActionErrors();
+                  if (offboardArmed) beginAction('offboard');
                   else setOffboardArmed(true);
                 }}>{offboardMutation.isPending ? '正在移除并核对…' : offboardArmed ? '确认移除管理员' : '删除管理员'}</button>
               ) : null}
@@ -517,6 +569,14 @@ function MemberDetail({
           <p className="storefrontmembernotice">成员与授权关系来自当前范围真实数据，管理操作按当前权限开放</p>
         </div>
       )}
+      <AdministratorStepUpDialog
+        key={`${row?.id ?? 'none'}:${pendingAction ?? 'closed'}`}
+        action={pendingAction}
+        context={context}
+        targetName={row === undefined ? '当前管理员' : rowName(row)}
+        onClose={() => setPendingAction(undefined)}
+        onExecute={executeElevatedAction}
+      />
     </aside>
   );
 }

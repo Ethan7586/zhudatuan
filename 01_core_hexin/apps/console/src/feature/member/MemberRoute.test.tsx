@@ -73,8 +73,8 @@ describe('member administrator invitation', () => {
     await user.click(screen.getByRole('button', { name: '邀请管理员' }));
     const dialog = await screen.findByRole('dialog', { name: '邀请管理员' });
     const level = within(dialog).getByRole('group', { name: '管理员级别' });
-    expect((within(level).getByRole('radio', { name: /^普通管理员/ }) as HTMLInputElement).checked).toBe(true);
-    expect((within(level).getByRole('radio', { name: /^高级管理员/ }) as HTMLInputElement).checked).toBe(false);
+    expect(within(level).getByRole('radio', { name: /^普通管理员/ }).checked).toBe(true);
+    expect(within(level).getByRole('radio', { name: /^高级管理员/ }).checked).toBe(false);
     await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
     await user.clear(within(dialog).getByLabelText('邀请名称'));
     await user.type(within(dialog).getByLabelText('邀请名称'), '集团运营邀请');
@@ -83,6 +83,7 @@ describe('member administrator invitation', () => {
 
     const receipt = await screen.findByRole('dialog', { name: '管理员邀请已生成' });
     expect(within(receipt).getByText('A'.repeat(10))).toBeTruthy();
+    expect(within(receipt).getByText('未使用')).toBeTruthy();
     expect(writes[0]?.body).toMatchObject({ label: '集团运营邀请', destination: '13800138000', targetClient: 'operator', governanceLevel: 'administrator', maxUses: 1 });
     expect(writes[0]?.headers.get('x-scope-hint')).toBe('tenant:one');
     expect(writes[0]?.headers.get('x-access-version')).toBe('7');
@@ -217,12 +218,11 @@ describe('member administrator invitation', () => {
     expect(screen.queryByText('short')).toBeNull();
   });
 
-  it.each([
-    ['ADMINISTRATOR_ALREADY_EXISTS', '该手机号已经是当前商城的管理员，无需重复邀请。'],
-    ['ADMINISTRATOR_INVITATION_ALREADY_ACTIVE', '该手机号已有一张未使用的管理员邀请，请前往邀请记录查看或撤销后重发。'],
-  ])('explains the %s invitation conflict', async (code, message) => {
+  it('explains when the phone already owns an administrator identity', async () => {
     const user = userEvent.setup();
-    server.use(http.post('*/api/v1/identity/invitations', () => HttpResponse.json({ code, message: code, requestId: 'request:conflict' }, { status: 409 })));
+    server.use(http.post('*/api/v1/identity/invitations', () => HttpResponse.json({
+      code: 'ADMINISTRATOR_ALREADY_EXISTS', message: 'ADMINISTRATOR_ALREADY_EXISTS', requestId: 'request:conflict',
+    }, { status: 409 })));
     renderRoute(ownerContext);
     await screen.findByRole('table', { name: '管理员目录' });
     await user.click(screen.getByRole('button', { name: '邀请管理员' }));
@@ -230,8 +230,51 @@ describe('member administrator invitation', () => {
     await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
     await user.click(within(dialog).getByRole('button', { name: '生成管理员邀请' }));
 
-    expect((await within(dialog).findByRole('alert')).textContent).toContain(message);
+    expect((await within(dialog).findByRole('alert')).textContent).toContain('该手机号已经是当前商城的管理员，无需重复邀请。');
     expect(screen.queryByRole('dialog', { name: '管理员邀请已生成' })).toBeNull();
+  });
+
+  it('turns an active invitation conflict into an explicit reissue flow and displays the new code', async () => {
+    const user = userEvent.setup();
+    let createCount = 0;
+    const revocations: Array<Readonly<{ id: string; body: unknown; version: string | null }>> = [];
+    server.use(
+      http.post('*/api/v1/identity/invitations', () => {
+        createCount += 1;
+        return createCount === 1
+          ? HttpResponse.json({
+              code: 'ADMINISTRATOR_INVITATION_ALREADY_ACTIVE',
+              message: 'ADMINISTRATOR_INVITATION_ALREADY_ACTIVE',
+              requestId: 'request:active-invitation',
+              details: {
+                invitationId: 'invite:existing',
+                version: 3,
+                expiresAt: '2026-10-01T00:00:00.000Z',
+                destinationMasked: '138 **** 8000',
+              },
+            }, { status: 409 })
+          : HttpResponse.json(invitationReceipt(), { status: 201 });
+      }),
+      http.delete('*/api/v1/identity/invitations/:invitationid', async ({ params, request }) => {
+        revocations.push({ id: String(params.invitationid), body: await request.clone().json(), version: request.headers.get('if-match') });
+        return HttpResponse.json({ id: params.invitationid, status: 'disabled', version: 4 });
+      }),
+    );
+    renderRoute(ownerContext);
+    await screen.findByRole('table', { name: '管理员目录' });
+    await user.click(screen.getByRole('button', { name: '邀请管理员' }));
+    const dialog = await screen.findByRole('dialog', { name: '邀请管理员' });
+    await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
+    await user.click(within(dialog).getByRole('button', { name: '生成管理员邀请' }));
+
+    expect((await within(dialog).findByRole('status')).textContent).toContain('已有一张未使用的管理员邀请');
+    expect(within(dialog).queryByText('邀请生成失败，请确认信息后重试。')).toBeNull();
+    await user.click(within(dialog).getByRole('button', { name: '重新生成并显示邀请码' }));
+
+    const receipt = await screen.findByRole('dialog', { name: '管理员邀请已生成' });
+    expect(within(receipt).getByText('A'.repeat(10))).toBeTruthy();
+    expect(createCount).toBe(2);
+    expect(revocations).toEqual([{ id: 'invite:existing', body: { reason: '重新生成未使用管理员邀请码' }, version: '"3"' }]);
   });
 });
 

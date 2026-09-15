@@ -12,14 +12,14 @@ import { classifyChanges } from '../src/planner.mjs';
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
 const readWorkflow = async (name) => parse(await readFile(join(projectRoot, '.github/workflows', name), 'utf8'));
 
-test('automatic closure runs after zdt-next pushes or an exact failed-closure replay and cannot deploy production', async () => {
+test('automatic closure runs after zdt-next pushes or an exact historical replay and cannot deploy production', async () => {
   const automatic = await readWorkflow('auto-prepare-artifacts.yml');
   const oneTarget = await readWorkflow('auto-prepare-one-target.yml');
   const source = JSON.stringify({ automatic, oneTarget });
 
   assert.deepEqual(automatic.on.push, { branches: ['zdt-next'] });
   assert.equal(automatic.on.workflow_dispatch.inputs.head_sha.required, true);
-  assert.equal(automatic.on.workflow_dispatch.inputs.base_sha.required, true);
+  assert.equal(automatic.on.workflow_dispatch.inputs.base_sha.required, false);
   assert.equal(automatic.jobs.close.with.head_sha, '${{ needs.plan.outputs.source_sha }}');
   assert.equal(automatic.jobs.close.uses, './.github/workflows/auto-prepare-one-target.yml');
   assert.equal(oneTarget.jobs.prepare.uses, './.github/workflows/prepare-artifact-aliyun.yml');
@@ -29,7 +29,7 @@ test('automatic closure runs after zdt-next pushes or an exact failed-closure re
   assert.match(source, /automaticClosureSelection/);
   assert.match(source, /commitMetadata/);
   assert.match(source, /assertGitAncestor/);
-  assert.match(source, /No failed automatic closure exists for the exact source SHA/);
+  assert.match(source, /CONTROL_SHA/);
   assert.doesNotMatch(source, /operation[^}]*deploy|zdt-delivery deploy|deploy-sealed-candidate/);
 });
 

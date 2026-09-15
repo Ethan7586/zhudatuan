@@ -93,6 +93,22 @@ test('same request ID is completed once and repeated submission does not call de
   assert.equal(repeated.value.actualSwitch, false);
 });
 
+test('a failed writer lease may be retried with the exact same request', async () => {
+  const fixture = leaseFixture();
+  let attempts = 0;
+  await assert.rejects(() => fixture.store.run(primary, async () => {
+    attempts += 1;
+    throw new DeliveryError('REMOTE_AGENT_SHA256_MISMATCH', 'remote delivery agent is stale');
+  }), (error) => error.code === 'REMOTE_AGENT_SHA256_MISMATCH');
+  const retried = await fixture.store.run(primary, async () => {
+    attempts += 1;
+    return { repeatedDeployment: false, actualSwitch: false };
+  });
+  assert.equal(attempts, 2);
+  assert.equal(retried.value.repeatedDeployment, false);
+  assert.equal(retried.writer.leaseGeneration, 2);
+});
+
 test('different request for an already deployed Seal may return idempotently without switching', async () => {
   const fixture = leaseFixture();
   await fixture.store.run(primary, async () => ({ repeatedDeployment: false, actualSwitch: true }));

@@ -89,6 +89,28 @@ describe('HttpApp contract handshake', () => {
     expect(await response.json()).toMatchObject({ accepted: true });
   });
 
+  it('normalizes operation rejections into the public SDK error contract', async () => {
+    const response = await new HttpApp(routes(async () => ({
+      status: 409,
+      body: {
+        code: 'ADMINISTRATOR_INVITATION_ALREADY_ACTIVE',
+        details: { invitationId: 'invite:one', version: 2 },
+      },
+    })), []).handle(new Request('https://api.example/api/v1/identity/sessions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{}',
+    }));
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({
+      code: 'ADMINISTRATOR_INVITATION_ALREADY_ACTIVE',
+      message: 'ADMINISTRATOR_INVITATION_ALREADY_ACTIVE',
+      requestId: expect.any(String),
+      details: { invitationId: 'invite:one', version: 2 },
+    });
+  });
+
   it('accepts the preflight-free login envelope only for the canonical session operation', async () => {
     let observedBody: unknown;
     let observedHeaders: Readonly<Record<string, string>> | undefined;

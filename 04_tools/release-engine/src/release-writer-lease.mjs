@@ -74,7 +74,12 @@ export function createReleaseWriterLeaseStore(client, identity, dependencies = {
       throw conflict(current, writerIdentity, writerClass);
     }
     if (current.leaseStatus === 'RELEASED' && sameRequest(current.lease, { requestId, runnerRequestId, controlPlaneSha, sealKey })) {
-      return outcome(current, { acquired: false, reused: true, completed: true, actualSwitch: false });
+      // A released lease is reusable only after the operation reached a terminal
+      // success state.  Treating a failed candidate validation as completed
+      // prevents a repaired channel from ever recording its Final Seal receipt.
+      if (['completed', 'idempotent'].includes(current.released?.result)) {
+        return outcome(current, { acquired: false, reused: true, completed: true, actualSwitch: false });
+      }
     }
     if (current.lease?.writer_class === 'standby' && current.lease.request_id === requestId && writerClass === 'primary') {
       invariant(false, 'RELEASE_WRITER_PRIMARY_RECLAIM_FORBIDDEN', 'Primary cannot reclaim a task already taken over by Standby', conflictDetails(current, writerIdentity, writerClass));

@@ -10,12 +10,12 @@ on:
   workflow_dispatch:
     inputs:
       head_sha:
-        description: Exact failed zdt-next source closure to resume
+        description: Historical zdt-next lineage merge to re-evaluate with the latest control plane
         required: true
         type: string
       base_sha:
-        description: Exact ancestor used by the failed closure plan
-        required: true
+        description: Optional ancestor SHA used to recover a prior failed automatic closure
+        required: false
         type: string
 
 permissions:
@@ -39,19 +39,6 @@ jobs:
         with:
           node-version: 22.22.0
           cache: npm
-      - name: Verify exact failed closure recovery request
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          SOURCE_SHA: ${{ inputs.head_sha }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo 'head_sha must be one full lowercase Git SHA' >&2; exit 64; }
-          failed="$RUNNER_TEMP/failed-automatic-closures.json"
-          gh run list --repo "$GITHUB_REPOSITORY" --workflow auto-prepare-artifacts.yml --branch zdt-next --event push --limit 100 \
-            --json headSha,status,conclusion,url > "$failed"
-          node -e "const r=require(process.argv[1]);const s=process.env.SOURCE_SHA;if(!r.some(v=>v.headSha===s&&v.status==='completed'&&v.conclusion==='failure'))throw new Error('No failed automatic closure exists for the exact source SHA')" "$failed"
       - name: Load planner dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Build automatic preparation matrix

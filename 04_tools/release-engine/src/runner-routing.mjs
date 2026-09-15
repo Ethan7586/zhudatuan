@@ -47,8 +47,12 @@ export async function routeBuildRequest(client, input, dependencies = {}) {
     const started = await optionalJson(client, `${root}/started/${number(latest.generation)}.json`);
     const finished = await optionalJson(client, `${root}/finished/${number(latest.generation)}.json`);
     if (started && !finished) return result(request, { ...latest, phase: 'BUILDING', reusedExistingTask: true, shouldBuild: false });
-    if (finished) return result(request, { ...latest, phase: finished.status, reusedExistingTask: true, shouldBuild: false });
-    if (Date.parse(latest.expires_at) > now().getTime()) return result(request, { ...latest, phase: 'WAITING_EXISTING_TASK', reusedExistingTask: true, shouldBuild: false });
+    if (finished && finished.status !== 'BUILD_FAILED') {
+      return result(request, { ...latest, phase: finished.status, reusedExistingTask: true, shouldBuild: false });
+    }
+    if (!finished && Date.parse(latest.expires_at) > now().getTime()) {
+      return result(request, { ...latest, phase: 'WAITING_EXISTING_TASK', reusedExistingTask: true, shouldBuild: false });
+    }
   }
 
   let generation = (latest?.generation ?? 0) + 1;
@@ -163,7 +167,7 @@ async function findExistingSealStage(client, project, request) {
   for (const [suffix, stage] of [['final-seal.json', 'SEALED'], ['candidate-validation.json', 'VALIDATED'], ['uploaded.json', 'UPLOADED']]) {
     for (const object of objects.filter((item) => item.endsWith(suffix))) {
       const value = await optionalJson(client, object);
-      if (value?.request_id === request.request_id && value?.key?.control_plane_sha === request.control_plane_sha) return stage;
+      if (value?.request_id === request.request_id && value?.seal_key && object.includes(`/${request.control_plane_sha}/`)) return stage;
     }
   }
   return null;

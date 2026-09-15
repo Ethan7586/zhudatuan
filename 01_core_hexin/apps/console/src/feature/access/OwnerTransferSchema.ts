@@ -68,17 +68,6 @@ export const OwnerTransferAcceptedSchema = z.object({
   transfer: OwnerTransferSchema.extend({ state: z.literal('accepted') }),
 });
 
-export const StepUpChallengeSchema = z.object({
-  id: z.string().min(1),
-  purpose: z.literal('stepup'),
-  expires_at: z.string().min(1),
-});
-
-export const StepUpCompletionSchema = z.object({
-  id: z.string().min(1),
-  assurance_level: z.literal(3),
-});
-
 export const PhoneChangeChallengeSchema = z.object({
   id: z.string().min(1),
   purpose: z.literal('phone_change'),

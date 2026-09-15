@@ -308,6 +308,47 @@ export async function resolvePreparedArtifact(adapter, options, dependencies = {
   };
 }
 
+// A historical failure can leave every immutable object in OSS while omitting
+// the UPLOADED receipt for a later control-plane Seal.  Reuse the verified
+// artifact and provenance; never recreate or overwrite the release index.
+export async function recoverPreparedArtifact(adapter, options, dependencies = {}) {
+  const sourceSha = exactSourceSha(options.sourceSha, 'RECOVER_SOURCE_SHA_INVALID');
+  const target = exactTarget(adapter, options.target, 'RECOVER_TARGET');
+  const node = required(options.node, 'RECOVER_NODE_REQUIRED');
+  const controlSha = exactSourceSha(options.controlSha, 'RECOVER_CONTROL_SHA_INVALID');
+  const requestId = required(options.requestId, 'RECOVER_REQUEST_ID_REQUIRED');
+  const buildRunner = required(options.buildRunner, 'RECOVER_BUILD_RUNNER_REQUIRED');
+  invariant(options.actorRole === 'build', 'RECOVER_ROLE_FORBIDDEN', 'Only the Build role may recover a Seal upload receipt');
+  const client = dependencies.client ?? ossClientFromEnvironment(options.endpoint, dependencies);
+  const resolved = await resolvePreparedArtifact(adapter, { ...options, sourceSha, target, node, allowLegacy: false }, { ...dependencies, client });
+  const lifecycle = createSealLifecycleStore(client, {
+    project: adapter.project, sourceSha, releaseTarget: target, physicalNode: node,
+    artifactDigest: resolved.manifest.artifact.sha256, controlPlaneSha: controlSha,
+  });
+  const begun = await lifecycle.begin({ requestId, actorRole: 'build' });
+  invariant(begun.action !== 'observe' && begun.action !== 'stop', 'SEAL_BUILD_IN_PROGRESS',
+    'Another request owns the active Seal build lease', {
+      sealKey: lifecycle.key.seal_key, ownerRequestId: begun.lease?.request_id, retryable: true,
+    });
+  const uploaded = await lifecycle.markUploaded({
+    requestId, actorRole: 'build', buildRunner, routing: { recovered_existing_artifact: true },
+    artifact: {
+      object: resolved.manifest.artifact.object, digest: resolved.manifest.artifact.sha256,
+      bytes: resolved.manifest.artifact.bytes, releaseManifestObject: resolved.releaseManifestObject,
+    },
+    provenance: { object: resolved.manifest.provenance.object, digest: resolved.manifest.provenance.sha256 },
+    reused: true,
+  });
+  return {
+    schema: 'ai.delivery.prepare-recovery-receipt.v1', project: adapter.project, target, sourceSha,
+    artifactIdentity: resolved.manifest.artifact.sha256, cacheStatus: 'hit_remote', recovered: true,
+    releaseManifest: { object: resolved.releaseManifestObject, sha256: resolved.releaseIndex.releaseManifest.sha256 },
+    provenance: { object: resolved.manifest.provenance.object, sha256: resolved.manifest.provenance.sha256 },
+    seal: { key: lifecycle.key, state: await lifecycle.read(), uploaded: uploaded.receipt },
+    completedAt: new Date().toISOString(),
+  };
+}
+
 export async function finalizePreparedSeal(adapter, options, dependencies = {}) {
   const sourceSha = exactSourceSha(options.sourceSha, 'SEAL_SOURCE_SHA_INVALID');
   const target = exactTarget(adapter, options.target, 'SEAL_TARGET');
