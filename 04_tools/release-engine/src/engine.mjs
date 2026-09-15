@@ -9,9 +9,14 @@ import { DeliveryError, invariant } from './errors.mjs';
 import { assertBuildRefIsCheckedOut, assertWorktreeClean, currentHead } from './git.mjs';
 import { layerCommand } from './layer.mjs';
 import { acquireLocks } from './lock.mjs';
-import { inspectPreparedArtifact, ossClientFromEnvironment, publishPreparedArtifact, publishWorkflowEvidence, resolveDownloadEndpoint, resolvePreparedArtifact } from './oss.mjs';
+import { finalizePreparedSeal, inspectPreparedArtifact, ossClientFromEnvironment, publishPreparedArtifact, publishWorkflowEvidence, requireFinalSealReceipt, resolveDownloadEndpoint, resolvePreparedArtifact } from './oss.mjs';
 import { createPlan } from './planner.mjs';
 import { runCommand } from './runner.mjs';
+import { markRunnerFinished, markRunnerStarted, routeBuildRequest } from './runner-routing.mjs';
+import { createRunnerRequest } from './runner-routing.mjs';
+import { withFiniteRetry } from './retry.mjs';
+import { createReleaseWriterLeaseStore, createReleaseWriterRequest } from './release-writer-lease.mjs';
+import { createSealKey } from './seal-lifecycle.mjs';
 import { createRun, readJson, statePaths, writeJson } from './state.mjs';
 
 const SHA256_PATTERN = /^sha256:[a-f0-9]{64}$/;
@@ -111,6 +116,51 @@ export async function inspectPreparedCommand(adapter, options) {
 
 export async function publishEvidenceCommand(adapter, options) {
   return publishWorkflowEvidence(adapter, options);
+}
+
+export async function selectRunnerCommand(adapter, options) {
+  const node = options.node ?? options.nodes?.[0];
+  invariant(Boolean(adapter.targets[options.target]) && Boolean(adapter.nodes[node]?.deployments?.[options.target]),
+    'RUNNER_REQUEST_TARGET_MAPPING_INVALID', 'Runner request must name one real target and physical node');
+  const observation = JSON.parse(await readFile(resolve(options.runnerObservation), 'utf8'));
+  const client = ossClientFromEnvironment(options.endpoint);
+  return routeBuildRequest(client, {
+    project: adapter.project, sourceSha: options.sourceSha, releaseTarget: options.target, physicalNode: node,
+    controlPlaneSha: options.controlSha, requestedRunnerClass: options.runnerClass ?? 'auto', runners: observation.runners ?? observation,
+    retryCount: Number(options.retryCount ?? 0),
+  }, {
+    verifyRunnerAvailable: async (runner) => {
+      const checked = await withFiniteRetry(async () => {
+        try {
+          return await runCommand({ name: 'recheck-runner-capacity', argv: ['gh', 'api', 'repos/{owner}/{repo}/actions/runners'], timeoutMs: 30_000 }, basicContext(adapter));
+        } catch (error) {
+          if (/reset|timed out|temporar|502|503|504/i.test(error?.details?.outputTail ?? '')) {
+            throw Object.assign(new Error('GitHub Runner recheck failed transiently'), { code: 'ECONNRESET' });
+          }
+          throw error;
+        }
+      }, { stage: 'github-runner-recheck', maxAttempts: 3 });
+      const current = JSON.parse(checked.value.output).runners ?? [];
+      const exact = current.find((candidate) => candidate.name === runner.name);
+      return exact?.status === 'online' && exact?.busy === false;
+    },
+  });
+}
+
+export async function runnerStartedCommand(adapter, options) {
+  const client = ossClientFromEnvironment(options.endpoint);
+  return markRunnerStarted(client, {
+    project: adapter.project, sourceSha: options.sourceSha, releaseTarget: options.target, physicalNode: options.node ?? options.nodes?.[0],
+    controlPlaneSha: options.controlSha, leaseGeneration: options.leaseGeneration, selectedRunnerName: options.selectedRunnerName,
+  });
+}
+
+export async function runnerFinishedCommand(adapter, options) {
+  const client = ossClientFromEnvironment(options.endpoint);
+  return markRunnerFinished(client, {
+    project: adapter.project, sourceSha: options.sourceSha, releaseTarget: options.target, physicalNode: options.node ?? options.nodes?.[0],
+    controlPlaneSha: options.controlSha, leaseGeneration: options.leaseGeneration, status: options.status,
+  });
 }
 
 export async function validatePreparedCommand(adapter, options) {
@@ -278,7 +328,7 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
   const requestedNode = nodes[0];
   invariant(Boolean(adapter.nodes[requestedNode]?.deployments?.[target]), 'PREPARED_DEPLOY_NODE_TARGET_MISMATCH', `Unknown deployment ${requestedNode}/${target}`);
   const resolvedDeployment = resolveDeployment(adapter, requestedNode, target);
-  const resolution = await resolvePreparedArtifact(adapter, { ...options, node: requestedNode });
+  const resolution = await resolvePreparedArtifact(adapter, { ...options, node: requestedNode, allowLegacy: false });
   const publicClient = ossClientFromEnvironment(options.endpoint);
   const downloadEndpoint = resolveDownloadEndpoint(publicClient.endpoint, options.internalEndpoint ?? process.env.ALIYUN_OSS_INTERNAL_ENDPOINT);
   const downloadClient = ossClientFromEnvironment(downloadEndpoint);
@@ -289,6 +339,31 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
   const remoteAgent = transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs';
   const artifact = resolution.manifest.artifact;
   const runtimeManifest = resolution.manifest.runtimeManifest;
+  const authoritativeSeal = candidateOnly ? null : await requireFinalSealReceipt(adapter, {
+    ...options, sourceSha, target, node: requestedNode, artifactDigest: artifact.sha256, controlPlaneSha: controlSha,
+  });
+  const runnerRequest = createRunnerRequest({ sourceSha, releaseTarget: target, physicalNode: requestedNode, controlPlaneSha: controlSha });
+  const sealIdentity = createSealKey({ sourceSha, releaseTarget: target, physicalNode: requestedNode, artifactDigest: artifact.sha256, controlPlaneSha: controlSha });
+  const releaseRequest = createReleaseWriterRequest({
+    runnerRequestId: runnerRequest.request_id,
+    operation: candidateOnly ? 'validate-candidate' : 'deploy',
+    sealKey: sealIdentity.seal_key,
+  });
+  if (authoritativeSeal?.receipt?.routing?.request_id) {
+    invariant(authoritativeSeal.receipt.routing.request_id === runnerRequest.request_id, 'RELEASE_WRITER_REQUEST_ID_MISMATCH', 'Final Seal routing identity differs from the canonical request ID');
+  }
+  invariant(authoritativeSeal === null || authoritativeSeal.key.seal_key === sealIdentity.seal_key,
+    'RELEASE_WRITER_SEAL_KEY_MISMATCH', 'Final Seal key differs from the Writer Lease identity');
+  const writerIdentity = required(options.writerIdentity ?? process.env.RUNNER_NAME, 'RELEASE_WRITER_IDENTITY_REQUIRED');
+  const writerClass = required(options.writerClass, 'RELEASE_WRITER_CLASS_REQUIRED');
+  const writerOptions = {
+    actorRole: 'release', writerIdentity, writerClass, requestId: releaseRequest.request_id, runnerRequestId: runnerRequest.request_id,
+    controlPlaneSha: controlSha, sealKey: sealIdentity.seal_key, leaseSeconds: Number(options.writerLeaseSeconds ?? 900),
+    primaryAvailable: options.primaryAvailable === false || options.primaryAvailable === 'false' ? false : true,
+    takeoverReason: options.takeoverReason ?? 'primary-release-unavailable-after-lease-expiry',
+  };
+  const writerStore = createReleaseWriterLeaseStore(publicClient, { project: adapter.project, physicalNode: requestedNode, releaseTarget: target });
+  const writerExecution = await writerStore.run(writerOptions, async (writerLease) => {
   const remoteAction = candidateOnly ? 'validate-oss-candidate-v3' : 'deploy-sealed-candidate-v3';
   const remoteIdentityArgs = [
     '--project',
@@ -374,6 +449,18 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
     remoteAgentSha256: expectedRemoteAgentSha256,
     remotePolicySha256: expectedRemotePolicySha256,
   });
+  const ossSeal = candidateOnly ? await finalizePreparedSeal(adapter, {
+    ...options,
+    sourceSha,
+    target,
+    node: requestedNode,
+    artifactDigest: artifact.sha256,
+    controlPlaneSha: controlSha,
+    requestId: runnerRequest.request_id,
+    actorRole: 'release',
+    releaseRunner: options.releaseRunner ?? process.env.RUNNER_NAME ?? 'zdt-aliyun-release',
+    validationReceipt: { remote: remoteResult, lineage, candidateSeal, controlPlane },
+  }) : null;
   return {
     schema: candidateOnly ? 'ai.delivery.prepared-candidate.v1' : 'ai.delivery.prepared-deploy.v1',
     project: adapter.project,
@@ -385,7 +472,9 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
     node: resolvedDeployment.executionNode,
     artifactIdentity: artifact.sha256,
     releaseManifestObject: resolution.releaseManifestObject,
-    finalStatus: candidateOnly ? 'candidate-validated' : 'success',
+    sealKey: candidateOnly ? ossSeal.lifecycle.key.seal_key : authoritativeSeal.key.seal_key,
+    finalSealReceiptObject: candidateOnly ? ossSeal.lifecycle.paths.final : authoritativeSeal.object,
+    finalStatus: candidateOnly ? 'sealed' : 'success',
     cacheStatus: remoteResult.cacheStatus,
     repeatedDeployment: candidateOnly ? false : remoteResult.activation.alreadyCurrent === true,
     timings: {
@@ -404,9 +493,32 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
       downloadedBytes: remoteResult.downloadedBytes ?? 0,
       reusedBytes: remoteResult.reusedBytes ?? 0,
     },
-    ...(candidateOnly ? { candidateEvidence: remoteResult.current, candidateSeal, lineage } : { receipt: remoteResult.activation.receipt }),
+    ...(candidateOnly
+      ? { candidateEvidence: remoteResult.current, candidateSeal, lineage, finalSealReceipt: ossSeal.state.final, reusedSeal: ossSeal.reused }
+      : { receipt: remoteResult.activation.receipt, finalSealReceipt: authoritativeSeal.receipt }),
     completedAt: new Date().toISOString(),
   };
+  });
+  if (writerExecution.value?.reusedWriterResult === true) {
+    const finalSeal = await requireFinalSealReceipt(adapter, {
+      ...options, sourceSha, target, node: requestedNode, artifactDigest: artifact.sha256, controlPlaneSha: controlSha,
+    });
+    return {
+      schema: candidateOnly ? 'ai.delivery.prepared-candidate.v1' : 'ai.delivery.prepared-deploy.v1',
+      project: adapter.project, sourceSha, artifactSourceSha: sourceSha,
+      controlPlane: { sourceSha: controlSha, github: { runId: githubRunId, runAttempt: githubRunAttempt },
+        remoteAgentSha256: expectedRemoteAgentSha256, remotePolicySha256: expectedRemotePolicySha256 },
+      target, requestedNode,
+      node: resolvedDeployment.executionNode, artifactIdentity: artifact.sha256, releaseManifestObject: resolution.releaseManifestObject,
+      sealKey: finalSeal.key.seal_key, finalSealReceiptObject: finalSeal.object, finalSealReceipt: finalSeal.receipt,
+      finalStatus: candidateOnly ? 'sealed' : 'success', cacheStatus: 'writer-result-reused', repeatedDeployment: !candidateOnly,
+      actualSwitch: false, writerLease: writerExecution.writer,
+      timings: { artifactLookup: resolution.timings.artifactLookup, download: 0, candidate: 0, cutover: 0, restart: 0, health: 0, rollback: 0, remoteTotal: 0, total: elapsed(started) },
+      traffic: { artifactBytes: artifact.bytes + runtimeManifest.bytes, downloadedBytes: 0, reusedBytes: artifact.bytes + runtimeManifest.bytes },
+      completedAt: new Date().toISOString(),
+    };
+  }
+  return { ...writerExecution.value, actualSwitch: candidateOnly ? false : writerExecution.value.repeatedDeployment !== true, writerLease: writerExecution.writer };
 }
 
 async function verifyPreparedSourceLineage(adapter, options, current, candidateSourceSha) {

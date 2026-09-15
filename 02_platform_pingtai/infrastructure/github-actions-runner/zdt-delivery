@@ -6,14 +6,16 @@ set -euo pipefail
 if { [ "$#" -eq 2 ] && [ "$1" = "deploy-source" ]; }; then
   OPERATION="$1"
   SOURCE_SHA="$2"
-elif [ "$#" -eq 4 ] && { [ "$1" = "status" ] || [ "$1" = "prepare" ] || [ "$1" = "deploy" ]; }; then
+elif { [ "$#" -eq 4 ] || { [ "$#" -eq 5 ] && [ "$1" = status ] && [ "$5" = --json ]; }; } \
+  && { [ "$1" = "status" ] || [ "$1" = "prepare" ] || [ "$1" = "deploy" ]; }; then
   OPERATION="$1"
   TARGET="$2"
   SOURCE_SHA="$3"
   PHYSICAL_NODE="$4"
+  STATUS_FORMAT="${5:-}"
 else
   echo "Usage: zdt-delivery deploy-source <full-source-sha>" >&2
-  echo "   or: zdt-delivery <status|prepare|deploy> <target> <full-source-sha> <physical-node>" >&2
+  echo "   or: zdt-delivery <status|prepare|deploy> <target> <full-source-sha> <physical-node> [--json for status]" >&2
   exit 64
 fi
 REPOSITORY_ROOT="${ZDT_GIT_ANCHOR:-/Users/Ethan/Desktop/zdt-next}"
@@ -42,8 +44,8 @@ WORKTREE_ADDED=true
 printf 'Delivery control: %s\n' "$CONTROL_SHA"
 cd "$CONTROL_ROOT"
 case "$OPERATION" in
-  status) bash scripts/release-status.sh "$TARGET" "$SOURCE_SHA" "$PHYSICAL_NODE" ;;
-  prepare) bash scripts/prepare-release.sh "$TARGET" "$SOURCE_SHA" "$PHYSICAL_NODE" ;;
-  deploy) bash scripts/deploy-now.sh "$TARGET" "$SOURCE_SHA" "$PHYSICAL_NODE" ;;
-  deploy-source) bash scripts/deploy-source.sh "$SOURCE_SHA" ;;
+  status) bash scripts/release-status.sh "$TARGET" "$SOURCE_SHA" "$PHYSICAL_NODE" ${STATUS_FORMAT:+"$STATUS_FORMAT"} ;;
+  prepare) bash scripts/delivery-dispatch.sh prepare "$TARGET" "$SOURCE_SHA" "$PHYSICAL_NODE" ;;
+  deploy) bash scripts/delivery-dispatch.sh deploy "$TARGET" "$SOURCE_SHA" "$PHYSICAL_NODE" ;;
+  deploy-source) bash scripts/delivery-dispatch.sh deploy-source "$SOURCE_SHA" ;;
 esac

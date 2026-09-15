@@ -1,5 +1,5 @@
-name: Automatic Artifact Closure
-run-name: Seal affected artifacts for ${{ inputs.head_sha || github.sha }}
+name: Automatic Artifact Closure 1.4.3
+run-name: Seal affected artifacts 1.4.3 for ${{ github.sha }}
 
 # This post-merge workflow never deploys. It prepares affected immutable artifacts and seals
 # candidates after zdt-next has already accepted the source commit.
@@ -7,12 +7,6 @@ on:
   push:
     branches:
       - zdt-next
-  workflow_dispatch:
-    inputs:
-      head_sha:
-        description: Historical zdt-next lineage merge to re-evaluate with the latest control plane
-        required: true
-        type: string
 
 permissions:
   contents: read
@@ -40,7 +34,7 @@ jobs:
         id: matrix
         env:
           BEFORE_SHA: ${{ github.event.before }}
-          SOURCE_SHA: ${{ inputs.head_sha || github.sha }}
+          SOURCE_SHA: ${{ github.sha }}
         shell: bash
         run: |
           node --input-type=module <<'NODE'

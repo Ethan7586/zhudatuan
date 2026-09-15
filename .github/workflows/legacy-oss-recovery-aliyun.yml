@@ -1,8 +1,8 @@
-name: Legacy 1.2 Recovery - Wuhan OSS via Aliyun Runner
-run-name: LEGACY 1.2 build+deploy ${{ inputs.release_target }} ${{ inputs.head_sha || github.sha }}
+name: Recovery Only - Legacy 1.2 Wuhan OSS
+run-name: RECOVERY ONLY legacy OSS build+deploy ${{ inputs.release_target }} ${{ inputs.head_sha || github.sha }}
 
-# Legacy recovery path only. This workflow builds during deployment and includes
-# aggregate targets, so it is never a 1.4 deployment entrypoint.
+# Explicit Ethan-authorized recovery path only. This workflow builds during recovery and includes
+# aggregate targets, so it is never a Delivery Control 1.4.3 entrypoint or zdt-delivery dependency.
 
 on:
   workflow_dispatch:

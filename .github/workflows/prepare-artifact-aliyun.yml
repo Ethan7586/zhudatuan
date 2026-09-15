@@ -1,5 +1,5 @@
-name: Prepare Artifact 1.4 - Aliyun / GitHub
-run-name: Prepare 1.4 ${{ inputs.head_sha }} ${{ inputs.release_target }}${{ inputs.build_runner == 'github' && ' [github]' || '' }}
+name: Prepare Artifact 1.4.3 - Reusable
+run-name: Prepare 1.4.3 ${{ inputs.head_sha }} ${{ inputs.release_target }}
 
 # Aliyun build runners are the default; GitHub standard runners are an explicit fallback. Two
 # isolated empty release state roots must independently produce cold cache misses
@@ -10,7 +10,7 @@ on:
       build_runner:
         description: Build runner (Aliyun default; GitHub hosted fallback)
         required: false
-        default: aliyun
+        default: auto
         type: string
       head_sha:
         description: Exact 40-character zdt-next source commit to build
@@ -24,54 +24,16 @@ on:
         description: Physical node eligible for the prepared artifact
         required: true
         type: string
-  workflow_dispatch:
-    inputs:
-      build_runner:
-        description: Build runner (Aliyun default; GitHub hosted fallback)
-        required: false
-        default: aliyun
-        type: choice
-        options:
-          - aliyun
-          - github
-      head_sha:
-        description: Exact 40-character zdt-next source commit to build
+    secrets:
+      ZDT_RUNNER_READ_TOKEN:
+        description: Fine-grained token limited to repository Administration read for Runner observation
         required: true
-        type: string
-      release_target:
-        description: One runtime target to build and publish
-        required: true
-        type: choice
-        options:
-          - catalog-media
-          - storefront
-          - auth-web
-          - console
-          - identity-api
-          - identity-notification-jobs
-          - mall-provisioning-api
-          - support-api
-          - purchase-api
-          - web-api
-          - catalog-api
-          - catalog-jobs
-          - payment-webhook-api
-          - payment-jobs
-          - node-operations
-          - database-migration
-      release_node:
-        description: Physical node eligible for the prepared artifact
-        required: true
-        type: choice
-        options:
-          - hbbtzn-l1
-          - zhudatuan-l0
-
 permissions:
   contents: read
+  actions: read
 
 concurrency:
-  group: zdt-next-prepare-${{ inputs.head_sha }}-${{ inputs.release_target }}
+  group: zdt-next-prepare-${{ inputs.head_sha }}-${{ inputs.release_target }}-${{ inputs.release_node }}-${{ github.sha }}
   cancel-in-progress: false
 
 env:
@@ -81,7 +43,6 @@ env:
   RELEASE_SHA: ${{ inputs.head_sha }}
   RELEASE_TARGET: ${{ inputs.release_target }}
   RELEASE_NODE: ${{ inputs.release_node }}
-  BUILD_RUNNER: ${{ inputs.build_runner }}
   CONTROL_SHA: ${{ github.sha }}
   CONTROL_REF: ${{ github.ref }}
   GIT_CONFIG_COUNT: 1
@@ -95,10 +56,106 @@ env:
   VITE_CLIENT_VERSION: 0.0.0-g${{ inputs.head_sha }}
 
 jobs:
+  route:
+    name: Claim one Build route
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      request_id: ${{ steps.route.outputs.request_id }}
+      selected_runner_class: ${{ steps.route.outputs.selected_runner_class }}
+      selected_runner_name: ${{ steps.route.outputs.selected_runner_name }}
+      runs_on: ${{ steps.route.outputs.runs_on }}
+      lease_generation: ${{ steps.route.outputs.lease_generation }}
+      lease_expires_at: ${{ steps.route.outputs.lease_expires_at }}
+      overflow_reason: ${{ steps.route.outputs.overflow_reason }}
+      build_host: ${{ steps.route.outputs.build_host }}
+      retry_count: ${{ steps.route.outputs.retry_count }}
+      phase: ${{ steps.route.outputs.phase }}
+      reused_existing_task: ${{ steps.route.outputs.reused_existing_task }}
+      should_build: ${{ steps.route.outputs.should_build }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.22.0
+      - name: Observe logical Aliyun Build slots with finite network retry
+        id: observe
+        env:
+          GH_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .runner-routing
+          retry_count=0
+          for attempt in 1 2 3; do
+            if gh api "repos/${GITHUB_REPOSITORY}/actions/runners" > .runner-routing/runners.json 2> .runner-routing/github-error; then
+              break
+            fi
+            error="$(cat .runner-routing/github-error)"
+            if ! grep -Eqi 'reset|timed out|temporar|502|503|504' <<<"$error" || [ "$attempt" -eq 3 ]; then
+              echo "code=GITHUB_RUNNER_OBSERVATION_FAILED stage=runner-observation retryable=false attempts=${attempt} next_safe_action=review-github-api-evidence" >&2
+              exit 1
+            fi
+            retry_count="$attempt"
+            echo '网络暂时失败，正在安全重试。'
+            sleep "$((attempt * 2))"
+          done
+          echo "retry_count=${retry_count}" >> "$GITHUB_OUTPUT"
+      - name: Atomically select one Runner route
+        id: route
+        env:
+          GH_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
+          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+          ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node 04_tools/release-engine/cli.mjs select-runner \
+            --adapter 02_platform_pingtai/infrastructure/release/zdt-next.release.json \
+            --source-sha "$RELEASE_SHA" --control-sha "$CONTROL_SHA" \
+            --target "$RELEASE_TARGET" --node "$RELEASE_NODE" \
+            --runner-class "${{ inputs.build_runner }}" \
+            --runner-observation .runner-routing/runners.json \
+            --retry-count "${{ steps.observe.outputs.retry_count }}" \
+            --format json > .runner-routing/route.json
+          node --input-type=module <<'NODE'
+          import { appendFileSync, readFileSync } from 'node:fs';
+          const route = JSON.parse(readFileSync('.runner-routing/route.json', 'utf8')).result;
+          const values = {
+            request_id: route.requestId, selected_runner_class: route.selectedRunnerClass,
+            selected_runner_name: route.selectedRunnerName ?? '', runs_on: JSON.stringify(route.runnerLabels.length > 0 ? route.runnerLabels : ['ubuntu-24.04']),
+            lease_generation: route.leaseGeneration ?? '', lease_expires_at: route.leaseExpiresAt ?? '',
+            overflow_reason: route.overflowReason ?? '', retry_count: route.retryCount,
+            build_host: route.host?.id ?? '',
+            phase: route.phase, reused_existing_task: route.reusedExistingTask, should_build: route.shouldBuild,
+          };
+          for (const [key, value] of Object.entries(values)) appendFileSync(process.env.GITHUB_OUTPUT, `${key}=${value}\n`);
+          if (route.reusedExistingTask) console.log('正在等待已有任务。');
+          else if (route.selectedRunnerClass === 'aliyun') console.log('阿里云封装。逻辑双槽位于同一台 202 ECS。');
+          else console.log('阿里云繁忙，已使用 GitHub 标准 Runner。');
+          NODE
+
   prepare:
     name: Two cold builds → immutable OSS artifact
-    runs-on: ${{ fromJSON(inputs.build_runner == 'github' && '["ubuntu-24.04"]' || '["self-hosted","linux","x64","zdt-aliyun-build"]') }}
+    needs: route
+    if: needs.route.outputs.should_build == 'true'
+    runs-on: ${{ fromJSON(needs.route.outputs.runs_on) }}
     timeout-minutes: 30
+    env:
+      BUILD_RUNNER: ${{ needs.route.outputs.selected_runner_class }}
+      RUNNER_REQUEST_ID: ${{ needs.route.outputs.request_id }}
+      RUNNER_LEASE_GENERATION: ${{ needs.route.outputs.lease_generation }}
+      RUNNER_LEASE_EXPIRES_AT: ${{ needs.route.outputs.lease_expires_at }}
+      RUNNER_OVERFLOW_REASON: ${{ needs.route.outputs.overflow_reason }}
+      RUNNER_RETRY_COUNT: ${{ needs.route.outputs.retry_count }}
+      RUNNER_BUILD_HOST: ${{ needs.route.outputs.build_host }}
+      RUNNER_REUSED_EXISTING_TASK: ${{ needs.route.outputs.reused_existing_task }}
     steps:
       - name: Validate exact single-target request
         shell: bash
@@ -137,7 +194,7 @@ jobs:
             git -C "$directory" remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
             git -C "$directory" config http.https://github.com/.extraheader "AUTHORIZATION: basic $auth"
             for attempt in 1 2 3; do
-              if git -C "$directory" -c protocol.version=1 fetch --filter=blob:none --no-tags --no-recurse-submodules --depth="$depth" origin "$sha"; then
+              if git -C "$directory" -c protocol.version=1 fetch --filter=blob:none --no-tags --no-recurse-submodules --depth="$depth" origin "$sha" 2> "$directory.fetch-error"; then
                 if [ "${#patterns[@]}" -gt 0 ]; then
                   git -C "$directory" sparse-checkout init --no-cone
                   git -C "$directory" sparse-checkout set --no-cone "${patterns[@]}"
@@ -146,7 +203,16 @@ jobs:
                 git -C "$directory" config --unset-all http.https://github.com/.extraheader
                 return 0
               fi
-              [ "$attempt" -lt 3 ] || return 1
+              error="$(cat "$directory.fetch-error")"
+              if ! grep -Eqi 'reset|timed out|temporar|early EOF|remote end hung up|502|503|504' <<<"$error"; then
+                echo "code=GIT_FETCH_NON_RETRYABLE stage=checkout retryable=false attempts=${attempt} next_safe_action=review-source-and-permissions" >&2
+                return 1
+              fi
+              if [ "$attempt" -eq 3 ]; then
+                echo "code=GIT_FETCH_RETRY_EXHAUSTED stage=checkout retryable=true attempts=${attempt} next_safe_action=repeat-same-request" >&2
+                return 1
+              fi
+              echo '网络暂时失败，正在安全重试。'
               sleep "$((attempt * 5))"
             done
           }
@@ -162,6 +228,21 @@ jobs:
             "$control_root/04_tools/release-engine/cli.mjs" \
             "$control_root/02_platform_pingtai/infrastructure/release/zdt-next.release.json" >> "$GITHUB_ENV"
           printf 'control_checkout_ms=%s\n' "$(( $(date +%s%3N) - started_at ))" > "$RUNNER_TEMP/zdt-runner-timings"
+
+      - name: Record the exact Runner that claimed the request
+        env:
+          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+          ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+        shell: bash
+        run: |
+          node "$RELEASE_CLI" runner-started --adapter "$RELEASE_ADAPTER" \
+            --source-sha "$RELEASE_SHA" --control-sha "$CONTROL_SHA" \
+            --target "$RELEASE_TARGET" --node "$RELEASE_NODE" \
+            --lease-generation "$RUNNER_LEASE_GENERATION" --selected-runner-name "$RUNNER_NAME" \
+            --format json >> "$GITHUB_STEP_SUMMARY"
 
       - name: Verify exact source checkout
         shell: bash
@@ -367,7 +448,19 @@ jobs:
           node "$RELEASE_CLI" publish --adapter "$RELEASE_ADAPTER" --project-root "$GITHUB_WORKSPACE" \
             --package "$PACKAGE_PATH" \
             --source-sha "$RELEASE_SHA" \
+            --control-sha "$CONTROL_SHA" \
             --target "$RELEASE_TARGET" \
+            --node "$RELEASE_NODE" \
+            --request-id "$RUNNER_REQUEST_ID" \
+            --actor-role build \
+            --build-runner "$RUNNER_NAME" \
+            --runner-class "$BUILD_RUNNER" \
+            --lease-generation "$RUNNER_LEASE_GENERATION" \
+            --lease-expires-at "$RUNNER_LEASE_EXPIRES_AT" \
+            --overflow-reason "${RUNNER_OVERFLOW_REASON:-none}" \
+            --retry-count "$RUNNER_RETRY_COUNT" \
+            --build-host "$RUNNER_BUILD_HOST" \
+            --reused-existing-task "$RUNNER_REUSED_EXISTING_TASK" \
             --npm-version "$NPM_VERSION" \
             --runner-image "$RUNNER_IMAGE" \
             --repository "$GITHUB_REPOSITORY" \
@@ -426,3 +519,26 @@ jobs:
             --github-run-id "$GITHUB_RUN_ID" --github-run-attempt "$GITHUB_RUN_ATTEMPT" \
             --output .prepare-release/evidence-receipt.json --format json \
             >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Close the Runner routing lease without automatic build retry
+        if: always()
+        continue-on-error: true
+        env:
+          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+          ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+        shell: bash
+        run: |
+          if [ ! -x "${RELEASE_CLI:-}" ]; then
+            echo 'code=RUNNER_CONTROL_CHECKOUT_FAILED stage=control-checkout retryable=true attempts=1 next_safe_action=repeat-same-request' >&2
+            exit 1
+          fi
+          status=failed
+          if [ "${{ job.status }}" = success ]; then status=success; fi
+          node "$RELEASE_CLI" runner-finished --adapter "$RELEASE_ADAPTER" \
+            --source-sha "$RELEASE_SHA" --control-sha "$CONTROL_SHA" \
+            --target "$RELEASE_TARGET" --node "$RELEASE_NODE" \
+            --lease-generation "$RUNNER_LEASE_GENERATION" --status "$status" \
+            --format json >> "$GITHUB_STEP_SUMMARY"

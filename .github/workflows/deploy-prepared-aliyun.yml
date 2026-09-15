@@ -1,7 +1,7 @@
-name: Deploy 1.4 - Aliyun Prepared Artifact
-run-name: Deploy 1.4 ${{ inputs.operation }} ${{ inputs.head_sha }} ${{ inputs.release_node }} ${{ inputs.release_target }}
+name: Validate or Deploy 1.4.3 - Reusable
+run-name: Delivery child 1.4.3 ${{ inputs.operation }} ${{ inputs.head_sha }} ${{ inputs.release_node }} ${{ inputs.release_target }}
 
-# Official Aliyun-only 1.4 channel. Deploy verifies the exact prepared artifact and switches
+# Reusable 1.4.3 child. Deploy verifies the exact prepared artifact and switches
 # production inside one locked remote action. Optional candidate validation remains diagnostic
 # and never becomes a prerequisite or cross-run gate for deployment.
 on:
@@ -23,48 +23,10 @@ on:
         description: Validate a candidate or atomically deploy it
         required: true
         type: string
-  workflow_dispatch:
-    inputs:
-      head_sha:
-        description: Exact 40-character source commit already prepared in OSS
+    secrets:
+      ZDT_RUNNER_READ_TOKEN:
+        description: Fine-grained token limited to repository Administration read for Primary health observation
         required: true
-        type: string
-      release_target:
-        description: One prepared runtime target
-        required: true
-        type: choice
-        options:
-          - catalog-media
-          - storefront
-          - auth-web
-          - console
-          - identity-api
-          - identity-notification-jobs
-          - mall-provisioning-api
-          - support-api
-          - purchase-api
-          - web-api
-          - catalog-api
-          - catalog-jobs
-          - payment-webhook-api
-          - payment-jobs
-          - node-operations
-          - database-migration
-      release_node:
-        description: One sovereign node
-        required: true
-        type: choice
-        options:
-          - hbbtzn-l1
-          - zhudatuan-l0
-      operation:
-        description: Atomically deploy the prepared artifact or validate it without switching
-        required: true
-        default: deploy
-        type: choice
-        options:
-          - validate-candidate
-          - deploy
 permissions:
   contents: read
 
@@ -171,7 +133,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$CONTROL_REF" != "refs/heads/zdt-next" ]; then
-            echo "Deploy 1.4 must run from refs/heads/zdt-next" >&2
+            echo "Delivery 1.4.3 must run from refs/heads/zdt-next" >&2
             exit 64
           fi
           merge_base="$(gh api "repos/${GITHUB_REPOSITORY}/compare/${RELEASE_SHA}...${CONTROL_SHA}" --jq '.merge_base_commit.sha')"
@@ -184,6 +146,43 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
+
+      - name: Classify the Release writer without treating labels as authority
+        env:
+          GH_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          primary='aliyun-staging-zdt-release'
+          standby='aliyun-staging-zdt-release-standby'
+          case "$RUNNER_NAME" in
+            "$primary")
+              printf 'WRITER_CLASS=primary\nPRIMARY_AVAILABLE=true\nTAKEOVER_REASON=none\n' >> "$GITHUB_ENV"
+              echo '主Release执行中。'
+              ;;
+            "$standby")
+              mkdir -p .prepared-release
+              for attempt in 1 2 3; do
+                if gh api "repos/${GITHUB_REPOSITORY}/actions/runners" > .prepared-release/release-runners.json 2> .prepared-release/release-runners.error; then break; fi
+                if ! grep -Eqi 'reset|timed out|temporar|502|503|504' .prepared-release/release-runners.error || [ "$attempt" -eq 3 ]; then
+                  echo "code=RELEASE_PRIMARY_STATUS_UNAVAILABLE stage=release-writer-selection retryable=false attempts=${attempt} next_safe_action=stop-without-production-connection" >&2
+                  exit 1
+                fi
+                sleep "$((attempt * 2))"
+              done
+              primary_status="$(node -e "const r=require('./.prepared-release/release-runners.json');const x=r.runners.find(v=>v.name===process.argv[1]);process.stdout.write(x?.status??'missing')" "$primary")"
+              if [ "$primary_status" = online ]; then
+                echo '无法证明唯一写者，发布已停止。' >&2
+                exit 1
+              fi
+              printf 'WRITER_CLASS=standby\nPRIMARY_AVAILABLE=false\nTAKEOVER_REASON=primary-release-%s-after-lease-expiry\n' "$primary_status" >> "$GITHUB_ENV"
+              echo 'Standby将在主租约过期后尝试安全接管。'
+              ;;
+            *)
+              echo "code=RELEASE_WRITER_IDENTITY_UNKNOWN stage=release-writer-selection retryable=false attempts=1 next_safe_action=stop-without-production-connection" >&2
+              exit 1
+              ;;
+          esac
 
       - name: Refuse logical aliases for a different physical node
         shell: bash
@@ -229,7 +228,7 @@ jobs:
           set -euo pipefail
           mkdir -p .prepared-release
           command=validate-prepared
-          expected_status=candidate-validated
+          expected_status=sealed
           if [ "$RELEASE_OPERATION" = deploy ]; then
             command=deploy-prepared
             expected_status=success
@@ -243,10 +242,14 @@ jobs:
             --github-run-attempt "$GITHUB_RUN_ATTEMPT" \
             --expected-remote-agent-sha256 "$expected_agent_sha256" \
             --expected-remote-policy-sha256 "$expected_policy_sha256" \
+            --writer-identity "$RUNNER_NAME" \
+            --writer-class "$WRITER_CLASS" \
+            --primary-available "$PRIMARY_AVAILABLE" \
+            --takeover-reason "$TAKEOVER_REASON" \
             --node "$RELEASE_NODE" \
             --target "$RELEASE_TARGET" \
             --format json | tee .prepared-release/envelope.json
-          EXPECTED_STATUS="$expected_status" node -e "const r=require('./.prepared-release/envelope.json');const x=r.result;if(!r.ok||x.finalStatus!==process.env.EXPECTED_STATUS)process.exit(1);process.stdout.write(x.finalStatus+': artifact='+x.artifactSourceSha+' control='+x.controlPlane.sourceSha+' agent='+x.controlPlane.remoteAgentSha256+' policy='+x.controlPlane.remotePolicySha256+' '+x.timings.total+'ms\\n')" \
+          EXPECTED_STATUS="$expected_status" node -e "const r=require('./.prepared-release/envelope.json');const x=r.result;if(!r.ok||x.finalStatus!==process.env.EXPECTED_STATUS)process.exit(1);const w=x.writerLease;const message=x.repeatedDeployment?'目标已是当前版本，无需重复切换。':w.writerClass==='standby'?'Standby已安全接管。':'主Release执行中。';process.stdout.write(message+' '+x.finalStatus+': artifact='+x.artifactSourceSha+' control='+x.controlPlane.sourceSha+' writer='+w.activeWriter+' lease='+w.leaseGeneration+'/'+w.leaseStatus+' switched='+x.actualSwitch+' '+x.timings.total+'ms\\n')" \
             >> "$GITHUB_STEP_SUMMARY"
 
       - name: Preserve candidate or deployment receipt

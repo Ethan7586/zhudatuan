@@ -1,0 +1,33 @@
+{
+  "schema": "ai.delivery.production-scorecard.v1",
+  "deliveryControlVersion": "1.4.3",
+  "status": "PENDING_PRODUCTION_EVIDENCE",
+  "weights": {
+    "reliability": 60,
+    "speed": 20,
+    "productionMaturity": 20
+  },
+  "speedSlo": {
+    "newStorefrontSourceToHealthyP95Seconds": 180,
+    "sealedArtifactToHealthyP95Seconds": 60,
+    "sealToDeployAutomaticHandoffP95Seconds": 10,
+    "maximumManualTriggers": 1
+  },
+  "requiredTimeline": [
+    "request",
+    "queue",
+    "prepare",
+    "coldBuildOrReuse",
+    "upload",
+    "candidateValidation",
+    "finalSeal",
+    "sealToDeployGap",
+    "deploy",
+    "productionHealthy"
+  ],
+  "sampleRules": {
+    "singleRunMustBeLabelledSingleSample": true,
+    "p95RequiresMultipleProductionSamples": true,
+    "fixtureScoreCannotSubstituteForProductionEvidence": true
+  }
+}

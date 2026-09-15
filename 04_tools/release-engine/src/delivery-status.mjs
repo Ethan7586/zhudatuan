@@ -1,10 +1,11 @@
+// HISTORY-only 1.4.2 readiness scorer retained for its frozen baseline tests.
+// The executable status path uses evaluateAuthoritativeDeliveryStatus below.
 export function evaluateDeliveryStatus(input) {
   const committed = input.localCommit === true;
   const inMainline = input.inMainline === true;
-  const sealedRun = firstSuccessful(input.sealRuns);
   const latestPrepare = input.prepareRuns?.[0];
   const latestSeal = input.sealRuns?.[0];
-  const sealed = sealedRun !== undefined;
+  const sealed = input.sealAuthority?.status === 'SEALED';
   const deployable = inMainline && sealed && input.channelConfigured === true;
 
   let code = 'UNKNOWN_SOURCE';
@@ -15,6 +16,8 @@ export function evaluateDeliveryStatus(input) {
   else if (deployable) code = 'DEPLOYABLE';
   else if (isActive(latestSeal)) code = 'SEALING';
   else if (latestSeal?.status === 'completed' && latestSeal.conclusion !== 'success') code = 'SEAL_FAILED';
+  else if (inMainline && input.sealAuthority?.status === 'UNAVAILABLE') code = 'SEAL_AUTHORITY_UNAVAILABLE';
+  else if (inMainline && latestSeal?.conclusion === 'success' && !sealed) code = 'SEAL_RECEIPT_MISSING';
   else if (isActive(latestPrepare)) code = 'PREPARING';
   else if (latestPrepare?.status === 'completed' && latestPrepare.conclusion !== 'success') code = 'PREPARE_FAILED';
   else if (latestPrepare?.conclusion === 'success') code = 'AWAITING_SEAL';
@@ -29,8 +32,110 @@ export function evaluateDeliveryStatus(input) {
     conflictFiles: Object.freeze([...(input.conflictFiles ?? [])]),
     prepare: summarizeRun(latestPrepare),
     seal: summarizeRun(latestSeal),
-    sealEvidence: summarizeRun(sealedRun),
+    sealEvidence: sealed ? Object.freeze({
+      sealKey: input.sealAuthority.sealKey,
+      object: input.sealAuthority.object,
+      artifactDigest: input.sealAuthority.artifactDigest,
+      controlPlaneSha: input.sealAuthority.controlPlaneSha,
+      updatedAt: input.sealAuthority.updatedAt,
+    }) : undefined,
+    sealAuthorityStatus: input.sealAuthority?.status ?? 'ABSENT',
   });
+}
+
+export const DELIVERY_CONTROL_VERSION = '1.4.3';
+export const DELIVERY_STATUS_SCHEMA = 'zdt-delivery-status/v2';
+
+export function evaluateAuthoritativeDeliveryStatus(input) {
+  const lifecycle = input.sealLifecycle;
+  const state = lifecycle?.state;
+  const key = lifecycle?.key ?? null;
+  const remoteAvailable = input.remote?.availability === 'AVAILABLE';
+  const ossAvailable = lifecycle?.availability !== 'UNAVAILABLE';
+  const evidenceCompleteness = !ossAvailable ? 'UNKNOWN' : remoteAvailable ? 'FULL' : 'PARTIAL';
+  let status = 'NOT_PREPARED';
+  let failureCode = null;
+
+  if (!ossAvailable) {
+    status = 'UNKNOWN';
+    failureCode = lifecycle?.error ?? 'OSS_AUTHORITY_UNAVAILABLE';
+  } else if (state?.status === 'FAILED') {
+    status = 'FAILED';
+    failureCode = state.failure?.classification ?? 'SEAL_LIFECYCLE_FAILED';
+  } else if (state?.status === 'BUILDING') status = 'BUILDING';
+  else if (state?.status === 'UPLOADED') status = 'UPLOADED';
+  else if (state?.status === 'VALIDATED') status = 'VALIDATED';
+  else if (state?.status === 'SEALED') {
+    if (!remoteAvailable) {
+      status = 'UNKNOWN';
+      failureCode = input.remote?.error ?? 'REMOTE_AUTHORITY_UNAVAILABLE';
+    } else {
+      const candidate = input.remote.candidateSeal;
+      const candidateArtifact = input.remote.candidateArtifact;
+      const candidateMatches = candidate?.schema === 'ai.delivery.candidate-seal.v1'
+        && candidate.sourceSha === key?.source_sha
+        && candidate.artifactSha256 === key?.artifact_digest
+        && candidate.controlPlane?.sourceSha === key?.control_plane_sha
+        && input.remote.candidate === candidate.candidate
+        && candidateArtifact?.sourceSha === key?.source_sha
+        && candidateArtifact?.archive?.sha256 === key?.artifact_digest;
+      if (!candidateMatches) {
+        status = 'FAILED';
+        failureCode = 'AUTHORITATIVE_SEAL_CONFLICT';
+      } else {
+        const currentAllowed = input.remote.current === candidate.expectedCurrent || input.remote.current === candidate.candidate;
+        const currentMatches = artifactMatches(input.remote.currentArtifact, key) && input.remote.current === candidate.candidate;
+        status = currentAllowed && currentMatches ? 'DEPLOYED' : currentAllowed ? 'SEALED' : 'FAILED';
+        if (!currentAllowed) failureCode = 'CURRENT_POINTER_CONFLICT';
+        else if (input.remote.currentArtifact?.sourceSha === key?.source_sha && !artifactMatches(input.remote.currentArtifact, key)) {
+          status = 'FAILED';
+          failureCode = 'CURRENT_ARTIFACT_CONFLICT';
+        }
+      }
+    }
+  }
+
+  const final = state?.final ?? null;
+  const uploaded = state?.uploaded ?? null;
+  const validated = state?.validated ?? null;
+  return Object.freeze({
+    schemaVersion: DELIVERY_STATUS_SCHEMA,
+    deliveryControlVersion: DELIVERY_CONTROL_VERSION,
+    status,
+    sourceSha: input.sourceSha,
+    controlPlaneSha: key?.control_plane_sha ?? null,
+    target: input.target,
+    physicalNode: input.physicalNode,
+    artifactDigest: key?.artifact_digest ?? null,
+    sealKey: key?.seal_key ?? null,
+    finalSealReceipt: final ? { object: lifecycle.paths?.final ?? null, receipt: final } : null,
+    candidateSeal: input.remote?.candidateSeal ?? null,
+    current: pointerEvidence(input.remote?.current, input.remote?.currentArtifact, key),
+    previous: pointerEvidence(input.remote?.previous, input.remote?.previousArtifact, key),
+    activeReleaseWriter: input.writer?.leaseStatus === 'ACTIVE' ? input.writer : null,
+    buildRunner: uploaded?.build_runner ?? null,
+    releaseRunner: validated?.release_runner ?? final?.release_runner ?? null,
+    reused: Boolean(final?.reused_artifact || final?.reused_validation || input.writer?.reused),
+    evidence: Object.freeze({ completeness: evidenceCompleteness, oss: ossAvailable ? 'AVAILABLE' : 'UNAVAILABLE',
+      sealLifecycle: state?.status ?? 'UNAVAILABLE',
+      remote: remoteAvailable ? 'AVAILABLE' : 'UNAVAILABLE', actions: input.latestAction ? 'AUXILIARY' : 'ABSENT' }),
+    failureCode,
+    recentActionUrl: input.latestAction?.url ?? null,
+  });
+}
+
+export function formatDeliveryStatusHuman(result) {
+  const labels = {
+    NOT_PREPARED: '尚未准备', BUILDING: '正在封装', UPLOADED: '已上传，等待验证', VALIDATED: '已验证，等待封板',
+    SEALED: '已封板，可以部署', DEPLOYED: '已部署', FAILED: '失败，需要处理', UNKNOWN: '权威状态暂时无法完整读取',
+  };
+  const lines = [`交付状态：${labels[result.status] ?? result.status}`, `证据完整度：${result.evidence.completeness}`];
+  if (result.current) lines.push(`当前：${result.current.sourceSha ?? '未知'}${result.current.matchesSeal ? '（匹配本次封板）' : ''}`);
+  if (result.previous) lines.push(`上一版本：${result.previous.sourceSha ?? '未知'}（仅作回滚事实）`);
+  if (result.activeReleaseWriter) lines.push(`发布写者：${result.activeReleaseWriter.activeWriter}`);
+  if (result.failureCode) lines.push(`原因：${result.failureCode}`);
+  if (result.recentActionUrl) lines.push(`最近任务（辅助）：${result.recentActionUrl}`);
+  return `${lines.join('\n')}\n`;
 }
 
 export function parseMergeTreeConflictFiles(output) {
@@ -47,10 +152,6 @@ export function automaticClosureIncludes(closure, { sourceSha, target, node }) {
     .some((entry) => entry?.target === target && entry?.node === node);
 }
 
-function firstSuccessful(runs = []) {
-  return runs.find((run) => run?.status === 'completed' && run.conclusion === 'success');
-}
-
 function isActive(run) {
   return run?.status === 'queued' || run?.status === 'in_progress' || run?.status === 'waiting';
 }
@@ -64,4 +165,13 @@ function summarizeRun(run) {
     url: run.url,
     createdAt: run.createdAt,
   });
+}
+
+function artifactMatches(artifact, key) {
+  return Boolean(artifact && key && artifact.sourceSha === key.source_sha && artifact.archive?.sha256 === key.artifact_digest);
+}
+
+function pointerEvidence(path, artifact, key) {
+  return path ? Object.freeze({ path, sourceSha: artifact?.sourceSha ?? null, artifactDigest: artifact?.archive?.sha256 ?? null,
+    matchesSeal: artifactMatches(artifact, key) }) : null;
 }

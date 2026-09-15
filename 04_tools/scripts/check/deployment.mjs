@@ -54,7 +54,8 @@ function validateDeploymentOwnership(adapter, policy) {
       pointers.add(deployment.pointerRoot);
       if (deployment.restart?.kind === 'systemd') {
         assert(deployment.restart.jobMode === 'ignore-dependencies', 'DEPLOY_RESTART_SCOPE_INVALID', `${nodeKey}/${target}`);
-        assert(Array.isArray(deployment.seedInputs) && deployment.seedInputs.length > 0, 'DEPLOY_ROLLBACK_BASELINE_MISSING', `${nodeKey}/${target}`);
+        assert((Array.isArray(deployment.seedInputs) && deployment.seedInputs.length > 0) || deployment.baselineStrategy === 'register-current',
+          'DEPLOY_ROLLBACK_BASELINE_MISSING', `${nodeKey}/${target}`);
         assert(deployment.allowFirstActivation !== true, 'DEPLOY_FIRST_ACTIVATION_FORBIDDEN', `${nodeKey}/${target}`);
         assert(Array.isArray(deployment.candidateChecks) && deployment.candidateChecks.length > 0, 'DEPLOY_CANDIDATE_CHECKS_MISSING', `${nodeKey}/${target}`);
         assert(Array.isArray(deployment.healthChecks) && deployment.healthChecks.length > 0, 'DEPLOY_HEALTH_CHECKS_MISSING', `${nodeKey}/${target}`);
@@ -66,16 +67,12 @@ function validateDeploymentOwnership(adapter, policy) {
 }
 
 function validateDeployWorkflow(adapter, workflow) {
-  const dispatch = workflow?.on?.workflow_dispatch;
-  const inputs = dispatch?.inputs;
+  const reusable = workflow?.on?.workflow_call;
+  const inputs = reusable?.inputs;
   assert(inputs?.head_sha?.required === true && inputs.head_sha.type === 'string', 'DEPLOY_WORKFLOW_SHA_INPUT_INVALID');
-  assert(inputs?.release_target?.required === true && inputs.release_target.type === 'choice', 'DEPLOY_WORKFLOW_TARGET_INPUT_INVALID');
-  assert(inputs?.release_node?.required === true && inputs.release_node.type === 'choice', 'DEPLOY_WORKFLOW_NODE_INPUT_INVALID');
-  assert(inputs?.operation?.required === true && inputs.operation.type === 'choice', 'DEPLOY_WORKFLOW_OPERATION_INPUT_INVALID');
-
-  assertSameSet(inputs.release_target.options, Object.keys(adapter.targets), 'DEPLOY_WORKFLOW_TARGETS_MISMATCH');
-  assertSameSet(inputs.release_node.options, Object.keys(adapter.nodes), 'DEPLOY_WORKFLOW_NODES_MISMATCH');
-  assertSameSet(inputs.operation.options, ['validate-candidate', 'deploy'], 'DEPLOY_WORKFLOW_OPERATIONS_MISMATCH');
+  assert(inputs?.release_target?.required === true && inputs.release_target.type === 'string', 'DEPLOY_WORKFLOW_TARGET_INPUT_INVALID');
+  assert(inputs?.release_node?.required === true && inputs.release_node.type === 'string', 'DEPLOY_WORKFLOW_NODE_INPUT_INVALID');
+  assert(inputs?.operation?.required === true && inputs.operation.type === 'string', 'DEPLOY_WORKFLOW_OPERATION_INPUT_INVALID');
   assert(workflow.permissions?.contents === 'read', 'DEPLOY_WORKFLOW_PERMISSIONS_INVALID');
   const expectedLock = `${adapter.project}-prepared-` + '${{ inputs.release_node }}-${{ inputs.release_target }}';
   assert(workflow.concurrency?.group === expectedLock, 'DEPLOY_WORKFLOW_LOCK_SCOPE_INVALID');

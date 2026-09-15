@@ -1,4 +1,4 @@
-name: Automatic Prepare and Seal One Target
+name: Prepare and Seal One Target 1.4.3 - Reusable
 
 on:
   workflow_call:
@@ -17,13 +17,14 @@ on:
         type: string
 
 permissions:
+  actions: read
   contents: read
 
 jobs:
   prepare:
     uses: ./.github/workflows/prepare-artifact-aliyun.yml
     with:
-      build_runner: aliyun
+      build_runner: auto
       head_sha: ${{ inputs.head_sha }}
       release_target: ${{ inputs.release_target }}
       release_node: ${{ inputs.prepare_node }}

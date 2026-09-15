@@ -12,8 +12,8 @@ const autoSource = await readFile(join(root, '.github/workflows/auto-prepare-art
 const auto = parse(autoSource);
 
 test('sealed-source deployment is explicit, consumes one closure manifest and never builds', () => {
-  assert.deepEqual(Object.keys(workflow.on), ['workflow_dispatch']);
-  assert.ok(workflow.on.workflow_dispatch.inputs.head_sha.required);
+  assert.deepEqual(Object.keys(workflow.on), ['workflow_call']);
+  assert.ok(workflow.on.workflow_call.inputs.head_sha.required);
   assert.match(workflow.jobs.resolve.steps[0].run, /automatic-artifact-closure-\$SOURCE_SHA/);
   assert.match(workflow.jobs.resolve.steps[0].run, /gh run list --repo "\$GITHUB_REPOSITORY"/);
   assert.match(workflow.jobs.resolve.steps[0].run, /gh run download "\$run_id" --repo "\$GITHUB_REPOSITORY"/);
@@ -38,7 +38,7 @@ test('deployment waves stop forward progress after a failed earlier wave', () =>
 
 test('automatic closure preserves its exact machine-readable deployment scope', () => {
   const upload = auto.jobs.plan.steps.find((step) => step.uses === 'actions/upload-artifact@v6');
-  assert.equal(upload.with.name, 'automatic-artifact-closure-${{ github.sha }}');
+  assert.equal(upload.with.name, 'automatic-artifact-closure-${{ steps.matrix.outputs.source_sha }}');
   assert.equal(upload.with.path, '.automatic-artifact-closure/closure.json');
   assert.equal(upload.with['if-no-files-found'], 'error');
 });

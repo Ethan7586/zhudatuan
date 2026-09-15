@@ -13,9 +13,10 @@ const prepareStep = workflow.jobs.prepare.steps.find((step) => step.run?.include
 const functionSource = prepareStep?.run.match(/run_cold_prepare\(\) \{[\s\S]*?^\}/m)?.[0];
 if (functionSource === undefined) throw new Error('Prepare workflow cold function not found');
 
-const fakeNpm = `#!/usr/bin/env bash
+const fakeReleaseCli = `#!/usr/bin/env bash
 set -euo pipefail
-stage="$5"
+if [ "\$1" != fake-release-cli ]; then exec '${process.execPath}' "\$@"; fi
+stage="$2"
 printf '%s\\n' "$stage" >> "$FAKE_RELEASE_LOG"
 case "$stage" in
   plan) envelope='{"ok":true,"result":{"deployRequired":true,"targets":["target"],"planPath":"plan.json"}}' ;;
@@ -32,12 +33,18 @@ async function runFixture(failStage) {
   const bin = join(fixture, 'bin');
   const log = join(fixture, 'release.log');
   await mkdir(bin);
-  await writeFile(join(bin, 'npm'), fakeNpm);
-  await chmod(join(bin, 'npm'), 0o755);
+  await writeFile(join(bin, 'node'), fakeReleaseCli);
+  await chmod(join(bin, 'node'), 0o755);
+  await writeFile(join(bin, 'date'), '#!/bin/sh\necho 1000\n');
+  await chmod(join(bin, 'date'), 0o755);
   const result = spawnSync('bash', ['-c', `set -euo pipefail
 base=base
 RELEASE_SHA=release
 RELEASE_TARGET=target
+RELEASE_CLI=fake-release-cli
+RELEASE_ADAPTER=adapter.json
+GITHUB_WORKSPACE="$PWD"
+RUNNER_TEMP="$PWD"
 ${functionSource}
 run_cold_prepare cold-a`], {
     cwd: fixture,
@@ -63,7 +70,7 @@ test('cold Prepare stops at the first failed release stage without cascading', a
 
 test('cold Prepare returns exactly one package path after all stages pass', async () => {
   const { result, stages } = await runFixture('none');
-  assert.equal(result.status, 0);
+  assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout, 'package.json');
   assert.deepEqual(stages, ['plan', 'build', 'package']);
 });
