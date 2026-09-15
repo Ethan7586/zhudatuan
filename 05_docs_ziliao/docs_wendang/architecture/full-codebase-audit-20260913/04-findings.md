@@ -4970,6 +4970,50 @@
 | 回滚方式 | 回退独立工具/fixture提交，保留现有operations定义。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0312｜事务边界门禁把启动装配与实际执行混同，无法作为精确交易安全证明
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Quality / transaction boundary static gate |
+| 类型 | 静态分析正确性、事务边界验证可信度 |
+| 严重级别 | **P2** |
+| 置信度 | 高（正式 checker 已运行，AST 判定与直接调用路径已比对；未调用真实 KMS/支付/数据库） |
+| 文件和精确位置 | `04_tools/scripts/check/transactions.mjs:6-71`；`01_core_hexin/services/commerce/src/modules/purchase/PurchaseOperations.ts:115-117,134-160`；`01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/MobileWechatOperations.ts:130-137`；`.../foundation/application/ModuleOperations.ts:103-120,143-171`。 |
+| 当前/预期 | 正式门禁退出 1，报 `PurchaseOperations.ts:116:purchasePaymentAction` 以及 `MobileWechatOperations.ts:136-137:decrypt/encrypt`。前者是构造 `ModuleOperations` 时创建 action 的启动装配，不是请求 execute；真正的 RiskGate/DecisionSink 位于 returned action 157-160。后者确在 identity step-up 的 execute 内、由 `ModuleOperations.invoke` 的 write runner 包裹，但仅凭方法名无法判断 KMS 是否远程、可否超时或是否已有事务外设计。预期门禁应定位真实 execute action、解析 action 引用和 operation write path，并把“候选”与“已证明违反”分开。 |
+| 直接证据 | [FACT][E-AU-799-001] 2026-09-15 执行正式 checker，输出4项并退出1；[FACT][E-AU-799-002] checker 34-37 将任意 `new ModuleOperations` 后代直接归为 `execute`，46-57 只按固定方法名/函数声明判断；[FACT][E-AU-799-003] payment 116 仅把 factory 的返回 action 放入 map，134-168 才是 invoke 时执行的函数；[FACT][E-AU-799-004] identity 130-137 的 KMS 调用位于 lifecycle execute，ModuleOperations 103-120 会将写操作交给 command runner。 |
+| 调用链或运行入口 | `npm run check:transactions` → AST scanner；实际身份链为 HTTP route → IdentityOperations → ModuleOperations → `identity.stepup.start` execute → KMS/DB；支付内部回退链为 Purchase API → `purchasePaymentOperations` → internal ModuleOperations → returned payment action。 |
+| 用户影响 | 当前失败输出既可能造成无效阻断，也可能让团队误把同一输出严重性理解为真实事务违规。 |
+| 数据影响 | 未执行数据库验证；身份路径中 KMS 异常时 transaction rollback 的实际效果、支付路径 risk/decision side effect 与行锁时长均未验证。 |
+| 安全影响 | 未发现直接越权或密钥泄漏；身份 KMS 相关代码触及敏感手机号/挑战值，错误的 gate 不能替代专项安全/超时审查。 |
+| 根因 | lifecycle classifier 以 AST 父级 `new ModuleOperations` 代替真实请求执行图，external method whitelist 也没有适配器语义或事务类型信息。 |
+| 建议方向 | 从修复时最新 `zdt-next` 单独建立 transaction-gate-evidence 批次：解析 OperationAction/function reference、只对真正的 transactional execute body出证据，区分 remote/I/O candidate 与确定违规；为 KMS/RiskGate timeout 与 rollback 增加隔离 integration fixture。不要在审计分支改 checker 或业务代码。 |
+| 预计修改范围 | 单一 checker、其 fixtures 和少量隔离 integration test；不改变身份/支付业务规则。 |
+| 验证方式 | factory 装配但 action body无外部调用时不得报警；真实 execute 内受控 remote fake 必须定位到实际行；模拟 timeout 后验证 idempotency、DB rollback、outbox/audit 语义。 |
+| 回滚方式 | 回退该独立 gate/test 批次；保留现有 checker 直至替代门禁可复现通过。 |
+| 是否需要独立复核 | 是。 |
+
+## F-0313｜测试拓扑门禁以存在性替代可执行行为，并把覆盖范围概括为 clients=6
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Quality / test topology static gate |
+| 类型 | 测试可信度、质量报告语义 |
+| 严重级别 | **P2** |
+| 置信度 | 高（源码断言与正式只读输出直接可复核；未运行任何业务测试） |
+| 文件和精确位置 | `04_tools/scripts/check/tests.mjs:39-64,88-101`；root `package.json:91,111,123`。 |
+| 当前/预期 | checker 通过并打印 `clients=6`。但它仅对 auth/console/storefront 检查任一 test script及 source 下任意 `.test/.spec` 文件；Miniapp 只检查 `miniprogram/app.js` 存在；设计包只检查一个 state-matrix 文件。它不执行测试、未将六个客户端逐项枚举，也不验证路由或行为。预期是报告准确标为拓扑检查，并由独立执行型 suites 证明关键客户端行为。 |
+| 直接证据 | [FACT][E-AU-799-005] 2026-09-15 运行 checker exit 0，输出 `commerce=4 mvp=21 providers=11 clients=6 productionTestingImports=0`；[FACT][E-AU-799-006] 39-50 只枚举3个 Web app，55 仅检查 Miniapp entry，56-60 只检查 design state strings；[FACT][E-AU-799-007] 无 test runner invocation，88-101 仅递归读取文件。 |
+| 调用链或运行入口 | `npm run check:tests` → `audit:architecture` / `quality:canonical-hard-cut`。 |
+| 用户影响 | 质量门“通过”可能被误读为六个客户端已完成行为测试，实际只证明少量文件/脚本存在。 |
+| 数据影响 | 无直接数据写入；测试本身对数据库、并发和回滚没有执行性证明。 |
+| 安全影响 | 没有验证真实会话、权限、页面拒绝态或 Miniapp 运行链；不构成已证实的权限缺陷。 |
+| 根因 | 将测试目录完整性、需求数量与执行结果合并为单个 topology gate，并以汇总常量表达范围。 |
+| 建议方向 | 从修复时最新 `zdt-next` 单独建立 test-evidence-labeling 批次：将输出明确标为 structural topology，按实际枚举项报告；保持快速门，并为每个高风险客户端链路接入已存在或新增的定向可执行 suite。 |
+| 预计修改范围 | checker 输出/断言、CI quality report及少量针对 Miniapp/关键路由的测试入口；不修改业务功能。 |
+| 验证方式 | 移除 Miniapp可执行测试或关键 Web test时对应执行门必须失败；保留空 test 文件时质量报告不得宣称行为已验证；报告枚举与实际受检 app一致。 |
+| 回滚方式 | 回退该独立 checker/report/test-entry 批次，现有结构检查保持可用。 |
+| 是否需要独立复核 | 是。 |
+
 ## F-0302｜MVP 交付门禁的状态枚举与当前需求矩阵不兼容，首条即失败
 
 | 字段 | 记录 |
