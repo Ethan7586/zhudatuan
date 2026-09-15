@@ -1,6 +1,6 @@
 # Delivery Control 1.5 readiness contract
 
-状态：第一批本地候选。现役生产控制面仍由根目录 `AI-DELIVERY.md` 声明。
+状态：第五批接线候选。现役生产分仍为 56/100；本批尚未合并或生产演练。
 
 `node 04_tools/release-engine/cli.mjs doctor --source-sha <sha> --control-sha <sha> --target <target> --node <physical-node> --repository Ethan7586/zhudatuan --format json`
 只执行读取与静态检查，输出 `ai.delivery.readiness-doctor.v1`。它不修改 Secret、RAM、Runner 或 OSS，不创建 Seal/Lease，不触发 Prepare/Deploy，不移动生产指针。
@@ -66,9 +66,17 @@ release index 到阶段回执和 final Seal 已使用 exact key。Runner request
 
 请求、bundle gate、deploy receipt 和完成回执均按幂等键不可变记录。重复健康请求 no-op；不确定写先读回；临时网络与 STS 使用预算内退避；403、身份冲突、owner 冲突阻断。状态摘要输出组件 checkpoint、证据、下一动作、人工介入标志、时间线和耗时，并固定 `productionP95Claimed=false`。
 
-现有自动 Closure 已包含 exact `head_sha`、可选 `base_sha` 和 ancestry 校验，可用最新控制面重评估历史主线版本；deploy-source consumer 不以 event 类型为权威，并识别受控 `workflow_dispatch` artifact。旧提交 `5135a7de137f353bb1a36c492aa8d377424a5c96` 不应重新 cherry-pick 覆盖现行主线语义。
+第五批恢复旧提交 `5135a7de137f353bb1a36c492aa8d377424a5c96` 的完整边界：手动恢复必须提供 exact `head_sha/base_sha`，只允许存在对应失败 push Closure 的 source，且校验 base/source/control 祖先关系。deploy-source consumer 不以事件类型为权威，并通过绑定 exact Source SHA 的 artifact 识别受控 `workflow_dispatch` 成功 Closure。
 
 本批仍是本地候选：没有安装一次触发系统命令，没有修改或运行真实 Workflow/RAM/OSS/Runner/生产，生产分维持 56/100。
+
+## 第五批：真实工作流接线与单一 Closure 权威
+
+失败运行 `35033783757` 证明旧路径存在双权威：plan 阶段先上传“成功 Closure”，部署阶段才独立读取 final Seal，因此 database-migration 可在 manifest 成功后以 `FINAL_SEAL_RECEIPT_MISSING` 失败。现行主线已把前置 artifact 降级为不可部署的 v1 draft；Prepare/Seal 全部完成后，workflow 直接调用 `production-orchestrator.mjs` 的 finalizer，对每个 required component exact Get final Seal，校验 source、control、target、node、artifact、provenance、Seal digest，再运行 bundle gate。缺少任一 Seal 时不会产生 deployable Closure。
+
+deploy-source 只接受 `zdt-automatic-artifact-closure/v2`，每个 wave entry 绑定 exact Seal key、object、artifact digest、control SHA 和 Seal digest；deploy reusable 再对实际 final Seal 复核这些字段。兼容文件名 `delivery-1-4-3.yml` 保留，机器名称、run-name、并发组和子工作流均声明 Delivery Control 1.5。
+
+本批只建立本地/CI候选合同，没有业务生产切换、真实故障重放或 P95 样本。合并、CI 绿色或空目标运行都不得提高 56/100 生产分。
 
 Resume 不绕过 Readiness：OSS/RAM 403、Secret 合同、Runner 可见性或祖先关系任一失败都保持 `resumeAllowed=false`；只有修复原权限并重新通过 Doctor 后，才允许重放同一 source/base，不生成替代 source，不直接进入 Deploy。
 

@@ -395,6 +395,8 @@ export async function requireFinalSealReceipt(adapter, options, dependencies = {
   const recovery = classifySealCheckpoint({ exactResource: lifecycle.paths.final, finalSeal: state.status === 'SEALED',
     uploaded: Boolean(state.uploaded), validated: Boolean(state.validated), safeCheckpoint: state.status });
   invariant(state.status === 'SEALED', 'FINAL_SEAL_RECEIPT_MISSING', 'OSS final Seal receipt is missing; Action success is not Seal authority', {
+    requestId: options.requestId ?? `seal-${digest(lifecycle.key).slice(7, 23)}`,
+    attemptId: options.attemptId ?? process.env.GITHUB_RUN_ATTEMPT ?? '1',
     status: state.status, sealKey: lifecycle.key.seal_key, finalSealReceiptObject: lifecycle.paths.final, ...recovery,
   });
   return { key: lifecycle.key, object: lifecycle.paths.final, receipt: state.final, reused: true };

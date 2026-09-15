@@ -1,5 +1,5 @@
-name: Prepare Artifact 1.4.3 - Reusable
-run-name: Prepare 1.4.3 ${{ inputs.head_sha }} ${{ inputs.release_target }}
+name: Prepare Artifact 1.5 - Reusable
+run-name: Prepare 1.5 ${{ inputs.head_sha }} ${{ inputs.release_target }}
 
 # Aliyun build runners are the default; GitHub standard runners are an explicit fallback. Two
 # isolated empty release state roots must independently produce cold cache misses

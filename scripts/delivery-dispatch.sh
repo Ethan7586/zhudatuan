@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Internal dispatcher for the single user-visible Delivery Control 1.4.3 workflow.
+# Internal dispatcher for the single user-visible Delivery Control 1.5 workflow.
 set -euo pipefail
 export PATH=/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin
 
@@ -41,9 +41,9 @@ merge_base="$(gh_read api "repos/{owner}/{repo}/compare/${source_sha}...zdt-next
 
 workflow='delivery-1-4-3.yml'
 gh_read workflow view "$workflow" --ref zdt-next --yaml >/dev/null \
-  || { echo 'Delivery stopped: the unified 1.4.3 control workflow is unavailable.' >&2; exit 1; }
+  || { echo 'Delivery stopped: the unified 1.5 control workflow is unavailable.' >&2; exit 1; }
 previous_id="$(gh_read run list --workflow "$workflow" --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
-echo "1.4.3 ${operation}: ${source_sha}${target:+ -> ${physical_node}/${target}}"
+echo "1.5 ${operation}: ${source_sha}${target:+ -> ${physical_node}/${target}}"
 gh workflow run "$workflow" --ref zdt-next \
   -f operation="$operation" -f head_sha="$source_sha" -f release_target="$target" -f physical_node="$physical_node"
 
@@ -51,10 +51,15 @@ gh workflow run "$workflow" --ref zdt-next \
 # resulting run with every immutable dispatch input rather than using only
 # its creation order.
 if [ -n "$target" ]; then
-  expected_title="Delivery 1.4.3 ${operation} ${source_sha} ${target} ${physical_node}"
+  expected_title="Delivery 1.5 ${operation} ${source_sha} ${target} ${physical_node}"
   run_selector=".[] | select(.databaseId > ${previous_id} and .displayTitle == \\\"${expected_title}\\\") | .databaseId"
 else
   run_selector=".[] | select(.databaseId > ${previous_id} and (.displayTitle | test(\\\"^Delivery 1\\\\.4\\\\.3 ${operation} ${source_sha}( *)$\\\"))) | .databaseId"
+fi
+
+if [ -z "$target" ]; then
+  expected_title="Delivery 1.5 ${operation} ${source_sha}"
+  run_selector=".[] | select(.databaseId > ${previous_id} and (.displayTitle | startswith(\\\"${expected_title}\\\"))) | .databaseId"
 fi
 
 run_id=''

@@ -452,7 +452,7 @@ test('first activation is limited to pointer-only content and migration evidence
   assert.equal(policy.nodes['zhudatuan-l0'].deployments['support-api'].allowBaselineImport, true);
 });
 
-test('1.4.3 binds the artifact and control-plane provenance in one production action', () => {
+test('1.5 binds Closure, artifact and control-plane provenance in one production action', () => {
   assert.match(preparedDeployWorkflow, /ref: \$\{\{ github\.sha \}\}/);
   assert.match(preparedDeployWorkflow, /--source-sha "\$RELEASE_SHA"/);
   assert.match(preparedDeployWorkflow, /--control-sha "\$CONTROL_SHA"/);
@@ -460,7 +460,8 @@ test('1.4.3 binds the artifact and control-plane provenance in one production ac
   assert.match(preparedDeployWorkflow, /--github-run-attempt "\$GITHUB_RUN_ATTEMPT"/);
   assert.match(preparedDeployWorkflow, /--expected-remote-agent-sha256/);
   assert.match(preparedDeployWorkflow, /--expected-remote-policy-sha256/);
-  assert.match(preparedDeployWorkflow, /^name: Validate or Deploy 1\.4\.3 - Reusable/m);
+  assert.match(preparedDeployWorkflow, /^name: Validate or Deploy 1\.5 - Reusable/m);
+  assert.match(preparedDeployWorkflow, /--seal-digest/);
   assert.match(preparedDeployWorkflow, /GH_TOKEN: \$\{\{ github\.token \}\}/);
   assert.match(releaseEngine, /candidateOnly \? 'validate-oss-candidate-v3' : 'deploy-sealed-candidate-v3'/);
   assert.match(releaseEngine, /candidateOnly \? \{[\s\S]*?artifactUrl:[\s\S]*?manifestUrl:[\s\S]*?\} : \{\}/);

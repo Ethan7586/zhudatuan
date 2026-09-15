@@ -1,4 +1,4 @@
-# 发布控制面 1.4.3
+# 发布控制面 1.5
 
 状态：ACTIVE
 
@@ -14,7 +14,7 @@
 
 `deploy` 只处理一个已经封板的物理目标；`deploy-source` 只消费该 source 的自动封板清单，并按既定波次部署其中全部目标。系统入口始终获取最新 `origin/zdt-next` 作为 control-plane SHA，业务 source SHA 与控制面 SHA 分开保存。
 
-普通写操作只派发 `delivery-1-4-3.yml`。Prepare、候选验证、Seal、单目标 Deploy 和 sealed-source Deploy 均为 `workflow_call` 子工作流，不是用户入口。自动封板只由 `zdt-next` push 触发，不接受手工派发，也不部署生产。
+普通写操作只派发兼容文件名 `delivery-1-4-3.yml`，其机器名称和行为版本为 Delivery Control 1.5。Prepare、候选验证、Seal、单目标 Deploy 和 sealed-source Deploy 均为 `workflow_call` 子工作流，不是用户入口。自动封板由 `zdt-next` push 触发；手工派发只恢复存在失败 push 证据的 exact source/base，不部署生产。
 
 ## 权威状态
 
@@ -34,7 +34,8 @@
 
 | 语义 | 当前值 |
 | --- | --- |
-| 用户可见控制面 | `1.4.3` |
+| 用户可见控制面 | `1.5` |
+| 自动 Closure | `zdt-automatic-artifact-closure/v2` |
 | Seal Key 序列化 | `zdt-seal-key/v1` |
 | Seal Key Schema | `ai.delivery.seal-key.v1` |
 | Final Seal receipt | `ai.delivery.final-seal.v1` |
@@ -46,7 +47,7 @@ Schema 只在字段出现不兼容变化时升级；产品版本升级不改写�
 
 ### 1.4.2 一次性兼容策略
 
-1.4.2 制品与历史回执保持只读。它们可以用于摘要核对和生产 current/previous 取证，但不能直接进入 1.4.3 候选验证、不能自动生成新 Seal，也不能因旧 Action 成功而升级。需要迁移的目标必须走一次正常 1.4.3 Prepare：在 Build 侧冷构建并与已有不可变对象核对，相同对象只幂等复用，随后用当前 control-plane SHA 完成候选验证和新 final Seal。Deploy 现场不重建、不修改旧 artifact；任一步失败都不移动现有 1.4.2 current。
+1.4.2 制品与历史回执保持只读。它们可以用于摘要核对和生产 current/previous 取证，但不能直接进入 1.5 候选验证、不能自动生成新 Seal，也不能因旧 Action 成功而升级。需要迁移的目标必须走一次正常 1.5 Prepare：在 Build 侧冷构建并与已有不可变对象核对，相同对象只幂等复用，随后用当前 control-plane SHA 完成候选验证和新 final Seal。Deploy 现场不重建、不修改旧 artifact；任一步失败都不移动现有 1.4.2 current。
 
 ### 生产综合评分
 
@@ -56,6 +57,6 @@ Schema 只在字段出现不兼容变化时升级；产品版本升级不改写�
 
 Deploy 只消费 OSS 最终 Seal，不构建、不安装依赖、不准备缺失制品。Release Writer Lease 是唯一写者权威，远端目标锁是第二层互斥。数据库迁移保持 forward-only。缺少完整 source SHA、真实物理目标、最终 Seal 或一致生产事实时停止。
 
-灾难恢复不属于普通 1.4.3 路径，见 [RECOVERY.md](RECOVERY.md)。
+灾难恢复不属于普通 1.5 路径，见 [RECOVERY.md](RECOVERY.md)。
 
-1.5.0 Readiness Doctor 尚处于独立分支第一批本地候选阶段，不改变现役 1.4.3 生产入口。候选合同与 OSS 最小权限审计见 `04_tools/release-engine/READINESS-1.5.md`。
+第五批把 1.5 finalizer、Resume 决策和 Closure-bound Seal proof 接入正式 workflow；在真实非空目标演练、故障重放和多样本速度测量完成前，生产综合分保持 56/100。候选合同与 OSS 最小权限审计见 `04_tools/release-engine/READINESS-1.5.md`。

@@ -354,6 +354,8 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
     if (options.sealKey) invariant(authoritativeSeal.key.seal_key === options.sealKey, 'PREPARED_DEPLOY_SEAL_KEY_MISMATCH', 'Closure Seal key differs from OSS authority');
     if (options.sealReceiptObject) invariant(authoritativeSeal.object === options.sealReceiptObject,
       'PREPARED_DEPLOY_SEAL_OBJECT_MISMATCH', 'Closure final Seal object differs from OSS authority');
+    if (options.sealDigest) invariant(authoritativeSeal.receipt.seal_digest === options.sealDigest,
+      'PREPARED_DEPLOY_SEAL_DIGEST_MISMATCH', 'Closure final Seal digest differs from OSS authority');
   }
   const sealIdentity = candidateOnly
     ? createSealKey({ sourceSha, releaseTarget: target, physicalNode: requestedNode, artifactDigest: artifact.sha256, controlPlaneSha: controlSha })

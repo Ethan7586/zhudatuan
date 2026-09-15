@@ -1,6 +1,6 @@
 {
   "schema": "ai.delivery.production-scorecard.v1",
-  "deliveryControlVersion": "1.4.3",
+  "deliveryControlVersion": "1.5",
   "status": "PENDING_PRODUCTION_EVIDENCE",
   "weights": {
     "reliability": 60,
@@ -14,20 +14,28 @@
     "maximumManualTriggers": 1
   },
   "requiredTimeline": [
-    "request",
-    "queue",
-    "prepare",
-    "coldBuildOrReuse",
+    "requestCreated",
+    "readinessDoctor",
+    "runnerQueueAndRoute",
+    "checkoutSetupToolchain",
+    "dependencyRestoreOrInstall",
+    "buildA",
+    "buildB",
+    "digestCompare",
     "upload",
     "candidateValidation",
-    "finalSeal",
+    "finalSealWriteReadback",
+    "bundleGate",
     "sealToDeployGap",
     "deploy",
-    "productionHealthy"
+    "healthRollbackEvidence",
+    "userTotalWait"
   ],
   "sampleRules": {
     "singleRunMustBeLabelledSingleSample": true,
     "p95RequiresMultipleProductionSamples": true,
-    "fixtureScoreCannotSubstituteForProductionEvidence": true
+    "fixtureScoreCannotSubstituteForProductionEvidence": true,
+    "evidenceClasses": ["production", "ci", "fixture"],
+    "evidenceClassesMustNotBeMixed": true
   }
 }

@@ -19,7 +19,7 @@ test('reusable Prepare keeps one atomic auto route without a direct user trigger
   for (const step of workflow.jobs.prepare.steps) assert.doesNotMatch(JSON.stringify(step), /secrets\.ZDT_RELEASE_SSH|operation=deploy|deploy-prepared/);
 });
 
-test('the sole normal dispatcher submits exactly one 1.4.3 workflow', async () => {
+test('the sole normal dispatcher submits exactly one Delivery Control 1.5 workflow', async () => {
   const source = await readFile(join(root, 'scripts/delivery-dispatch.sh'), 'utf8');
   assert.match(source, /workflow='delivery-1-4-3\.yml'/);
   assert.equal((source.match(/gh workflow run/g) ?? []).length, 1);

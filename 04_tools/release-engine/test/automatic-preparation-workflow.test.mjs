@@ -19,13 +19,16 @@ test('automatic closure runs after zdt-next pushes or an exact historical replay
 
   assert.deepEqual(automatic.on.push, { branches: ['zdt-next'] });
   assert.equal(automatic.on.workflow_dispatch.inputs.head_sha.required, true);
-  assert.equal(automatic.on.workflow_dispatch.inputs.base_sha.required, false);
+  assert.equal(automatic.on.workflow_dispatch.inputs.base_sha.required, true);
   assert.equal(automatic.jobs.close.with.head_sha, '${{ needs.plan.outputs.source_sha }}');
   assert.equal(automatic.jobs.close.uses, './.github/workflows/auto-prepare-one-target.yml');
   assert.equal(oneTarget.jobs.prepare.uses, './.github/workflows/prepare-artifact-aliyun.yml');
   assert.equal(oneTarget.jobs.prepare.with.build_runner, 'auto');
   assert.equal(oneTarget.jobs.seal.uses, './.github/workflows/deploy-prepared-aliyun.yml');
   assert.equal(oneTarget.jobs.seal.with.operation, 'validate-candidate');
+  assert.match(source, /finalizeProductionClosureManifest/);
+  assert.match(source, /automatic-artifact-plan/);
+  assert.match(source, /inspect-closure-component/);
   assert.match(source, /automaticClosureSelection/);
   assert.match(source, /commitMetadata/);
   assert.match(source, /assertGitAncestor/);
@@ -33,7 +36,7 @@ test('automatic closure runs after zdt-next pushes or an exact historical replay
   assert.doesNotMatch(source, /operation[^}]*deploy|zdt-delivery deploy|deploy-sealed-candidate/);
 });
 
-test('one 1.4.3 workflow dispatches manual Prepare and Deploy through reusable children', async () => {
+test('one compatibility workflow dispatches Delivery Control 1.5 through reusable children', async () => {
   const entry = await readWorkflow('delivery-1-4-3.yml');
   const prepare = await readWorkflow('prepare-artifact-aliyun.yml');
   const deploy = await readWorkflow('deploy-prepared-aliyun.yml');

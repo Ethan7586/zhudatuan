@@ -31,9 +31,9 @@ final Seal 到首次 Deploy 的间隙记录为 `sealToDeployGapMs`，本地合�
 - 任一身份、digest 或 provenance 不一致：永久安全阻断。
 - 活跃 Release Writer 冲突：等待权威 lease 结束，不绕过唯一写者。
 
-## 历史 Closure 重评估
+## 失败 Closure 恢复
 
-当前 1.5 工作流允许用最新控制面重评估历史 `zdt-next` 主线版本：手动触发必须提供 exact `head_sha`，`base_sha` 可选，缺省取 source 的第一父节点；base 必须是 source 祖先。closure artifact 绑定 exact Source SHA。deploy-source consumer 以 manifest 与 artifact 身份为权威，同时识别 push 和受控 workflow_dispatch，不把事件类型或绿色 Action 当作 Seal。
+手动恢复必须提供 exact `head_sha/base_sha`，只恢复存在原 push Closure 失败证据的 source；base 必须是 source 祖先，source 必须属于当前 control lineage。closure artifact 绑定 exact Source SHA。deploy-source consumer 同时识别 push 和受控 workflow_dispatch，不把事件类型或绿色 Action 当作 Seal。
 
 ## 封板清单唯一权威
 
@@ -42,3 +42,11 @@ final Seal 到首次 Deploy 的间隙记录为 `sealToDeployGapMs`，本地合�
 如果 UPLOADED 与 VALIDATED 已完成、仅 final Seal 写入缺失，finalizer 只恢复该 Seal，不重建或重新上传制品。v2 清单记录每个目标的 exact Seal 身份和自身 digest；部署工作流校验整张清单后，把这些 exact 字段传给部署引擎。后续控制面升级不会改变既有版本绑定的 Seal 路径。
 
 复用一个支持多个物理落点的制品时，每个落点都恢复独立的 UPLOADED 回执。历史 source 若已被某个落点当前运行的更新 source 包含，该落点仍完成候选验证与 final Seal，但部署阶段只验证当前健康状态，不移动指针、不重启、不回退；其他仍落后的落点照常前进。
+
+## 第五批 Resume 与速度候选
+
+每个自动准备目标先 exact 读取 release index 和本次 control-plane SHA 对应的 final Seal：全部落点已 Seal 时跳过 Prepare/Seal；制品存在但 final Seal 缺失时只运行 candidate validation 和 Seal 写入；制品不存在时才进入完整 Prepare。独立目标仍由 matrix 并行，依赖波次由 Closure 声明。
+
+结构化 timeline 覆盖请求、Doctor、Runner 排队/路由、checkout/setup、依赖、build A/B、digest、upload、validation、final Seal、bundle gate、Seal-to-Deploy、Deploy、健康/回滚和用户总等待。预算保持 180s/60s/10s/一次人工触发。固定 fixture 中完整冷路径为 160.5s，exact sealed 快路径为 27.5s；该结果只证明候选阶段消除，不是生产 P95。
+
+第五批不修改真实 Secrets/RAM/OIDC/OSS/Runner，不重放失败 source，不执行业务生产切换。真实生产综合分保持 56/100，等待第六批非空目标演练与多样本测量。

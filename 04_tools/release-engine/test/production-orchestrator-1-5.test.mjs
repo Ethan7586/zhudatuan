@@ -193,15 +193,15 @@ test('canonical adapter invokes only zdt-delivery prepare/deploy and rejects con
     .deploy('console', sourceSha, 'node-a', controlPlaneSha), (error) => error.code === 'CANONICAL_CONTROL_SHA_DRIFT');
 });
 
-test('historical lineage replay preserves exact identity without trusting event type', async () => {
+test('failed closure replay preserves exact identity without trusting event type', async () => {
   const root = join(dirname(fileURLToPath(import.meta.url)), '../../..');
   const [automatic, consumer] = await Promise.all([
     readFile(join(root, '.github/workflows/auto-prepare-artifacts.yml'), 'utf8'),
     readFile(join(root, '.github/workflows/deploy-source-aliyun.yml'), 'utf8'),
   ]);
   assert.match(automatic, /head_sha:[\s\S]*required: true/);
-  assert.match(automatic, /base_sha:[\s\S]*required: false/); assert.match(automatic, /assertGitAncestor/);
-  assert.doesNotMatch(automatic, /No failed automatic closure exists for the exact source SHA/);
+  assert.match(automatic, /base_sha:[\s\S]*required: true/); assert.match(automatic, /assertGitAncestor/);
+  assert.match(automatic, /No failed automatic closure exists for the exact source SHA/);
   assert.match(consumer, /automatic-artifact-closure-\$\{SOURCE_SHA\}/); assert.doesNotMatch(consumer, /--event push/);
   assert.match(consumer, /v\.event==='workflow_dispatch'/);
 });
