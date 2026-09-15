@@ -4563,7 +4563,7 @@
 | --- | --- |
 | 模块 | Identity step-up / AccessPipeline / Finance 与 Invoice 高风险操作 |
 | 类型 | 身份与权限、重放防护、并发正确性 |
-| 严重级别 | **P1 候选**；须完成独立复核后定级。 |
+| 严重级别 | **P1（RV-0025 已独立复核确认）** |
 | 置信度 | 高（固定基线源码和迁移定义直接核验）；正式数据库 ledger、service-role 调用者及线上可达性未验证。 |
 | 文件和精确位置 | `database/supabase/migrations/20260828092000_finance_security_boundaries.sql:218-361,365-375`；`commerce/src/modules/identity/05_interface_jieru/http/MobileWechatOperations.ts:205-235`；`commerce/src/foundation/security/AccessPipeline.ts:90-96`；`commerce/src/foundation/security/ActionProof.ts:21-55`。 |
 | 当前行为 | step-up 会签发绑定到 session、操作、资源、幂等键、版本和 request hash 的 proof；但 AccessPipeline 仅调用 `validate` 做 bearer 字符串格式校验。全仓运行源码与迁移中没有实际调用 `access.consume_action_proof` 或 `finance.assert_expected_version`，只有函数定义、grant 和 helper 单测。 |
@@ -4574,7 +4574,9 @@
 | 根因 | proof 被建模为 API 前置 header 校验，数据库消费/版本锁定 helper 没有被编排进命令 transaction；单元测试只验证 helper 自身的 SQL 参数。 |
 | 建议方向 | 在独立修复分支先确定所有受 `requiresFinancialActionProof` 约束的命令，再让每条命令的同一 transaction 在 mutation 前消费 proof 并执行版本断言；不得只加强前端或格式校验。 |
 | 验证/回滚 | 隔离数据库覆盖有效、伪造、过期、重复、跨 session/resource/request、权限撤销和版本冲突；确认失败不写业务状态/事件。回滚为撤回单一修复提交并保留可读审计记录。 |
-| 是否需要独立复核 | 是；P1 候选必须重追 API、handler、transaction、DB grant/RLS、迁移 ledger 与 service-role 调用者。 |
+| 是否需要独立复核 | 已完成：RV-0025（2026-09-15）从API operation、AccessPipeline、实际Finance mutation、应用消费helper和数据库函数重新取证，确认 P1。 |
+
+[FACT][RV-0025][2026-09-15] 独立复核确认`finance.settlements.decide`是注册的生产HTTP operation：`FinanceRoutes`装配`closeSettlementOperations`，命令在同一请求数据库事务中锁定并更新结算状态、可能产生账务与事件。该操作属于`requiresFinancialActionProof`集合；但`AccessPipeline`只要求header存在、幂等键和`PgActionProofVerifier.validate()`的正则格式。`PgActionProofVerifier`不查询数据库；全仓生产源码没有`consumeActionProof()`调用。数据库的`access.consume_action_proof`实际会原子校验actor/session/membership/scope/operation/resource/idempotency/version/request hash、未消费、有效期、当前权限和step-up，但该函数仅由迁移定义和仓库测试触达。故有普通权限且能调用受保护命令的用户可用任意格式合法proof绕过本应强制的step-up和一次性绑定；现有capability、scope、业务分离与版本检查仍存在。未访问线上服务/数据库，未发现实际滥用，故不是P0。
 
 ## F-0244｜专用沙箱福利初始化引用未登记的会计事件
 

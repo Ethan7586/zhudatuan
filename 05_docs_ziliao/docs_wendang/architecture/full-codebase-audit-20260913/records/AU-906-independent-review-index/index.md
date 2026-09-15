@@ -2,7 +2,7 @@
 
 - 基线：`5a1ce71eebbefaa826368a9e1dc17730f9363bc4`
 - 建立日期：2026-09-15
-- 状态：**RV-0001 至 RV-0005、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0016、RV-0018、RV-0024 已完成；其余第二轮结论尚未开始。**
+- 状态：**RV-0001 至 RV-0005、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0016、RV-0018、RV-0024 至 RV-0025 已完成；其余第二轮结论尚未开始。**
 - 规则：每项复核从当前固定审计基线的运行入口/调用链重新取证；不得只复述首审报告。任何分歧保守保留，不降低风险等级。
 
 ## P1 候选（17）
@@ -24,7 +24,7 @@
 | F-0100 | RV-0016（已完成，确认 P1） | Foodvoucher Provider | registry → manifest → 三条可达生产链 |
 | F-0103 | RV-0018（已完成，确认 P1） | Foodvoucher health | required installation → read adapter → readiness |
 | F-0241 | RV-0024（已完成，降为 P2） | 券资金写入 | RPC → action permission → service-role/RLS/ledger |
-| F-0243 | 未编号 | 财务动作凭证 | proof issuance → command transaction consumption |
+| F-0243 | RV-0025（已完成，确认 P1） | 财务动作凭证 | proof issuance → command transaction consumption |
 | F-0252 | 未编号 | 财务对账 | candidate selection → ambiguity → ledger/result |
 
 ## GX（38 个已枚举）
