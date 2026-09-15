@@ -1579,7 +1579,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 运行结论 | 这是跨域 read model 的受控所有者边界，overload 为功能演进而非删除依据。 |
 | 数据/契约责任 | 汇总运营指标、watermark、趋势和类目份额，并保持调用角色 RLS 语义。 |
 | 可否删除 | 禁止 |
-| 二次复核 | 是：current function、RLS、跨 scope/tenant、金额/时区、fact watermark 与 UI fallback。 |
+| 二次复核 | RV0062 已完成：一参函数为 security invoker 且只授内部角色；三参 supplier overload 在 supplier 为空/无效时回退一参函数，受 AccessPipeline 固定 scope 输入。security-definer/RLS-off 执行角色边界仍属 GX 专项持续复核。 |
 
 - reporting Cockpit read model 归 GX-0040。累计 G0 60、G1 83、G2 5、G3 0、GX 40；未删除任何文件。
 
