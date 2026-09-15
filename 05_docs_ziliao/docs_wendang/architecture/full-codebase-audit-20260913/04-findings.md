@@ -2474,7 +2474,7 @@
 | --- | --- |
 | 模块 | Provider Core / Channel Webhook |
 | 类型 | 重放保护、消息身份、异步幂等 |
-| 严重级别 | **P1 候选**；未完成RV-0013前不作最终P1 |
+| 严重级别 | **P1**；RV-0013 已于 2026-09-15 从 webhook route、port/HMAC、SQL 去重和下游 job 重新取证确认 |
 | 置信度 | 高：签名材料、request类型、route和数据库唯一键均直接可证；线上启用协议与下游最终影响未知 |
 | 文件和精确位置 | `01_core_hexin/extensions/providers/core/src/PortFactory.ts:36-53`；`packages/contract/src/provider/Ports.ts:39-57`；`services/commerce/.../ApplyWebhook.ts:18-39`；`02_platform_pingtai/database/supabase/migrations/20260821044000_channel_lifecycle.sql:6-59` |
 | 当前行为 | [FACT][E-AU-021-005/006] HMAC仅覆盖`timestamp.body`；`x-provider-event-id`不在Verifier request或签名材料内，却是`unique(connection_id,external_id)`唯一去重身份。5分钟内保持正文/时间戳/签名不变、只换ID即可再次验签并插入新inbox/job/outbox |
@@ -2489,7 +2489,9 @@
 | 预计修改范围 | ProviderWebhookRequest/PortFactory、provider-specific verifier、ApplyWebhook/数据库约束和反事实测试；可能需分provider迁移 |
 | 验证方式 | 同请求同ID重放、改ID重放、同ID不同body碰撞、时间窗边界、合法provider重试、并发双投矩阵；核对每个下游consumer只产生一次可观察效果 |
 | 回滚方式 | 修复批次保留原header/DB键兼容窗口和迁移回滚方案；本审计未实施 |
-| 是否需要独立复核 | 是，RV-0013 |
+| 是否需要独立复核 | 已完成 RV-0013；未来 provider 协议修复仍须独立变更后复核 |
+
+**RV-0013（二次独立复核，2026-09-15）：确认 P1。** generic HMAC 仅签 `timestamp.body`，event ID 不在 request type/签名材料中，却是 inbox 唯一键和 job/outbox identity；改 ID 可令同一已验签 body 再次入队。详见 `records/AU-916-rv-0013-provider-webhook-event-identity/summary.md`；未调用公网 webhook 或读取生产 inbox。
 
 为什么不是P0：没有证据显示该重放正在造成严重线上、资金或安全事故，也未确认哪些provider在线启用和下游是否有额外幂等。按定义只能保留P1候选。
 
