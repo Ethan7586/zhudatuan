@@ -2,7 +2,7 @@
 
 - 基线：`5a1ce71eebbefaa826368a9e1dc17730f9363bc4`
 - 建立日期：2026-09-15
-- 状态：**RV-0001 至 RV-0005、RV-0007 至 RV-0009、RV-0011、RV-0013、RV-0014 已完成；其余第二轮结论尚未开始。**
+- 状态：**RV-0001 至 RV-0005、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0015 已完成；其余第二轮结论尚未开始。**
 - 规则：每项复核从当前固定审计基线的运行入口/调用链重新取证；不得只复述首审报告。任何分歧保守保留，不降低风险等级。
 
 ## P1 候选（17）
@@ -20,7 +20,7 @@
 | F-0065 | RV-0011（已完成，确认 P1） | 遥测/审计脱敏 | 生产入口 → redactor → 输出/持久化 |
 | F-0094 | RV-0013（已完成，确认 P1） | Provider webhook | provider event → 签名 → event-id 去重 |
 | F-0096 | RV-0014（已完成，确认 P1） | Vendor 连接 | 配置/base URL → 签名传输 → allowlist |
-| F-0097 | RV-0015 | Vendor 响应资源限制 | transport → byte/JSON 深度 → caller/retry |
+| F-0097 | RV-0015（已完成，确认 P1） | Vendor 响应资源限制 | transport → byte/JSON 深度 → caller/retry |
 | F-0100 | RV-0016 | Foodvoucher Provider | registry → manifest → 三条可达生产链 |
 | F-0103 | RV-0018 | Foodvoucher health | required installation → read adapter → readiness |
 | F-0241 | 未编号 | 券资金写入 | RPC → action permission → service-role/RLS/ledger |

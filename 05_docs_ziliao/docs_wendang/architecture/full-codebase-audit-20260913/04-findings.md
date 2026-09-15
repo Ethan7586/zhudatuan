@@ -2556,7 +2556,7 @@
 | --- | --- |
 | 模块 | Vendor Core HTTP Client |
 | 类型 | 资源耗尽、外部输入边界 |
-| 严重级别 | **P1 候选**；未完成RV-0015前不作最终P1 |
+| 严重级别 | **P1**；RV-0015 已于 2026-09-15 从共享 client、vendor consumers、response parse/retry 重新取证确认 |
 | 置信度 | 高：响应读取与递归校验实现已直接核对；线上内存限制和provider行为未知 |
 | 文件和精确位置 | `01_core_hexin/extensions/vendors/core/src/Client.ts:31-112,121-129`；`extensions/vendors/cakeuncle/src/Client.ts:95-140,160-188` |
 | 当前行为 | [FACT][E-AU-022-007/008] Client对响应直接执行无上限`response.text()`，随后JSON.parse并递归验证任意深度对象/数组；无Content-Length、流式字节或嵌套深度限制。独立Cakeuncle Client已有2MiB读取上限，不能保护通用Client |
@@ -2571,7 +2571,9 @@
 | 预计修改范围 | Vendor Core Client、错误分类、各vendor契约测试；Cakeuncle是否统一另行决定 |
 | 验证方式 | 超Content-Length、chunked超限、深层对象/数组、无效UTF-8、读/写与幂等重试矩阵、内存受限进程探针 |
 | 回滚方式 | 回退单一Transport提交并恢复旧读取路径 |
-| 是否需要独立复核 | 是，RV-0015 |
+| 是否需要独立复核 | 已完成 RV-0015；未来 transport 边界变更仍须独立变更后复核 |
+
+**RV-0015（二次独立复核，2026-09-15）：确认 P1。** 通用 VendorClient 无上限读取完整响应并递归验证任意 JSON；时间 deadline 不等于容量预算，多家 vendor consumer 直接复用。Cakeuncle 的 2 MiB 局部读取不能保护通用链。详见 `records/AU-918-rv-0015-vendor-response-resource-bounds/summary.md`；未请求 provider。
 
 为什么不是P0：没有证据显示线上provider正在返回超大/超深响应，亦未证明当前运行进程发生OOM或严重事故。
 
