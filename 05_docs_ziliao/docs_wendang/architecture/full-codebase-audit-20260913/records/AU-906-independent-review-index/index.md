@@ -2,7 +2,7 @@
 
 - 基线：`5a1ce71eebbefaa826368a9e1dc17730f9363bc4`
 - 建立日期：2026-09-15
-- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0018、RV-0024 至 RV-0070 已完成；其余未编号高风险对象待复核。**
+- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0018、RV-0024 至 RV-0071 已完成；其余未编号高风险对象待复核。**
 - 规则：每项复核从当前固定审计基线的运行入口/调用链重新取证；不得只复述首审报告。任何分歧保守保留，不降低风险等级。
 
 ## P1 候选（17）
@@ -27,7 +27,7 @@
 | F-0243 | RV-0025（已完成，确认 P1） | 财务动作凭证 | proof issuance → command transaction consumption |
 | F-0252 | RV-0026（已完成，降为 P2） | 财务对账 | candidate selection → ambiguity → ledger/result |
 
-## GX（47 个已枚举）
+## GX（48 个已枚举）
 
 | 范围 | 首审对象族 | 第二轮最小入口 |
 | --- | --- | --- |
@@ -78,10 +78,11 @@
 | GX-0048 | Identity mobile consistency repair（RV-0068 已完成，维持 GX） | precondition/collision → credential version → session revoke |
 | GX-0049 | 供应商业务模拟数据 seed/cleanup（RV-0069 已完成，维持 GX） | explicit manual invocation → namespace/transaction → cleanup/assertion/recovery |
 | GX-0050 | Console release build 编排（RV-0070 已完成，维持 GX） | manual release tool → clean SHA → external artifact → browser verification |
+| GX-0051 | RequirementGen 合同生成器（RV-0071 已完成，维持 GX） | authority workbook/operations → generator → tracked contracts → quality gate |
 
 ## 未编号高风险台账差额（12 个对象 + 2 个计数未知项）
 
-历史累计报告 GX 52，而当前机械枚举有 47 个 `GX-####` ID。AU-962 从首审结论恢复了 12 个确有对象的未编号 GX；其中 9 个已编为 GX-0042 至 GX-0050，另 3 个对象与 2 个仅存在于累计数字的未知项仍待收口。**这些差额均不可视为可删除或降级；尤其不得把“2”虚构为候选对象。**
+历史累计报告 GX 52，而当前机械枚举有 48 个 `GX-####` ID。AU-962 从首审结论恢复了 12 个确有对象的未编号 GX；其中 10 个已编为 GX-0042 至 GX-0051，另 2 个对象与 2 个仅存在于累计数字的未知项仍待收口。**这些差额均不可视为可删除或降级；尤其不得把“2”虚构为候选对象。**
 
 重建顺序：先为上述 12 个对象补唯一 GX ID 和独立复核入口；再从历史候选累计变动/提交记录追溯两个计数未知项。如果证实是重复汇总或不再适用，也必须保留原始证据与裁决理由。
 
