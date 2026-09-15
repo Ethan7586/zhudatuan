@@ -1564,7 +1564,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 运行结论 | 这是默认运营看板的 API 访问边界，不授予任何目录或库存写操作。 |
 | 数据/契约责任 | 规定平台 Owner 可读取商品和可用库存的控制台 capability。 |
 | 可否删除 | 禁止 |
-| 二次复核 | 是：role permission、RLS/scope、UI capability 隐藏与审计。 |
+| 二次复核 | RV0061 已完成：仅 `catalog.listing.read`/`inventory.read` deny→allow，迁移断言两个 read operation；listing 按解析 scope 查询，inventory 强制 mall scope，GX 维持。 |
 
 - platform Cockpit read grant 归 GX-0039。累计 G0 60、G1 83、G2 5、G3 0、GX 39；未删除任何文件。
 
