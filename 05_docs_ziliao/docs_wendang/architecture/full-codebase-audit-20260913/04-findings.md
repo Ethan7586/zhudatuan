@@ -4816,6 +4816,28 @@
 | 回滚方式 | 回退独立 evidence/gate 提交；保留历史文件。 |
 | 是否需要独立复核 | 是（证据语义与历史 P0 标签）。 |
 
+## F-0323｜历史 prompts 与“标准提示词”入口及近重复版本并存，容易被误作当前指令
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Documentation / AI and implementation prompts |
+| 类型 | 维护性、AI 协作指令治理 |
+| 严重级别 | **P3** |
+| 置信度 | 高（治理状态、标题/内容 hash 与引用关系直接证据） |
+| 文件和精确位置 | 9 个 files under docs_wendang/prompts；docs_wendang/README.md:14；governance/zdt-rule-rebuild/03-第一批-权威状态与旧规则去向表.md:21-31。 |
+| 当前/预期 | 治理台账将 prompts/** 明确标为 HISTORY、不能成为当前指令，但顶层 README 仍将其称为“标准与专项提示词”。存在同名近重复的 zhudatuan/无前缀版本，商城与订单版本内容 hash 不同且其中一份订单标题仍为 Smart Wing OMS。预期历史 prompts 应有明确不可执行标记、唯一 canonical/历史版本指针和防误选入口。 |
+| 直接证据 | [FACT][E-AU-835-001] 治理台账列 prompts/** 为 HISTORY；[FACT][E-AU-835-002] 9 文件内容 SHA-256 均不同；[FACT][E-AU-835-003] 四组名称只差 zhudatuan 前缀或符号；[FACT][E-AU-835-004] 仅 strategy/architecture 文档链接，未发现 runtime/workflow consumer。 |
+| 调用链或运行入口 | 人工或 AI 手工打开 prompts → 任务执行；不是程序运行入口。 |
+| 用户影响 | 后续协作可能选择错误项目版本、把历史大范围修复指令当成当前授权，导致不必要的跨模块改动或重复审计。 |
+| 数据影响 | 无直接数据影响。 |
+| 安全影响 | 无直接线上安全影响；错误提示词可能间接改变权限/部署等高风险任务范围。 |
+| 根因 | 文档降权台账与顶层导航未建立同一状态标签，近似历史副本未显式标明 canonical/替代关系。 |
+| 建议方向 | 从最新主线建立 prompt-governance batch：顶层入口明确 HISTORY，建立一个当前授权任务模板入口；为近重复文档记录版本关系/来源，不删历史副本。 |
+| 预计修改范围 | prompts README/索引、顶层 README、治理链接与可选的静态校验；不改业务代码。 |
+| 验证方式 | 自动/人工入口不能将 HISTORY prompt 当 current；每组有明确 canonical 或历史关系；旧链接仍可追溯。 |
+| 回滚方式 | 回退独立文档/索引提交。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0304｜调用图门禁仍按重组前顶层路径和退休目录判断，679 项全量输出不可判读
 
 | 字段 | 记录 |
