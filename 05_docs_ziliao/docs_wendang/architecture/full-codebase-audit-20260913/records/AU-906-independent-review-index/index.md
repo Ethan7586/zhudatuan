@@ -2,7 +2,7 @@
 
 - 基线：`5a1ce71eebbefaa826368a9e1dc17730f9363bc4`
 - 建立日期：2026-09-15
-- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0018、RV-0024 至 RV-0072 已完成；其余未编号高风险对象待复核。**
+- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0018、RV-0024 至 RV-0073 已完成；仅两个无对象标识的历史计数差额待追溯。**
 - 规则：每项复核从当前固定审计基线的运行入口/调用链重新取证；不得只复述首审报告。任何分歧保守保留，不降低风险等级。
 
 ## P1 候选（17）
@@ -27,7 +27,7 @@
 | F-0243 | RV-0025（已完成，确认 P1） | 财务动作凭证 | proof issuance → command transaction consumption |
 | F-0252 | RV-0026（已完成，降为 P2） | 财务对账 | candidate selection → ambiguity → ledger/result |
 
-## GX（49 个已枚举）
+## GX（50 个已枚举）
 
 | 范围 | 首审对象族 | 第二轮最小入口 |
 | --- | --- | --- |
@@ -80,10 +80,11 @@
 | GX-0050 | Console release build 编排（RV-0070 已完成，维持 GX） | manual release tool → clean SHA → external artifact → browser verification |
 | GX-0051 | RequirementGen 合同生成器（RV-0071 已完成，维持 GX） | authority workbook/operations → generator → tracked contracts → quality gate |
 | GX-0052 | VI 1.5 发布归档包（RV-0072 已完成，维持 GX） | versioned delivery archive → visual assets/build material → external distribution/recovery |
+| GX-0053 | 发布制品校验清单写入器（RV-0073 已完成，维持 GX） | explicit artifact directory → stable SHA-256 inventory → signature/recovery boundary |
 
 ## 未编号高风险台账差额（12 个对象 + 2 个计数未知项）
 
-历史累计报告 GX 52，而当前机械枚举有 49 个 `GX-####` ID。AU-962 从首审结论恢复了 12 个确有对象的未编号 GX；其中 11 个已编为 GX-0042 至 GX-0052，另 1 个对象与 2 个仅存在于累计数字的未知项仍待收口。**这些差额均不可视为可删除或降级；尤其不得把“2”虚构为候选对象。**
+历史累计报告 GX 52，而当前机械枚举有 50 个 `GX-####` ID。AU-962 从首审结论恢复的 12 个确有对象现已全部编为 GX-0042 至 GX-0053；余下差额仅为两个没有对象标识的历史累计数字。**不得把该“2”虚构为候选对象，也不得因此降低任何已枚举 GX 的风险等级。**
 
 重建顺序：先为上述 12 个对象补唯一 GX ID 和独立复核入口；再从历史候选累计变动/提交记录追溯两个计数未知项。如果证实是重复汇总或不再适用，也必须保留原始证据与裁决理由。
 
