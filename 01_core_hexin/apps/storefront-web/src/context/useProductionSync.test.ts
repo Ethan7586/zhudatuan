@@ -4,17 +4,36 @@ import {
   authenticatedMall,
   loadProgressiveCatalog,
   loadQualifiedCatalogWithRecovery,
+  sessionBootstrapRetryDelay,
+  shouldCloseMemberSession,
   shouldRetainProductionSnapshot,
+  shouldRetrySessionBootstrap,
   shouldRetryQualifiedCatalog,
 } from './useProductionSync';
 
 describe('production synchronization recovery', () => {
   it('retains the visible snapshot during a temporary network interruption', () => {
     expect(shouldRetainProductionSnapshot(new ProductionApiError('网络连接已中断', 0, 'NETWORK_OR_CLIENT_ERROR'))).toBe(true);
+    expect(shouldRetainProductionSnapshot(new ProductionApiError('服务暂时不可用', 503, 'SERVICE_UNAVAILABLE'))).toBe(true);
   });
 
   it('treats an identity-session failure as terminal before the member shell is published', () => {
-    expect(shouldRetainProductionSnapshot(new ProductionApiError('登录会话已失效', 401, 'AUTHENTICATION_REQUIRED'))).toBe(false);
+    const signedOut = new ProductionApiError('登录会话已失效', 401, 'AUTHENTICATION_REQUIRED');
+    const denied = new ProductionApiError('没有权限', 403, 'SCOPE_DENIED');
+
+    expect(shouldRetainProductionSnapshot(signedOut)).toBe(false);
+    expect(shouldCloseMemberSession(signedOut)).toBe(true);
+    expect(shouldRetainProductionSnapshot(denied)).toBe(true);
+    expect(shouldCloseMemberSession(denied)).toBe(false);
+  });
+
+  it('retries only transient session failures with a bounded schedule', () => {
+    expect(shouldRetrySessionBootstrap(new ProductionApiError('网络连接已中断', 0, 'NETWORK_OR_CLIENT_ERROR'))).toBe(true);
+    expect(shouldRetrySessionBootstrap(new ProductionApiError('请求过多', 429, 'TOO_MANY_REQUESTS'))).toBe(true);
+    expect(shouldRetrySessionBootstrap(new ProductionApiError('服务暂时不可用', 503, 'SERVICE_UNAVAILABLE'))).toBe(true);
+    expect(shouldRetrySessionBootstrap(new ProductionApiError('登录会话已失效', 401, 'AUTHENTICATION_REQUIRED'))).toBe(false);
+    expect(shouldRetrySessionBootstrap(new ProductionApiError('页面不存在', 404, 'NOT_FOUND'))).toBe(false);
+    expect([0, 1, 2, 3, 4].map(sessionBootstrapRetryDelay)).toEqual([350, 900, 2_000, 4_000, undefined]);
   });
 
   it('recovers a qualified catalog after a transient production restart', async () => {

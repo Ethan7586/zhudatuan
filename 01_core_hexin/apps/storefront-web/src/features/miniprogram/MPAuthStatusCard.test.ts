@@ -58,6 +58,23 @@ describe('mini-program authentication shell', () => {
     expect(html).not.toContain('使用手机号登录智慧翼账户');
   });
 
+  it('shows a recoverable network state without exposing the login action', () => {
+    const onRetry = vi.fn();
+    const { container, getByText, queryByText } = renderDom(React.createElement(MPAuthStatusCard, {
+      authHref: 'https://accounts.hbbtzn.com/',
+      onRetry,
+      sessionError: '网络波动，请点击重试',
+      sessionStatus: 'checking',
+      user: member,
+    }));
+
+    expect(container.querySelector('[data-auth-shell]')?.getAttribute('data-auth-shell')).toBe('checking');
+    expect(queryByText('网络波动，请点击重试')).toBeTruthy();
+    expect(container.querySelector('[data-auth-action="login"]')).toBeNull();
+    fireEvent.click(getByText('重试'));
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps the same geometry for guest and authenticated states', () => {
     const guest = renderMarkup('guest');
     const authenticated = renderMarkup('authenticated');
