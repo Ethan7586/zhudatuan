@@ -38,6 +38,28 @@
 
 组件准备使用 `fail-fast: false` 的独立 matrix，Console 与 web-api 等组件互不因单个失败而取消构建/封板。整套生产切换必须等待 Closure 所需组件全部 final sealed；跨组件原子放行尚未实现，因此机器门禁明确保持关闭，不能以局部封板成功替代整套可切换。
 
+## 第三批：权威状态机与 Resume 决策
+
+Artifact Plane 只包含不可变证据：archive、manifest、provenance、release index、uploaded receipt、candidate validation、final Seal。Control Plane 只包含 request/attempt、owner/lease、retry budget、checkpoint、failure 和 resume decision。控制状态与 GitHub Job 结果都不能补造或替代 Artifact Plane 证据。
+
+```text
+ABSENT -> BUILDING -> UPLOADED -> VALIDATED -> SEALING -> SEALED
+             |            |          |            |
+             +------ FAILED_RETRYABLE / AMBIGUOUS_WRITE
+                          |          |
+                          +-- exact evidence reconcile --+
+
+任何身份/摘要/provenance 冲突 -> FAILED_BLOCKED
+活跃不同 owner                    -> OWNER_CONFLICT
+403 / ImplicitDeny               -> FAILED_BLOCKED（修权限、Doctor 通过后从原 checkpoint 续跑）
+```
+
+`delivery-reconcile.mjs` 是后续编排唯一可复用的决策入口。它输入 source SHA、control-plane SHA、target、physical node、artifact digest、request/attempt、期望角色和 retry policy；只 exact Get uploaded、candidate validation、final Seal，并输出稳定 state/action 及完整恢复字段。`SEALED` 返回 `NOOP_ALREADY_SEALED`；仅 uploaded 返回 `RESUME_VALIDATION`；uploaded+validated 返回 `RESUME_FINAL_SEAL_WRITE`；不确定写先完成 exact readback；临时 STS 过期使用有限指数退避和抖动；403、身份冲突和 owner 冲突不盲重试。
+
+组件状态独立 reconcile。`evaluateReleaseBundle` 只在本次 Closure 要求的每个组件都以完全一致身份达到 `SEALED` 时输出契约层 `ALLOW_CONTRACT_DEPLOY`，否则输出 `DENY_DEPLOY_INCOMPLETE_BUNDLE`。本批没有把该结果接入生产 Deploy。
+
+release index 到阶段回执和 final Seal 已使用 exact key。Runner request lease、slot claim、未完成 Seal lease/failure、Writer lease/renewal 的 generation 仍需限定 Prefix 的 List。OSS 条件写或等价 CAS 尚未由适配器和本地并发契约证明，因此保留这些 List；禁止用普通覆盖 current 指针冒充原子操作。
+
 Resume 不绕过 Readiness：OSS/RAM 403、Secret 合同、Runner 可见性或祖先关系任一失败都保持 `resumeAllowed=false`；只有修复原权限并重新通过 Doctor 后，才允许重放同一 source/base，不生成替代 source，不直接进入 Deploy。
 
 ## 最小权限矩阵草案

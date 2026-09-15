@@ -10,6 +10,7 @@
     "gate": "all-required-components-final-sealed",
     "atomicReleaseAllowed": false,
     "reason": "Cross-component atomic production release protocol is not implemented in batch two",
-    "nextSafeAction": "implement-and-drill-closure-wide-final-seal-gate-before-atomic-cutover"
+    "contractDecisionModule": "src/delivery-reconcile.mjs#evaluateReleaseBundle",
+    "nextSafeAction": "fourth-batch-may-wire-the-proven-bundle-gate-into-production-orchestration"
   }
 }
