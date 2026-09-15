@@ -1277,7 +1277,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 直接证据 | `alter table member.membership set schema access`，并断言 `access.membership` 存在、`member.membership` 不再存在。 |
 | 运行边界 | Identity session/federated identity、凭据操作、成员查询及权限逻辑均直接引用 `access.membership`。 |
 | 可否删除 | 否；承担身份、会话、角色、授权范围与历史 migration ledger 责任。 |
-| 二次复核 | 是；须验证角色/会话/联合身份/注册、RLS/grant、所有 SQL consumer、备份恢复和部署 ledger。 |
+| 二次复核 | RV-0042 已完成：维持 GX；静态复核确认生产 SQL 已不引用 `member.membership`，而 `access.membership` 贯穿注册、会话、角色、授权和启动检查。生产数据、RLS/grant、恢复和 ledger 未验证。 |
 
 ## 461. AU-461 Membership 所有权迁移复核
 
