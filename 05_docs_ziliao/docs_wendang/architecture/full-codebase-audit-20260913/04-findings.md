@@ -6738,3 +6738,26 @@
 | 验证方式 | 历史路径/分支/目标均明确标注；现行链接可解析；任何拟实施 Operation 在 contract、权限、handler、迁移、测试和发布计划中有完整独立证据。 |
 | 回滚方式 | 回退独立文档/链接提交，保留冻结快照。 |
 | 是否需要独立复核 | 否（P3）；若重新批准 Console 切换，Console、组织、数据与发布 Owner 专项复核。 |
+
+## F-0350｜商城总纲的代码地图和机器真值索引仍指向重组前路径与断链交付矩阵
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 上位产品/治理总纲 / 架构文档入口 |
+| 类型 | 文档入口漂移、交付事实误导 |
+| 严重级别 | **P3**（关联 F-0063、F-0340） |
+| 置信度 | 高（总纲、当前目录、消费者和既有固定基线 findings 直接证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/SMART-WING-MALL-MASTER-CHARTER.md:14-36,596-672,775-813,932-966`；`01_core_hexin/packages/api-contract/src/platform.ts`；`01_core_hexin/packages/api-contract/src/delivery-matrix.json`；`04-findings.md:F-0063,F-0340`。 |
+| 当前行为 | 总纲被数据支付和 VI 收敛方案引用为上位文件；其代码地图/关键文件索引仍写根级 apps/packages/services/database 与 `apps/wechat-miniapp`，而当前源码/平台目录已重组为 `01_core_hexin`/`02_platform_pingtai`，miniapp 路径也不同。它把 delivery matrix 写为真实多端完成度 authority，F-0063 已证明该矩阵的小程序证据和正式门禁断链。 |
+| 预期行为 | 上位总纲保留产品/冻结决议，但所有 current code/authority/交付入口应解析到现行路径，并将历史或待验证状态显式隔离。 |
+| 直接证据 | [FACT][E-AU-900-001] 总纲 596-672、932-966 的旧路径/matrix 断言；[FACT][E-AU-900-002] 当前 package/Console/miniapp 目录；[FACT][E-AU-900-003] 两份当前方案引用总纲；[FACT][E-AU-900-004] F-0063/F-0340 现有证据。 |
+| 调用链或运行入口 | 上位产品/实施方案 → 总纲 → 人工架构/验收判断；实际实现/发布事实 → 当前源码、contract、release policy 与受控质量门。 |
+| 用户影响 | 后续开发、审计或 AI 可能在不存在的目录中定位实现，将 history/目标/断链矩阵误读为当前可发布能力。 |
+| 数据影响 | 无直接数据写入。 |
+| 安全影响 | 过期身份、权限、支付和发布索引会降低变更审查清晰度；未发现当前绕过或泄露。 |
+| 根因 | 上位文档在仓库重组和 delivery authority 分叉后未建立自动路径/状态校验。 |
+| 建议方向 | 从修复时最新 `zdt-next` 建立单一 master-charter-current-index 批次：保留产品冻结决议，原子更新 current path/authority 链接，明确历史引用，并与 F-0063/F-0340 的权威裁决对齐；不得在同批改业务、权限、支付、数据库或发布。 |
+| 预计修改范围 | 总纲的使用说明、代码地图、状态和关键文件索引，以及必要交叉链接。 |
+| 验证方式 | 每个 current 路径和命令可解析；matrix 不再作为未验证交付事实；引用方案可跳至当前 authority；冻结决议文本不被意外改变。 |
+| 回滚方式 | 回退独立文档/链接提交，保留完整历史快照。 |
+| 是否需要独立复核 | 否（P3）；上位决议/外部合同存在时由 Owner/架构/发布 Owner 复核。 |
