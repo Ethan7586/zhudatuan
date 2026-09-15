@@ -5510,3 +5510,25 @@
 | 验证方式 | 在独立分支检查 Auth、Console、Storefront 的实际构建输入和上线页面，断言选定资产版本/哈希一致；不以截图替代制品关系验证。 |
 | 回滚方式 | 回退独立交付契约改动；保留现有资产包与已发布版本。 |
 | 是否需要独立复核 | 否。 |
+
+## F-0294｜阿里云运行模板使用无效 Kubernetes Deployment API 版本，且发布定位互相矛盾
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Aliyun template delivery / release documentation |
+| 类型 | 发布配置正确性、文档与控制面漂移 |
+| 严重级别 | **P2** |
+| 置信度 | 高（模板和仓内检查器为直接证据；当前正式发布消费者/集群实际对象未验证） |
+| 文件和精确位置 | `02_platform_pingtai/infrastructure/aliyun/runtime.template.yml:1,86,97`；`DEPLOY-阿里云.md:14`；`02_platform_pingtai/infrastructure/projects_xiangmu/hbbtzn/README.md:43,52`；`04_tools/scripts/check/deployment.mjs:4-31`。 |
+| 当前/预期 | 当前 runtime 模板把 Deployment/HPA target API 写为 `01_core_hexin/apps/v1`。Kubernetes 内置 Deployment 应使用 `apps/v1`；前者若直接渲染并 `kubectl apply` 会被 API discovery 拒绝。部署文档又把该模板称为配置真值，而 hbbtzn README 将同级 delivery 称为旧部署参考且禁止作为正式输入。预期是正式控制面只有一个明确、可解析且可追溯的模板来源。 |
+| 直接证据 | [FACT][E-AU-735-001] runtime template 第 1、86、97 行均出现该无效 API 字符串；[FACT][E-AU-735-002] DEPLOY 文档第 14 行称 runtime/migration/delivery/backup 为配置真值；[FACT][E-AU-735-003] hbbtzn README 43、52 行称 `../../aliyun/delivery.yml` 是旧参考且不得直接作为正式发布输入；[FACT][E-AU-735-004] `check/deployment.mjs` 只拼接文件文本、检查 token，不解析 YAML 或向 Kubernetes API 验证。 |
+| 调用链或运行入口 | 文档指定的 signed Release Bundle → `deploy.sh`/`SHOP_CUTOVER_CONTROLLER`（仓内实际 adapter 未在本 AU 验证）→ template render/apply；`check:deployment` 只能发现文本 token 缺失。 |
+| 用户影响 | 若该模板仍被正式发布流程使用，发布会在启动 Api/Jobs 前失败；若已不使用，文档与静态检查会继续给维护者错误的发布真值。 |
+| 数据影响 | 无直接数据写入；失败发布可能延长维护窗口。 |
+| 安全影响 | 无直接权限提升；错误控制面会削弱发布前故障发现。 |
+| 根因 | 旧通用 Aliyun/ACK 模板、hbbtzn 参考定位与现行 `zdt-next` 交付控制面没有收敛为一个明确 owner/source-of-truth，静态检查没有做 YAML/Kubernetes schema 验证。 |
+| 建议方向 | 在最新 `zdt-next` 建立单一“release control-plane truth”治理批次：先确认正式 adapter 是否消费该模板；若消费，前向修正为 `apps/v1` 并添加离线 YAML/Kubernetes schema 定向验证；若不消费，将文档和检查器明确为历史/参考并从正式 gate 移除。不要在审计分支修改模板，也不要在未确认正式控制面的情况下删除。 |
+| 预计修改范围 | 发布文档、受控 adapter/template、`check:deployment` 的解析性验证以及最小定向测试；不变更业务代码或线上资源。 |
+| 验证方式 | 在隔离环境对选定正式模板做 render + Kubernetes dry-run/schema validation；验证 release adapter 的实际输入只指向该来源；在不执行生产 cutover 的情况下运行定向 check。 |
+| 回滚方式 | 回退独立控制面变更；保留先前已签名制品和当前 active release 指针，禁止把审计分支用于部署。 |
+| 是否需要独立复核 | 是；复核者必须独立检查当前 `zdt-delivery`/release adapter 输入、ACK API discovery、实际部署命令和生产集群发布证据。 |
