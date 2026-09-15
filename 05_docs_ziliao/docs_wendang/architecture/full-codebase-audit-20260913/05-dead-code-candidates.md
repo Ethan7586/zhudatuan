@@ -1307,7 +1307,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 直接证据 | 重定义 `access.scope_allowed`：允许当前授权 scope/其下级，或活跃 membership 的 member_id、organization_id/其下级；注释明确禁止祖先与兄弟范围。 |
 | 运行边界 | member profile/address/import 读写和大量 RLS policy 经该函数判定；函数依 `access.membership` 的活跃状态。 |
 | 可否删除 | 否；承担个人数据、组织层级、行级权限与会话授权责任。 |
-| 二次复核 | 是；须验证本人、组织、下级、祖先、兄弟、失效 membership、无 session context 及所有关键 RLS consumer。 |
+| 二次复核 | RV-0044 已完成：维持 GX；静态复核确认函数拒绝祖先/兄弟范围，API 事务设置 membership/scope 上下文，成员/身份路径依赖该授权边界。真实 RLS、组织树和恢复未验证。 |
 
 ## 463. AU-463 成员数据范围授权复核
 
