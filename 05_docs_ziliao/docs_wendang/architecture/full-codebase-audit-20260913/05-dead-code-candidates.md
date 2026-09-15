@@ -1202,7 +1202,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 直接证据 | 为既有 dispatch/attempt 回填 scope、成员、渠道和内容，若任何 dispatch 缺失 scope/channel/body 则 fail-closed；重建按成员/范围的 RLS，并把通知读取切换至 member audience。 |
 | 运行边界 | Notification repository 从 event consumer 写 scope 化 dispatch 和 job；notification Worker 写 attempt/状态；成员偏好、公告和模板均由当前 API 与 RLS 使用。 |
 | 可否删除 | 否；承担隐私可见性、投递幂等、历史回填、成员授权和恢复责任。 |
-| 二次复核 | 是；须验证历史回填、成员/运营可见性、模板激活唯一性、重复投递、失败重试、公告受众、备份恢复和 ledger。 |
+| 二次复核 | RV-0037 已完成：维持 GX；静态复核确认历史缺口 fail-closed，当前事件消费者、投递 Worker、投影事件和 scope/member RLS 仍依赖目标结构。生产回填、可见性、通道重试和恢复未验证。 |
 
 ## 456. AU-456 通知生命周期复核
 
