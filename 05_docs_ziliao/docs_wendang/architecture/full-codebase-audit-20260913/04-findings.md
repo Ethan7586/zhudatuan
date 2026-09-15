@@ -5620,3 +5620,25 @@
 | 验证方式 | 在含预置 sentinel 文件的临时 outDir 与应用 `dist` 并存时运行该 spec；断言 sentinel 未变、临时目录被清理，并保留 artifact tamper/dual-node 断言。 |
 | 回滚方式 | 回退独立测试隔离提交；不触及已发布客户端制品。 |
 | 是否需要独立复核 | 否。 |
+
+## F-0299｜Security suite 只验证纯授权器和 synthetic HTTP handler，未覆盖真实安全链路
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Quality / security test evidence |
+| 类型 | 测试可信度、安全验证覆盖 |
+| 严重级别 | **P3** |
+| 置信度 | 高（两个 spec 的 fixture/handler 构造为直接证据；现有其它安全集成 suite 的覆盖不在本 AU 结论内） |
+| 文件和精确位置 | `03_quality_ceshi/tests/security/authorization.spec.ts:5-21`；`03_quality_ceshi/tests/security/http.spec.ts:7-18,20-62`。 |
+| 当前/预期 | authorization spec 传入内存 `MembershipAccess` 直接调用 `decide`/`checkAssurance`；HTTP spec 为 OperationCatalog 的每个 route 注入统一 `200 {accepted:true}` synthetic handler。预期是 suite 标签或高风险补充测试能区分纯 policy/HTTP middleware 验证与真实 session、authorizer、controller、数据库 scope/RLS 的集成证明。 |
+| 直接证据 | [FACT][E-AU-758-001] authorization spec 5-7 声明固定 mall/access/now，9-21 仅调用 authz pure functions；[FACT][E-AU-758-002] HTTP `application()` 10-15 对全部 operation 注入相同 closure；[FACT][E-AU-758-003] 20-62 只到 `HttpApp.handle`，没有 bootstrap、真实 operation handler、session resolver、数据库或 RLS fixture。 |
+| 调用链或运行入口 | `npm run test:security` → 两个 spec → `@shop/authz` / RouteRegistry + HttpApp middleware；业务服务不进入调用链。 |
+| 用户影响 | CSRF、Origin、body limit、header、scope/step-up 的基础单元行为可被验证，但通过结果不能证明真实登录会话、membership access version、controller authorizer 和数据库数据边界会拒绝越权请求。 |
+| 数据影响 | 测试不写入数据库；真实数据隔离未由本 suite 证明。 |
+| 安全影响 | 对真实授权整合、RLS 和具体敏感 operation 的回归覆盖可能存在盲区；未发现利用路径或实际越权证据。 |
+| 根因 | 用统一 synthetic handler 和内存 access fixture 低成本覆盖横切 policy/middleware，却没有为高风险写操作连接真实 bootstrap/persistence boundary。 |
+| 建议方向 | 从最新 `zdt-next` 建立单一 security-integration-evidence 批次：保留快速单测，新增少量隔离 PostgreSQL + bootstrap 的身份、退款、导出、跨 mall/tenant denial 测试；明确不同 suite 的证据等级。不要在审计分支调整安全策略。 |
+| 预计修改范围 | security tests、最小 isolation fixture/CI label；不改业务授权规则。 |
+| 验证方式 | 使用真实 session/membership/scope 数据分别调用敏感 controller，验证跨 tenant/mall、过期 access version、缺 step-up、CSRF/Origin 与 SQL RLS 都 fail-closed；故意移除其中一个 boundary 时测试必须失败。 |
+| 回滚方式 | 回退独立测试/fixture 提交，保留现有快速 policy/HTTP 单测。 |
+| 是否需要独立复核 | 否。 |
