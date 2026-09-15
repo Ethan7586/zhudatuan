@@ -6692,3 +6692,26 @@
 | 验证方式 | 每项 current 链接可解析；已完成与未验证状态由可复现证据区分；任何真机支付/凭据验证只在单独授权的隔离流程进行。 |
 | 回滚方式 | 回退独立文档/链接提交，保留历史版本。 |
 | 是否需要独立复核 | 否（P3）；若外部支付验收或合同使用该计划，支付、身份与发布 Owner 复核。 |
+
+## F-0348｜多端交付标准引用不存在的门禁并复述断链矩阵的完成裁决
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 多端交付 / 发布证据文档 |
+| 类型 | 文档交付事实漂移、质量门误导 |
+| 严重级别 | **P3**（关联 F-0063 P2） |
+| 置信度 | 高（文档、根脚本、当前 contract 和 F-0063 固定基线证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/MULTI-PLATFORM-DELIVERY-STANDARD.md:7-17,118-138`；`01_core_hexin/packages/api-contract/src/platform.ts:48-88`；`01_core_hexin/packages/api-contract/src/delivery-matrix.json:1-67`；`package.json:105-111`；`04-findings.md:F-0063`。 |
+| 当前行为 | 文档称 machine-readable matrix 由 `npm run check:platform-delivery` 守门，并按其把三个购物能力判为 Web/小程序完成；当前根脚本不存在该命令，只有 `check:delivery`，F-0063 已证明 matrix 的小程序证据路径不存在且正式 gate 不消费 matrix。 |
+| 预期行为 | 多端完成裁决必须绑定真实可执行的门禁、每端可解析入口及结果证据；标准文档应链接现行 authority 或冻结为历史。 |
+| 直接证据 | [FACT][E-AU-898-001] 文档 15、118-138 的 gate/完成断言；[FACT][E-AU-898-002] `platform.ts` 端口仍在；[FACT][E-AU-898-003] `package.json` 未定义该命令；[FACT][E-AU-898-004] F-0063 的 matrix 小程序路径与 gate 断链证据。 |
+| 调用链或运行入口 | 人工交付判断 → 标准/matrix；实际质量入口 → `check:delivery` 与当前 requirements/delivery 配置。 |
+| 用户影响 | 评审可将未被有效门禁证明的小程序能力误判为可发布的跨端闭环。 |
+| 数据影响 | 无直接数据写入。 |
+| 安全影响 | 无直接安全影响；错误完成状态可能间接绕过支付/身份等跨端验收。 |
+| 根因 | 标准、矩阵与正式 delivery gate 在仓库重组后没有共同 authority 和漂移检查。 |
+| 建议方向 | 从修复时最新 `zdt-next` 建立单一 platform-delivery-authority 批次，先处理 F-0063 的权威归属与路径解析，再更新本标准的 gate/完成表述；不得在同批实施缺失端能力或发布。 |
+| 预计修改范围 | 标准、matrix、delivery checker/测试与权威入口。 |
+| 验证方式 | 文档命令存在并运行；matrix 每项 evidence 可解析；releaseReady 只在 required platform 真实实现和定向结果证据齐全时允许。 |
+| 回滚方式 | 回退独立文档/matrix/gate 提交，保留历史快照。 |
+| 是否需要独立复核 | 否（P3）；F-0063 的 P2 修复由产品、多端和发布 Owner 复核。 |
