@@ -3324,7 +3324,7 @@
 "04_tools/scripts/audit/identity-concurrency.pg17-fixture.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "04_tools/scripts/audit/identity-mobile-consistency-repair.sql","工具/scripts","SQL","需要专项专家复核","2026-09-15","AU-767 four-account target/precondition/collision/write/session revoke","仓外 DBA/Identity runbook 未验证","高","GX DC-0085：真实身份/会话修复，禁止执行或删除","是"
 "04_tools/scripts/audit/identity-mobile-consistency.sql","工具/scripts","SQL","已深入审阅","2026-09-15","AU-767 active account/credential/profile/session consistency read audit","仓外 DBA/Identity runbook 未验证","中","GX DC-0085 的只读诊断前置；当前数据未验证","是"
-"04_tools/scripts/audit/identity-realm-isolation.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
+"04_tools/scripts/audit/identity-realm-isolation.mjs","工具/scripts","JavaScript源码","已深入审阅","2026-09-15","AU-768 L0-L11 realm/target/session/ticket/credential isolation","npm run test:identity-realms → database-contracts","高","[G0] replay/PGlite identity realm integration；HTTP/外部身份未覆盖","否"
 "04_tools/scripts/audit/jobs.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "04_tools/scripts/audit/l1-hongtai-concurrency.pg17-fixture.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "04_tools/scripts/audit/mall-provisioning-engine.pg17-fixture.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
