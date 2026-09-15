@@ -371,6 +371,9 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
   }
   invariant(authoritativeSeal === null || authoritativeSeal.key.seal_key === sealIdentity.seal_key,
     'RELEASE_WRITER_SEAL_KEY_MISMATCH', 'Final Seal key differs from the Writer Lease identity');
+  const sealedLineage = authoritativeSeal?.validation?.validation?.receipt?.lineage ?? null;
+  if (sealedLineage !== null) invariant(['verified', 'already-superseded'].includes(sealedLineage.status),
+    'PREPARED_DEPLOY_SEAL_LINEAGE_INVALID', 'Final Seal validation contains an unsupported source lineage');
   const writerIdentity = required(options.writerIdentity ?? process.env.RUNNER_NAME, 'RELEASE_WRITER_IDENTITY_REQUIRED');
   const writerClass = required(options.writerClass, 'RELEASE_WRITER_CLASS_REQUIRED');
   const writerOptions = {
@@ -381,6 +384,47 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
   };
   const writerStore = createReleaseWriterLeaseStore(publicClient, { project: adapter.project, physicalNode: requestedNode, releaseTarget: target });
   const writerExecution = await writerStore.run(writerOptions, async (writerLease) => {
+  if (!candidateOnly && sealedLineage?.status === 'already-superseded') {
+    const remotePolicy = `/etc/ai-delivery/projects/${adapter.project}.json`;
+    const integrity = await runCommand({
+      name: `verify-superseded-control:${resolvedDeployment.executionNode}:${target}`,
+      argv: ['ssh', host, 'sha256sum', remoteAgent, remotePolicy], timeoutMs: 30_000,
+    }, basicContext(adapter));
+    const hashes = integrity.output.trim().split(/\n/).map((line) => line.trim().split(/\s+/)[0]);
+    invariant(`sha256:${hashes[0]}` === expectedRemoteAgentSha256 && `sha256:${hashes[1]}` === expectedRemotePolicySha256,
+      'PREPARED_DEPLOY_REMOTE_PROVENANCE_MISMATCH', 'Remote Agent or policy differs before superseded health verification');
+    const verified = await runCommand({
+      name: `verify-superseded-current:${resolvedDeployment.executionNode}:${target}`,
+      argv: ['ssh', host, remoteAgent, 'verify', '--project', adapter.project, '--node', resolvedDeployment.executionNode, '--target', target],
+      timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
+    }, basicContext(adapter));
+    const remoteResult = parseCommandJson(verified)?.result;
+    invariant(remoteResult?.currentArtifact?.sourceSha, 'PREPARED_SUPERSEDED_CURRENT_EVIDENCE_MISSING',
+      'Superseded deployment verification did not return the current source');
+    const liveLineage = await verifyPreparedSourceLineage(adapter, options, {
+      after: remoteResult.current, sourceSha: remoteResult.currentArtifact.sourceSha,
+    }, sourceSha);
+    invariant(['verified', 'already-superseded'].includes(liveLineage.status), 'PREPARED_SUPERSEDED_LINEAGE_CHANGED',
+      'Current production no longer safely contains the requested source');
+    const controlPlane = { sourceSha: controlSha, github: { runId: githubRunId, runAttempt: githubRunAttempt },
+      remoteAgentSha256: expectedRemoteAgentSha256, remotePolicySha256: expectedRemotePolicySha256 };
+    return {
+      schema: 'ai.delivery.prepared-deploy.v1', project: adapter.project, sourceSha, artifactSourceSha: sourceSha,
+      controlPlane, target, requestedNode, node: resolvedDeployment.executionNode, artifactIdentity: artifact.sha256,
+      releaseManifestObject: resolution.releaseManifestObject, sealKey: authoritativeSeal.key.seal_key,
+      finalSealReceiptObject: authoritativeSeal.object, finalStatus: 'success', cacheStatus: 'superseded_current',
+      repeatedDeployment: true,
+      timings: { artifactLookup: resolution.timings.artifactLookup, download: 0, candidate: 0, cutover: 0, restart: 0,
+        health: remoteResult.readiness?.durationMs ?? 0, rollback: 0, remoteTotal: verified.durationMs, total: elapsed(started) },
+      traffic: { artifactBytes: artifact.bytes + runtimeManifest.bytes, downloadedBytes: 0, reusedBytes: artifact.bytes + runtimeManifest.bytes },
+      receipt: { schema: 'ai.delivery.superseded-verification.v1', requestedSourceSha: sourceSha,
+        currentSourceSha: remoteResult.currentArtifact.sourceSha, lineage: liveLineage, current: remoteResult.current,
+        readiness: remoteResult.readiness, targetProcess: remoteResult.targetProcess, controlPlane,
+        verifiedAt: new Date().toISOString() },
+      finalSealReceipt: authoritativeSeal.receipt,
+      completedAt: new Date().toISOString(),
+    };
+  }
   const remoteAction = candidateOnly ? 'validate-oss-candidate-v3' : 'deploy-sealed-candidate-v3';
   const remoteIdentityArgs = [
     '--project',
@@ -448,8 +492,6 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
           remoteResult.current.after ?? 'none',
           '--expected-current-source-sha',
           remoteResult.current.sourceSha ?? 'none',
-          '--lineage-mode',
-          lineage.status,
         ],
         timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
       },
