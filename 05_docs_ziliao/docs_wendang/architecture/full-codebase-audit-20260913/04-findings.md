@@ -6623,3 +6623,26 @@
 | 验证方式 | 每个当前运行/启用链接可解析到受控 policy；无文档将历史单机、旧变量或迁移步骤写作当前；外部验收引用同步更新。 |
 | 回滚方式 | 回退独立文档/链接提交，保留完整历史快照。 |
 | 是否需要独立复核 | 否（P3）；若有外部运行手册或合规材料使用它，身份与发布 Owner 复核。 |
+
+## F-0345｜授权摘要把不完整的数据库角色集合写作唯一允许集合
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 授权 / 数据库权限文档 |
+| 类型 | 文档权限事实漂移、角色矩阵可复核性 |
+| 严重级别 | **P3** |
+| 置信度 | 高（当前摘要、实际 authz/AccessPipeline 路径和受控迁移角色定义直接证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/AUTHORIZATION-IMPLEMENTATION.md:3-17`；`01_core_hexin/packages/authz/src/index.ts`；`01_core_hexin/services/commerce/src/foundation/security/AccessPipeline.ts:34`；`02_platform_pingtai/database/supabase/migrations/20260829210000_owner_operator_coverage.sql:1-12`；`02_platform_pingtai/infrastructure/zhudatuan/aliyun/postgres-reconcile-registration-boundary.sql:35-38,380`。 |
+| 当前行为 | 摘要称数据库角色“只允许”四类应用/迁移/最小只读角色；现行受控迁移和运行边界还明确包含 bootstrap、节点和受限读角色。其 `packages/*`/`services/*` 相对路径也未反映当前 `01_core_hexin` 根目录。 |
+| 预期行为 | 授权摘要若充当当前边界，应链接版本化角色矩阵并区分 runtime、migration、bootstrap、节点和只读角色；若只是原则说明，应明确不是完整权限清单。 |
+| 直接证据 | [FACT][E-AU-894-001] authz 和 AccessPipeline 当前存在；[FACT][E-AU-894-002] 摘要 13-17 的唯一角色陈述；[FACT][E-AU-894-003] 当前受控 SQL 列出额外角色。未验证线上实际 role membership。 |
+| 调用链或运行入口 | 人工授权理解 → 摘要；实际授权 → authz/AccessPipeline/数据库受控迁移与运行角色矩阵。 |
+| 用户影响 | 审计、运维或变更人员可能把合法受限角色误判为越权，或遗漏应检查的角色类别。 |
+| 数据影响 | 无直接写入证据。 |
+| 安全影响 | 降低最小权限审查和事故排查的完整性；未发现可利用越权或线上授权事故。 |
+| 根因 | 极简原则摘要未随多节点/多 realm 运行边界演进为受控矩阵引用。 |
+| 建议方向 | 从修复时最新 `zdt-next` 建立单一 authorization-summary-role-matrix 批次：保留原则、链接权威角色矩阵、标注摘要范围和当前路径；不改策略、SQL、角色或会话逻辑。 |
+| 预计修改范围 | 授权摘要及角色矩阵交叉引用。 |
+| 验证方式 | 每个文档角色均可追溯到版本化定义，runtime/migration/bootstrap 类别无遗漏；线上实际成员关系仅由获授权数据库 Owner 只读复核。 |
+| 回滚方式 | 回退文档/引用提交，不改变数据库角色。 |
+| 是否需要独立复核 | 否（P3）；若作为合规/生产 runbook，身份与数据库 Owner 复核。 |
