@@ -1949,3 +1949,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 是；由 Release/Storefront Owner 在隔离制品目录复核路径拓扑、硬链接文件系统要求、失败清理与回滚。 |
 
 - Storefront 资产池归 DC-0096。累计 G0 62、G1 101、G2 5、G3 0、GX 51；未删除任何文件。
+
+## DC-0097｜会员权限 hardening 历史架构分析
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `05_docs_ziliao/docs_wendang/membership-permissions/hardening/hardening.json`。 |
+| 证据 | JSON 明确标记 `sourceDrift: present`，target revision 为历史短 SHA，证据路径也使用重组前目录；未发现当前代码、工作流或运行配置消费者。 |
+| 保留原因 | 保存 flat scope、兼容 organization closure、立即替换三种方案的安全/性能/迁移/回滚权衡与未决问题，可能是唯一的权限设计来由。 |
+| 可否删除 | 否；无引用不能证明设计依据已被等价替代。 |
+| 二次复核 | 由权限/安全负责人确认当前组织层级模型、迁移状态及是否应归档为正式历史记录。 |
+
+- 会员权限 hardening 分析归 DC-0097。累计 G0 62、G1 102、G2 5、G3 0、GX 51；未删除任何文件。
