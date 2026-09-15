@@ -4926,6 +4926,28 @@
 | 回滚方式 | 回退独立 checker/fixture 提交。 |
 | 是否需要独立复核 | 是（发布契约）。 |
 
+## F-0307｜Mall provisioning 部署门禁要求历史三参数 listen 文本，合法 node context 接线被误判
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Mall provisioning release contract |
+| 类型 | 发布可验证性、静态门禁脆弱性 |
+| 严重级别 | **P2** |
+| 置信度 | 高（checker expectation、实际 entry call 和运行输出直接证据） |
+| 文件和精确位置 | `04_tools/scripts/check/mall-provisioning-deployment.mjs:27-35`；`01_core_hexin/services/commerce/src/entry/MallProvisioningApiMain.ts:16-29`。 |
+| 当前/预期 | checker要求精确三参数 `listen(bootstrapped.app, mallProvisioningApiPort(environment), '127.0.0.1')`；实际调用保留同一前三参数并追加 `bootstrapped.nodeContextResolver`。固定基线在第一条 entry token失败，之后所有 module/runtime/systemd/Caddy/migration assertions被短路。预期应验证 loopback bind、selected operations和 node context resolver是否合规，而不锁死参数数目。 |
+| 直接证据 | [FACT][E-AU-793-001] 定向命令报缺失三参数 literal；[FACT][E-AU-793-002] 当前 entry第25行仍使用 provisioning app/port/127.0.0.1，第四参数为 node context resolver。 |
+| 调用链或运行入口 | MallProvisioningApiMain → bootstrapApi → NodeServer.listen；静态 checker交叉读取部署声明。 |
+| 用户影响 | 不直接证明 provisioning运行失败；当前门禁不能证明其它角色/路由/迁移声明仍满足契约。 |
+| 数据影响 | 未执行创建 Mall 或数据库写入。 |
+| 安全影响 | node context resolver是边界增强，但文本门禁无法区分增强与危险 bind/route 回归。 |
+| 根因 | 实现新增 node context 后历史 substring assertion没有迁移到结构/行为契约。 |
+| 建议方向 | 从最新主线建立 provisioning-deployment-contract 批次，改用可验证的 call structure/导出配置并覆盖正确 loopback+resolver、错误 bind、漏 resolver、operation混入的反事实。 |
+| 预计修改范围 | 单一 checker及定向 fixture；不改 provisioning代码、迁移、systemd或部署。 |
+| 验证方式 | 当前合法四参数 call通过；0.0.0.0、缺 resolver、错误端口/operation必须失败；再运行既有 role/Caddy/checksum checks。 |
+| 回滚方式 | 回退独立 checker/fixture 提交。 |
+| 是否需要独立复核 | 是（provisioning发布边界）。 |
+
 ## F-0303｜分页门禁的 pricing 豁免仍指向旧路径，固定上限列表被误报为无 cursor 分页
 
 | 字段 | 记录 |
