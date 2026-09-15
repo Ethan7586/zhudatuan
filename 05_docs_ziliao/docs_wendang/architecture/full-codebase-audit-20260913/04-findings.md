@@ -703,7 +703,7 @@
 | --- | --- |
 | 模块 | 共享状态 / runtime outbox、inbox、job、scheduler |
 | 类型 | 异步控制面缺失、注册与部署边界漂移 |
-| 严重级别 | **P1 候选**；未完成 RV-0004 前不作最终 P1 |
+| 严重级别 | **P1**；RV-0004 已于 2026-09-15 从正式 target/worker entry、relay/scheduler 构造点与 staging fail-closed 限制重新取证确认 |
 | 置信度 | 高（构造点和正式target图）；live积压与所有producer可达性未验证 |
 | 文件和精确位置 | `01_core_hexin/services/commerce/src/entry/JobsMain.ts:11-25`、`FullJobsMain.ts:11-31`；`foundation/infrastructure/OutboxRelay.ts:11-37`、`RuntimeEventPublisher.ts:8-27`、`RuntimeScheduler.ts:11-42`；`app/events.ts:74-142`；`02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json:20-69` |
 | 当前行为 | [CONFLICT][E-AU-005-003][E-AU-005-004] 全仓49个非测试文件包含`runtime.outbox`写入语句，其中34个在commerce运行源码；generated handler表将事件映射到projection、notification、reconciliation、referral等job。唯一构造relay/scheduler的入口是JobsMain/FullJobsMain，但production release/remote policy只部署identity-notification、catalog、payment dedicated Jobs；full-staging聚合Jobs unit又被显式要求保持inactive；未发现DB trigger把该outbox自动转job |
@@ -718,7 +718,9 @@
 | 预计修改范围 | release target、systemd/entry与只读backlog/readiness；不与业务processor修复混批 |
 | 验证方式 | 第二审计者从至少三个正式API重追producer；核对正式进程/active unit；经授权只读统计unpublished/oldest age，并用隔离事件验证exactly-once enqueue语义 |
 | 回滚方式 | 新控制面应可停用并恢复原target集合；outbox行保留，补偿/重放按event id与inbox事实执行 |
-| 是否需要独立复核 | 是，RV-0004；P1且跨模块异步链强制100%重追 |
+| 是否需要独立复核 | 已完成 RV-0004；未来控制面接线与补偿均须独立变更后复核 |
+
+**RV-0004（二次独立复核，2026-09-15）：确认 P1。** Outbox relay 与 scheduler 仅由 `JobsMain`/`FullJobsMain` 构造；正式 policy 只部署三类不含它们的专用 Jobs，唯一引用聚合 Jobs 的 staging unit 被 `ExecCondition=/usr/bin/false` 固定阻断。多个正式 API 模块仍可写入 outbox。详见 `records/AU-910-rv-0004-outbox-runtime-control-plane/summary.md`；未查询积压、启动 worker 或重放事件。
 
 ## F-0023｜生产 PostgreSQL 17 编排与仅接受 PostgreSQL 16 的初始化脚本互斥
 
