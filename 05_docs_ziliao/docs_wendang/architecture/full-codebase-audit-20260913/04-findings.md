@@ -1762,7 +1762,7 @@
 | --- | --- |
 | 模块 | `@shop/telemetry` / Commerce Operation审计 |
 | 类型 | 敏感信息脱敏缺口 |
-| 严重级别 | **P1 候选**；未完成 RV-0011 前不作最终P1 |
+| 严重级别 | **P1**；RV-0011 已于 2026-09-15 从 telemetry/audit/client-error 生产写入路径与 Redactor 重新取证确认 |
 | 置信度 | 高：合成值已通过真实Redactor和ClientErrorBuffer执行；线上实际内容未读取 |
 | 文件和精确位置 | `packages/telemetry/src/Redactor.ts:1-19`、`Logger.ts:7-21`、`Adapter.ts:12-36`、`ClientErrors.ts:39-58`；Commerce `foundation/application/ModuleOperations.ts:169-188`、`foundation/telemetry/Telemetry.ts:1-8` |
 | 当前行为 | [FACT][E-AU-013-004/005] 敏感对象键会整体替换，Bearer、手机号和email也会替换；但字符串中的`password=...`、Cookie、Basic认证串和卡号保持原样，身份证号码只被手机号模式替换中间11位，仍留下多数可识别字符。合成`password=AuditSecretA`通过实际ClientErrorBuffer writer后仍原样存在；循环对象使脱敏器抛RangeError |
@@ -1777,7 +1777,9 @@
 | 预计修改范围 | Redactor、直接测试，以及Operation audit和各sink的定向回归；不要求修改业务权限 |
 | 验证方式 | 合成credential/PII矩阵不得在输出中恢复；循环/异常值受控；真实Operation审计与stdout链使用测试sink端到端验证 |
 | 回滚方式 | 回退单一脱敏批次；保留旧行为对照和合成回归，不修改历史审计数据 |
-| 是否需要独立复核 | 是，RV-0011；P1强制从真实生产入口重新追到输出/持久化边界 |
+| 是否需要独立复核 | 已完成代码入口重追；未来脱敏变更仍须独立变更后复核 |
+
+**RV-0011（二次独立复核，2026-09-15）：确认 P1。** stdout telemetry、Operation audit 与 client errors 都使用同一 Redactor；它只覆盖键名/Bearer/手机/email/OTP，不能处理自由文本中的 password、Cookie、Basic、卡号等，且循环对象会抛错。详见 `records/AU-915-rv-0011-telemetry-audit-redaction/summary.md`；未读取真实日志或审计数据。
 
 为什么不是P0：当前只证明正式代码路径可泄漏特定形态的合成值，没有读取线上日志、审计表或证明正在发生严重泄漏。若RV-0011发现持续真实泄漏，应立即按P0规则停止。
 
