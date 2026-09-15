@@ -1848,3 +1848,17 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | G1不强制；拟收敛前确认当前 Contract Owner 的人工/CI入口、apply审查流程与替代生成器。 |
 
 - Operation contract field inference 归 DC-0088。累计 G0 62、G1 99、G2 5、G3 0、GX 44；未删除任何文件。
+
+## DC-0089｜MockPool catalog 编译器的自动入口缺口
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `04_tools/scripts/catalog/compile-mockpool-catalog.mjs`。 |
+| 疑似原因 | 固定基线未发现根 package script、workflow或release manifest自动调用；CLI只在显式传入input/output/preview路径时写出制品。 |
+| 保留证据 | 编译器将模拟货盘归一为明确`isMock`、`simulated`、`draft` catalog package，保留输入hash、逐行validation与固定preview；唯一测试直接导入其纯函数。 |
+| 未排除项 | 人工验收货盘、CI外部wrapper、培训/演示数据与下游catalog导入契约。 |
+| 可否删除 | 否；未满足运维/验收责任、等价替代和可观察行为不变条件。 |
+| 二次复核 | G1不强制；拟收敛前由 catalog/test-data owner确认实际人工入口、制品保留周期与替代链路。 |
+
+- MockPool catalog compiler 归 DC-0089。累计 G0 62、G1 100、G2 5、G3 0、GX 44；未删除任何文件。

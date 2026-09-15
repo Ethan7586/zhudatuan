@@ -5014,6 +5014,26 @@
 | 回滚方式 | 回退该独立 checker/report/test-entry 批次，现有结构检查保持可用。 |
 | 是否需要独立复核 | 是。 |
 
+## F-0314｜MockPool 编译器接受空货盘并把非有限价格摘要静默投影为 null
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Tooling / simulated catalog compiler |
+| 类型 | 数据质量、输入边界、测试覆盖 |
+| 严重级别 | **P3** |
+| 置信度 | 高（纯函数源代码与JSON语义直接证据；CLI写入和下游导入未执行） |
+| 文件和精确位置 | `04_tools/scripts/catalog/compile-mockpool-catalog.mjs:23-104,142-155`；`...test.mjs:5-38`。 |
+| 当前/预期 | `items: []` 通过入口校验，errors为空、validation为`passed`；minimum/maximum price由空数组计算为Infinity/-Infinity，CLI JSON序列化后成为`null`。预期是空货盘被明确拒绝，或以明确的 empty/no-price 语义输出且不得声称验证通过。 |
+| 直接证据 | [FACT][E-AU-802-001] 23-25只验证items为数组；84将errors为空映射passed；100-101对`source.items`直接使用`Math.min/Math.max`；151-154将document/preview JSON写入；[FACT][E-AU-802-002] 唯一test仅构造100个有效item并通过，未覆盖空集/无效/重复。 |
+| 调用链或运行入口 | 人工 `node compile-mockpool-catalog.mjs INPUT OUTPUT PREVIEW` → JSON package/preview；无根 package 或 workflow 自动注册。 |
+| 用户/数据/安全影响 | 模拟货盘或验收制品可被误标为通过而无可用价格范围，后续人工导入/展示可能处理null摘要；没有本次证据表明其会影响线上真实商品、资金或权限。 |
+| 根因 | 将“数组类型有效”与“至少一条可编译商品”的业务前置条件分离，且摘要对空集合没有定义。 |
+| 建议方向 | 从修复时最新`zdt-next`建立单一 mockpool-empty-input batch：明确拒绝空items或定义非通过empty状态；补空集、重复SKU、无效金额、所有invalid item及摘要JSON schema测试。 |
+| 预计修改范围 | 编译器验证、测试fixtures和输出schema说明；不改真实catalog业务或数据。 |
+| 验证方式 | 空items必须抛出稳定错误或输出明确非passed状态且无非有限值；现有100行fixture序列化结果保持确定；无效/重复条目错误可定位。 |
+| 回滚方式 | 回退独立compiler/test提交；不存在本审计产生的制品需要清理。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0302｜MVP 交付门禁的状态枚举与当前需求矩阵不兼容，首条即失败
 
 | 字段 | 记录 |
