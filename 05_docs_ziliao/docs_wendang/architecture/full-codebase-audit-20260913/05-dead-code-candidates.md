@@ -1728,3 +1728,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 是；专项复核必须独立确认旧基础设施是否仍存在，以及移除后如何保留可恢复备份和已发布版本。 |
 
 - Storefront compatibility 旧运行面归 DC-0079。累计 G0 62、G1 92、G2 5、G3 0、GX 42；未删除任何文件。
+
+## DC-0080｜未见仓内启动者的浏览器 MVP fixture server
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `03_quality_ceshi/tests/browser/MvpServer.mjs`。 |
+| 疑似原因 | 固定基线 browser source 未找到对该文件的静态 import/spawn 或正式 test 配置引用。 |
+| 保留证据 | 它实现完整 loopback 商品、购物车、报价、订单与模拟支付 HTTP fixture，可能由仓外/手动 E2E 命令、历史验收或未来 browser suite 启动；仅凭静态无引用不足以判断无运行责任。 |
+| 可否删除 | 否；需先复核 quality runbook、CI test selection、历史验收命令与当前手动 MVP 验收需求。 |
+| 二次复核 | 否；升级前需确认静态引用、npm scripts、CI workflow和测试负责人实际使用。 |
+
+- Browser MVP fixture server 归 DC-0080。累计 G0 62、G1 93、G2 5、G3 0、GX 42；未删除任何文件。
