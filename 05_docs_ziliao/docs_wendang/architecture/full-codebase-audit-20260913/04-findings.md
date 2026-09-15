@@ -4794,6 +4794,28 @@
 | 验证/回滚 | 在隔离构建中人为超过对应 app budget，确认 gate 失败；若已下线，确认 config schema/文档不再宣称保护。回滚为撤回单一 quality-policy change。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0322｜前端 evidence 快照混合过期分支与当前验证语义，不能作为当前缺口或通过证明
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Documentation / frontend evidence |
+| 类型 | 审计证据可信度、历史基线漂移 |
+| 严重级别 | **P2** |
+| 置信度 | 高（快照元数据、路径存在性与当前 manifest check 直接证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/evidence/frontend/baseline.yml:1-18`；`execution.yml:1-`；`gaps.yml:1-`；`04_tools/scripts/evidence/frontendmanifest.mjs:7-48`。 |
+| 当前/预期 | baseline 固定为 2026-08-26 外部 `integration/merge-20260820` 与 913 个状态项；execution/gaps 仍将旧 `apps/auth`、`apps/store`、`apps/supplier` 路径及历史 P0/VerifiedLocal 叙述混在当前文档区。当前 file manifest `--check` 报 drift。预期所有可用于当前审计/发布的前端证据应有当前基线 SHA、可解析路径、生成时间和明确的 historical/current 状态。 |
+| 直接证据 | [FACT][E-AU-832-001] baseline 声明外部 authority/旧分支和旧 SHA；[FACT][E-AU-832-002] sampled execution/gaps 路径 `apps/auth|store|supplier/...` 在当前仓库不存在；[FACT][E-AU-832-003] 正式只读 `frontendmanifest.mjs --check` 抛 `FRONTEND_FILE_MANIFEST_DRIFT`；[FACT][E-AU-832-004] 既有 F-0005 已记录 owner-approved 前端清单漂移。 |
+| 调用链或运行入口 | 人工前端需求/缺口/验收判断 → evidence YAML/JSON；generator 仅写/校验 `files.json`，未消费三个 YAML。 |
+| 用户影响 | 维护者可能把历史 P0 或历史通过断言误解为当前风险/当前验证，错误排定修复、放行或架构判断。 |
+| 数据影响 | 无。 |
+| 安全影响 | 无已证实线上 P0；历史 P0 标签必须重新绑定当前代码和运行入口后才可升级。 |
+| 根因 | evidence 文档未与生成清单、当前 repo layout 和审计基线形成版本绑定或失效标记。 |
+| 建议方向 | 从最新主线建立 frontend-evidence-provenance batch：将快照移入带 SHA/date 的历史目录或在首行标记 historical；为当前 evidence 从正式 source inventory 生成路径/散列，并让 gate 拒绝过期 baseline 被声明为 VerifiedLocal。 |
+| 预计修改范围 | evidence YAML/JSON、frontend manifest generator/check 与少量 fixture；不改前端业务代码。 |
+| 验证方式 | 当前 baseline 生成的证据全部路径存在且 check 通过；旧快照可保留但不会被当前 gate/报告当作 current；每项 P0/P1 有当前调用链复核。 |
+| 回滚方式 | 回退独立 evidence/gate 提交；保留历史文件。 |
+| 是否需要独立复核 | 是（证据语义与历史 P0 标签）。 |
+
 ## F-0304｜调用图门禁仍按重组前顶层路径和退休目录判断，679 项全量输出不可判读
 
 | 字段 | 记录 |
