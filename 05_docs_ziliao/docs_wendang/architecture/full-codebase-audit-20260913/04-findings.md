@@ -2634,7 +2634,7 @@
 | --- | --- |
 | 模块 | Cakeuncle Vendor / Foodvoucher Provider边界 |
 | 类型 | 能力契约、协议错配、运行入口 |
-| 严重级别 | **P1 候选**；未完成RV-0016前不作最终P1 |
+| 严重级别 | **P1（RV-0016 已独立复核确认）** |
 | 置信度 | 高：包声明、barrel、provider manifest/factory和通用ports均直接可证；线上启用状态及供应商最新协议未知 |
 | 文件和精确位置 | `01_core_hexin/extensions/vendors/cakeuncle/README.md:14-27`；`index.ts:1-7`；`Webhook.ts:6-51`；`extensions/providers/foodvoucher/manifest.ts:4-19`；`Provider.ts:6-16`；`extensions/providers/core/src/PortFactory.ts:20-53,72-97` |
 | 当前行为 | [CONFLICT][E-AU-023-005/006/007] Cakeuncle包声明Foodvoucher仅Catalog/Price，Card issuance与Webhook因HTTP、unsigned callback和加密契约不完整而禁用，专用Webhook也未导出；但生产Foodvoucher manifest宣称Issue/Bind/Verify/Void/Extend/Refund/Statement/Webhook，factory用通用createPorts注册order/cancel/refund/statement/verification及header-HMAC Webhook |
@@ -2649,7 +2649,7 @@
 | 预计修改范围 | Foodvoucher manifest/factory/operations、Cakeuncle协议适配、Registry契约测试；可能需分多个小批次 |
 | 验证方式 | 独立复核capability→scope→caller全链，使用合成/供应商沙箱验证每个operation和callback；线上只读确认enabled状态 |
 | 回滚方式 | 保留当前manifest签名与installation快照；治理批次按单能力回退 |
-| 是否需要独立复核 | 是，RV-0016 |
+| 是否需要独立复核 | 已完成：RV-0016（2026-09-15）从运行加载器、工厂、manifest 与实际 ports 重新取证，确认 P1 |
 
 为什么不是P0：没有证据显示Foodvoucher线上已启用或正在造成重大发行、资金、数据或安全事故；当前只证明固定代码的能力契约冲突。
 
@@ -2706,7 +2706,9 @@
 
 ## F-0100｜AU-024调用链复核补充
 
-[FACT][E-AU-024-003–005] 第二条链路从全部生产`ExtensionRegistry.require` caller反向复核后，收窄AU-023表述：Foodvoucher Provider对象确实包含6个业务port和Webhook，但当前固定caller中只有Catalog、Statement、Webhook在manifest词汇下可达；Fulfillment固定请求`Order/order`，会被只有`Issue`的manifest拒绝，cancel/refund/verification没有找到固定静态caller。风险仍成立于错误能力表面和三个可达链，不把“对象有port”夸大为“所有写入正在运行”。RV-0016仍需第二位独立评审者和线上只读证据。
+[FACT][E-AU-024-003–005] 第二条链路从全部生产`ExtensionRegistry.require` caller反向复核后，收窄AU-023表述：Foodvoucher Provider对象确实包含6个业务port和Webhook，但当前固定caller中只有Catalog、Statement、Webhook在manifest词汇下可达；Fulfillment固定请求`Order/order`，会被只有`Issue`的manifest拒绝，cancel/refund/verification没有找到固定静态caller。风险仍成立于错误能力表面和三个可达链，不把“对象有port”夸大为“所有写入正在运行”。
+
+[FACT][RV-0016][2026-09-15] 独立复核从`RuntimeExtensionLoader.load`的`extension.enabled_installations()`运行入口重新追至`ProviderFactories`、`FoodvoucherProvider.create`、manifest和`createPorts`：一旦安装记录启用，运行时会注册Foodvoucher的`Issue/Bind/Verify/Void/Extend/Refund/Statement/Webhook`能力；factory实际构造`order/cancel/refund/statement/verification`及通用`x-provider-*` HMAC Webhook。Cakeuncle包的发布说明同时把Foodvoucher限定为Catalog/Price，并明确卡券发放与Webhook因HTTP、未签名回调和未完成加密契约而禁用。该矛盾不依赖历史文档推断，P1确认；但未读取线上安装记录、真实供应商协议或回调，故不主张全部写入目前正在执行，亦非P0。
 
 ## F-0103｜Required Foodvoucher丢失已知只读适配，health无法证明业务可用
 
