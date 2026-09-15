@@ -1352,7 +1352,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 直接证据 | 更新 `runtime.schemaversion` 中契约 head checksum，新增版本 ledger，并 fail-closed 断言固定 checksum。 |
 | 运行边界 | 后续迁移、运行就绪检查和部署边界反复读取/断言 schemaversion contract head。 |
 | 可否删除 | 否；承担 schema 顺序、契约一致性、部署门禁、恢复和历史 ledger 责任。 |
-| 二次复核 | 是；须验证执行顺序、目标 head、readiness consumer、备份恢复和发布控制面 ledger。 |
+| 二次复核 | RV-0047 已完成：维持 GX；静态复核确认后续迁移/运行门禁以版本和 checksum 作前置。真实 ledger、备份和发布控制面未验证。 |
 
 ## 466. AU-466 Runtime contract head 复核
 
