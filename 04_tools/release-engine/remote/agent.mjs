@@ -81,10 +81,10 @@ try {
   else if (action === 'status') result = await status(context);
   else throw failure('ACTION_UNKNOWN', { action });
 
-  await audit(policy, { action, ...contextSummary(context), result, completedAt: new Date().toISOString() });
+  if (action !== 'status') await audit(policy, { action, ...contextSummary(context), result, completedAt: new Date().toISOString() });
   process.stdout.write(`${JSON.stringify({ ok: true, action, result }, null, 2)}\n`);
 } catch (error) {
-  if (loadedPolicy && loadedContext) {
+  if (actionName !== 'status' && loadedPolicy && loadedContext) {
     try {
       await audit(loadedPolicy, {
         action: actionName,
@@ -1223,11 +1223,18 @@ async function status(context) {
   const root = context.deployment.pointerRoot;
   const lockRoot = context.policy.lockRoot ?? '/run/lock/ai-delivery';
   const projectLockRoot = join(lockRoot, 'projects', safeName(context.project));
+  const candidate = await statusPointer(root, 'candidate');
+  const current = await statusPointer(root, 'current');
+  const previous = await statusPointer(root, 'previous');
   return {
     pointerRoot: root,
-    candidate: await statusPointer(root, 'candidate'),
-    current: await statusPointer(root, 'current'),
-    previous: await statusPointer(root, 'previous'),
+    candidate,
+    candidateSeal: await readJson(join(root, 'candidate-seal.json')),
+    candidateArtifact: await artifactForStatus(candidate),
+    current,
+    currentArtifact: await artifactForStatus(current),
+    previous,
+    previousArtifact: await artifactForStatus(previous),
     runtime: await statusPointer(root, 'runtime'),
     previousRuntime: await statusPointer(root, 'previous-runtime'),
     restart: context.deployment.restart,
@@ -1236,6 +1243,10 @@ async function status(context) {
       target: await readLock(join(projectLockRoot, 'targets', safeName(context.node), `${safeName(context.target)}.lock`)),
     },
   };
+}
+
+async function artifactForStatus(release) {
+  return release ? await readJson(join(release, 'AI_DELIVERY_ARTIFACT.json')) : null;
 }
 
 async function verifyCurrent(context) {

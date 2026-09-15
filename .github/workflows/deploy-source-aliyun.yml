@@ -1,10 +1,10 @@
-name: Deploy Sealed Source 1.4 - Aliyun
-run-name: Deploy sealed source ${{ inputs.head_sha }}
+name: Deploy Sealed Source 1.4.3 - Reusable
+run-name: Deploy sealed source 1.4.3 ${{ inputs.head_sha }}
 
 # This explicit deployment consumes the successful post-merge closure manifest. It never
 # prepares artifacts, builds code, edits configuration, or discovers a new deployment scope.
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       head_sha:
         description: Exact zdt-next source SHA whose automatic closure completed successfully

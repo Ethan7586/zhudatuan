@@ -1,5 +1,5 @@
-name: Prepare Artifact 1.4 - Aliyun / GitHub
-run-name: Prepare 1.4 ${{ inputs.head_sha }} ${{ inputs.release_target }}
+name: Prepare Artifact 1.4.3 - Reusable
+run-name: Prepare 1.4.3 ${{ inputs.head_sha }} ${{ inputs.release_target }}
 
 # Aliyun build runners are the default; GitHub standard runners are an explicit fallback. Two
 # isolated empty release state roots must independently produce cold cache misses
@@ -28,50 +28,6 @@ on:
       ZDT_RUNNER_READ_TOKEN:
         description: Fine-grained token limited to repository Administration read for Runner observation
         required: true
-  workflow_dispatch:
-    inputs:
-      build_runner:
-        description: Build runner (Aliyun default; GitHub hosted fallback)
-        required: false
-        default: auto
-        type: choice
-        options:
-          - auto
-          - aliyun
-          - github
-      head_sha:
-        description: Exact 40-character zdt-next source commit to build
-        required: true
-        type: string
-      release_target:
-        description: One runtime target to build and publish
-        required: true
-        type: choice
-        options:
-          - catalog-media
-          - storefront
-          - auth-web
-          - console
-          - identity-api
-          - identity-notification-jobs
-          - mall-provisioning-api
-          - support-api
-          - purchase-api
-          - web-api
-          - catalog-api
-          - catalog-jobs
-          - payment-webhook-api
-          - payment-jobs
-          - node-operations
-          - database-migration
-      release_node:
-        description: Physical node eligible for the prepared artifact
-        required: true
-        type: choice
-        options:
-          - hbbtzn-l1
-          - zhudatuan-l0
-
 permissions:
   contents: read
   actions: read

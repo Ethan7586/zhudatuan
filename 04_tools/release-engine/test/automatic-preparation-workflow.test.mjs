@@ -12,13 +12,13 @@ import { classifyChanges } from '../src/planner.mjs';
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
 const readWorkflow = async (name) => parse(await readFile(join(projectRoot, '.github/workflows', name), 'utf8'));
 
-test('automatic closure runs after zdt-next pushes, allows historical closure recovery, and cannot deploy production', async () => {
+test('automatic closure runs only after zdt-next pushes and cannot deploy production', async () => {
   const automatic = await readWorkflow('auto-prepare-artifacts.yml');
   const oneTarget = await readWorkflow('auto-prepare-one-target.yml');
   const source = JSON.stringify({ automatic, oneTarget });
 
   assert.deepEqual(automatic.on.push, { branches: ['zdt-next'] });
-  assert.equal(automatic.on.workflow_dispatch.inputs.head_sha.required, true);
+  assert.equal(automatic.on.workflow_dispatch, undefined);
   assert.equal(automatic.jobs.close.with.head_sha, '${{ needs.plan.outputs.source_sha }}');
   assert.equal(automatic.jobs.close.uses, './.github/workflows/auto-prepare-one-target.yml');
   assert.equal(oneTarget.jobs.prepare.uses, './.github/workflows/prepare-artifact-aliyun.yml');
@@ -30,13 +30,16 @@ test('automatic closure runs after zdt-next pushes, allows historical closure re
   assert.doesNotMatch(source, /operation[^}]*deploy|zdt-delivery deploy|deploy-sealed-candidate/);
 });
 
-test('manual Prepare and Deploy remain callable after becoming reusable', async () => {
+test('one 1.4.3 workflow dispatches manual Prepare and Deploy through reusable children', async () => {
+  const entry = await readWorkflow('delivery-1-4-3.yml');
   const prepare = await readWorkflow('prepare-artifact-aliyun.yml');
   const deploy = await readWorkflow('deploy-prepared-aliyun.yml');
 
-  assert.ok(prepare.on.workflow_dispatch);
+  assert.ok(entry.on.workflow_dispatch);
+  assert.deepEqual(entry.on.workflow_dispatch.inputs.operation.options, ['prepare', 'deploy', 'deploy-source']);
+  assert.equal(prepare.on.workflow_dispatch, undefined);
   assert.ok(prepare.on.workflow_call);
-  assert.ok(deploy.on.workflow_dispatch);
+  assert.equal(deploy.on.workflow_dispatch, undefined);
   assert.ok(deploy.on.workflow_call);
   assert.equal(prepare.on.workflow_call.inputs.build_runner.default, 'auto');
   assert.equal(deploy.on.workflow_call.inputs.operation.type, 'string');

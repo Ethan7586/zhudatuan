@@ -1,4 +1,4 @@
-name: Automatic Prepare and Seal One Target
+name: Prepare and Seal One Target 1.4.3 - Reusable
 
 on:
   workflow_call:
@@ -17,6 +17,7 @@ on:
         type: string
 
 permissions:
+  actions: read
   contents: read
 
 jobs:

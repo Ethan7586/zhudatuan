@@ -367,6 +367,30 @@ export async function findFinalSealReceipt(adapter, options, dependencies = {}) 
   return receipts[0] ?? null;
 }
 
+export async function findSealLifecycleState(adapter, options, dependencies = {}) {
+  const sourceSha = exactSourceSha(options.sourceSha, 'SEAL_SOURCE_SHA_INVALID');
+  const target = exactTarget(adapter, options.target, 'SEAL_TARGET');
+  const node = required(options.node, 'SEAL_NODE_REQUIRED');
+  const client = dependencies.client ?? ossClientFromEnvironment(options.endpoint, dependencies);
+  const prefix = `${objectRoot(adapter.project, target, sourceSha, options.prefix)}/seals/v1/${node}/`;
+  const identities = (await client.listPrefix(prefix)).filter((object) => object.endsWith('/seal-key.json'));
+  const states = [];
+  for (const object of identities) {
+    const identity = JSON.parse((await client.getObject(object)).toString('utf8'));
+    const key = createSealKey({
+      sourceSha: identity.source_sha, releaseTarget: identity.release_target, physicalNode: identity.physical_node,
+      artifactDigest: identity.artifact_digest, controlPlaneSha: identity.control_plane_sha,
+    });
+    const lifecycle = createSealLifecycleStore(client, { project: adapter.project, sourceSha, releaseTarget: target, physicalNode: node,
+      artifactDigest: key.artifact_digest, controlPlaneSha: key.control_plane_sha, prefix: options.prefix });
+    invariant(lifecycle.paths.identity === object && identity.seal_key === key.seal_key,
+      'SEAL_KEY_OBJECT_PATH_MISMATCH', 'Seal lifecycle identity is outside its canonical path');
+    states.push({ key, paths: lifecycle.paths, state: await lifecycle.read() });
+  }
+  states.sort((left, right) => Date.parse(right.state.updated_at ?? 0) - Date.parse(left.state.updated_at ?? 0));
+  return states[0] ?? { key: null, paths: null, state: { schema: 'ai.delivery.seal-state.v1', status: 'ABSENT', updated_at: null, retryable: true } };
+}
+
 export async function inspectPreparedArtifact(adapter, options, dependencies = {}) {
   try {
     const resolved = await resolvePreparedArtifact(adapter, { ...options, allowLegacy: false }, dependencies);

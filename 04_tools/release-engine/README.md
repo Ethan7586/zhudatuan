@@ -1,5 +1,7 @@
 # AI Delivery Engine
 
+状态：REFERENCE。现役用户入口和 1.4.3 状态语义见仓库根目录 `AI-DELIVERY.md`。
+
 `04_tools/release-engine` 是项目中立的发布内核。它只处理 Git 差异、目标影响图、必需验证、逐目标制品、锁、候选、指针、验证和回滚；不内置域名、节点名、端口或业务服务。
 
 ## 接入一个新项目

@@ -172,11 +172,11 @@ test('workflow contracts unify manual and automatic routing and forbid Larger Ru
   const [prepare, automatic, manual, engine] = await Promise.all([
     readFile(new URL('.github/workflows/prepare-artifact-aliyun.yml', root), 'utf8'),
     readFile(new URL('.github/workflows/auto-prepare-one-target.yml', root), 'utf8'),
-    readFile(new URL('scripts/prepare-release.sh', root), 'utf8'),
+    readFile(new URL('scripts/delivery-dispatch.sh', root), 'utf8'),
     readFile(new URL('04_tools/release-engine/src/engine.mjs', root), 'utf8'),
   ]);
   assert.match(automatic, /build_runner: auto/);
-  assert.match(manual, /build_runner="\$BUILD_RUNNER"/);
+  assert.match(manual, /workflow='delivery-1-4-3\.yml'/);
   assert.doesNotMatch(manual, /actions\/runners|idle_slots|queued_runs/);
   assert.match(prepare, /select-runner/);
   assert.match(prepare, /GH_TOKEN: \$\{\{ secrets\.ZDT_RUNNER_READ_TOKEN \}\}/);

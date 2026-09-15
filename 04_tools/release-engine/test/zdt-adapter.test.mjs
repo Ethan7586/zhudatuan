@@ -17,6 +17,7 @@ const releaseEngine = await readFile(join(projectRoot, '04_tools/release-engine/
 const deployNow = await readFile(join(projectRoot, 'scripts/deploy-now.sh'), 'utf8');
 const deployPrepared = await readFile(join(projectRoot, 'scripts/deploy-prepared.sh'), 'utf8');
 const prepareRelease = await readFile(join(projectRoot, 'scripts/prepare-release.sh'), 'utf8');
+const deliveryDispatch = await readFile(join(projectRoot, 'scripts/delivery-dispatch.sh'), 'utf8');
 const preparedKnownHosts = await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.ssh-known-hosts'), 'utf8');
 const qualityWorkflow = await readFile(join(projectRoot, '.github/workflows/quality-aliyun.yml'), 'utf8');
 const githubTransportInstaller = await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/github-actions-runner/install-github-transport.sh'), 'utf8');
@@ -39,12 +40,12 @@ test('legacy 1.2 recovery remains visibly separate from normal 1.4 deployment', 
     assert.doesNotMatch(workflow, /legacy_1_2_ack|LEGACY_1_2_ACK/);
     assert.match(workflow, /npm ci/);
   }
-  assert.match(deployWorkflow, /^name: Legacy 1\.2 Recovery - Direct Aliyun/m);
-  assert.match(deployOssWorkflow, /^name: Legacy 1\.2 Recovery - Wuhan OSS via Aliyun Runner/m);
+  assert.match(deployWorkflow, /^name: Recovery Only - Legacy 1\.2 Direct Aliyun/m);
+  assert.match(deployOssWorkflow, /^name: Recovery Only - Legacy 1\.2 Wuhan OSS/m);
   assert.match(deployOssWorkflow, /commerce-api\|identity-api\|workers/);
 });
 
-test('Console retains optional public acceptance metadata while Prepare and Deploy 1.4 remain exact single-target channels', () => {
+test('Console retains optional public acceptance metadata while reusable 1.4.3 children remain exact single-target channels', () => {
   assert.deepEqual(adapter.nodes['zhudatuan-l0'].deployments.console.publicAcceptance, {
     url: 'https://console.fufu.wang/',
     allowedStatuses: [200],
@@ -58,7 +59,7 @@ test('Console retains optional public acceptance metadata while Prepare and Depl
   assert.match(preparedDeployWorkflow, /validate-prepared/);
   assert.match(preparedDeployWorkflow, /deploy-prepared/);
   assert.match(preparedDeployWorkflow, /head_sha:[\s\S]*?required: true/);
-  assert.match(preparedDeployWorkflow, /release_target:[\s\S]*?required: true[\s\S]*?type: choice/);
+  assert.match(preparedDeployWorkflow, /release_target:[\s\S]*?required: true[\s\S]*?type: string/);
   assert.match(preparedDeployWorkflow, /\^\[0-9a-f\]\{40\}\$/);
   assert.equal((preparedDeployWorkflow.match(/--target "\$RELEASE_TARGET"/g) ?? []).length, 1);
   assert.doesNotMatch(preparedDeployWorkflow, /affected|target_args|inputs\.head_sha \|\||inputs\.release_target \|\|/);
@@ -130,20 +131,17 @@ test('legacy direct recovery retains the isolated H6 CDN channel', () => {
   assert.equal((deployWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
 });
 
-test('normal scripts expose only the 1.4 prepare and atomic-deploy sequence', () => {
+test('normal scripts expose only the unified 1.4.3 dispatcher', () => {
   assert.match(deployNow, /exec "\$script_dir\/deploy-prepared\.sh" "\$@"/);
   assert.doesNotMatch(deployNow, /legacy|deploy\.yml|npm ci|build|git push/);
-  assert.match(deployPrepared, /gh workflow run deploy-prepared-aliyun\.yml --ref zdt-next/);
-  assert.match(deployPrepared, /d\.hostedBy&&d\.hostedBy!==node/);
-  assert.doesNotMatch(deployPrepared, /production[_-]approval|zdt-next:prepared-deploy:/);
-  assert.match(prepareRelease, /gh workflow run "\$WORKFLOW_PREPARE" --ref zdt-next/);
-  assert.match(prepareRelease, /operation=validate-candidate/);
-  assert.match(prepareRelease, /finalSealReceiptObject/);
-  assert.match(prepareRelease, /productionSwitched:false/);
-  assert.doesNotMatch(prepareRelease, /operation=deploy|legacy|git push/);
+  assert.match(deployPrepared, /delivery-dispatch\.sh" deploy/);
+  assert.match(prepareRelease, /delivery-dispatch\.sh" prepare/);
+  assert.match(deliveryDispatch, /workflow='delivery-1-4-3\.yml'/);
+  assert.equal((deliveryDispatch.match(/gh workflow run/g) ?? []).length, 1);
+  assert.doesNotMatch(deliveryDispatch, /legacy|prepare-artifact-aliyun|deploy-prepared-aliyun|deploy-source-aliyun|git push/);
 });
 
-test('1.4 accepts only source commits in the exact zdt-next history', () => {
+test('1.4.3 accepts only source commits in the exact zdt-next history', () => {
   for (const workflow of [prepareWorkflow, preparedDeployWorkflow]) {
     assert.match(workflow, /CONTROL_SHA: \$\{\{ github\.sha \}\}/);
     assert.match(workflow, /CONTROL_REF: \$\{\{ github\.ref \}\}/);
@@ -152,27 +150,15 @@ test('1.4 accepts only source commits in the exact zdt-next history', () => {
     assert.match(workflow, /--jq '\.merge_base_commit\.sha'/);
     assert.match(workflow, /\[ "\$merge_base" != "\$RELEASE_SHA" \]/);
   }
-  assert.match(deployPrepared, /compare\/\$\{SHA\}\.\.\.zdt-next/);
-  assert.match(deployPrepared, /\[ "\$ZDT_NEXT_MERGE_BASE" != "\$SHA" \]/);
+  assert.match(deliveryDispatch, /compare\/\$\{source_sha\}\.\.\.zdt-next/);
+  assert.match(deliveryDispatch, /\[ "\$merge_base" = "\$source_sha" \]/);
 });
 
-test('legacy baseline registration is isolated from build, deploy, restart and pointer switching', () => {
-  assert.match(baselineRegistrationWorkflow, /^name: Register Legacy Production Baseline/m);
-  assert.match(baselineRegistrationWorkflow, /register-current-baseline/);
-  assert.match(baselineRegistrationWorkflow, /options:[\s\S]*?- database-migration/);
-  assert.match(baselineRegistrationWorkflow, /legacy_artifact_sha256:[\s\S]*?required: true/);
-  assert.match(baselineRegistrationWorkflow, /legacy_run_id:[\s\S]*?required: true/);
-  assert.match(baselineRegistrationWorkflow, /CONTROL_REF: \$\{\{ github\.ref \}\}/);
-  assert.match(baselineRegistrationWorkflow, /refs\/heads\/zdt-next/);
-  assert.match(baselineRegistrationWorkflow, /--expected-remote-agent-sha256 "\$expected_agent_sha256"/);
-  assert.match(baselineRegistrationWorkflow, /--expected-remote-policy-sha256 "\$expected_policy_sha256"/);
-  assert.equal((baselineRegistrationWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
-  assert.doesNotMatch(baselineRegistrationWorkflow, /npm ci|release -- (?:build|package|publish|deploy)|deploy-prepared|validate-prepared|ALIYUN_OSS|ssh-keyscan/);
+test('one-time legacy baseline registration is retired without deleting historical engine support', () => {
+  assert.match(baselineRegistrationWorkflow, /^name: Retired - one-time production baseline registration/m);
+  assert.match(baselineRegistrationWorkflow, /retired-workflow-never-runs/);
+  assert.doesNotMatch(deliveryDispatch, /register-current-baseline/);
   assert.match(releaseEngine, /register-current-baseline-v3/);
-  assert.match(releaseEngine, /CURRENT_BASELINE_SOURCE_NOT_ON_MAINLINE/);
-  assert.match(releaseEngine, /actions\/runs\/\$\{legacyRunId\}\/attempts\/\$\{legacyRunAttempt\}\/jobs\?per_page=100/);
-  assert.match(releaseEngine, /actions\/jobs\/\$\{job\.id\}\/logs/);
-  assert.doesNotMatch(releaseEngine, /'gh', 'run', 'view', legacyRunId/);
 });
 
 test('build and remote adapters agree on every pointer and process', () => {
@@ -245,9 +231,8 @@ test('node operations is a reproducible single-service 1.4 target hosted once by
   ]);
   assert.ok(target.criticalFiles.includes('runtime/autonode-control-main.mjs'));
   assert.ok(target.criticalFiles.includes('runtime/autonode-activate-runtime.mjs'));
-  assert.match(prepareWorkflow, /options:[\s\S]*?- node-operations/);
-  assert.match(preparedDeployWorkflow, /options:[\s\S]*?- node-operations/);
-  assert.match(baselineRegistrationWorkflow, /options:[\s\S]*?- node-operations/);
+  assert.match(prepareWorkflow, /release_target:[\s\S]*?type: string/);
+  assert.match(preparedDeployWorkflow, /release_target:[\s\S]*?type: string/);
 
   const l0 = adapter.nodes['zhudatuan-l0'].deployments['node-operations'];
   const l1 = adapter.nodes['hbbtzn-l1'].deployments['node-operations'];
@@ -467,7 +452,7 @@ test('first activation is limited to pointer-only content and migration evidence
   assert.equal(policy.nodes['zhudatuan-l0'].deployments['support-api'].allowBaselineImport, true);
 });
 
-test('1.4 binds the artifact and control-plane provenance in one production action', () => {
+test('1.4.3 binds the artifact and control-plane provenance in one production action', () => {
   assert.match(preparedDeployWorkflow, /ref: \$\{\{ github\.sha \}\}/);
   assert.match(preparedDeployWorkflow, /--source-sha "\$RELEASE_SHA"/);
   assert.match(preparedDeployWorkflow, /--control-sha "\$CONTROL_SHA"/);
@@ -475,7 +460,7 @@ test('1.4 binds the artifact and control-plane provenance in one production acti
   assert.match(preparedDeployWorkflow, /--github-run-attempt "\$GITHUB_RUN_ATTEMPT"/);
   assert.match(preparedDeployWorkflow, /--expected-remote-agent-sha256/);
   assert.match(preparedDeployWorkflow, /--expected-remote-policy-sha256/);
-  assert.match(preparedDeployWorkflow, /^name: Deploy 1\.4 - Aliyun Prepared Artifact/m);
+  assert.match(preparedDeployWorkflow, /^name: Validate or Deploy 1\.4\.3 - Reusable/m);
   assert.match(preparedDeployWorkflow, /GH_TOKEN: \$\{\{ github\.token \}\}/);
   assert.match(releaseEngine, /candidateOnly \? 'validate-oss-candidate-v3' : 'deploy-sealed-candidate-v3'/);
   assert.match(releaseEngine, /candidateOnly \? \{[\s\S]*?artifactUrl:[\s\S]*?manifestUrl:[\s\S]*?\} : \{\}/);
@@ -484,7 +469,7 @@ test('1.4 binds the artifact and control-plane provenance in one production acti
   assert.match(releaseEngine, /input: `\$\{JSON\.stringify\([\s\S]*?artifactUrl:[\s\S]*?manifestUrl:/);
   assert.match(preparedDeployWorkflow, /--node "\$RELEASE_NODE"/);
   assert.match(preparedDeployWorkflow, /validate-candidate/);
-  assert.match(preparedDeployWorkflow, /default: deploy/);
+  assert.match(preparedDeployWorkflow, /operation:[\s\S]*?required: true[\s\S]*?type: string/);
   assert.match(preparedDeployWorkflow, /jobs:\n  prepared:/);
   assert.doesNotMatch(preparedDeployWorkflow, /candidate_run_id|release-candidate-|approve-production|external-baseline|install-production-agent|npm ci|release -- build|release -- package/);
 });

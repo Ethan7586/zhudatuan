@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Canonical 1.4 Aliyun deployment entrypoint.
+# Internal 1.4.3 compatibility wrapper. User entry: zdt-delivery deploy.
 # Usage:
 #   scripts/deploy-now.sh <target> <full-commit-sha> <node>
 

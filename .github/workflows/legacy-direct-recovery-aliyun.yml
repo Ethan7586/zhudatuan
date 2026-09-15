@@ -1,7 +1,8 @@
-name: Legacy 1.2 Recovery - Direct Aliyun
-run-name: LEGACY direct recovery ${{ inputs.head_sha }} ${{ inputs.release_node }} ${{ inputs.release_target }}
+name: Recovery Only - Legacy 1.2 Direct Aliyun
+run-name: RECOVERY ONLY legacy direct ${{ inputs.head_sha }} ${{ inputs.release_node }} ${{ inputs.release_target }}
 
-# Explicit recovery path only. Normal deployment uses the 1.4 prepared-artifact
+# Explicit Ethan-authorized recovery path only. Normal deployment uses Delivery Control 1.4.3.
+# This non-normal channel builds during recovery and is never called by zdt-delivery.
 # workflows. This path builds during deployment and must never be called implicitly.
 on:
   workflow_dispatch:

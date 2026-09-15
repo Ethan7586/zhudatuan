@@ -1,7 +1,7 @@
-name: Deploy 1.4 - Aliyun Prepared Artifact
-run-name: Deploy 1.4 ${{ inputs.operation }} ${{ inputs.head_sha }} ${{ inputs.release_node }} ${{ inputs.release_target }}
+name: Validate or Deploy 1.4.3 - Reusable
+run-name: Delivery child 1.4.3 ${{ inputs.operation }} ${{ inputs.head_sha }} ${{ inputs.release_node }} ${{ inputs.release_target }}
 
-# Official Aliyun-only 1.4 channel. Deploy verifies the exact prepared artifact and switches
+# Reusable 1.4.3 child. Deploy verifies the exact prepared artifact and switches
 # production inside one locked remote action. Optional candidate validation remains diagnostic
 # and never becomes a prerequisite or cross-run gate for deployment.
 on:
@@ -27,48 +27,6 @@ on:
       ZDT_RUNNER_READ_TOKEN:
         description: Fine-grained token limited to repository Administration read for Primary health observation
         required: true
-  workflow_dispatch:
-    inputs:
-      head_sha:
-        description: Exact 40-character source commit already prepared in OSS
-        required: true
-        type: string
-      release_target:
-        description: One prepared runtime target
-        required: true
-        type: choice
-        options:
-          - catalog-media
-          - storefront
-          - auth-web
-          - console
-          - identity-api
-          - identity-notification-jobs
-          - mall-provisioning-api
-          - support-api
-          - purchase-api
-          - web-api
-          - catalog-api
-          - catalog-jobs
-          - payment-webhook-api
-          - payment-jobs
-          - node-operations
-          - database-migration
-      release_node:
-        description: One sovereign node
-        required: true
-        type: choice
-        options:
-          - hbbtzn-l1
-          - zhudatuan-l0
-      operation:
-        description: Atomically deploy the prepared artifact or validate it without switching
-        required: true
-        default: deploy
-        type: choice
-        options:
-          - validate-candidate
-          - deploy
 permissions:
   contents: read
 
@@ -175,7 +133,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$CONTROL_REF" != "refs/heads/zdt-next" ]; then
-            echo "Deploy 1.4 must run from refs/heads/zdt-next" >&2
+            echo "Delivery 1.4.3 must run from refs/heads/zdt-next" >&2
             exit 64
           fi
           merge_base="$(gh api "repos/${GITHUB_REPOSITORY}/compare/${RELEASE_SHA}...${CONTROL_SHA}" --jq '.merge_base_commit.sha')"

@@ -65,10 +65,13 @@ test('the system dispatcher exposes read-only status through the latest control 
   assert.match(dispatcher, /deploy-source/);
   assert.match(dispatcher, /git -C "\$REPOSITORY_ROOT" fetch origin zdt-next --quiet/);
   assert.match(dispatcher, /status\) bash scripts\/release-status\.sh/);
-  assert.match(dispatcher, /deploy-source\) bash scripts\/deploy-source\.sh/);
+  assert.match(dispatcher, /delivery-dispatch\.sh deploy-source/);
 });
 
-test('1.4 status keeps recognizing already sealed 1.3.5 and 1.3.2 candidates', async () => {
+test('status reads authority directly and treats Actions as auxiliary only', async () => {
   const status = await readFile(join(projectRoot, 'scripts/release-status.mjs'), 'utf8');
-  assert.match(status, /recognizedDeliveryVersions = \['1\.4', '1\.3\.5', '1\.3\.2'\]/);
+  assert.match(status, /findSealLifecycleState/);
+  assert.match(status, /createReleaseWriterLeaseStore/);
+  assert.match(status, /'status'.*'--project'/s);
+  assert.doesNotMatch(status, /workflow run|putImmutable|WriterLease.*acquire/);
 });
