@@ -173,6 +173,21 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     // ledgers. Slow account APIs must never keep the page in a guest frame.
     publishMemberShell(bootstrap);
 
+    // Member catalog qualification is an independent capability. Do not make
+    // it wait for balances, orders, or ledgers: those reads are supplementary
+    // and can fail without changing the member's purchase eligibility.
+    void productionApiRequest.then((productionApi) => loadProgressiveCatalog(
+      productionApi.listQualifiedProducts,
+      publisher.commitQualified,
+    ))
+      .catch(async () => {
+        try {
+          await publicCatalogRequest;
+        } catch {
+          if (syncVersion === syncVersionRef.current && !publisher.hasPublicFallback()) setters.setCatalogSyncStatus('error');
+        }
+      });
+
     let snapshot: ApiHomeSnapshot;
     try {
       const productionApi = await productionApiRequest;
@@ -181,13 +196,8 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
       if (syncVersion !== syncVersionRef.current) return;
       // The identity session and member shell have already been verified above.
       // A denied or unavailable account, order, or ledger read must not turn a
-      // real member back into a guest.
-      try {
-        publisher.commitPublic(await publicCatalogRequest);
-      } catch {
-        if (syncVersion === syncVersionRef.current) setters.setCatalogSyncStatus('error');
-      }
-      throw error;
+      // real member back into a guest or stop their qualified catalog refresh.
+      return;
     }
     if (syncVersion !== syncVersionRef.current) return;
 
@@ -214,18 +224,6 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
         balanceAfter: ledger.balanceAfterCents / 100,
       }))
     );
-    // The qualified catalog is heavier and can finish after the member shell.
-    void productionApiRequest.then((productionApi) => loadProgressiveCatalog(
-      productionApi.listQualifiedProducts,
-      publisher.commitQualified,
-    ))
-      .catch(async () => {
-        try {
-          await publicCatalogRequest;
-        } catch {
-          if (syncVersion === syncVersionRef.current && !publisher.hasPublicFallback()) setters.setCatalogSyncStatus('error');
-        }
-      });
   };
 
   const refreshProductionData = (): Promise<void> => {
