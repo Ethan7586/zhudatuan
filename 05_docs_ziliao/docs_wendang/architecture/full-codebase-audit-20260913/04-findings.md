@@ -5108,6 +5108,28 @@
 | 回滚方式 | 回退独立 gate/fixture/批准契约提交；不影响生产数据或部署。 |
 | 是否需要独立复核 | 是（P0 门禁语义）。 |
 
+## F-0319｜Storefront 资产池允许输入根与对象池重叠，可能把自身管理文件并入发布资产
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Release / Storefront asset pool |
+| 类型 | 发布制品边界、文件系统完整性 |
+| 严重级别 | **P2** |
+| 置信度 | 高（输入校验、写入顺序和未覆盖反例的直接源码证据；未在仓库或制品目录执行破坏性复现） |
+| 文件和精确位置 | `04_tools/scripts/release/storefront-assets.mjs:9-58,116-143`；`03_quality_ceshi/tests/recovery/storefront-assets.spec.ts:10-94`。 |
+| 当前/预期 | pool 和每个 asset root 只要求是绝对非根目录，未要求彼此不重叠。函数在遍历 asset roots 前已经创建 `pool/objects` 与 `.merge.lock`，因此若 root 等于或包含 pool，就会把锁、objects 或 manifest 当作资产，并在后续硬链接回写阶段作用于同一树。预期应拒绝 pool 与任何输入 root 的相等/祖先/后代关系。 |
+| 直接证据 | [FACT][E-AU-827-001] `absoluteDirectory` 仅验证绝对路径和非 `/`；[FACT][E-AU-827-002] 16-20先创建 objects/lock，28-43再递归收集所有常规文件；[FACT][E-AU-827-003] 116-143没有排除 pool 管理路径；[FACT][E-AU-827-004] 现有恢复测试只使用互不重叠的临时 pool/release A/release B，未覆盖相等、嵌套或同路径反例。 |
+| 调用链或运行入口 | 人工/外部发布编排 → `mergeStorefrontAssetPool` → pool objects/manifest 与 release asset roots；仓内仅找到 recovery test 静态导入。 |
+| 用户影响 | 错误发布参数可能污染或破坏 asset pool/当前 release 文件，导致旧新页面在切换或回滚时取不到内容哈希资产。 |
+| 数据影响 | 不触及业务数据库；影响发布制品文件完整性。 |
+| 安全影响 | 未发现外部输入直接到达该函数；风险取决于发布操作者或编排参数。 |
+| 根因 | 输入路径验证只处理单路径合法性，没有把 pool 与 asset roots 作为一个拓扑约束验证。 |
+| 建议方向 | 从最新主线建立独立 asset-pool-topology batch：realpath 后拒绝相等及任一方为另一方祖先的路径；在创建 lock/object 前完成验证，并增加相等/嵌套/symlink 反例及无残留断言。 |
+| 预计修改范围 | asset pool 工具与 recovery test；可能补充发布编排的参数校验。 |
+| 验证方式 | 合法的两个不重叠 release roots 保持硬链接/回滚行为；pool=root、pool 在 root 下、root 在 pool 下均稳定拒绝且不创建/修改文件。 |
+| 回滚方式 | 回退独立工具/test/编排参数提交；已生成 pool 需按发布制品恢复流程重新生成，不在此审计分支操作。 |
+| 是否需要独立复核 | 是（GX 发布制品写入边界）。 |
+
 ## F-0302｜MVP 交付门禁的状态枚举与当前需求矩阵不兼容，首条即失败
 
 | 字段 | 记录 |
