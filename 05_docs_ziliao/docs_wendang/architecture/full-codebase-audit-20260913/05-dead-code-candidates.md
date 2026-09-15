@@ -1793,3 +1793,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | G1 不强制；拟收敛前确认 Finance Owner 的验收入口、最近 isolated replay receipt、CI/外部 runner 和当前 ledger/period-close contract。 |
 
 - 财务会计完整性验证归 DC-0084。累计 G0 62、G1 96、G2 5、G3 0、GX 43；未删除任何文件。
+
+## DC-0085｜Identity mobile 一次性生产数据修复 SQL
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除，需专项设计 |
+| 对象 | `identity-mobile-consistency.sql` 与 `identity-mobile-consistency-repair.sql`。 |
+| 风险/保留证据 | 前者只读找出 active account/password credential/profile/session 的 mobile/realm 一致性偏差；后者明确锁定四个 L0/L1 account，要求恰为四项 credential mismatch 且无 realm collision，随后更新 `subject_hash`、轮换时间、credential/account version 并撤销所有未撤销会话。 |
+| 仓内接入情况 | 固定基线未发现 package/workflow/release manifest 的静态执行入口；不能据此排除人工 DBA、事故修复、迁移验收或仓外 runbook 消费。 |
+| 可否删除 | 否；删除可能消灭身份迁移回滚/恢复所需的精确历史修复方案，也不能证明目标数据已永久收敛。 |
+| 二次复核 | 是；任何运行或退役前必须在只读 production snapshot 核验四个 account、realm/mobile token、credential collision、profile/session 映射、最近登录/业务影响和备份/恢复方案，并由 Identity Owner 独立批准。 |
+
+- Identity mobile consistency repair 归 DC-0085。累计 G0 62、G1 96、G2 5、G3 0、GX 44；未删除任何文件。
