@@ -286,6 +286,20 @@ test('shared Commerce source expands through real entry graphs without refusal',
   assert.match(plan.reasons.join('\n'), /dependency graph selects purchase-api, web-api/);
 });
 
+test('shared browser authentication changes keep every authenticated runtime on one version', async () => {
+  const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const expected = ['catalog-api', 'identity-api', 'mall-provisioning-api', 'purchase-api', 'support-api', 'web-api'];
+  for (const file of [
+    '01_core_hexin/services/commerce/src/foundation/interface/HttpApp.ts',
+    '01_core_hexin/services/commerce/src/foundation/security/AuthSessionCookies.ts',
+    '01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers.ts',
+  ]) {
+    const plan = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: [file] });
+    assert.deepEqual(plan.targets, expected, file);
+    assert.match(plan.reasons.join('\n'), /coherent authenticated runtime rollout/, file);
+  }
+});
+
 test('shared Contract package expands through workspace consumers without a global fallback', async () => {
   const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
   const plan = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: ['01_core_hexin/packages/contract/src/index.ts'] });
