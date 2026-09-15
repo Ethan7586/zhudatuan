@@ -9,6 +9,6 @@
 
 文件被 `测试环境验收-会员与支付.md` 指定为当前微信支付架构、浏览器编排、风险控制和 ¥0.01 验收的唯一执行文档；它还明确真实资金验收尚未完成，并保留验签、金额/AppID 失配 P0 处置和不得将浏览器编排冒充真实交易的边界。因此归 G0，不能删除或以未被代码 import 为由降级。
 
-当前仍有 MvpServer、微信扩展、支付 API、Webhook 和 Jobs 运行代码，但第 14 节责任树及第 15.2 节启动命令引用的 `apps/storefront`、`services/commerce`、`database/supabase` 已不存在于固定基线；对应实现已重组至 `01_core_hexin/*`、`02_platform_pingtai/*`。该执行文档会误导复跑、审查与发布取证，记录为 F-0300（P3）。支付 prepay 与 callback 的现行直接测试缺口由 F-0190/F-0191 独立覆盖，不在本单元重复立项。
+当前仍有 MvpServer、微信扩展、支付 API、Webhook 和 Jobs 运行代码，但第 14 节责任树及第 15.2 节启动命令引用的 `apps/storefront`、`services/commerce`、`database/supabase` 已不存在于固定基线；对应实现已重组至 `01_core_hexin/*`、`02_platform_pingtai/*`。该执行文档会误导复跑、审查与发布取证，记录为 F-0338（P3）。支付 prepay 与 callback 的现行直接测试缺口由 F-0190/F-0191 独立覆盖，不在本单元重复立项。
 
 未执行浏览器、支付请求、测试、构建、部署、数据库、凭据或外部控制面操作，未修改业务代码、配置、测试、工作流、迁移或运行资源。
