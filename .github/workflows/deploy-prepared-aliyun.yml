@@ -229,7 +229,7 @@ jobs:
           set -euo pipefail
           mkdir -p .prepared-release
           command=validate-prepared
-          expected_status=candidate-validated
+          expected_status=sealed
           if [ "$RELEASE_OPERATION" = deploy ]; then
             command=deploy-prepared
             expected_status=success

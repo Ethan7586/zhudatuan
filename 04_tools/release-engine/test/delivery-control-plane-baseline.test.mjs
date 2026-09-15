@@ -65,6 +65,9 @@ test('official orchestration preserves Build, seal, and Deploy separation', asyn
   assert.match(oneTarget, /uses: \.\/\.github\/workflows\/prepare-artifact-aliyun\.yml/);
   assert.match(oneTarget, /operation: validate-candidate/);
   assert.match(prepare, /\["self-hosted","linux","x64","zdt-aliyun-build"\]/);
+  assert.match(prepare, /--actor-role build/);
+  assert.match(prepare, /--build-runner "\$RUNNER_NAME"/);
+  assert.doesNotMatch(prepare, /\$HOME\/\.ssh|operation:\s*deploy/);
   assert.match(deploy, /runs-on: \[self-hosted, linux, x64, zdt-aliyun-release\]/);
   assert.equal((deploySource.match(/operation: deploy/g) ?? []).length, 3);
   assert.doesNotMatch(automatic, /operation:\s*deploy/);
@@ -72,8 +75,9 @@ test('official orchestration preserves Build, seal, and Deploy separation', asyn
 });
 
 test('seal is atomic and deploy consumes it without downloading or rebuilding', async () => {
-  const [agent, oss] = await Promise.all([
+  const [agent, engine, oss] = await Promise.all([
     source('04_tools/release-engine/remote/agent.mjs'),
+    source('04_tools/release-engine/src/engine.mjs'),
     source('04_tools/release-engine/src/oss.mjs'),
   ]);
   assert.match(agent, /writeAtomicJson\(join\(context\.deployment\.pointerRoot, 'candidate-seal\.json'\), value\)/);
@@ -83,8 +87,13 @@ test('seal is atomic and deploy consumes it without downloading or rebuilding', 
   assert.match(agent, /await atomicPointer\(join\(root, 'current'\), candidate\)/);
   assert.match(agent, /CUTOVER_FAILED_AND_ROLLED_BACK/);
   assert.match(oss, /putImmutable\(archiveObject/);
-  assert.match(oss, /ARTIFACT_RECIPE = 'r3-normalized-runtime-modes'/);
+  assert.match(oss, /PREVIOUS_RELEASE_INDEX = 'release-index-r3-normalized-runtime-modes\.json'/);
+  assert.match(oss, /ARTIFACT_RECIPE = 'r4-seal-lifecycle'/);
   assert.match(oss, /CURRENT_RELEASE_INDEX = `release-index-\$\{ARTIFACT_RECIPE\}\.json`/);
+  const sealAuthority = engine.indexOf('const authoritativeSeal = candidateOnly ? null : await requireFinalSealReceipt');
+  const remoteExecution = engine.indexOf('const remote = await runCommand(', sealAuthority);
+  assert.ok(sealAuthority >= 0, 'prepared deploy must require the authoritative OSS Seal');
+  assert.ok(remoteExecution > sealAuthority, 'prepared deploy must require the OSS Seal before any remote execution');
 });
 
 test('public pull requests have no trigger path to self-hosted runners', async () => {

@@ -4,13 +4,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
-import { createOssClient, inspectPreparedArtifact, publishPreparedArtifact, publishWorkflowEvidence, resolveDownloadEndpoint, resolvePreparedArtifact } from '../src/oss.mjs';
+import { createOssClient, finalizePreparedSeal, findFinalSealReceipt, inspectPreparedArtifact, publishPreparedArtifact, publishWorkflowEvidence, requireFinalSealReceipt, resolveDownloadEndpoint, resolvePreparedArtifact } from '../src/oss.mjs';
 import { runCommand } from '../src/runner.mjs';
 import { digest, prettyStableJson, sha256 } from '../src/stable.mjs';
 
 test('two preparations of one source produce one immutable identity and resolve without bucket enumeration', async () => {
   const fixture = await prepareFixture();
-  const remote = memoryOss({ denyList: true });
+  const remote = memoryOss();
   const client = createOssClient(credentials(), { fetchImpl: remote.fetch });
   const options = publishOptions(fixture);
   const first = await publishPreparedArtifact(fixture.adapter, options, { client });
@@ -20,15 +20,16 @@ test('two preparations of one source produce one immutable identity and resolve 
   assert.equal(second.cacheStatus, 'hit_remote');
   assert.equal(first.artifactIdentity, second.artifactIdentity);
   assert.equal(first.releaseManifest.object, second.releaseManifest.object);
-  assert.equal(remote.puts, 4);
-  assert.equal(remote.objects.size, 4);
+  assert.equal(remote.puts, 8);
+  assert.equal(remote.objects.size, 8);
   const root = `fixture/app/${fixture.sourceSha}/`;
-  assert.equal(first.releaseIndex.object, `${root}release-index-r3-normalized-runtime-modes.json`);
+  assert.equal(first.releaseIndex.object, `${root}release-index-r4-seal-lifecycle.json`);
   for (const object of remote.objects.keys()) {
     assert.match(object, new RegExp(`^${root}`));
-    if (object !== first.releaseIndex.object) assert.match(object, new RegExp(`^${root}[a-f0-9]{64}/`));
+    if (object !== first.releaseIndex.object && !object.includes('/seals/v1/')) assert.match(object, new RegExp(`^${root}[a-f0-9]{64}/`));
   }
 
+  const listsBeforeResolve = remote.lists;
   const resolved = await resolvePreparedArtifact(
     fixture.adapter,
     {
@@ -38,21 +39,24 @@ test('two preparations of one source produce one immutable identity and resolve 
     },
     { client }
   );
+  assert.equal(remote.lists, listsBeforeResolve);
   assert.equal(resolved.manifest.artifact.sha256, first.artifactIdentity);
   assert.equal(resolved.manifest.buildEnvironment.node, process.version);
   assert.equal(resolved.manifest.buildEnvironment.npm, '10.9.4');
   assert.equal(resolved.manifest.dependencyCache.deployableArtifact, false);
+  assert.equal(resolved.provenance.schema, 'ai.delivery.build-provenance.v1');
+  assert.equal(resolved.provenance.controlPlaneSha, 'b'.repeat(40));
   assert.equal(resolved.manifest.retention.minimumRollbackReleasesPerNode, 2);
   assert.equal(JSON.parse(await readFile(options.output, 'utf8')).cacheStatus, 'hit_remote');
 });
 
-test('inspection ignores a legacy index while safe legacy resolution remains backward compatible', async () => {
+test('inspection requires the current recipe while safe resolution remains legacy-index compatible', async () => {
   const fixture = await prepareFixture();
   const remote = memoryOss();
   const client = createOssClient(credentials(), { fetchImpl: remote.fetch });
   const published = await publishPreparedArtifact(fixture.adapter, publishOptions(fixture), { client });
   const currentIndex = remote.objects.get(published.releaseIndex.object);
-  const legacyIndex = published.releaseIndex.object.replace(/release-index-r3-normalized-runtime-modes\.json$/, 'release-index.json');
+  const legacyIndex = published.releaseIndex.object.replace(/release-index-r4-seal-lifecycle\.json$/, 'release-index.json');
   remote.objects.set(legacyIndex, currentIndex);
   remote.objects.delete(published.releaseIndex.object);
 
@@ -86,7 +90,7 @@ test('first immutable publication does not require HeadObject on absent objects'
   const receipt = await publishPreparedArtifact(fixture.adapter, publishOptions(fixture), { client });
 
   assert.equal(receipt.cacheStatus, 'miss');
-  assert.equal(remote.puts, 4);
+  assert.equal(remote.puts, 8);
 });
 
 test('prepared inspection deduplicates an exact node-eligible artifact without hiding absence', async () => {
@@ -117,6 +121,34 @@ test('workflow evidence is content-addressed and immutable per run attempt', asy
   assert.equal(first.evidence.status, 'uploaded');
   assert.equal(second.evidence.status, 'hit_remote');
   assert.match(first.evidence.object, /workflow-evidence\/prepare\/123-1-[a-f0-9]{64}\.json$/);
+});
+
+test('OSS final Seal receipt is the reusable authority for status and deployment', async () => {
+  const fixture = await prepareFixture();
+  const remote = memoryOss();
+  const client = createOssClient(credentials(), { fetchImpl: remote.fetch });
+  const published = await publishPreparedArtifact(fixture.adapter, publishOptions(fixture), { client });
+  const sealed = await finalizePreparedSeal(fixture.adapter, {
+    sourceSha: fixture.sourceSha, target: 'app', node: 'node-a', artifactDigest: published.artifactIdentity,
+    controlPlaneSha: 'b'.repeat(40), requestId: 'release-request', actorRole: 'release', releaseRunner: 'fixture-release',
+    validationReceipt: { candidate: 'healthy', currentUnchanged: true },
+  }, { client });
+  assert.equal(sealed.state.status, 'SEALED');
+  const required = await requireFinalSealReceipt(fixture.adapter, {
+    sourceSha: fixture.sourceSha, target: 'app', node: 'node-a', artifactDigest: published.artifactIdentity,
+    controlPlaneSha: 'b'.repeat(40),
+  }, { client });
+  assert.equal(required.receipt.schema, 'ai.delivery.final-seal.v1');
+  assert.equal((await findFinalSealReceipt(fixture.adapter, {
+    sourceSha: fixture.sourceSha, target: 'app', node: 'node-a',
+  }, { client })).object, required.object);
+  await assert.rejects(
+    () => requireFinalSealReceipt(fixture.adapter, {
+      sourceSha: fixture.sourceSha, target: 'app', node: 'node-a', artifactDigest: published.artifactIdentity,
+      controlPlaneSha: 'e'.repeat(40),
+    }, { client }),
+    (error) => error.code === 'FINAL_SEAL_RECEIPT_MISSING'
+  );
 });
 
 test('Storefront publication fails closed unless complete Linux x64 runtime evidence is present', async (t) => {
@@ -332,6 +364,11 @@ function publishOptions(fixture, overrides = {}) {
     package: fixture.packagePath,
     sourceSha: fixture.sourceSha,
     target: fixture.target,
+    node: 'node-a',
+    controlSha: 'b'.repeat(40),
+    requestId: 'fixture-request',
+    actorRole: 'build',
+    buildRunner: 'fixture-build',
     npmVersion: '10.9.4',
     runnerImage: 'ubuntu24',
     repository: 'owner/repository',
@@ -376,11 +413,13 @@ function memoryOss({ denyList = false, denyMissingHead = false } = {}) {
   const state = {
     objects: new Map(),
     puts: 0,
+    lists: 0,
     async fetch(url, options = {}) {
       const requestUrl = new URL(url);
       const method = options.method ?? 'GET';
       const object = decodeURIComponent(requestUrl.pathname.replace(/^\//, ''));
       if (method === 'GET' && object === '' && requestUrl.searchParams.get('list-type') === '2') {
+        state.lists += 1;
         if (denyList) return new Response('denied', { status: 403 });
         const prefix = requestUrl.searchParams.get('prefix') ?? '';
         const keys = [...state.objects.keys()].filter((key) => key.startsWith(prefix)).sort();

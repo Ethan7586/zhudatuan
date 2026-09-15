@@ -367,7 +367,12 @@ jobs:
           node "$RELEASE_CLI" publish --adapter "$RELEASE_ADAPTER" --project-root "$GITHUB_WORKSPACE" \
             --package "$PACKAGE_PATH" \
             --source-sha "$RELEASE_SHA" \
+            --control-sha "$CONTROL_SHA" \
             --target "$RELEASE_TARGET" \
+            --node "$RELEASE_NODE" \
+            --request-id "${GITHUB_RUN_ID}:${GITHUB_RUN_ATTEMPT}" \
+            --actor-role build \
+            --build-runner "$RUNNER_NAME" \
             --npm-version "$NPM_VERSION" \
             --runner-image "$RUNNER_IMAGE" \
             --repository "$GITHUB_REPOSITORY" \

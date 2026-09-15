@@ -4,20 +4,28 @@ import { dirname, resolve } from 'node:path';
 
 import { resolvePackageArtifactPaths } from './artifact.mjs';
 import { DeliveryError, invariant } from './errors.mjs';
+import { createSealKey, createSealLifecycleStore, sealObjectPaths } from './seal-lifecycle.mjs';
 import { digest, prettyStableJson, sha256 } from './stable.mjs';
 
 const DEFAULT_PREFIX = '';
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
 const SOURCE_SHA_PATTERN = /^[a-f0-9]{40}$/;
 const STOREFRONT_RUNTIME_NODE = 'v22.22.0';
-const ARTIFACT_RECIPE = 'r3-normalized-runtime-modes';
+const ARTIFACT_RECIPE = 'r4-seal-lifecycle';
 const CURRENT_RELEASE_INDEX = `release-index-${ARTIFACT_RECIPE}.json`;
+const PREVIOUS_RELEASE_INDEX = 'release-index-r3-normalized-runtime-modes.json';
 const LEGACY_RELEASE_INDEX = 'release-index.json';
 
 export async function publishPreparedArtifact(adapter, options, dependencies = {}) {
   const started = performance.now();
   const sourceSha = exactSourceSha(options.sourceSha, 'PREPARE_SOURCE_SHA_INVALID');
   const target = exactTarget(adapter, options.target, 'PREPARE_TARGET');
+  const node = required(options.node, 'PREPARE_NODE_REQUIRED');
+  invariant(Boolean(adapter.nodes[node]?.deployments?.[target]), 'PREPARE_NODE_TARGET_MISMATCH', `Unknown deployment ${node}/${target}`);
+  const controlSha = exactSourceSha(options.controlSha, 'PREPARE_CONTROL_SHA_INVALID');
+  const requestId = required(options.requestId, 'PREPARE_REQUEST_ID_REQUIRED');
+  const buildRunner = required(options.buildRunner, 'PREPARE_BUILD_RUNNER_REQUIRED');
+  invariant(options.actorRole === 'build', 'PREPARE_ROLE_FORBIDDEN', 'Only the Build role may publish prepared artifacts');
   const packagePath = resolve(required(options.package, 'PREPARE_PACKAGE_REQUIRED'));
   const packageSet = await resolvePackageArtifactPaths(packagePath, JSON.parse(await readFile(packagePath, 'utf8')));
   invariant(packageSet.project === adapter.project, 'PREPARE_PROJECT_MISMATCH', 'Package belongs to another project');
@@ -44,6 +52,35 @@ export async function publishPreparedArtifact(adapter, options, dependencies = {
   const prefix = objectPrefix(adapter.project, target, sourceSha, archiveSha256, options.prefix);
   const archiveObject = `${prefix}/artifact-${archiveSha256}.tar.gz`;
   const runtimeManifestObject = `${prefix}/artifact-manifest-${runtimeManifestSha256}.json`;
+  const buildEnvironment = {
+    platform: process.platform,
+    arch: process.arch,
+    node: process.version,
+    npm: required(options.npmVersion ?? process.env.AI_DELIVERY_NPM_VERSION, 'PREPARE_NPM_VERSION_REQUIRED'),
+    runnerImage: options.runnerImage ?? process.env.ImageOS ?? `${process.platform}-${process.arch}`,
+    runner: buildRunner,
+    releaseEngine: 2,
+    artifactRecipe: ARTIFACT_RECIPE,
+  };
+  const sourceEvidence = {
+    repository: options.repository ?? process.env.GITHUB_REPOSITORY ?? adapter.project,
+    sourceSha,
+    parentSha: plan.from?.sha ?? null,
+    planDigest: plan.planDigest,
+    packageLockSha256: `sha256:${lockfileSha256}`,
+  };
+  const validations = normalizedValidations(build.phases);
+  const runtimeVerification = await normalizedRuntimeVerification(options.runtimeEvidence, target);
+  const provenanceUnsigned = {
+    schema: 'ai.delivery.build-provenance.v1', protocolVersion: 1, project: adapter.project, target, sourceSha, controlPlaneSha: controlSha,
+    artifact: { object: archiveObject, sha256: artifact.archive.sha256, bytes: artifact.archive.bytes, treeDigest: artifact.treeDigest },
+    runtimeManifest: { object: runtimeManifestObject, sha256: `sha256:${runtimeManifestSha256}`, manifestDigest: artifact.manifestDigest },
+    buildEnvironment, sourceEvidence, validations, runtimeVerification,
+  };
+  const provenance = { ...provenanceUnsigned, provenanceDigest: digest(provenanceUnsigned) };
+  const provenanceBody = Buffer.from(prettyStableJson(provenance));
+  const provenanceSha256 = sha256(provenanceBody);
+  const provenanceObject = `${prefix}/build-provenance-${provenanceSha256}.json`;
   const releaseManifestUnsigned = {
     schema: 'ai.delivery.oss-release.v1',
     protocolVersion: 1,
@@ -63,24 +100,11 @@ export async function publishPreparedArtifact(adapter, options, dependencies = {
       bytes: runtimeManifestBody.byteLength,
       manifestDigest: artifact.manifestDigest,
     },
-    buildEnvironment: {
-      platform: process.platform,
-      arch: process.arch,
-      node: process.version,
-      npm: required(options.npmVersion ?? process.env.AI_DELIVERY_NPM_VERSION, 'PREPARE_NPM_VERSION_REQUIRED'),
-      runnerImage: options.runnerImage ?? process.env.ImageOS ?? `${process.platform}-${process.arch}`,
-      releaseEngine: 2,
-      artifactRecipe: ARTIFACT_RECIPE,
-    },
-    sourceEvidence: {
-      repository: options.repository ?? process.env.GITHUB_REPOSITORY ?? adapter.project,
-      sourceSha,
-      parentSha: plan.from?.sha ?? null,
-      planDigest: plan.planDigest,
-      packageLockSha256: `sha256:${lockfileSha256}`,
-    },
-    validations: normalizedValidations(build.phases),
-    runtimeVerification: await normalizedRuntimeVerification(options.runtimeEvidence, target),
+    provenance: { object: provenanceObject, sha256: `sha256:${provenanceSha256}`, provenanceDigest: provenance.provenanceDigest },
+    buildEnvironment,
+    sourceEvidence,
+    validations,
+    runtimeVerification,
     dependencyCache: {
       role: 'build-acceleration-only',
       deployableArtifact: false,
@@ -121,9 +145,30 @@ export async function publishPreparedArtifact(adapter, options, dependencies = {
   const objects = [
     await client.putImmutable(archiveObject, archive, 'application/gzip'),
     await client.putImmutable(runtimeManifestObject, runtimeManifestBody, 'application/json'),
+    await client.putImmutable(provenanceObject, provenanceBody, 'application/json'),
     await client.putImmutable(releaseManifestObject, releaseManifestBody, 'application/json'),
     await client.putImmutable(releaseIndexObject, releaseIndexBody, 'application/json'),
   ];
+  const lifecycles = [];
+  for (const physicalNode of eligibleNodes(adapter, target)) {
+    const lifecycle = createSealLifecycleStore(client, {
+      project: adapter.project, sourceSha, releaseTarget: target, physicalNode,
+      artifactDigest: artifact.archive.sha256, controlPlaneSha: controlSha,
+    });
+    const begun = await lifecycle.begin({ requestId, actorRole: 'build' });
+    invariant(begun.action !== 'observe', 'SEAL_BUILD_IN_PROGRESS', 'Another request owns the active Seal build lease', {
+      sealKey: lifecycle.key.seal_key, ownerRequestId: begun.lease?.request_id, retryable: true,
+    });
+    const uploaded = await lifecycle.markUploaded({
+      requestId, actorRole: 'build', buildRunner,
+      artifact: { object: archiveObject, digest: artifact.archive.sha256, bytes: artifact.archive.bytes, releaseManifestObject },
+      provenance: { object: provenanceObject, digest: `sha256:${provenanceSha256}` },
+      reused: objects.every((item) => item.status === 'hit_remote'),
+    });
+    lifecycles.push({ lifecycle, uploaded });
+  }
+  const requestedLifecycle = lifecycles.find(({ lifecycle }) => lifecycle.key.physical_node === node);
+  invariant(requestedLifecycle, 'PREPARE_PHYSICAL_NODE_INVALID', 'Prepare node is not a physical artifact placement');
   const publicationMs = elapsed(publicationStarted);
   const uploadedBytes = objects.filter((item) => item.status === 'uploaded').reduce((total, item) => total + item.bytes, 0);
   const reusedBytes = objects.filter((item) => item.status === 'hit_remote').reduce((total, item) => total + item.bytes, 0);
@@ -142,6 +187,13 @@ export async function publishPreparedArtifact(adapter, options, dependencies = {
       object: releaseIndexObject,
       sha256: `sha256:${releaseIndexSha256}`,
       indexDigest: releaseIndex.indexDigest,
+    },
+    provenance: { object: provenanceObject, sha256: `sha256:${provenanceSha256}`, provenanceDigest: provenance.provenanceDigest },
+    seal: {
+      key: requestedLifecycle.lifecycle.key,
+      objectRoot: requestedLifecycle.lifecycle.paths.root,
+      eligiblePhysicalNodes: lifecycles.map(({ lifecycle }) => lifecycle.key.physical_node),
+      state: 'UPLOADED', reused: requestedLifecycle.uploaded.reused,
     },
     objects,
     cacheStatus: objects.every((item) => item.status === 'hit_remote') ? 'hit_remote' : objects.every((item) => item.status === 'uploaded') ? 'miss' : 'partial_hit',
@@ -174,27 +226,39 @@ export async function resolvePreparedArtifact(adapter, options, dependencies = {
   invariant(Boolean(adapter.nodes[node]?.deployments?.[target]), 'OSS_NODE_TARGET_MISMATCH', `Unknown deployment ${node}/${target}`);
   const client = dependencies.client ?? ossClientFromEnvironment(options.endpoint, dependencies);
   const root = `${objectRoot(adapter.project, target, sourceSha, options.prefix)}/`;
-  const currentReleaseIndexObject = `${root}${CURRENT_RELEASE_INDEX}`;
-  let releaseIndexObject = currentReleaseIndexObject;
-  let currentRecipe = true;
+  let releaseIndexObject;
+  let expectedRecipe;
   let releaseIndexBody;
-  try {
-    releaseIndexBody = await client.getObject(currentReleaseIndexObject, 'OSS_ARTIFACT_NOT_FOUND');
-  } catch (error) {
-    if (!(error instanceof DeliveryError) || error.code !== 'OSS_ARTIFACT_NOT_FOUND' || options.allowLegacy === false) throw error;
-    releaseIndexObject = `${root}${LEGACY_RELEASE_INDEX}`;
-    currentRecipe = false;
-    releaseIndexBody = await client.getObject(releaseIndexObject, 'OSS_ARTIFACT_NOT_FOUND');
+  const candidates = options.allowLegacy === false
+    ? [[CURRENT_RELEASE_INDEX, ARTIFACT_RECIPE]]
+    : [[CURRENT_RELEASE_INDEX, ARTIFACT_RECIPE], [PREVIOUS_RELEASE_INDEX, 'r3-normalized-runtime-modes'], [LEGACY_RELEASE_INDEX, null]];
+  for (const [name, recipe] of candidates) {
+    try {
+      releaseIndexObject = `${root}${name}`;
+      releaseIndexBody = await client.getObject(releaseIndexObject, 'OSS_ARTIFACT_NOT_FOUND');
+      expectedRecipe = recipe;
+      break;
+    } catch (error) {
+      if (!(error instanceof DeliveryError) || error.code !== 'OSS_ARTIFACT_NOT_FOUND') throw error;
+    }
   }
+  invariant(releaseIndexBody, 'OSS_ARTIFACT_NOT_FOUND', 'Prepared artifact release index is missing');
   const releaseIndex = JSON.parse(releaseIndexBody.toString('utf8'));
-  validateReleaseIndex(releaseIndex, { adapter, target, sourceSha, root, expectedRecipe: currentRecipe ? ARTIFACT_RECIPE : null });
+  validateReleaseIndex(releaseIndex, { adapter, target, sourceSha, root, expectedRecipe });
   const releaseManifestObject = releaseIndex.releaseManifest.object;
   const releaseManifestBody = await client.getObject(releaseManifestObject);
   invariant(`sha256:${sha256(releaseManifestBody)}` === releaseIndex.releaseManifest.sha256, 'OSS_RELEASE_MANIFEST_HASH_MISMATCH', 'Release manifest content hash differs');
   const manifest = JSON.parse(releaseManifestBody.toString('utf8'));
-  validateReleaseManifest(manifest, { adapter, target, sourceSha, node, root, expectedRecipe: currentRecipe ? ARTIFACT_RECIPE : null });
+  validateReleaseManifest(manifest, { adapter, target, sourceSha, node, root, expectedRecipe });
   invariant(manifest.manifestDigest === releaseIndex.releaseManifest.manifestDigest, 'OSS_RELEASE_INDEX_MANIFEST_MISMATCH', 'Release index semantic digest differs from the manifest');
   invariant(manifest.artifact.sha256 === releaseIndex.artifactIdentity, 'OSS_RELEASE_INDEX_ARTIFACT_MISMATCH', 'Release index artifact identity differs from the manifest');
+  let provenance = null;
+  if (expectedRecipe === ARTIFACT_RECIPE) {
+    const provenanceBody = await client.getObject(manifest.provenance.object);
+    invariant(`sha256:${sha256(provenanceBody)}` === manifest.provenance.sha256, 'OSS_PROVENANCE_HASH_MISMATCH', 'Build provenance content hash differs');
+    provenance = JSON.parse(provenanceBody.toString('utf8'));
+    validateBuildProvenance(provenance, { adapter, target, sourceSha, manifest });
+  }
 
   const runtimeManifestBody = await client.getObject(manifest.runtimeManifest.object);
   invariant(digest(runtimeManifestBody) === manifest.runtimeManifest.sha256, 'OSS_RUNTIME_MANIFEST_HASH_MISMATCH', 'Runtime manifest content hash differs');
@@ -225,9 +289,69 @@ export async function resolvePreparedArtifact(adapter, options, dependencies = {
     releaseIndex,
     releaseManifestObject,
     manifest,
+    provenance,
     runtimeManifest,
     timings: { artifactLookup: elapsed(started), total: elapsed(started) },
   };
+}
+
+export async function finalizePreparedSeal(adapter, options, dependencies = {}) {
+  const sourceSha = exactSourceSha(options.sourceSha, 'SEAL_SOURCE_SHA_INVALID');
+  const target = exactTarget(adapter, options.target, 'SEAL_TARGET');
+  const node = required(options.node, 'SEAL_NODE_REQUIRED');
+  const artifactDigest = required(options.artifactDigest, 'SEAL_ARTIFACT_DIGEST_REQUIRED');
+  const controlPlaneSha = exactSourceSha(options.controlPlaneSha, 'SEAL_CONTROL_SHA_INVALID');
+  const client = dependencies.client ?? ossClientFromEnvironment(options.endpoint, dependencies);
+  const lifecycle = createSealLifecycleStore(client, { project: adapter.project, sourceSha, releaseTarget: target, physicalNode: node, artifactDigest, controlPlaneSha });
+  const current = await lifecycle.read();
+  invariant(current.status === 'UPLOADED' || current.status === 'VALIDATED' || current.status === 'SEALED',
+    'SEAL_UPLOAD_RECEIPT_MISSING', 'Candidate cannot be sealed without authoritative UPLOADED evidence');
+  if (current.status === 'SEALED') return { lifecycle, state: current, reused: true };
+  if (current.status === 'UPLOADED') {
+    await lifecycle.markValidated({
+      requestId: options.requestId, actorRole: options.actorRole, releaseRunner: options.releaseRunner, reused: options.reused === true,
+      validation: { ok: true, receipt_digest: digest(options.validationReceipt), receipt: options.validationReceipt },
+    });
+  }
+  const sealed = await lifecycle.seal({ requestId: options.requestId, actorRole: options.actorRole });
+  return { lifecycle, state: await lifecycle.read(), reused: sealed.reused };
+}
+
+export async function requireFinalSealReceipt(adapter, options, dependencies = {}) {
+  const client = dependencies.client ?? ossClientFromEnvironment(options.endpoint, dependencies);
+  const lifecycle = createSealLifecycleStore(client, {
+    project: adapter.project, sourceSha: options.sourceSha, releaseTarget: options.target, physicalNode: options.node,
+    artifactDigest: options.artifactDigest, controlPlaneSha: options.controlPlaneSha,
+  });
+  const state = await lifecycle.read();
+  invariant(state.status === 'SEALED', 'FINAL_SEAL_RECEIPT_MISSING', 'OSS final Seal receipt is missing; Action success is not Seal authority', {
+    status: state.status, sealKey: lifecycle.key.seal_key, finalSealReceiptObject: lifecycle.paths.final,
+  });
+  return { key: lifecycle.key, object: lifecycle.paths.final, receipt: state.final, reused: true };
+}
+
+export async function findFinalSealReceipt(adapter, options, dependencies = {}) {
+  const sourceSha = exactSourceSha(options.sourceSha, 'SEAL_SOURCE_SHA_INVALID');
+  const target = exactTarget(adapter, options.target, 'SEAL_TARGET');
+  const node = required(options.node, 'SEAL_NODE_REQUIRED');
+  const client = dependencies.client ?? ossClientFromEnvironment(options.endpoint, dependencies);
+  const prefix = `${objectRoot(adapter.project, target, sourceSha, options.prefix)}/seals/v1/${node}/`;
+  const objects = (await client.listPrefix(prefix)).filter((object) => object.endsWith('/final-seal.json'));
+  const receipts = [];
+  for (const object of objects) {
+    const candidate = JSON.parse((await client.getObject(object)).toString('utf8'));
+    const key = createSealKey({
+      sourceSha: candidate.key?.source_sha, releaseTarget: candidate.key?.release_target, physicalNode: candidate.key?.physical_node,
+      artifactDigest: candidate.key?.artifact_digest, controlPlaneSha: candidate.key?.control_plane_sha,
+    });
+    const paths = sealObjectPaths(adapter.project, key, options.prefix);
+    invariant(paths.final === object, 'FINAL_SEAL_OBJECT_PATH_MISMATCH', 'Final Seal receipt is outside its canonical path');
+    const state = await createSealLifecycleStore(client, { project: adapter.project, sourceSha, releaseTarget: target, physicalNode: node,
+      artifactDigest: key.artifact_digest, controlPlaneSha: key.control_plane_sha, prefix: options.prefix }).read();
+    if (state.status === 'SEALED') receipts.push({ key, object, receipt: state.final });
+  }
+  receipts.sort((left, right) => Date.parse(right.receipt.updated_at) - Date.parse(left.receipt.updated_at));
+  return receipts[0] ?? null;
 }
 
 export async function inspectPreparedArtifact(adapter, options, dependencies = {}) {
@@ -447,6 +571,11 @@ function validateReleaseManifest(manifest, { adapter, target, sourceSha, node, r
   for (const object of [manifest.artifact?.object, manifest.runtimeManifest?.object]) {
     invariant(typeof object === 'string' && object.startsWith(root), 'OSS_ARTIFACT_OBJECT_SCOPE_INVALID', 'Release object is outside its immutable prefix');
   }
+  if (expectedRecipe === ARTIFACT_RECIPE) {
+    invariant(typeof manifest.provenance?.object === 'string' && manifest.provenance.object.startsWith(root),
+      'OSS_PROVENANCE_OBJECT_SCOPE_INVALID', 'Build provenance is outside its immutable prefix');
+    invariant(/^sha256:[a-f0-9]{64}$/.test(manifest.provenance?.sha256), 'OSS_PROVENANCE_DIGEST_INVALID', 'Build provenance digest is invalid');
+  }
   invariant(/^sha256:[a-f0-9]{64}$/.test(manifest.artifact?.sha256), 'OSS_ARTIFACT_DIGEST_INVALID', 'Release artifact digest is invalid');
   invariant(/^sha256:[a-f0-9]{64}$/.test(manifest.artifact?.treeDigest), 'OSS_TREE_DIGEST_INVALID', 'Release tree digest is invalid');
   invariant(/^sha256:[a-f0-9]{64}$/.test(manifest.runtimeManifest?.sha256), 'OSS_RUNTIME_MANIFEST_DIGEST_INVALID', 'Runtime manifest digest is invalid');
@@ -454,6 +583,23 @@ function validateReleaseManifest(manifest, { adapter, target, sourceSha, node, r
   const unsigned = { ...manifest };
   delete unsigned.manifestDigest;
   invariant(claimed === digest(unsigned), 'OSS_RELEASE_MANIFEST_DIGEST_MISMATCH', 'Release manifest semantic digest differs');
+}
+
+function validateBuildProvenance(provenance, { adapter, target, sourceSha, manifest }) {
+  invariant(provenance.schema === 'ai.delivery.build-provenance.v1' && provenance.protocolVersion === 1,
+    'OSS_PROVENANCE_SCHEMA_INVALID', 'Build provenance schema is unsupported');
+  invariant(provenance.project === adapter.project && provenance.target === target && provenance.sourceSha === sourceSha,
+    'OSS_PROVENANCE_SCOPE_MISMATCH', 'Build provenance scope differs');
+  invariant(provenance.artifact?.sha256 === manifest.artifact.sha256 && provenance.artifact?.object === manifest.artifact.object,
+    'OSS_PROVENANCE_ARTIFACT_MISMATCH', 'Build provenance artifact differs');
+  invariant(provenance.runtimeManifest?.object === manifest.runtimeManifest.object
+    && provenance.runtimeManifest?.manifestDigest === manifest.runtimeManifest.manifestDigest,
+  'OSS_PROVENANCE_RUNTIME_MISMATCH', 'Build provenance runtime manifest differs');
+  const claimed = provenance.provenanceDigest;
+  const unsigned = { ...provenance };
+  delete unsigned.provenanceDigest;
+  invariant(claimed === digest(unsigned) && claimed === manifest.provenance.provenanceDigest,
+    'OSS_PROVENANCE_SEMANTIC_MISMATCH', 'Build provenance semantic digest differs');
 }
 
 function validateRuntimeManifest(manifest, { project, target, sourceSha, artifact, strictModes = true }) {
@@ -528,7 +674,8 @@ async function normalizedRuntimeVerification(path, target) {
 
 function eligibleNodes(adapter, target) {
   return Object.entries(adapter.nodes)
-    .filter(([, node]) => Boolean(node.deployments?.[target]))
+    .filter(([nodeId, node]) => Boolean(node.deployments?.[target])
+      && (node.deployments[target].hostedBy === undefined || node.deployments[target].hostedBy === nodeId))
     .map(([node]) => node)
     .sort();
 }

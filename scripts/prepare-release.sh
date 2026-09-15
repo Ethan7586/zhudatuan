@@ -100,7 +100,7 @@ find_dispatched_run() {
 }
 
 last_prepare_id="$(gh run list --workflow "$WORKFLOW_PREPARE" --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
-echo "Artifact preparation (${BUILD_RUNNER}): ${SHA} -> ${TARGET}"
+echo "正在封装：${SHA} -> ${TARGET} (${BUILD_RUNNER})"
 gh workflow run "$WORKFLOW_PREPARE" --ref zdt-next \
   -f head_sha="$SHA" \
   -f release_target="$TARGET" \
@@ -109,14 +109,17 @@ gh workflow run "$WORKFLOW_PREPARE" --ref zdt-next \
 prepare_title="Prepare 1.4 ${SHA} ${TARGET}"
 if [ "$BUILD_RUNNER" = github ]; then prepare_title+=" [github]"; fi
 prepare_run_id="$(find_dispatched_run "$WORKFLOW_PREPARE" "$prepare_title" "$last_prepare_id")" || {
-  echo "Prepare was dispatched but its run id was not found." >&2
+  echo "未封板：classification=BUILD_ACTION_NOT_FOUND retryable=true" >&2
   exit 1
 }
 echo "Prepare run: $prepare_run_id"
-gh run watch "$prepare_run_id" --exit-status
+if ! gh run watch "$prepare_run_id" --exit-status; then
+  echo "未封板：classification=BUILD_ACTION_FAILED retryable=true request=${prepare_run_id}" >&2
+  exit 1
+fi
 
 last_seal_id="$(gh run list --workflow "$WORKFLOW_DEPLOY" --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
-echo "Aliyun candidate validation and seal: ${SHA} -> ${NODE}/${TARGET}"
+echo "正在验证：${SHA} -> ${NODE}/${TARGET}"
 gh workflow run "$WORKFLOW_DEPLOY" --ref zdt-next \
   -f head_sha="$SHA" \
   -f release_node="$NODE" \
@@ -124,10 +127,35 @@ gh workflow run "$WORKFLOW_DEPLOY" --ref zdt-next \
   -f operation=validate-candidate
 seal_title="Deploy 1.4 validate-candidate ${SHA} ${NODE} ${TARGET}"
 seal_run_id="$(find_dispatched_run "$WORKFLOW_DEPLOY" "$seal_title" "$last_seal_id")" || {
-  echo "Candidate validation was dispatched but its run id was not found." >&2
+  echo "未封板：classification=SEAL_ACTION_NOT_FOUND retryable=true" >&2
   exit 1
 }
 echo "Candidate seal run: $seal_run_id"
-gh run watch "$seal_run_id" --exit-status
+if ! gh run watch "$seal_run_id" --exit-status; then
+  echo "未封板：classification=VALIDATION_OR_SEAL_ACTION_FAILED retryable=true request=${seal_run_id}" >&2
+  exit 1
+fi
 
-echo "Candidate sealed. Production was not switched."
+seal_attempt="$(gh api "repos/{owner}/{repo}/actions/runs/${seal_run_id}" --jq .run_attempt)"
+receipt_dir="$(mktemp -d "${TMPDIR:-/tmp}/zdt-seal-result.XXXXXX")"
+trap 'rm -rf -- "$receipt_dir"' EXIT
+receipt_name="prepared-validate-candidate-${TARGET}-${SHA}-${seal_run_id}-${seal_attempt}"
+gh run download "$seal_run_id" --name "$receipt_name" --dir "$receipt_dir"
+node -e '
+const fs=require("node:fs");
+const p=process.argv[1];
+const envelope=JSON.parse(fs.readFileSync(p,"utf8"));
+if(!envelope.ok||envelope.result?.finalStatus!=="sealed"||envelope.result?.finalSealReceipt?.schema!=="ai.delivery.final-seal.v1") {
+  console.error("未封板：classification=FINAL_SEAL_RECEIPT_MISSING retryable=true");
+  process.exit(1);
+}
+const x=envelope.result;
+console.log(JSON.stringify({
+  status:"已封板", sourceSha:x.sourceSha, controlPlaneSha:x.controlPlane.sourceSha,
+  target:x.target, physicalNode:x.node, artifactDigest:x.artifactIdentity,
+  sealKey:x.sealKey, finalSealReceiptObject:x.finalSealReceiptObject,
+  buildRunner:x.finalSealReceipt.build_runner, releaseRunner:x.finalSealReceipt.release_runner,
+  reusedArtifact:x.finalSealReceipt.reused_artifact, reusedReceipt:x.reusedSeal,
+  productionSwitched:false
+},null,2));
+' "$receipt_dir/envelope.json"

@@ -1,10 +1,9 @@
 export function evaluateDeliveryStatus(input) {
   const committed = input.localCommit === true;
   const inMainline = input.inMainline === true;
-  const sealedRun = firstSuccessful(input.sealRuns);
   const latestPrepare = input.prepareRuns?.[0];
   const latestSeal = input.sealRuns?.[0];
-  const sealed = sealedRun !== undefined;
+  const sealed = input.sealAuthority?.status === 'SEALED';
   const deployable = inMainline && sealed && input.channelConfigured === true;
 
   let code = 'UNKNOWN_SOURCE';
@@ -15,6 +14,8 @@ export function evaluateDeliveryStatus(input) {
   else if (deployable) code = 'DEPLOYABLE';
   else if (isActive(latestSeal)) code = 'SEALING';
   else if (latestSeal?.status === 'completed' && latestSeal.conclusion !== 'success') code = 'SEAL_FAILED';
+  else if (inMainline && input.sealAuthority?.status === 'UNAVAILABLE') code = 'SEAL_AUTHORITY_UNAVAILABLE';
+  else if (inMainline && latestSeal?.conclusion === 'success' && !sealed) code = 'SEAL_RECEIPT_MISSING';
   else if (isActive(latestPrepare)) code = 'PREPARING';
   else if (latestPrepare?.status === 'completed' && latestPrepare.conclusion !== 'success') code = 'PREPARE_FAILED';
   else if (latestPrepare?.conclusion === 'success') code = 'AWAITING_SEAL';
@@ -29,7 +30,14 @@ export function evaluateDeliveryStatus(input) {
     conflictFiles: Object.freeze([...(input.conflictFiles ?? [])]),
     prepare: summarizeRun(latestPrepare),
     seal: summarizeRun(latestSeal),
-    sealEvidence: summarizeRun(sealedRun),
+    sealEvidence: sealed ? Object.freeze({
+      sealKey: input.sealAuthority.sealKey,
+      object: input.sealAuthority.object,
+      artifactDigest: input.sealAuthority.artifactDigest,
+      controlPlaneSha: input.sealAuthority.controlPlaneSha,
+      updatedAt: input.sealAuthority.updatedAt,
+    }) : undefined,
+    sealAuthorityStatus: input.sealAuthority?.status ?? 'ABSENT',
   });
 }
 
@@ -45,10 +53,6 @@ export function automaticClosureIncludes(closure, { sourceSha, target, node }) {
   return ['migrations', 'runtimes', 'frontends']
     .flatMap((wave) => Array.isArray(closure.waves?.[wave]) ? closure.waves[wave] : [])
     .some((entry) => entry?.target === target && entry?.node === node);
-}
-
-function firstSuccessful(runs = []) {
-  return runs.find((run) => run?.status === 'completed' && run.conclusion === 'success');
 }
 
 function isActive(run) {

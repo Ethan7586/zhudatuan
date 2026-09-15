@@ -1,5 +1,27 @@
 # AI 发布通道（正式 1.4 阿里云版）
 
+## 1.4.3 Seal 生命周期协议
+
+封板身份使用 `ai.delivery.seal-key.v1`，按以下 UTF-8 文本精确序列化后计算 SHA-256：
+
+```text
+zdt-seal-key/v1
+source_sha=<40位SHA>
+release_target=<单一目标>
+physical_node=<真实物理节点>
+artifact_digest=sha256:<64位摘要>
+control_plane_sha=<40位SHA>
+```
+
+对象根固定为 `<project>/<target>/<source>/seals/v1/<node>/<artifact-sha256>/<control-sha>/`。状态只允许
+`ABSENT → BUILDING → UPLOADED → VALIDATED → SEALED`；任一执行阶段可写入不可变 `FAILED` 证据，安全重试从最近已完成阶段继续。
+Build 角色只能创建构建来源、制品和 `uploaded.json`；Release 角色只能从 `UPLOADED` 创建
+`candidate-validation.json`，再以 OSS 禁止覆盖写入 `final-seal.json`。同内容冲突返回原回执，不同内容冲突停止。
+
+`final-seal.json` 是“已封板”的唯一权威。GitHub Action 成功、Actions Artifact、远端候选指针或远端临时 Seal
+均不能单独产生 `SEALED`。状态查询直接读取并校验 OSS 最终回执；OSS 不可用或回执缺失时明确显示“未封板”。
+Deploy 在连接生产目标前必须取得与 source、目标、物理节点、artifact digest 和 control-plane SHA 完全一致的最终回执。
+
 1.4 是仓库唯一默认发布协议：GitHub 负责任务调度；系统级 Prepare 在阿里云 Build 槽有容量时优先使用阿里云，两个槽都忙或离线时将新任务送往 GitHub 托管 Runner，选择后不再迁移；候选封板与发布固定由阿里云 Release Runner 执行。`Prepare Artifact 1.4 - Aliyun` 生成不可变 OSS 制品并封板，`Deploy 1.4 - Aliyun Sealed Artifact` 只消费已封板制品。候选验证必须证明当前生产 source SHA 是候选 source SHA 的 Git 祖先，并把精确制品、候选目录、当前生产指针、Agent 和策略摘要写入封板记录；正式部署不能临时下载候选、安装依赖或构建。两条正常入口一次只接受一个物理 target，固定从 `zdt-next` 触发，source SHA 必须属于精确 `zdt-next` 历史。
 
 默认分支当前使用文件名带 `-aliyun` 的工作流，新分支从 `zdt-next` 创建后自然继承 1.4；历史分支中的旧 YAML 只是历史快照，不是可执行入口。旧 GitHub workflow ID 已删除。1.2 仅以两个名称明确的恢复入口保留，不再要求重复确认字符串；普通“部署”仍进入 1.4。

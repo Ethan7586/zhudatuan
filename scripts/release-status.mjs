@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { automaticClosureIncludes, evaluateDeliveryStatus, parseMergeTreeConflictFiles } from '../04_tools/release-engine/src/delivery-status.mjs';
+import { evaluateDeliveryStatus, parseMergeTreeConflictFiles } from '../04_tools/release-engine/src/delivery-status.mjs';
+import { findFinalSealReceipt } from '../04_tools/release-engine/src/oss.mjs';
 
 const [target, sourceSha, physicalNode, outputMode] = process.argv.slice(2);
 if (!target || !sourceSha || !physicalNode || !/^[0-9a-f]{40}$/.test(sourceSha)
@@ -32,13 +32,22 @@ const prepareRuns = ghRuns('prepare-artifact-aliyun.yml').filter(({ displayTitle
     displayTitle === `Prepare ${version} ${sourceSha} ${target}` || displayTitle === `Prepare ${version} ${sourceSha} ${target} [github]`));
 const sealRuns = workflowRuns.filter(({ displayTitle }) => recognizedDeliveryVersions.some((version) =>
   displayTitle === `Deploy ${version} validate-candidate ${sourceSha} ${physicalNode} ${target}`));
-const automaticSeal = automaticClosureSeal();
-if (automaticSeal) sealRuns.unshift(automaticSeal);
+let sealAuthority;
+try {
+  const receipt = await findFinalSealReceipt(adapter, { sourceSha, target, node: physicalNode });
+  sealAuthority = receipt ? {
+    status: 'SEALED', sealKey: receipt.key.seal_key, object: receipt.object,
+    artifactDigest: receipt.key.artifact_digest, controlPlaneSha: receipt.key.control_plane_sha,
+    updatedAt: receipt.receipt.updated_at,
+  } : { status: 'ABSENT' };
+} catch (error) {
+  sealAuthority = { status: 'UNAVAILABLE', error: error.code ?? error.message };
+}
 const result = {
   target,
   sourceSha,
   physicalNode,
-  ...evaluateDeliveryStatus({ localCommit, remoteCommit, inMainline, conflictFiles, channelConfigured, prepareRuns, sealRuns }),
+  ...evaluateDeliveryStatus({ localCommit, remoteCommit, inMainline, conflictFiles, channelConfigured, prepareRuns, sealRuns, sealAuthority }),
 };
 
 if (outputMode === '--json') process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
@@ -49,28 +58,6 @@ function ghRuns(workflow) {
     '--limit', '100', '--json', 'databaseId,displayTitle,status,conclusion,url,createdAt']);
   if (listed.status !== 0) return [];
   try { return JSON.parse(listed.stdout); } catch { return []; }
-}
-
-function automaticClosureSeal() {
-  const listed = command('gh', ['run', 'list', '--workflow', 'auto-prepare-artifacts.yml', '--branch', 'zdt-next', '--event', 'push',
-    '--limit', '100', '--json', 'databaseId,headSha,status,conclusion,url,createdAt']);
-  if (listed.status !== 0) return undefined;
-  let runs;
-  try { runs = JSON.parse(listed.stdout).filter((run) => run.headSha === sourceSha && run.status === 'completed'); } catch { return undefined; }
-  for (const run of runs) {
-    const directory = mkdtempSync(join(tmpdir(), 'zdt-automatic-closure-status-'));
-    try {
-      const downloaded = command('gh', ['run', 'download', String(run.databaseId), '--name', `automatic-artifact-closure-${sourceSha}`, '--dir', directory]);
-      if (downloaded.status !== 0) continue;
-      const closure = JSON.parse(readFileSync(join(directory, 'closure.json'), 'utf8'));
-      if (automaticClosureIncludes(closure, { sourceSha, target, node: physicalNode })) return run;
-    } catch {
-      continue;
-    } finally {
-      rmSync(directory, { recursive: true, force: true });
-    }
-  }
-  return undefined;
 }
 
 function command(executable, arguments_) {
@@ -86,13 +73,15 @@ function printHuman(result) {
   const labels = { UNKNOWN_SOURCE: '未找到提交', LOCAL_ONLY: '仅本地提交', MERGE_CONFLICT: '主线冲突',
     AWAITING_INTEGRATION: '等待接入主线', CHANNEL_MISSING: '部署通道缺失', IN_MAINLINE: '已入主线',
     PREPARING: '正在准备制品', PREPARE_FAILED: '制品准备失败', AWAITING_SEAL: '等待封板',
-    SEALING: '正在封板', SEAL_FAILED: '封板失败', DEPLOYABLE: '可以部署' };
+    SEALING: '正在封板', SEAL_FAILED: '封板失败', SEAL_RECEIPT_MISSING: '未封板（缺少 OSS 最终回执）',
+    SEAL_AUTHORITY_UNAVAILABLE: '未封板（OSS 权威不可用）', DEPLOYABLE: '可以部署' };
   process.stdout.write(`交付状态：${labels[result.code] ?? result.code}\n`);
   for (const [key, label] of [['committed', '已提交'], ['inMainline', '已入主线'], ['sealed', '已封板'], ['deployable', '可部署']]) {
     process.stdout.write(`${result.states[key] ? '✓' : '·'} ${label}\n`);
   }
   if (!result.remoteCommit) process.stdout.write('· GitHub 尚不可见此提交\n');
   if (!result.channelConfigured) process.stdout.write(`· ${result.physicalNode}/${result.target} 没有物理部署通道\n`);
+  if (result.sealAuthorityStatus !== 'SEALED') process.stdout.write(`· OSS Seal 权威：${result.sealAuthorityStatus}\n`);
   if (result.conflictFiles.length > 0) {
     process.stdout.write('主线冲突文件：\n');
     for (const file of result.conflictFiles) process.stdout.write(`- ${file}\n`);

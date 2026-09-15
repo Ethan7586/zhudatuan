@@ -137,7 +137,8 @@ test('normal scripts expose only the 1.4 prepare and atomic-deploy sequence', ()
   assert.doesNotMatch(deployPrepared, /production[_-]approval|zdt-next:prepared-deploy:/);
   assert.match(prepareRelease, /gh workflow run "\$WORKFLOW_PREPARE" --ref zdt-next/);
   assert.match(prepareRelease, /operation=validate-candidate/);
-  assert.match(prepareRelease, /Candidate sealed\. Production was not switched\./);
+  assert.match(prepareRelease, /finalSealReceiptObject/);
+  assert.match(prepareRelease, /productionSwitched:false/);
   assert.doesNotMatch(prepareRelease, /operation=deploy|legacy|git push/);
 });
 

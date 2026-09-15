@@ -30,14 +30,16 @@ test('distinguishes mainline, preparation and sealing without inventing a gate',
     prepareRuns: [success] }).code, 'AWAITING_SEAL');
 });
 
-test('only reports deployable when mainline, seal evidence and a physical channel agree', () => {
+test('only reports deployable when mainline, OSS Seal authority and a physical channel agree', () => {
+  const sealAuthority = { status: 'SEALED', sealKey: `sha256:${'a'.repeat(64)}`, object: 'final-seal.json',
+    artifactDigest: `sha256:${'b'.repeat(64)}`, controlPlaneSha: 'c'.repeat(40), updatedAt: '2026-09-16T00:00:00Z' };
   const ready = evaluateDeliveryStatus({ localCommit: true, remoteCommit: true, inMainline: true, channelConfigured: true,
-    prepareRuns: [success], sealRuns: [success] });
+    prepareRuns: [success], sealRuns: [success], sealAuthority });
   assert.equal(ready.code, 'DEPLOYABLE');
   assert.deepEqual(ready.states, { committed: true, inMainline: true, sealed: true, deployable: true });
 
   const missingChannel = evaluateDeliveryStatus({ localCommit: true, remoteCommit: true, inMainline: true, channelConfigured: false,
-    prepareRuns: [success], sealRuns: [success] });
+    prepareRuns: [success], sealRuns: [success], sealAuthority });
   assert.equal(missingChannel.code, 'CHANNEL_MISSING');
   assert.equal(missingChannel.states.deployable, false);
 });

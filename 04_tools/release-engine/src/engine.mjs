@@ -9,7 +9,7 @@ import { DeliveryError, invariant } from './errors.mjs';
 import { assertBuildRefIsCheckedOut, assertWorktreeClean, currentHead } from './git.mjs';
 import { layerCommand } from './layer.mjs';
 import { acquireLocks } from './lock.mjs';
-import { inspectPreparedArtifact, ossClientFromEnvironment, publishPreparedArtifact, publishWorkflowEvidence, resolveDownloadEndpoint, resolvePreparedArtifact } from './oss.mjs';
+import { finalizePreparedSeal, inspectPreparedArtifact, ossClientFromEnvironment, publishPreparedArtifact, publishWorkflowEvidence, requireFinalSealReceipt, resolveDownloadEndpoint, resolvePreparedArtifact } from './oss.mjs';
 import { createPlan } from './planner.mjs';
 import { runCommand } from './runner.mjs';
 import { createRun, readJson, statePaths, writeJson } from './state.mjs';
@@ -289,6 +289,9 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
   const remoteAgent = transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs';
   const artifact = resolution.manifest.artifact;
   const runtimeManifest = resolution.manifest.runtimeManifest;
+  const authoritativeSeal = candidateOnly ? null : await requireFinalSealReceipt(adapter, {
+    ...options, sourceSha, target, node: requestedNode, artifactDigest: artifact.sha256, controlPlaneSha: controlSha,
+  });
   const remoteAction = candidateOnly ? 'validate-oss-candidate-v3' : 'deploy-sealed-candidate-v3';
   const remoteIdentityArgs = [
     '--project',
@@ -374,6 +377,18 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
     remoteAgentSha256: expectedRemoteAgentSha256,
     remotePolicySha256: expectedRemotePolicySha256,
   });
+  const ossSeal = candidateOnly ? await finalizePreparedSeal(adapter, {
+    ...options,
+    sourceSha,
+    target,
+    node: requestedNode,
+    artifactDigest: artifact.sha256,
+    controlPlaneSha: controlSha,
+    requestId: `${githubRunId}:${githubRunAttempt}`,
+    actorRole: 'release',
+    releaseRunner: options.releaseRunner ?? process.env.RUNNER_NAME ?? 'zdt-aliyun-release',
+    validationReceipt: { remote: remoteResult, lineage, candidateSeal, controlPlane },
+  }) : null;
   return {
     schema: candidateOnly ? 'ai.delivery.prepared-candidate.v1' : 'ai.delivery.prepared-deploy.v1',
     project: adapter.project,
@@ -385,7 +400,9 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
     node: resolvedDeployment.executionNode,
     artifactIdentity: artifact.sha256,
     releaseManifestObject: resolution.releaseManifestObject,
-    finalStatus: candidateOnly ? 'candidate-validated' : 'success',
+    sealKey: candidateOnly ? ossSeal.lifecycle.key.seal_key : authoritativeSeal.key.seal_key,
+    finalSealReceiptObject: candidateOnly ? ossSeal.lifecycle.paths.final : authoritativeSeal.object,
+    finalStatus: candidateOnly ? 'sealed' : 'success',
     cacheStatus: remoteResult.cacheStatus,
     repeatedDeployment: candidateOnly ? false : remoteResult.activation.alreadyCurrent === true,
     timings: {
@@ -404,7 +421,9 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
       downloadedBytes: remoteResult.downloadedBytes ?? 0,
       reusedBytes: remoteResult.reusedBytes ?? 0,
     },
-    ...(candidateOnly ? { candidateEvidence: remoteResult.current, candidateSeal, lineage } : { receipt: remoteResult.activation.receipt }),
+    ...(candidateOnly
+      ? { candidateEvidence: remoteResult.current, candidateSeal, lineage, finalSealReceipt: ossSeal.state.final, reusedSeal: ossSeal.reused }
+      : { receipt: remoteResult.activation.receipt, finalSealReceipt: authoritativeSeal.receipt }),
     completedAt: new Date().toISOString(),
   };
 }
