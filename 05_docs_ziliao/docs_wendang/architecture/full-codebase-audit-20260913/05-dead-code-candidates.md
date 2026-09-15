@@ -1459,7 +1459,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 运行结论 | 该历史步骤定义 store 管理范围和函数版本链；后续替换不等于可以删除或跳过。 |
 | 数据/契约责任 | 承担 operator store 管理 API、KMS 地址写入范围和 scope SQL 的授权边界。 |
 | 可否删除 | 禁止 |
-| 二次复核 | 是：current function、迁移顺序、成员/店铺越权反事实和恢复演练。 |
+| 二次复核 | RV-0054 已完成：维持 GX；静态复核确认门店操作/资源 scope 与 member 范围恢复构成顺序链，无关 scope 断言 fail-closed，运行时仍检查函数。真实越权和恢复未验证。 |
 
 - store management/member scope 演进归 GX-0032。累计 G0 60、G1 83、G2 5、G3 0、GX 32；未删除任何文件。
 
