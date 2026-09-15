@@ -678,7 +678,7 @@
 | --- | --- |
 | 模块 | 共享状态 / Secret Store、KMS |
 | 类型 | 身份验证、资源授权、生产接线与测试对象不一致 |
-| 严重级别 | **P1 候选**；未完成 RV-0003 前不作最终 P1 |
+| 严重级别 | **P1**；RV-0003 已于 2026-09-15 从 production systemd、build/entry map、Main、Handler 与 policy 重新取证确认 |
 | 置信度 | 高（build、systemd、Main、Handler、policy和客户端闭环）；未观察真实未授权调用 |
 | 文件和精确位置 | `04_tools/tools/localsecrets/src/Main.ts:5-25`、`Handler.ts:8-24`；`04_tools/tools/localkms/src/Main.ts:5-33`、`Handler.ts:9-34`；`04_tools/tools/localinfra/src/WorkloadAccessPolicy.ts:82-147`、`Run.ts:4-30`；`04_tools/scripts/build-commerce.mjs:10-20`；`01_core_hexin/services/commerce/src/foundation/infrastructure/SecretStore.ts:26-45`、`KmsClient.ts:11-47` |
 | 当前行为 | [CONFLICT][E-AU-005-006][E-AU-005-016] 客户端始终发送Bearer；授权版Handler会在读取path/body前执行authenticate并对ref/keyRef执行require。实际打包的两个Main自行定义handler，完全不读取authorization header、不调用Handler，也不加载已经由环境解析器返回的workload policy。全仓排除测试和定义后的两个Handler生产引用数均为0 |
@@ -693,7 +693,9 @@
 | 预计修改范围 | 两个Main的组合入口、必要的policy加载和对应入口测试；不应同时改加密原语或secret目录结构 |
 | 验证方式 | 第二审计者重新从unit追到bundle source；隔离环境验证health 200、缺/错Bearer 401、越权403、正确授权成功，并确认日志不含值 |
 | 回滚方式 | 修复分支保留原bundle；若接线影响启动，回退单一入口提交，不更换master key或secret值 |
-| 是否需要独立复核 | 是，RV-0003；P1与权限边界强制100%重追 |
+| 是否需要独立复核 | 已完成 RV-0003；未来安全接线变更仍须独立变更后复核 |
+
+**RV-0003（二次独立复核，2026-09-15）：确认 P1。** 正式 `registration-only` runtime 与 secret-store unit 都启动未认证的 Main；Main 不读取 Authorization、不调用已有 Handler、也不加载 workload policy。已存在 Handler/policy 的测试规定了应有的 401/403 行为，但当前 production entry 未接线；full-staging 注入 policy credential 仍不改变这一事实。详见 `records/AU-909-rv-0003-secret-store-kms-authz/summary.md`；未读取或访问任何凭据。
 
 ## F-0022｜正式运行目标没有 OutboxRelay 与 RuntimeScheduler
 
