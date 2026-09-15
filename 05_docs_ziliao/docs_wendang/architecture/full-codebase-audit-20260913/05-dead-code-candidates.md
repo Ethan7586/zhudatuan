@@ -2105,3 +2105,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 若启动实现，先核对微信服务号配置、合同、回调安全、会话、手机号和支付真实约束，再建立独立小批次。 |
 
 - H5 微信一键绑定与购物入口方案归 DC-0108。累计 G0 62、G1 113、G2 5、G3 0、GX 51；未删除任何文件。
+
+## DC-0109｜SFL 身份域后置绑定设计与验收说明
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `architecture/07-SFL身份域后置绑定根治.md`。 |
+| 证据 | 当前源码/受管夹具存在 `identity.realm`、`realmentry`、`realmtarget`、`account_id`/`realm_id` 和 `IdentityNodeRegistry` 的结构性证据；文档声称五批完成和测试数量，但未给出日期、基线 SHA 或可复跑收据。未发现 runtime/workflow consumer。 |
+| 保留原因 | 保存防跨域登录、会话/票据与账号生命周期的设计不变量、迁移边界和历史验收线索。 |
+| 可否删除 | 否；需先由 Identity/Security Owner 重新建立当前基线测试与生产证据。 |
+| 二次复核 | 从固定当前主线独立复核 Host registry、登录、realm/account 约束、session/ticket 解析和十二 realm 夹具；生产状态另行取证。 |
+
+- SFL 身份域后置绑定设计与验收说明归 DC-0109。累计 G0 62、G1 114、G2 5、G3 0、GX 51；未删除任何文件。
