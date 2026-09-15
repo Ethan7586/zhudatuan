@@ -152,9 +152,9 @@ export function startDocumentPrefetch(
     const supplyNetwork = match?.[3] === 'supply-chain';
     const workspace = new URLSearchParams(location.search).get('workspace');
     const selectionCenter = !supplyNetwork && (workspace === 'selection' || workspace === 'pending');
-    const requestedLimit = Number(new URLSearchParams(location.search).get('limit') ?? 50);
+    const requestedLimit = Number(new URLSearchParams(location.search).get('limit') ?? 20);
     const limit = supplyNetwork ? 1 : selectionCenter ? [20, 50, 100].includes(requestedLimit) ? requestedLimit : 20
-      : [20, 50, 100].includes(requestedLimit) ? requestedLimit : 50;
+      : [20, 50, 100].includes(requestedLimit) ? requestedLimit : 20;
     const search = new URLSearchParams(location.search);
     const preview = supplyNetwork || (direct.kind === 'platform' && direct.id === 'platform:preview');
     const query: Readonly<{

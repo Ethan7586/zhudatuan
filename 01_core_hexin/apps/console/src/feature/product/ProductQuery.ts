@@ -6,6 +6,7 @@ import { appConfig } from '../../shared/config/AppConfig';
 import { ListingPageSchema } from './ProductSchema';
 
 const listingsRead = createFetchCatalogListingsRead(appConfig.apiBaseUrl);
+export const PRODUCT_CATALOG_DEFAULT_PAGE_LIMIT = 20;
 
 export interface ProductQuery {
   readonly q: string;
@@ -33,7 +34,7 @@ export const productKey = (context: ConsoleContext, filter: ProductQuery) =>
     filter.mall ?? '',
     filter.status ?? '',
     filter.cursor ?? null,
-    filter.limit ?? 50,
+    filter.limit ?? PRODUCT_CATALOG_DEFAULT_PAGE_LIMIT,
     filter.preview ?? false,
     filter.view ?? '',
     filter.selection ?? '',
@@ -45,7 +46,7 @@ export async function readProducts(context: ConsoleContext, filter: ProductQuery
   const value = await listingsRead(
     {
       query: {
-        limit: filter.limit ?? 50,
+        limit: filter.limit ?? PRODUCT_CATALOG_DEFAULT_PAGE_LIMIT,
         ...(filter.q === '' ? {} : { q: filter.q }),
         ...(filter.category === '' ? {} : { category: filter.category }),
         ...(filter.preview && filter.supplier !== undefined && filter.supplier !== '' ? { supplier: filter.supplier } : {}),
