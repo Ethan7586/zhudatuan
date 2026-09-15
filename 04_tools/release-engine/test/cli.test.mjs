@@ -117,6 +117,12 @@ test('prepared candidate source must contain the exact current production source
     candidateSourceSha,
     mergeBaseSha: currentSourceSha,
   });
+  assert.deepEqual(assertPreparedSourceLineage({ after: '/release/b', sourceSha: candidateSourceSha }, currentSourceSha, currentSourceSha), {
+    status: 'already-superseded',
+    currentSourceSha: candidateSourceSha,
+    candidateSourceSha: currentSourceSha,
+    mergeBaseSha: currentSourceSha,
+  });
   assert.throws(
     () => assertPreparedSourceLineage({ after: '/release/a', sourceSha: currentSourceSha }, candidateSourceSha, 'c'.repeat(40)),
     (error) => error.code === 'PREPARED_SOURCE_DOES_NOT_CONTAIN_CURRENT'

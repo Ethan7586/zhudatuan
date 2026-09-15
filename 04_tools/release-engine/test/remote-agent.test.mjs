@@ -253,6 +253,27 @@ test('1.4 deploy consumes only a sealed candidate and never downloads during cut
   assert.equal(deployed.result.activation.receipt.finalStatus, 'success');
 });
 
+test('a sealed historical source verifies a newer current release without rolling production back', async () => {
+  const fixture = await createFixture();
+  const currentArtifact = await createArtifact(fixture, 'newer-current', 'b'.repeat(40));
+  await invokeOss(fixture, currentArtifact, await artifactPayload(currentArtifact));
+  const current = await readlink(join(fixture.pointerRoot, 'current'));
+  const historical = await createArtifact(fixture, 'historical-candidate', 'a'.repeat(40));
+  const validated = await invokeOss(fixture, historical, await artifactPayload(historical), true, 'validate-oss-candidate-v3');
+  await invokeOss(fixture, historical, {}, true, 'seal-validated-candidate-v3', {
+    expectedCurrent: validated.result.current.after,
+    expectedCurrentSourceSha: validated.result.current.sourceSha,
+    lineageMode: 'already-superseded',
+  });
+
+  const deployed = await invokeOss(fixture, historical, {}, true, 'deploy-sealed-candidate-v3');
+  assert.equal(deployed.result.activation.mode, 'superseded-verify-only');
+  assert.equal(deployed.result.activation.alreadyCurrent, true);
+  assert.equal(deployed.result.activation.currentSourceSha, currentArtifact.sourceSha);
+  assert.equal(deployed.result.activation.receipt.sourceSha, currentArtifact.sourceSha);
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), current);
+});
+
 test('1.4 deploy restores its own sealed candidate when another source sealed later', async () => {
   const fixture = await createFixture();
   const baseline = await createArtifact(fixture, 'baseline', 'a'.repeat(40));
@@ -1381,7 +1402,9 @@ async function invokeOss(fixture, artifact, payload, includeControlPlane = true,
       '--expected-current',
       expectedOverrides.expectedCurrent ?? 'none',
       '--expected-current-source-sha',
-      expectedOverrides.expectedCurrentSourceSha ?? 'none'
+      expectedOverrides.expectedCurrentSourceSha ?? 'none',
+      '--lineage-mode',
+      expectedOverrides.lineageMode ?? 'verified'
     );
   } else if (action === 'register-current-baseline-v3') {
     const legacyArtifactSha256 = expectedOverrides.legacyArtifactSha256 ?? '1'.repeat(64);

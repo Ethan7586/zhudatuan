@@ -40,3 +40,5 @@ final Seal 到首次 Deploy 的间隙记录为 `sealToDeployGapMs`，本地合�
 自动流程先产生不可部署的 v1 计划，再由阿里云 Release Runner 精确读取每个物理落点的 final Seal。所有目标均存在匹配的 source、artifact digest、control-plane SHA、Seal Key 和 final receipt 后，才生成可部署的 `zdt-automatic-artifact-closure/v2` 清单；缺少 final Seal 时整次 closure 失败。
 
 如果 UPLOADED 与 VALIDATED 已完成、仅 final Seal 写入缺失，finalizer 只恢复该 Seal，不重建或重新上传制品。v2 清单记录每个目标的 exact Seal 身份和自身 digest；部署工作流校验整张清单后，把这些 exact 字段传给部署引擎。后续控制面升级不会改变既有版本绑定的 Seal 路径。
+
+复用一个支持多个物理落点的制品时，每个落点都恢复独立的 UPLOADED 回执。历史 source 若已被某个落点当前运行的更新 source 包含，该落点仍完成候选验证与 final Seal，但部署阶段只验证当前健康状态，不移动指针、不重启、不回退；其他仍落后的落点照常前进。

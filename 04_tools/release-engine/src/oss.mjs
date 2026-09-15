@@ -328,30 +328,37 @@ export async function recoverPreparedArtifact(adapter, options, dependencies = {
   invariant(options.actorRole === 'build', 'RECOVER_ROLE_FORBIDDEN', 'Only the Build role may recover a Seal upload receipt');
   const client = dependencies.client ?? ossClientFromEnvironment(options.endpoint, dependencies);
   const resolved = await resolvePreparedArtifact(adapter, { ...options, sourceSha, target, node, allowLegacy: false }, { ...dependencies, client });
-  const lifecycle = createSealLifecycleStore(client, {
-    project: adapter.project, sourceSha, releaseTarget: target, physicalNode: node,
-    artifactDigest: resolved.manifest.artifact.sha256, controlPlaneSha: controlSha,
-  });
-  const begun = await lifecycle.begin({ requestId, actorRole: 'build' });
-  invariant(begun.action !== 'observe' && begun.action !== 'stop', 'SEAL_BUILD_IN_PROGRESS',
-    'Another request owns the active Seal build lease', {
-      sealKey: lifecycle.key.seal_key, ownerRequestId: begun.lease?.request_id, retryable: true,
+  const lifecycles = [];
+  for (const physicalNode of eligibleNodes(adapter, target)) {
+    const lifecycle = createSealLifecycleStore(client, {
+      project: adapter.project, sourceSha, releaseTarget: target, physicalNode,
+      artifactDigest: resolved.manifest.artifact.sha256, controlPlaneSha: controlSha,
     });
-  const uploaded = await lifecycle.markUploaded({
-    requestId, actorRole: 'build', buildRunner, routing: { recovered_existing_artifact: true },
-    artifact: {
-      object: resolved.manifest.artifact.object, digest: resolved.manifest.artifact.sha256,
-      bytes: resolved.manifest.artifact.bytes, releaseManifestObject: resolved.releaseManifestObject,
-    },
-    provenance: { object: resolved.manifest.provenance.object, digest: resolved.manifest.provenance.sha256 },
-    reused: true,
-  });
+    const begun = await lifecycle.begin({ requestId, actorRole: 'build' });
+    invariant(begun.action !== 'observe' && begun.action !== 'stop', 'SEAL_BUILD_IN_PROGRESS',
+      'Another request owns the active Seal build lease', {
+        sealKey: lifecycle.key.seal_key, ownerRequestId: begun.lease?.request_id, retryable: true,
+      });
+    const uploaded = await lifecycle.markUploaded({
+      requestId, actorRole: 'build', buildRunner, routing: { recovered_existing_artifact: true },
+      artifact: {
+        object: resolved.manifest.artifact.object, digest: resolved.manifest.artifact.sha256,
+        bytes: resolved.manifest.artifact.bytes, releaseManifestObject: resolved.releaseManifestObject,
+      },
+      provenance: { object: resolved.manifest.provenance.object, digest: resolved.manifest.provenance.sha256 },
+      reused: true,
+    });
+    lifecycles.push({ lifecycle, uploaded });
+  }
+  const requestedLifecycle = lifecycles.find(({ lifecycle }) => lifecycle.key.physical_node === node);
+  invariant(requestedLifecycle, 'RECOVER_PHYSICAL_NODE_INVALID', 'Recovery node is not a physical artifact placement');
   return {
     schema: 'ai.delivery.prepare-recovery-receipt.v1', project: adapter.project, target, sourceSha,
     artifactIdentity: resolved.manifest.artifact.sha256, cacheStatus: 'hit_remote', recovered: true,
     releaseManifest: { object: resolved.releaseManifestObject, sha256: resolved.releaseIndex.releaseManifest.sha256 },
     provenance: { object: resolved.manifest.provenance.object, sha256: resolved.manifest.provenance.sha256 },
-    seal: { key: lifecycle.key, state: await lifecycle.read(), uploaded: uploaded.receipt },
+    seal: { key: requestedLifecycle.lifecycle.key, state: await requestedLifecycle.lifecycle.read(), uploaded: requestedLifecycle.uploaded.receipt },
+    recoveredNodes: lifecycles.map(({ lifecycle }) => lifecycle.key.physical_node),
     completedAt: new Date().toISOString(),
   };
 }
