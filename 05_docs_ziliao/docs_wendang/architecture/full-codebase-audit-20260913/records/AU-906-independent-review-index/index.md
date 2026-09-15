@@ -71,10 +71,11 @@
 | GX-0041 | 历史测试登录材料（RV-0063 已完成，维持 GX） | 文档 → current domain/account governance/rotation evidence；禁止尝试登录 |
 | GX-0042 | Cakeuncle 专用 Webhook/签名（RV-0064 已完成，维持 GX） | verifier → barrel → provider registration → protocol/recovery |
 | GX-0043 | Cake OrderRequest 履约契约（RV-0019 已完成，维持 GX） | manifest/factory → order port → request/idempotency/recovery |
+| GX-0044 | Meal OrderDraft 下单契约（RV-0020 已完成，维持 GX） | manifest/factory → order port → non-idempotent request/recovery |
 
 ## 未编号高风险台账差额（12 个对象 + 2 个计数未知项）
 
-历史累计报告 GX 52，而机械枚举有 38 个 `GX-####` ID。AU-962 从首审结论恢复了 12 个确有对象的未编号 GX；DC-0028 已编为 GX-0042，DC-0031 已编为 GX-0043，另 10 个对象与 2 个仅存在于累计数字的未知项仍待收口。**这些差额均不可视为可删除或降级；尤其不得把“2”虚构为候选对象。**
+历史累计报告 GX 52，而机械枚举有 38 个 `GX-####` ID。AU-962 从首审结论恢复了 12 个确有对象的未编号 GX；DC-0028 至 DC-0034 已编为 GX-0042 至 GX-0044，另 9 个对象与 2 个仅存在于累计数字的未知项仍待收口。**这些差额均不可视为可删除或降级；尤其不得把“2”虚构为候选对象。**
 
 重建顺序：先为上述 12 个对象补唯一 GX ID 和独立复核入口；再从历史候选累计变动/提交记录追溯两个计数未知项。如果证实是重复汇总或不再适用，也必须保留原始证据与裁决理由。
 
