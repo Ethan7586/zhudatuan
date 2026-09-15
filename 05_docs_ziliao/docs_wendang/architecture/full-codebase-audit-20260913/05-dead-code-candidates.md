@@ -1780,3 +1780,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | G1 不强制；拟收敛前必须确认 Database Contract Owner、当前权威生成入口、migration replay/catalog diff 证据和重生成是否可得到无差异 output。 |
 
 - 数据库对象合同生成器归 DC-0083。累计 G0 62、G1 95、G2 5、G3 0、GX 43；未删除任何文件。
+
+## DC-0084｜财务会计完整性集成验证的仓内入口缺口
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `04_tools/scripts/audit/finance-accounting-integrity.mjs` 的 `verifyFinanceAccountingIntegrity(database)`。 |
+| 疑似原因 | 固定基线未找到 import、package script、workflow 或 release manifest 对该函数/文件的仓内启动。 |
+| 保留证据 | 它直接观察 fully replayed PostgreSQL 的 posting、trial balance、subledger、append-only reversal/correction、period close、reconciliation/outbox/job 状态与 EXECUTE 边界；删除会丢失唯一的高精度财务回归规格。 |
+| 可否删除 | 否；可能由仓外财务验收、数据库 fixture runner 或人工受控审计调用。 |
+| 二次复核 | G1 不强制；拟收敛前确认 Finance Owner 的验收入口、最近 isolated replay receipt、CI/外部 runner 和当前 ledger/period-close contract。 |
+
+- 财务会计完整性验证归 DC-0084。累计 G0 62、G1 96、G2 5、G3 0、GX 43；未删除任何文件。
