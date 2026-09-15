@@ -1519,7 +1519,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 运行结论 | 这是发布完整性边界，不是可以脱离迁移序列删除的构建元数据。 |
 | 数据/契约责任 | 保存 Console API/授权与目标数据库版本的一致性历史。 |
 | 可否删除 | 禁止 |
-| 二次复核 | 是：target DB head、runtime readiness、前后端 operation 兼容和恢复流程。 |
+| 二次复核 | RV0058 已完成：该 checksum 是后续 runtime-readiness repair 接受的历史前序值；当前 RuntimeCompatibility 仅报告 legacy contract match 而不以其单独阻断 API，故保留其迁移序列/恢复责任，GX 维持。 |
 
 - console contract ledger 封板归 GX-0036。累计 G0 60、G1 83、G2 5、G3 0、GX 36；未删除任何文件。
 
