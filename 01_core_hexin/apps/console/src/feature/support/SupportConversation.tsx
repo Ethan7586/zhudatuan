@@ -1,7 +1,7 @@
 import { ResourceState, type ResourceCondition } from '@shop/design';
 import { type FormEvent, type KeyboardEvent, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
-import type { SupportCase, SupportMessage, SupportMessageVisibility } from './SupportSchema';
+import type { SupportAttachment, SupportCase, SupportMessage, SupportMessageVisibility } from './SupportSchema';
 import {
   shortIdentifier,
   supportAuthorInitial,
@@ -14,6 +14,10 @@ import {
 
 interface SupportConversationProps {
   readonly canSend: boolean;
+  readonly canAttach: boolean;
+  readonly attaching: boolean;
+  readonly attachmentError?: string;
+  readonly attachments: readonly SupportAttachment[];
   readonly backPath: string;
   readonly canCreateCase: boolean;
   readonly caseId?: string;
@@ -30,6 +34,7 @@ interface SupportConversationProps {
   readonly onNext: (cursor: string) => void;
   readonly onRetry: () => void;
   readonly onSend: (message: string, visibility: SupportMessageVisibility) => Promise<void>;
+  readonly onAttach: (file: File, visibility: SupportMessageVisibility) => Promise<void>;
   readonly selectedCase?: SupportCase;
   readonly sendError?: string;
   readonly sending: boolean;
@@ -89,10 +94,12 @@ export function SupportConversation(props: SupportConversationProps) {
                 showDate={index === 0 || day(message.createdAt) !== day(props.messages[index - 1]!.createdAt)} />)}
             </div>
           </ResourceState>}
+        <AttachmentList items={props.attachments} />
       </div>
-      <SupportComposer canSend={props.canSend} sending={props.sending}
+      <SupportComposer canSend={props.canSend} canAttach={props.canAttach} attaching={props.attaching} sending={props.sending}
+        {...(props.attachmentError === undefined ? {} : { attachmentError: props.attachmentError })}
         {...(props.sendError === undefined ? {} : { sendError: props.sendError })}
-        unavailableReason={props.sendUnavailableReason} onSend={props.onSend} />
+        unavailableReason={props.sendUnavailableReason} onAttach={props.onAttach} onSend={props.onSend} />
     </section>
   );
 }
@@ -173,17 +180,22 @@ function day(value: string): string {
   return Number.isNaN(parsed.getTime()) ? value : new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' }).format(parsed);
 }
 
-function SupportComposer({ canSend, sending, sendError, unavailableReason, onSend }: Readonly<{
+function SupportComposer({ canSend, canAttach, attaching, attachmentError, sending, sendError, unavailableReason, onAttach, onSend }: Readonly<{
   canSend: boolean;
+  canAttach: boolean;
+  attaching: boolean;
+  attachmentError?: string;
   sending: boolean;
   sendError?: string;
   unavailableReason: string;
+  onAttach: (file: File, visibility: SupportMessageVisibility) => Promise<void>;
   onSend: (message: string, visibility: SupportMessageVisibility) => Promise<void>;
 }>) {
   const [draft, setDraft] = useState('');
   const [visibility, setVisibility] = useState<SupportMessageVisibility>('public');
   const publicMode = useRef<HTMLButtonElement>(null);
   const internalMode = useRef<HTMLButtonElement>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
   const submit = async (event?: FormEvent) => {
     event?.preventDefault();
     if (!canSend || sending || draft.trim().length === 0) return;
@@ -208,6 +220,10 @@ function SupportComposer({ canSend, sending, sendError, unavailableReason, onSen
     (next === 'internal' ? internalMode : publicMode).current?.focus();
   };
   const internal = visibility === 'internal';
+  const selectAttachment = async (file: File | undefined) => {
+    if (!file || !canAttach || attaching) return;
+    try { await onAttach(file, visibility); } finally { if (fileInput.current) fileInput.current.value = ''; }
+  };
   return (
     <form className="supportcomposer" data-visibility={visibility} onSubmit={(event) => { void submit(event); }}>
       <div className="supportcomposermodes" role="tablist" aria-label="消息类型">
@@ -226,12 +242,14 @@ function SupportComposer({ canSend, sending, sendError, unavailableReason, onSen
           placeholder={canSend ? internal ? '输入仅工作人员可见的内部备注…' : '请输入回复内容…' : unavailableReason}
           aria-label={internal ? '内部备注内容' : '回复内容'} />
         <div className="supportcomposeractions">
-          <div className="supportcomposerattachments" aria-label="尚未接入的消息附件">
-            <button type="button" disabled title="下一批接入" aria-label="添加附件（下一批接入）">⌕</button>
-            <button type="button" disabled title="下一批接入" aria-label="添加图片（下一批接入）">▧</button>
-            <button type="button" disabled title="下一批接入" aria-label="添加文件（下一批接入）">▤</button>
+          <div className="supportcomposerattachments" aria-label="添加工单附件">
+            <input ref={fileInput} type="file" accept="image/jpeg,image/png,application/pdf,text/plain" hidden
+              disabled={!canAttach || attaching} onChange={(event) => { void selectAttachment(event.target.files?.[0]); }} />
+            <button type="button" disabled={!canAttach || attaching} title="支持 JPG、PNG、PDF、TXT，最大 1MB"
+              aria-label="添加图片或文件" onClick={() => fileInput.current?.click()}>{attaching ? '…' : '▧'}</button>
           </div>
-          <span role="status" aria-live="polite">{sending ? internal ? '添加中…' : '发送中…' : sendError ?? (!canSend ? unavailableReason : `${draft.length}/4000`)}</span>
+          <span role="status" aria-live="polite">{attaching ? '附件上传并扫描中…' : attachmentError
+            ?? (sending ? internal ? '添加中…' : '发送中…' : sendError ?? (!canSend ? unavailableReason : `${draft.length}/4000`))}</span>
           <button type="submit" disabled={!canSend || sending || draft.trim().length === 0}>
             {sending ? internal ? '添加中' : '发送中' : internal ? '添加备注' : '发送回复'}
           </button>
@@ -239,6 +257,19 @@ function SupportComposer({ canSend, sending, sendError, unavailableReason, onSen
       </div>
     </form>
   );
+}
+
+function AttachmentList({ items }: Readonly<{ items: readonly SupportAttachment[] }>) {
+  if (items.length === 0) return null;
+  return <section className="supportattachments" aria-label="工单附件"><strong>附件</strong><div>{items.map((item) =>
+    item.url === undefined ? <span key={item.id}>{item.name}<small>安全链接准备中</small></span>
+      : <a key={item.id} href={item.url} target="_blank" rel="noreferrer" title={`${item.name} · ${formatBytes(item.size)}`}>
+        {item.contentType.startsWith('image/') ? <img src={item.url} alt={item.name} /> : <i aria-hidden="true">文</i>}
+        <span>{item.name}<small>{item.visibility === 'internal' ? '内部 · ' : ''}{formatBytes(item.size)}</small></span></a>)}</div></section>;
+}
+
+function formatBytes(value: number): string {
+  return value >= 1024 * 1024 ? `${(value / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(value / 1024))} KB`;
 }
 
 function ConversationWelcome() {

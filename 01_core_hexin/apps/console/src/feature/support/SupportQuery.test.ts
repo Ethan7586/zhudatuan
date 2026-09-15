@@ -3,13 +3,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 
-const api = vi.hoisted(() => ({ casesRead: vi.fn(), messagesRead: vi.fn() }));
+const api = vi.hoisted(() => ({ casesRead: vi.fn(), historyRead: vi.fn(), messagesRead: vi.fn() }));
 vi.mock('@shop/sdk/support', () => ({
   createFetchSupportCasesRead: () => api.casesRead,
+  createFetchSupportHistoryRead: () => api.historyRead,
   createFetchSupportMessagesRead: () => api.messagesRead,
 }));
 
-import { readCases } from './SupportQuery';
+import { readCases, readHistory } from './SupportQuery';
 
 const context: ConsoleContext = {
   session: {
@@ -27,6 +28,7 @@ afterEach(() => {
   delete window.__consoleSupportPrefetch;
   delete window.__consoleAbortDocumentPrefetch;
   api.casesRead.mockReset();
+  api.historyRead.mockReset();
 });
 
 describe('support document prefetch', () => {
@@ -58,5 +60,15 @@ describe('support document prefetch', () => {
     await readCases(context, 'created', undefined, new AbortController().signal);
 
     expect(api.casesRead).toHaveBeenCalledWith(expect.objectContaining({ query: { limit: 50, view: 'created' } }), expect.anything());
+  });
+
+  it('reads the scoped audit history for one exact case', async () => {
+    api.historyRead.mockResolvedValue({ items: [{ sequence: 1, kind: 'priority.reviewed', actor_id: 'actor:1',
+      evidence: { priority: 'high' }, occurred_at: '2026-09-16T00:00:00Z' }], count: 1 });
+
+    const value = await readHistory(context, 'case:one', new AbortController().signal);
+
+    expect(value.items[0]).toMatchObject({ sequence: 1, kind: 'priority.reviewed' });
+    expect(api.historyRead).toHaveBeenCalledWith(expect.objectContaining({ path: { caseid: 'case:one' }, query: { limit: 100 } }), expect.anything());
   });
 });

@@ -10,6 +10,7 @@ import { supportRoutes } from '../modules/support/05_interface_jieru/http/Suppor
 export const CONSOLE_SUPPORT_OPERATIONS = Object.freeze([
   'runtime.health.live', 'runtime.health.ready', 'runtime.health.startup',
   'support.cases.create', 'support.cases.read', 'support.messages.read', 'support.messages.send',
+  'support.cases.update', 'support.attachments.create', 'support.history.read',
 ] as const satisfies readonly OperationId[]);
 
 const environment: ApiEnvironment = Object.freeze({
@@ -20,6 +21,8 @@ const environment: ApiEnvironment = Object.freeze({
   SECRET_STORE_BEARER_TOKEN: requiredEnvironment('SECRET_STORE_BEARER_TOKEN'),
   KMS_ENDPOINT: requiredEnvironment('KMS_ENDPOINT'),
   KMS_BEARER_TOKEN: requiredEnvironment('KMS_BEARER_TOKEN'),
+  OBJECT_STORE_ENDPOINT: requiredEnvironment('OBJECT_STORE_ENDPOINT'),
+  OBJECT_STORE_TOKEN_REF: requiredEnvironment('OBJECT_STORE_TOKEN_REF'),
 });
 const runtime = await createConsoleSupportRuntime(environment);
 const modules = [defineModule('runtime', [], consoleSupportHealth), defineModule('support', [], supportRoutes)];

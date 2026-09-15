@@ -233,6 +233,7 @@ const REPAIR_FILES = [
   '20260914151000_restore_sfl_parent_level_rules.sql',
   '20260914231500_add_support_message_visibility.sql',
   '20260915090000_restore_l1_supplier_trial_inventory.sql',
+  '20260916123000_enable_console_support_review_attachments.sql',
 ];
 
 const mode = process.argv[2];

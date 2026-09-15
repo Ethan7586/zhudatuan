@@ -10236,6 +10236,14 @@ objects:
     objectType: table
     target: support.evidence
     privilege: select
+  - id: shopconsole:table:support.evidence:insert
+    kind: grant
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260916123000_enable_console_support_review_attachments.sql
+    role: shopconsole
+    objectType: table
+    target: support.evidence
+    privilege: insert
   - id: shopconsole:table:support.history:insert
     kind: grant
     owner: support
@@ -26880,6 +26888,10 @@ objects:
     kind: policy
     owner: support
     source: 02_platform_pingtai/database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: support.evidence.consolesupportevidenceinsert
+    kind: policy
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260916123000_enable_console_support_review_attachments.sql
   - id: support.evidence.jobscope
     kind: policy
     owner: support

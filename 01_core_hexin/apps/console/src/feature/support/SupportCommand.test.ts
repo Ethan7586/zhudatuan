@@ -2,7 +2,8 @@ import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
-import { canCreateSupportCase, canSendSupportMessage, createSupportCase, sendSupportMessage } from './SupportCommand';
+import { canCreateSupportCase, canReviewSupportCase, canSendSupportMessage, canUploadSupportAttachment, createSupportCase,
+  reviewSupportPriority, sendSupportMessage, uploadSupportAttachment } from './SupportCommand';
 
 const requests: Request[] = [];
 const bodies: unknown[] = [];
@@ -18,6 +19,18 @@ const server = setupServer(
     requests.push(request);
     bodies.push(await request.clone().json());
     return HttpResponse.json({ id: 'message:one', author_type: 'agent' }, { status: 201 });
+  }),
+  http.patch('*/api/v1/support/cases/:caseid', async ({ request }) => {
+    requests.push(request);
+    bodies.push(await request.clone().json());
+    return HttpResponse.json({ id: 'case:one', conversation_id: 'conversation:one', priority: 'high', skill: 'general', state: 'open',
+      assigned_agent_id: null, response_due_at: null, resolution_due_at: null, created_at: '2026-09-10T00:00:00.000Z',
+      updated_at: '2026-09-16T00:00:00.000Z', version: 13, subject: '退款进度', order_id: null, channel: 'inapp' });
+  }),
+  http.post('*/api/v1/support/cases/:caseid/attachments', async ({ request }) => {
+    requests.push(request);
+    bodies.push(await request.clone().json());
+    return HttpResponse.json({ id: 'evidence:one', state: 'pending' }, { status: 202 });
   }),
 );
 
@@ -80,6 +93,24 @@ describe('support message command', () => {
     expect(canSendSupportMessage(context, ' CLOSED ')).toBe(false);
   });
 
+  it('reviews a ticket into the canonical P grade with optimistic concurrency', async () => {
+    const value = await reviewSupportPriority(context, 'case:one', 12, 'P1');
+
+    expect(value).toMatchObject({ id: 'case:one', priority: 'high', version: 13 });
+    expect(bodies).toEqual([{ priority: 'high' }]);
+    expect(requests[0]?.headers.get('if-match')).toBe('"12"');
+    expect(canReviewSupportCase(context)).toBe(true);
+  });
+
+  it('uploads a bounded image through the attachment operation', async () => {
+    const file = new File([new Uint8Array([1, 2, 3])], 'proof.png', { type: 'image/png' });
+
+    await uploadSupportAttachment(context, 'case:one', 'open', file, 'internal');
+
+    expect(bodies).toEqual([{ name: 'proof.png', contentType: 'image/png', contentBase64: 'AQID', visibility: 'internal' }]);
+    expect(canUploadSupportAttachment(context, 'open')).toBe(true);
+  });
+
   it('rejects unavailable or closed cases before transport', async () => {
     await expect(sendSupportMessage(withSession({ csrf: undefined }), draft)).rejects.toThrow('SUPPORT_MESSAGE_CSRF_MISSING');
     await expect(sendSupportMessage(withSession({ permissions: [] }), draft)).rejects.toThrow('SUPPORT_MESSAGE_NOT_AVAILABLE');
@@ -101,8 +132,8 @@ const context: ConsoleContext = {
     actor: 'actor:agent',
     membership: 'membership:agent',
     accessVersion: 7,
-    permissions: ['support.message.send', 'support.case.create'],
-    capabilities: ['support.messages.send', 'support.cases.create'],
+    permissions: ['support.message.send', 'support.case.create', 'support.case.manage'],
+    capabilities: ['support.messages.send', 'support.cases.create', 'support.cases.update', 'support.attachments.create'],
     assurance: { level: 2 },
     csrf: 'csrf-token-for-support',
     target: 'console',

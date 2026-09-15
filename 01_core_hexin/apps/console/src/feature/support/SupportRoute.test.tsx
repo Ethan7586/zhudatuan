@@ -10,25 +10,36 @@ import { Component } from './SupportRoute';
 
 const mocks = vi.hoisted(() => ({
   canCreateSupportCase: vi.fn(),
+  canReviewSupportCase: vi.fn(),
   canSendSupportMessage: vi.fn(),
+  canUploadSupportAttachment: vi.fn(),
   createSupportCase: vi.fn(),
   readCases: vi.fn(),
+  readHistory: vi.fn(),
   readMessages: vi.fn(),
+  reviewSupportPriority: vi.fn(),
   sendSupportMessage: vi.fn(),
+  uploadSupportAttachment: vi.fn(),
 }));
 
 vi.mock('./SupportQuery', () => ({
   readCases: mocks.readCases,
+  readHistory: mocks.readHistory,
   readMessages: mocks.readMessages,
   supportCaseKey: (_context: unknown, view: string, cursor?: string) => ['support-cases', view, cursor ?? null],
   supportMessageKey: (_context: unknown, caseId: string, cursor?: string) => ['support-messages', caseId, cursor ?? null],
+  supportHistoryKey: (_context: unknown, caseId: string) => ['support-history', caseId],
 }));
 
 vi.mock('./SupportCommand', () => ({
   canCreateSupportCase: mocks.canCreateSupportCase,
+  canReviewSupportCase: mocks.canReviewSupportCase,
   canSendSupportMessage: mocks.canSendSupportMessage,
+  canUploadSupportAttachment: mocks.canUploadSupportAttachment,
   createSupportCase: mocks.createSupportCase,
+  reviewSupportPriority: mocks.reviewSupportPriority,
   sendSupportMessage: mocks.sendSupportMessage,
+  uploadSupportAttachment: mocks.uploadSupportAttachment,
 }));
 
 const supportCase = {
@@ -72,8 +83,9 @@ const context: ConsoleContext = {
     actor: 'actor:support-test',
     membership: 'membership:support-test',
     accessVersion: 8,
-    permissions: ['support.cases.read', 'support.messages.read', 'support.message.send', 'support.case.create'],
-    capabilities: ['support.cases.read', 'support.messages.read', 'support.messages.send', 'support.cases.create'],
+    permissions: ['support.cases.read', 'support.messages.read', 'support.message.send', 'support.case.create', 'support.case.manage', 'support.history.read'],
+    capabilities: ['support.cases.read', 'support.messages.read', 'support.messages.send', 'support.cases.create', 'support.cases.update',
+      'support.attachments.create', 'support.history.read'],
     csrf: 'csrf-support-console-test',
     target: 'console',
     scope: { kind: 'enterprise', id: 'enterprise:1', name: '宏泰甄选' },
@@ -92,12 +104,17 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-  mocks.readCases.mockResolvedValue({ items: [supportCase], count: 1, views: { handling: 1, created: 2, all: 3 } });
-  mocks.readMessages.mockResolvedValue({ items: messages, count: messages.length });
+  mocks.readCases.mockResolvedValue({ items: [supportCase], count: 1, views: { handling: 1, review: 1, created: 2, all: 3 } });
+  mocks.readMessages.mockResolvedValue({ items: messages, attachments: [], count: messages.length });
+  mocks.readHistory.mockResolvedValue({ items: [], count: 0 });
   mocks.canCreateSupportCase.mockReturnValue(true);
+  mocks.canReviewSupportCase.mockReturnValue(true);
   mocks.canSendSupportMessage.mockReturnValue(true);
+  mocks.canUploadSupportAttachment.mockReturnValue(true);
   mocks.createSupportCase.mockResolvedValue({ ...supportCase, id: 'case:new-service' });
+  mocks.reviewSupportPriority.mockResolvedValue({ ...supportCase, priority: 'urgent', version: 13 });
   mocks.sendSupportMessage.mockResolvedValue({ id: 'message:sent-1' });
+  mocks.uploadSupportAttachment.mockResolvedValue({ id: 'evidence:one', state: 'pending' });
 });
 
 afterEach(() => {
@@ -199,17 +216,31 @@ describe('Support Chat VI route', () => {
     expect(mocks.readMessages).not.toHaveBeenCalled();
   });
 
-  it('switches between handling, created and all queues through the address-backed view', async () => {
+  it('switches between handling, review and created queues through the address-backed view', async () => {
     const user = userEvent.setup();
     renderRoute('/scopes/enterprise/enterprise%3A1/support');
     await screen.findByRole('heading', { name: '选择一条工单开始处理' });
 
     expect((await screen.findByRole('button', { name: /待我处理 1/ })).getAttribute('aria-current')).toBe('page');
+    await user.click(screen.getByRole('button', { name: /待我审批 1/ }));
+    await waitFor(() => expect(mocks.readCases).toHaveBeenCalledWith(context, 'review', undefined, expect.any(AbortSignal)));
+    expect(screen.getByRole('button', { name: /待我审批 1/ }).getAttribute('aria-current')).toBe('page');
     await user.click(screen.getByRole('button', { name: /我发起的 2/ }));
 
     await waitFor(() => expect(mocks.readCases).toHaveBeenCalledWith(context, 'created', undefined, expect.any(AbortSignal)));
     expect(screen.getByRole('button', { name: /我发起的 2/ }).getAttribute('aria-current')).toBe('page');
     expect(screen.getByRole('link', { name: new RegExp(supportCase.subject) }).getAttribute('href')).toContain('?view=created');
+  });
+
+  it('lets an authorized reviewer assign a P grade and records the exact version', async () => {
+    const user = userEvent.setup();
+    renderRoute(`/scopes/enterprise/enterprise%3A1/support/${encodeURIComponent(supportCase.id)}`);
+    await screen.findByText(messages[0].body);
+
+    await user.selectOptions(screen.getByRole('combobox', { name: '影响等级' }), 'P0');
+    await user.click(screen.getByRole('button', { name: '确认定为 P0' }));
+
+    await waitFor(() => expect(mocks.reviewSupportPriority).toHaveBeenCalledWith(context, supportCase.id, supportCase.version, 'P0'));
   });
 
   it('opens a quiet in-workbench composer and creates a real case without leaving the service center', async () => {
@@ -275,14 +306,14 @@ describe('Support Chat VI route', () => {
     await waitFor(() => expect(mocks.readCases.mock.calls.length).toBeGreaterThan(1));
   });
 
-  it('uses the service-center copy and keeps only future task and operation entries inert', async () => {
+  it('uses the service-center copy and enables the review queue while keeping future operations inert', async () => {
     renderRoute(`/scopes/enterprise/enterprise%3A1/support/${encodeURIComponent(supportCase.id)}`);
     await screen.findByText(messages[0].body);
 
     expect(screen.getByRole('heading', { name: '服务中心' })).toBeTruthy();
     expect(screen.getByText('消费者与管理员共用一个工作台')).toBeTruthy();
     expect(screen.getAllByText('管理员').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByRole('button', { name: /待我审批/ }).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByRole('button', { name: /待我审批/ }).hasAttribute('disabled')).toBe(false);
     expect(screen.getByRole('tab', { name: '内部备注' }).hasAttribute('disabled')).toBe(false);
     expect(screen.getByRole('tab', { name: '协同供应商' }).hasAttribute('disabled')).toBe(true);
     expect(screen.getByRole('button', { name: '转交' }).hasAttribute('disabled')).toBe(true);

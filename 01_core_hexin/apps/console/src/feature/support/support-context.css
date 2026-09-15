@@ -9,6 +9,25 @@
 .supportcontextsection dd[data-strong='true'] { color: #152139; font-weight: 800; }
 .supportcontextsection dd[data-tone] { max-width: 100%; justify-self: start; border-radius: 5px; padding: 3px 8px; font-weight: 800; }
 .supportcontextidentity { justify-self: start; border-radius: 6px; background: #edf1f6; color: #5f6d85; padding: 5px 10px; font-size: 12px; font-weight: 800; }
+.supportpriorityreview,
+.supporthistory { display: grid; gap: 10px; border-bottom: 1px solid var(--support-border); padding: 15px 20px; }
+.supportpriorityreview h3,
+.supporthistory h3 { margin: 0; color: #142139; font-size: 16px; font-weight: 800; }
+.supportpriorityreview label { display: grid; gap: 6px; color: #6f7f99; font-size: 12px; }
+.supportpriorityreview select { width: 100%; min-height: 38px; border: 1px solid #d4ddea; border-radius: 7px; outline: 0; background: #fff; color: #23324a; padding: 0 9px; font: inherit; font-weight: 700; }
+.supportpriorityreview select:focus { border-color: var(--support-blue); box-shadow: 0 0 0 3px rgb(15 111 255 / 9%); }
+.supportpriorityreview p,
+.supporthistory > p { margin: 0; color: #7a879a; font-size: 11px; line-height: 1.5; }
+.supportpriorityreview button { min-height: 36px; border: 1px solid var(--support-blue); border-radius: 7px; background: var(--support-blue); color: #fff; font: inherit; font-size: 12px; font-weight: 800; }
+.supportpriorityreview button:disabled { border-color: #d8e0ea; background: #e8ecf2; color: #96a2b3; cursor: not-allowed; }
+.supportpriorityreview > span { min-height: 15px; color: #9a6b24; font-size: 10px; }
+.supporthistory ol { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.supporthistory li { display: grid; grid-template-columns: 9px minmax(0, 1fr); gap: 8px; }
+.supporthistory li > i { width: 7px; height: 7px; margin-top: 5px; border-radius: 50%; background: #7faaf1; box-shadow: 0 0 0 3px #edf4ff; }
+.supporthistory li > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; }
+.supporthistory strong { color: #33425a; font-size: 11px; }
+.supporthistory time { color: #9aa5b5; font-size: 9px; }
+.supporthistory li span { grid-column: 1 / -1; overflow: hidden; color: #7d899b; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .supportcontextactions { padding: 15px 20px 18px; }
 .supportcontextactions > div { display: grid; grid-template-columns: .72fr 1.45fr 1fr; gap: 8px; }
 .supportcontextactions button { min-height: 42px; border: 1px solid #c5cfdd; border-radius: 6px; background: #fff; color: #31405a; font-size: 12px; font-weight: 700; }

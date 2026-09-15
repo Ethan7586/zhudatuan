@@ -3,6 +3,7 @@ import { AUDIT_SINK } from '../../../../foundation/application/AuditSink';
 import { ModuleOperations } from '../../../../foundation/application/ModuleOperations';
 import { KMS_CLIENT } from '../../../../foundation/infrastructure/KmsClient';
 import { DATABASE_POOL } from '../../../../foundation/persistence/Pool';
+import { OBJECT_STORE } from '../../../../foundation/infrastructure/ObjectStore';
 import { assignTicketOperations } from '../../03_application_yingyong/command/AssignTicket';
 import { closeTicketOperations } from '../../03_application_yingyong/command/CloseTicket';
 import { openConversationOperations } from '../../03_application_yingyong/command/OpenConversation';
@@ -14,10 +15,11 @@ import { GetOrderSummary } from '../../../order_dingdan';
 
 export function supportRoutes(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL); const kms = context.container.get(KMS_CLIENT);
+  const objects = context.container.has(OBJECT_STORE) ? context.container.get(OBJECT_STORE) : undefined;
   const orders = new GetOrderSummary();
   const ports = (database: ConstructorParameters<typeof PgSupportRepository>[0]) => new PgSupportRepository(database, orders);
   return new ModuleOperations('support', pool, context.container.get(AUDIT_SINK), {
-    ...openConversationOperations(kms, ports), ...sendMessageOperations(kms, ports), ...assignTicketOperations(ports),
-    ...closeTicketOperations(ports), ...getConversationsOperations(kms, ports), ...getTicketsOperations(ports),
+    ...openConversationOperations(kms, ports), ...sendMessageOperations(kms, ports, objects), ...assignTicketOperations(ports),
+    ...closeTicketOperations(ports), ...getConversationsOperations(kms, ports, objects), ...getTicketsOperations(ports),
   });
 }

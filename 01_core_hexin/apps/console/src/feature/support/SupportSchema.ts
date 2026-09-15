@@ -11,18 +11,33 @@ export const SupportCaseSchema = z.object({
 }).passthrough();
 const SupportCaseViewsSchema = z.object({
   handling: DatabaseIntegerSchema,
+  review: DatabaseIntegerSchema,
   created: DatabaseIntegerSchema,
   all: DatabaseIntegerSchema,
 });
 export const SupportCasePageSchema = pageEnvelope(SupportCaseSchema).extend({
-  views: SupportCaseViewsSchema.default({ handling: 0, created: 0, all: 0 }),
+  views: SupportCaseViewsSchema.default({ handling: 0, review: 0, created: 0, all: 0 }),
 });
 export const SupportMessageSchema = z.object({
   id: z.string().min(1), authorType: z.string().min(1), author: z.string().nullable(), body: z.string(), createdAt: z.string().min(1),
   visibility: z.enum(['public', 'internal']).default('public'),
 }).passthrough();
-export const SupportMessagePageSchema = pageEnvelope(SupportMessageSchema).extend({ attachments: z.array(z.unknown()).optional() });
-export type SupportCaseView = 'handling' | 'created' | 'all';
+export const SupportAttachmentSchema = z.object({
+  id: z.string().min(1), name: z.string().min(1), contentType: z.enum(['image/jpeg', 'image/png', 'application/pdf', 'text/plain']),
+  size: DatabaseIntegerSchema, visibility: z.enum(['public', 'internal']).default('public'), createdAt: z.string().min(1),
+  url: z.string().url().optional(), expiresAt: z.string().optional(),
+}).passthrough();
+export const SupportMessagePageSchema = pageEnvelope(SupportMessageSchema).extend({
+  attachments: z.array(SupportAttachmentSchema).default([]),
+});
+export const SupportHistorySchema = z.object({
+  sequence: DatabaseIntegerSchema, kind: z.string().min(1), actor_id: z.string().nullable(), evidence: z.unknown(),
+  occurred_at: z.string().min(1),
+}).passthrough();
+export const SupportHistoryPageSchema = pageEnvelope(SupportHistorySchema);
+export type SupportCaseView = 'handling' | 'review' | 'created' | 'all';
 export type SupportMessageVisibility = 'public' | 'internal';
 export type SupportCase = z.infer<typeof SupportCaseSchema>;
 export type SupportMessage = z.infer<typeof SupportMessageSchema>;
+export type SupportAttachment = z.infer<typeof SupportAttachmentSchema>;
+export type SupportHistory = z.infer<typeof SupportHistorySchema>;
