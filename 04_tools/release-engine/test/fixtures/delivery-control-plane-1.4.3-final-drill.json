@@ -1,6 +1,7 @@
 {
   "schema": "ai.delivery.control-plane-final-drill.v1",
   "deliveryControlVersion": "1.4.3",
+  "scope": "local-non-production-reliability",
   "baseline": {
     "originZdtNext": "24c0549b443e403593645980f47f0fcbce994c0d",
     "startHead": "5a9b23fd7b3c54bb368b86f0139e245ed1ed7c8c",
@@ -73,6 +74,7 @@
     {"id":62,"group":"E","result":"PASS","evidence":"Runner request Seal key receipts and output keep source and control SHA separate"}
   ],
   "score": {
+    "label": "localCandidateReliability",
     "categories": {
       "sealAtomicityAndIdempotency": {"score":25,"maximum":25,"deduction":null},
       "runnerSchedulingAndAvailability": {"score":20,"maximum":20,"deduction":null},

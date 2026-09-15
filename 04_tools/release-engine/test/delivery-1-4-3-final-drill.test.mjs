@@ -80,6 +80,8 @@ test('1.4.2 compatibility is read-only and cannot bypass the 1.4.3 Seal path', a
 test('machine-readable final drill covers all 62 scenarios and computes the fixed score', async () => {
   const fixture = JSON.parse(await readFile(join(root, '04_tools/release-engine/test/fixtures/delivery-control-plane-1.4.3-final-drill.json'), 'utf8'));
   assert.equal(fixture.schema, 'ai.delivery.control-plane-final-drill.v1');
+  assert.equal(fixture.scope, 'local-non-production-reliability');
+  assert.equal(fixture.score.label, 'localCandidateReliability');
   assert.deepEqual(fixture.scenarios.map(({ id }) => id), Array.from({ length: 62 }, (_, index) => index + 1));
   assert.ok(fixture.scenarios.every(({ result, evidence }) => result === 'PASS' && evidence.length > 0));
   const total = Object.values(fixture.score.categories).reduce((sum, value) => sum + value.score, 0);
@@ -87,4 +89,19 @@ test('machine-readable final drill covers all 62 scenarios and computes the fixe
   assert.equal(fixture.score.total, 99);
   assert.equal(fixture.score.categories.failureRecovery.score, 14);
   assert.match(fixture.score.categories.failureRecovery.deduction, /second physical host/i);
+});
+
+test('production scorecard includes speed and cannot be completed from fixture evidence', async () => {
+  const scorecard = JSON.parse(await readFile(join(root, '04_tools/release-engine/test/fixtures/delivery-control-plane-1.4.3-production-scorecard.json'), 'utf8'));
+  assert.equal(scorecard.schema, 'ai.delivery.production-scorecard.v1');
+  assert.equal(Object.values(scorecard.weights).reduce((sum, value) => sum + value, 0), 100);
+  assert.deepEqual(scorecard.weights, { reliability: 60, speed: 20, productionMaturity: 20 });
+  assert.deepEqual(scorecard.speedSlo, {
+    newStorefrontSourceToHealthyP95Seconds: 180,
+    sealedArtifactToHealthyP95Seconds: 60,
+    sealToDeployAutomaticHandoffP95Seconds: 10,
+    maximumManualTriggers: 1,
+  });
+  assert.equal(scorecard.status, 'PENDING_PRODUCTION_EVIDENCE');
+  assert.equal(scorecard.sampleRules.fixtureScoreCannotSubstituteForProductionEvidence, true);
 });
