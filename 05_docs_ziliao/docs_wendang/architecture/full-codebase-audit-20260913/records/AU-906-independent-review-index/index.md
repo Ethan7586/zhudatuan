@@ -2,7 +2,7 @@
 
 - 基线：`5a1ce71eebbefaa826368a9e1dc17730f9363bc4`
 - 建立日期：2026-09-15
-- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0016、RV-0018、RV-0024 至 RV-0044 已完成；其余第二轮结论尚未开始。**
+- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0016、RV-0018、RV-0024 至 RV-0045 已完成；其余第二轮结论尚未开始。**
 - 规则：每项复核从当前固定审计基线的运行入口/调用链重新取证；不得只复述首审报告。任何分歧保守保留，不降低风险等级。
 
 ## P1 候选（17）
@@ -50,7 +50,8 @@
 | GX-0020 | Membership 从 member 到 access（RV-0042 已完成，维持 GX） | migration → identity/access → session/role/readiness |
 | GX-0021 | 微信支付应用场景隔离（RV-0043 已完成，维持 GX） | migration → payment/webhook → app binding/恢复 |
 | GX-0022 | 成员个人数据 scope 授权函数（RV-0044 已完成，维持 GX） | migration → API context → RLS/member boundary |
-| GX-0023–0024 | webhook/member audience | contract/route → authorization → database/event boundary |
+| GX-0023 | 支付 Webhook scope resolver 演进（RV-0045 已完成，维持 GX） | migrations → webhook → scoped function/RLS |
+| GX-0024 | member audience | contract/route → authorization → database/event boundary |
 | GX-0025–0028 | runtime contract/target-head/函数重绑 | checksum/ledger → startup/readiness/release gate |
 | GX-0029–0036 | invitation/session/store/audit/Console 契约 | API/handler → RLS/audit/outbox → tests |
 | GX-0037–0040 | Platform Owner 授权/Reporting Cockpit | permission grant → operation → read model/SQL/RLS |

@@ -1322,7 +1322,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 直接证据 | 迁移按 payment/refund provider reference 解析订单 scope，禁止 public/anon/authenticated/service_role 执行；后续 `20260901220000` 显式 drop 双参数函数并以 application hash 三参数版本替代。 |
 | 运行边界 | 当前 PaymentWebhook 调用三参数 resolver，并核验 attempt 的 scene/application hash；旧文件保留在固定迁移序列中。 |
 | 可否删除 | 否；承担资金回调授权演进、历史 schema 构建、迁移 ledger 与恢复责任。 |
-| 二次复核 | 是；须验证 payment/refund reference、错误 application hash、函数权限、历史升级路径、回调拒绝和恢复。 |
+| 二次复核 | RV-0045 已完成：维持 GX；静态复核确认双参数函数由后续迁移有序替换，当前三参数 resolver、Webhook 和专用身份授权仍依赖该演进链。真实回调、权限和恢复未验证。 |
 
 ## 464. AU-464 支付 Webhook scope 复核
 
