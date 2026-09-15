@@ -1,18 +1,22 @@
-import { createFetchSupportCasesRead, createFetchSupportMessagesRead } from '@shop/sdk/support';
+import { createFetchSupportCasesRead, createFetchSupportHistoryRead, createFetchSupportMessagesRead } from '@shop/sdk/support';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { consumeDocumentPrefetch } from '../../shared/api/DocumentPrefetch';
 import { consoleRequest } from '../../shared/api/Client';
 import { appConfig } from '../../shared/config/AppConfig';
-import { SupportCasePageSchema, SupportMessagePageSchema, type SupportCaseView } from './SupportSchema';
+import { SupportCasePageSchema, SupportHistoryPageSchema, SupportMessagePageSchema, type SupportCaseView } from './SupportSchema';
 
 const casesRead = createFetchSupportCasesRead(appConfig.apiBaseUrl);
 const messagesRead = createFetchSupportMessagesRead(appConfig.apiBaseUrl);
+const historyRead = createFetchSupportHistoryRead(appConfig.apiBaseUrl);
 
 export const supportCaseKey = (context: ConsoleContext, view: SupportCaseView = 'handling', cursor?: string) => Object.freeze([
   'console', context.scope.kind, context.scope.id, context.session.accessVersion, 'support.cases.read', view, cursor ?? null, 50,
 ] as const);
 export const supportMessageKey = (context: ConsoleContext, caseId: string, cursor?: string) => Object.freeze([
   'console', context.scope.kind, context.scope.id, context.session.accessVersion, 'support.messages.read', caseId, cursor ?? null, 200,
+] as const);
+export const supportHistoryKey = (context: ConsoleContext, caseId: string) => Object.freeze([
+  'console', context.scope.kind, context.scope.id, context.session.accessVersion, 'support.history.read', caseId, 100,
 ] as const);
 
 export async function readCases(context: ConsoleContext, view: SupportCaseView, cursor: string | undefined, signal: AbortSignal) {
@@ -24,6 +28,10 @@ export async function readCases(context: ConsoleContext, view: SupportCaseView, 
 export async function readMessages(context: ConsoleContext, caseId: string, cursor: string | undefined, signal: AbortSignal) {
   return SupportMessagePageSchema.parse(await messagesRead({ path: { caseid: caseId }, query: { limit: 200,
     ...(cursor === undefined ? {} : { cursor }) } }, consoleRequest(context.scope, signal, context.session.accessVersion)));
+}
+export async function readHistory(context: ConsoleContext, caseId: string, signal: AbortSignal) {
+  return SupportHistoryPageSchema.parse(await historyRead({ path: { caseid: caseId }, query: { limit: 100 } },
+    consoleRequest(context.scope, signal, context.session.accessVersion)));
 }
 
 async function takeDocumentSupportPrefetch(context: ConsoleContext, signal: AbortSignal) {

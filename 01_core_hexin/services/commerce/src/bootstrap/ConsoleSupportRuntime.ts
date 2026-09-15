@@ -13,6 +13,7 @@ import { WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interface/OperationController';
 import { QUERY_METRICS, QueryMetrics } from '../foundation/persistence/QueryMetrics';
 import { KMS_CLIENT, KmsClient } from '../foundation/infrastructure/KmsClient';
+import { HttpObjectStore, OBJECT_STORE } from '../foundation/infrastructure/ObjectStore';
 import { ExtensionRegistry } from './ExtensionRegistry';
 import type { Container } from './Container';
 import { bindServerNodeManifestRegistry } from './ApiBootstrap';
@@ -24,8 +25,8 @@ import { RecordAudit } from '../modules/audit/03_application_yingyong/command/Re
 import { PgAuditRepository } from '../modules/audit/04_adapters_shixian/persistence/PgAuditRepository';
 import { commerceTelemetry, TELEMETRY } from '../foundation/telemetry/Telemetry';
 
-export const CONSOLE_SUPPORT_SCHEMA_VERSION = '20260914150000' as const;
-export const CONSOLE_SUPPORT_SCHEMA_CHECKSUM = '56fc6fb789e904fe929720c30ba98756abf470c12372dbc5b6a1255e8444710e' as const;
+export const CONSOLE_SUPPORT_SCHEMA_VERSION = '20260916123000' as const;
+export const CONSOLE_SUPPORT_SCHEMA_CHECKSUM = '566f98cc283cabf3d9327186f1f591f68b16ffb8f9326747db87f26bc2f39a24' as const;
 
 interface ConsoleSupportCompatibilityRow {
   readonly current_user: string;
@@ -73,6 +74,8 @@ export async function createConsoleSupportRuntime(environment: ApiEnvironment): 
     required(environment.KMS_ENDPOINT, 'KMS_ENDPOINT_MISSING'),
     required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING'),
   );
+  const objects = environment.OBJECT_STORE_ENDPOINT && environment.OBJECT_STORE_TOKEN_REF
+    ? new HttpObjectStore(environment.OBJECT_STORE_ENDPOINT, await secrets.read(environment.OBJECT_STORE_TOKEN_REF)) : null;
   return {
     pool, extensions, telemetry,
     configure(container) {
@@ -85,6 +88,7 @@ export async function createConsoleSupportRuntime(environment: ApiEnvironment): 
       container.bind(RISK_GATE, risk);
       container.bind(AUDIT_SINK, audit);
       container.bind(KMS_CLIENT, kms);
+      if (objects) container.bind(OBJECT_STORE, objects);
     },
     async close() { await pool.end(); },
   };
@@ -138,7 +142,7 @@ export async function consoleSupportRuntimeCompatibility(pool: DatabasePool): Pr
       and has_table_privilege(current_user,'support.conversation','SELECT,INSERT,UPDATE')
       and has_table_privilege(current_user,'support.message','SELECT,INSERT')
       and has_table_privilege(current_user,'support.history','SELECT,INSERT')
-      and has_table_privilege(current_user,'support.evidence','SELECT')
+      and has_table_privilege(current_user,'support.evidence','SELECT,INSERT')
       and has_table_privilege(current_user,'support.agent','SELECT')
       and has_table_privilege(current_user,'support.assignmentrule','SELECT')
       and has_table_privilege(current_user,'support.sla','SELECT')

@@ -1,18 +1,27 @@
-import type { ReactNode } from 'react';
-import type { SupportCase } from './SupportSchema';
+import { useEffect, useState, type ReactNode } from 'react';
+import type { SupportCase, SupportHistory } from './SupportSchema';
 import {
   shortIdentifier,
   supportChannelLabel,
+  supportHistoryLabel,
+  supportPriorityGrade,
+  supportPriorityGuidance,
   supportPriorityLabel,
   supportStateLabel,
   supportTime,
   supportTone,
+  type SupportPriorityGrade,
 } from './SupportPresentation';
 
-export function SupportContextPanel({ brandName, selectedCase, caseId }: Readonly<{
+export function SupportContextPanel({ brandName, selectedCase, caseId, canReview, reviewing, reviewError, history, onReview }: Readonly<{
   brandName: string;
   selectedCase?: SupportCase;
   caseId?: string;
+  canReview: boolean;
+  reviewing: boolean;
+  reviewError?: string;
+  history: readonly SupportHistory[];
+  onReview: (grade: SupportPriorityGrade) => Promise<void>;
 }>) {
   return (
     <aside className="supportcontext" aria-label="工单上下文">
@@ -41,6 +50,9 @@ export function SupportContextPanel({ brandName, selectedCase, caseId }: Readonl
           <ContextRow label="当前状态" value={supportStateLabel(selectedCase.state)} tone={supportTone(selectedCase.state)} />
           <ContextRow label="标签" value="暂无" />
         </ContextSection>
+        <PriorityReview priority={selectedCase.priority} canReview={canReview} reviewing={reviewing}
+          {...(reviewError === undefined ? {} : { error: reviewError })} onReview={onReview} />
+        <HistoryTimeline items={history} />
         <section className="supportcontextactions" aria-label="下一批接入的工单操作">
           <strong>操作</strong>
           <div>
@@ -53,6 +65,49 @@ export function SupportContextPanel({ brandName, selectedCase, caseId }: Readonl
       </>}
     </aside>
   );
+}
+
+function PriorityReview({ priority, canReview, reviewing, error, onReview }: Readonly<{
+  priority: string;
+  canReview: boolean;
+  reviewing: boolean;
+  error?: string;
+  onReview: (grade: SupportPriorityGrade) => Promise<void>;
+}>) {
+  const current = supportPriorityGrade(priority);
+  const [grade, setGrade] = useState<SupportPriorityGrade>(current);
+  useEffect(() => setGrade(current), [current]);
+  return <section className="supportpriorityreview" aria-labelledby="supportprioritytitle">
+    <h3 id="supportprioritytitle">P 级审核</h3>
+    <label><span>影响等级</span><select value={grade} disabled={!canReview || reviewing}
+      onChange={(event) => setGrade(event.target.value as SupportPriorityGrade)}>
+      <option value="P0">P0 · 立即响应</option><option value="P1">P1 · 优先处理</option>
+      <option value="P2">P2 · 标准处理</option><option value="P3">P3 · 计划处理</option>
+    </select></label>
+    <p>{supportPriorityGuidance(grade)}</p>
+    <button type="button" disabled={!canReview || reviewing} onClick={() => { void onReview(grade); }}>
+      {reviewing ? '保存中…' : `确认定为 ${grade}`}
+    </button>
+    <span role="status" aria-live="polite">{error ?? (!canReview ? '当前身份没有工单定级权限' : '')}</span>
+  </section>;
+}
+
+function HistoryTimeline({ items }: Readonly<{ items: readonly SupportHistory[] }>) {
+  return <section className="supporthistory" aria-labelledby="supporthistorytitle"><h3 id="supporthistorytitle">操作记录</h3>
+    {items.length === 0 ? <p>暂无可显示的审核记录</p> : <ol>{items.slice(-8).reverse().map((item) => <li key={item.sequence}>
+      <i aria-hidden="true" /><div><strong>{supportHistoryLabel(item.kind)}</strong><time dateTime={item.occurred_at}>{supportTime(item.occurred_at)}</time>
+        <span>{historyDetail(item)}</span></div></li>)}</ol>}
+  </section>;
+}
+
+function historyDetail(item: SupportHistory): string {
+  if (item.evidence === null || typeof item.evidence !== 'object' || Array.isArray(item.evidence)) return `操作人 ${shortIdentifier(item.actor_id ?? '系统')}`;
+  const evidence = item.evidence as Record<string, unknown>;
+  if (item.kind === 'priority.reviewed' && typeof evidence.priority === 'string') {
+    return `${supportPriorityGrade(evidence.priority)} · ${supportPriorityLabel(evidence.priority)}`;
+  }
+  if (item.kind === 'attachment.uploaded' && typeof evidence.name === 'string') return evidence.name;
+  return `操作人 ${shortIdentifier(item.actor_id ?? '系统')}`;
 }
 
 function ContextSection({ title, children }: Readonly<{ title?: string; children: ReactNode }>) {

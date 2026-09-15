@@ -40,6 +40,18 @@
 .supportconversationempty { display: grid; min-height: 100%; place-content: center; gap: 5px; color: var(--support-muted); text-align: center; }
 .supportconversationempty strong { color: var(--support-ink); font-size: 14px; }
 .supportconversationempty span { font-size: 12px; }
+.supportattachments { display: grid; gap: 8px; margin-top: 16px; border-top: 1px solid #edf1f6; padding-top: 14px; }
+.supportattachments > strong { color: #617089; font-size: 11px; }
+.supportattachments > div { display: flex; flex-wrap: wrap; gap: 9px; }
+.supportattachments a,
+.supportattachments > div > span { display: flex; min-width: 150px; max-width: 230px; align-items: center; gap: 8px; border: 1px solid #dce5f1; border-radius: 8px; background: #f8fbff; color: #30415b; padding: 7px; text-decoration: none; }
+.supportattachments a:hover { border-color: #a8c8f8; background: #f1f7ff; }
+.supportattachments img,
+.supportattachments i { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 6px; object-fit: cover; }
+.supportattachments i { display: grid; place-items: center; background: #e7effa; color: #57749e; font-size: 12px; font-style: normal; font-weight: 800; }
+.supportattachments a > span,
+.supportattachments > div > span { overflow: hidden; font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.supportattachments small { display: block; margin-top: 3px; color: #8d99aa; font-size: 9px; font-weight: 500; }
 
 .supportcomposer { display: grid; align-content: start; border-top: 6px solid #f5f7fa; background: #fff; }
 .supportcomposermodes { display: flex; gap: 8px; border-bottom: 1px solid var(--support-border); padding: 8px 12px 0; }
@@ -59,7 +71,7 @@
 .supportcomposeractions { display: flex; min-width: 0; align-items: center; gap: 8px; padding: 0 10px; }
 .supportcomposerattachments { display: flex; gap: 3px; }
 .supportcomposerattachments button { display: grid; width: 30px; height: 30px; place-items: center; border: 0; background: transparent; color: #7585a0; font-size: 17px; }
-.supportcomposerattachments button:disabled { opacity: 1; cursor: not-allowed; }
+.supportcomposerattachments button:disabled { opacity: .45; cursor: not-allowed; }
 .supportcomposeractions > span { overflow: hidden; flex: 1; color: #8a98ad; font-size: 11px; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
 .supportcomposeractions > button { min-width: 118px; min-height: 38px; border: 1px solid var(--support-blue); border-radius: 6px; background: var(--support-blue); color: #fff; padding: 0 20px; font-size: 14px; font-weight: 800; }
 .supportcomposeractions > button:disabled { border-color: #dce3ec; background: #e5eaf1; color: #9ca8ba; cursor: not-allowed; }

@@ -34,6 +34,40 @@ export function supportPriorityLabel(value: string): string {
   return priorities[value.toLowerCase()] ?? value;
 }
 
+export type SupportPriorityGrade = 'P0' | 'P1' | 'P2' | 'P3';
+
+export function supportPriorityGrade(value: string): SupportPriorityGrade {
+  const normalized = value.toLowerCase();
+  if (normalized === 'urgent' || normalized === 'critical') return 'P0';
+  if (normalized === 'high') return 'P1';
+  if (normalized === 'low') return 'P3';
+  return 'P2';
+}
+
+export function supportPriorityFromGrade(value: SupportPriorityGrade): 'urgent' | 'high' | 'normal' | 'low' {
+  return value === 'P0' ? 'urgent' : value === 'P1' ? 'high' : value === 'P3' ? 'low' : 'normal';
+}
+
+export function supportPriorityGuidance(value: SupportPriorityGrade): string {
+  if (value === 'P0') return '业务中断、资金或安全风险，需要立即响应';
+  if (value === 'P1') return '核心功能受阻或影响多人，需要优先处理';
+  if (value === 'P2') return '单用户常规问题，按标准队列处理';
+  return '咨询、建议或低影响事项，可计划处理';
+}
+
+export function supportHistoryLabel(kind: string): string {
+  if (kind === 'priority.reviewed') return '完成 P 级审核';
+  if (kind === 'attachment.uploaded') return '上传附件';
+  if (kind === 'internal.note') return '添加内部备注';
+  if (kind === 'message') return '发送公开回复';
+  if (kind === 'opened') return '创建工单';
+  if (kind === 'assigned' || kind === 'reassigned') return '分配处理人';
+  if (kind === 'resolved') return '标记已解决';
+  if (kind === 'closed') return '关闭工单';
+  if (kind === 'reopened') return '重新打开工单';
+  return '更新工单';
+}
+
 export function supportChannelLabel(value: string): string {
   return channels[value.toLowerCase()] ?? value;
 }

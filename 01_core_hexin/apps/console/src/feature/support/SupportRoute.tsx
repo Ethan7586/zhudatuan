@@ -7,11 +7,12 @@ import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
 import { pageCursor } from '../../shared/url/PageCursor';
 import { scopePath } from '../../shared/url/ScopePath';
 import { SupportCaseRail } from './SupportCaseRail';
-import { canCreateSupportCase, canSendSupportMessage, createSupportCase, sendSupportMessage } from './SupportCommand';
+import { canCreateSupportCase, canReviewSupportCase, canSendSupportMessage, canUploadSupportAttachment, createSupportCase,
+  reviewSupportPriority, sendSupportMessage, uploadSupportAttachment } from './SupportCommand';
 import { SupportContextPanel } from './SupportContextPanel';
 import { SupportConversation } from './SupportConversation';
-import { readCases, readMessages, supportCaseKey, supportMessageKey } from './SupportQuery';
-import { supportRoleLabel } from './SupportPresentation';
+import { readCases, readHistory, readMessages, supportCaseKey, supportHistoryKey, supportMessageKey } from './SupportQuery';
+import { supportRoleLabel, type SupportPriorityGrade } from './SupportPresentation';
 import { SUPPORT_PREFETCH_STALE_TIME_MS } from './SupportPrefetch';
 import type { SupportCaseView, SupportMessage, SupportMessageVisibility } from './SupportSchema';
 import './support-layout.css';
@@ -43,6 +44,15 @@ export function Component() {
     staleTime: SUPPORT_PREFETCH_STALE_TIME_MS,
     refetchOnWindowFocus: false,
   });
+  const historyAllowed = context.session.permissions.includes('support.history.read')
+    && context.session.capabilities.includes('support.history.read');
+  const historyQuery = useQuery({
+    queryKey: supportHistoryKey(context, caseId ?? 'not-selected'),
+    queryFn: ({ signal }) => readHistory(context, caseId!, signal),
+    enabled: caseId !== undefined && historyAllowed,
+    staleTime: SUPPORT_PREFETCH_STALE_TIME_MS,
+    refetchOnWindowFocus: false,
+  });
   const [olderMessages, setOlderMessages] = useState<readonly SupportMessage[]>([]);
   const [olderCursor, setOlderCursor] = useState<string>();
   const [historyLoaded, setHistoryLoaded] = useState(false);
@@ -62,6 +72,8 @@ export function Component() {
     fetching: messagesQuery.isFetching, error: messagesQuery.error, hasData: messagesQuery.data !== undefined,
     empty: messages.length === 0, stale: false });
   const sendAllowed = selectedCase !== undefined && canSendSupportMessage(context, selectedCase.state);
+  const attachAllowed = selectedCase !== undefined && canUploadSupportAttachment(context, selectedCase.state);
+  const reviewAllowed = canReviewSupportCase(context);
   const createAllowed = canCreateSupportCase(context);
   const createUnavailableReason = createAllowed ? '' : '当前身份没有新建工单权限';
   const sendUnavailableReason = selectedCase === undefined ? '工单详情尚未加载'
@@ -87,8 +99,24 @@ export function Component() {
       navigate({ pathname: `${supportPath}/${encodeURIComponent(created.id)}`, search: selectedSearch.toString() });
     },
   });
+  const review = useMutation({
+    mutationFn: async (grade: SupportPriorityGrade) => {
+      if (selectedCase === undefined) throw new Error('SUPPORT_CASE_NOT_LOADED');
+      return reviewSupportPriority(context, selectedCase.id, selectedCase.version, grade);
+    },
+    onSuccess: async () => { await Promise.all([casesQuery.refetch(), historyQuery.refetch()]); },
+  });
+  const attach = useMutation({
+    mutationFn: async ({ file, visibility }: Readonly<{ file: File; visibility: SupportMessageVisibility }>) => {
+      if (selectedCase === undefined) throw new Error('SUPPORT_CASE_NOT_LOADED');
+      return uploadSupportAttachment(context, selectedCase.id, selectedCase.state, file, visibility);
+    },
+    onSuccess: async () => { await Promise.all([messagesQuery.refetch(), historyQuery.refetch()]); },
+  });
   const createError = safeQueryError(create.error);
   const sendError = safeQueryError(send.error);
+  const reviewError = safeQueryError(review.error);
+  const attachmentError = safeQueryError(attach.error);
   const scopeName = context.scope.name?.trim();
   const brandName = scopeName === undefined || scopeName.length === 0 ? '当前商城' : normalizeConsoleCopy(scopeName);
   const roleLabel = supportRoleLabel(context.session.governance?.level);
@@ -127,7 +155,8 @@ export function Component() {
       <nav className="supporttasktabs" aria-label="工单任务入口">
         <button type="button" aria-current={caseView === 'handling' ? 'page' : undefined}
           onClick={() => selectCaseView('handling')}>待我处理 <strong>{casesQuery.data?.views.handling ?? 0}</strong></button>
-        <button type="button" disabled title="下一批接入">待我审批 <strong>0</strong></button>
+        <button type="button" aria-current={caseView === 'review' ? 'page' : undefined}
+          onClick={() => selectCaseView('review')}>待我审批 <strong>{casesQuery.data?.views.review ?? 0}</strong></button>
         <button type="button" aria-current={caseView === 'created' ? 'page' : undefined}
           onClick={() => selectCaseView('created')}>我发起的 <strong>{casesQuery.data?.views.created ?? 0}</strong></button>
         <button type="button" aria-current={caseView === 'all' ? 'page' : undefined}
@@ -141,7 +170,9 @@ export function Component() {
           {...(caseId === undefined ? {} : { selectedCaseId: caseId })} queueSearch={queueSearch} supportPath={supportPath}
           onCreate={() => setCreatingCase((current) => !current)} onRetry={() => { void casesQuery.refetch(); }}
           onNext={(cursor) => setSearch(pageCursor(search, cursor))} />
-        <SupportConversation canSend={sendAllowed} backPath={supportQueuePath} {...(caseId === undefined ? {} : { caseId })}
+        <SupportConversation canSend={sendAllowed} canAttach={attachAllowed} attaching={attach.isPending}
+          attachments={messagesQuery.data?.attachments ?? []} backPath={supportQueuePath} {...(caseId === undefined ? {} : { caseId })}
+          {...(attach.isError ? { attachmentError: `附件失败，请检查格式和大小后重试。 ${attachmentError ?? 'REQUEST_FAILED'}` } : {})}
           canCreateCase={createAllowed} condition={messagesCondition}
           {...(create.isError ? { createCaseError: `新建失败，请保留内容后重试。 ${createError ?? 'REQUEST_FAILED'}` } : {})}
           createUnavailableReason={createUnavailableReason} creatingCase={creatingCase} creatingCasePending={create.isPending} messages={messages}
@@ -152,16 +183,19 @@ export function Component() {
           sending={send.isPending} sendUnavailableReason={sendUnavailableReason}
           onCancelCreate={() => setCreatingCase(false)} onCreateCase={(draft) => create.mutateAsync(draft).then(() => undefined)}
           onNext={(cursor) => { void loadOlder(cursor); }} onRetry={() => { void messagesQuery.refetch(); }}
+          onAttach={(file, visibility) => attach.mutateAsync({ file, visibility }).then(() => undefined)}
           onSend={(message, visibility) => send.mutateAsync({ message, visibility }).then(() => undefined)} />
-        <SupportContextPanel brandName={brandName} {...(selectedCase === undefined ? {} : { selectedCase })}
-          {...(caseId === undefined ? {} : { caseId })} />
+        <SupportContextPanel brandName={brandName} canReview={reviewAllowed} history={historyQuery.data?.items ?? []}
+          reviewing={review.isPending} onReview={(grade) => review.mutateAsync(grade).then(() => undefined)}
+          {...(review.isError ? { reviewError: `定级失败，请刷新后重试。 ${reviewError ?? 'REQUEST_FAILED'}` } : {})}
+          {...(selectedCase === undefined ? {} : { selectedCase })} {...(caseId === undefined ? {} : { caseId })} />
       </div>
     </section>
   );
 }
 
 function supportCaseView(raw: string | null): SupportCaseView {
-  return raw === 'created' || raw === 'all' ? raw : 'handling';
+  return raw === 'review' || raw === 'created' || raw === 'all' ? raw : 'handling';
 }
 
 function RefreshIcon() {

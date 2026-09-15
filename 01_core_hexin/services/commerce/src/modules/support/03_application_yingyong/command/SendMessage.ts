@@ -1,11 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import type { OperationActions } from '../../../../foundation/application/ModuleOperations';
 import { operationLifecycle, requireAccess, rowResult } from '../../../../foundation/application/ModuleOperations';
-import { bodyRecord, integerField, textField } from '../../../../foundation/interface/Validation';
+import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
 import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
+import type { ObjectStore } from '../../../../foundation/infrastructure/ObjectStore';
 import type { EncryptedMessage, MessageVisibility, SupportPortFactory } from '../../01_public_gongkai/SupportPort';
 
-export function sendMessageOperations(kms: KmsClient, ports: SupportPortFactory): OperationActions {
+const MAX_INLINE_ATTACHMENT_BYTES = 1024 * 1024;
+
+export function sendMessageOperations(kms: KmsClient, ports: SupportPortFactory, objects?: ObjectStore): OperationActions {
   return {
     'support.messages.send': operationLifecycle({
       prepare: async (request) => {
@@ -43,16 +46,58 @@ export function sendMessageOperations(kms: KmsClient, ports: SupportPortFactory)
         and ticket.state<>'closed' and (conversation.member_id=$3 or exists(select 1 from organization.unitclosure
         where ancestor_id=$2 and descendant_id=ticket.scope_id)) for update of ticket`, [ticket, access.scope.id, member]);
       const target = selected.rows[0]; if (!target) throw new Error('SUPPORT_TICKET_NOT_WRITABLE');
-      const sha256 = textField(body, 'sha256', 64); if (!/^[a-f0-9]{64}$/.test(sha256)) throw new Error('SUPPORT_ATTACHMENT_HASH_INVALID');
-      const size = integerField(body, 'size', 1); if (size > 10 * 1024 * 1024) throw new Error('SUPPORT_ATTACHMENT_TOO_LARGE');
-      const id = `evidence:${randomUUID()}`; const kind = choice(body.contentType, ['image/jpeg','image/png','application/pdf','text/plain']);
-      const result = await database.query(`insert into support.evidence(id,scope_id,conversation_id,object_ref,sha256,kind,size_bytes,state,created_at)
-        values($1,$2,$3,$4,$5,$6,$7,'pending',clock_timestamp()) returning *`, [id, target.scope_id, target.conversation_id,
-        textField(body, 'reference', 2048), sha256, kind, size]);
+      if (!objects) throw new Error('SUPPORT_ATTACHMENT_STORE_UNAVAILABLE');
+      const id = `evidence:${randomUUID()}`;
+      const name = attachmentName(body.name);
+      const kind = choice(body.contentType, ['image/jpeg','image/png','application/pdf','text/plain']);
+      const visibility = choice(body.visibility ?? 'public', ['public','internal'], 'SUPPORT_ATTACHMENT_VISIBILITY_INVALID') as MessageVisibility;
+      if (visibility === 'internal' && access.actor.target === 'storefront') throw new Error('SUPPORT_INTERNAL_ATTACHMENT_FORBIDDEN');
+      const stored = await storeAttachment(objects, id, kind, body.contentBase64);
+      const result = await database.query(`insert into support.evidence(id,scope_id,conversation_id,object_ref,sha256,kind,size_bytes,state,file_name,
+        visibility,created_at) values($1,$2,$3,$4,$5,$6,$7,'pending',$8,$9,clock_timestamp()) returning *`,
+      [id, target.scope_id, target.conversation_id, stored.reference, stored.sha256, kind, stored.size, name, visibility]);
       await ports(database).enqueue('supportscan', target.scope_id, { evidence: id }, undefined, `job:scan:${id}`);
+      await ports(database).history(ticket, target.scope_id, 'attachment.uploaded', access.actor.id,
+        { evidence: id, name, contentType: kind, size: stored.size, visibility });
       return rowResult(result, 202);
     },
   };
+}
+
+async function storeAttachment(objects: ObjectStore, id: string, contentType: string, encoded: unknown) {
+  if (typeof encoded !== 'string' || encoded.length === 0 || encoded.length > Math.ceil(MAX_INLINE_ATTACHMENT_BYTES * 4 / 3) + 4
+    || !/^[A-Za-z0-9+/]+={0,2}$/.test(encoded) || encoded.length % 4 !== 0) throw new Error('SUPPORT_ATTACHMENT_CONTENT_INVALID');
+  const bytes = Buffer.from(encoded, 'base64');
+  if (bytes.byteLength === 0 || bytes.byteLength > MAX_INLINE_ATTACHMENT_BYTES
+    || bytes.toString('base64') !== encoded || !attachmentSignatureValid(bytes, contentType)) {
+    throw new Error('SUPPORT_ATTACHMENT_CONTENT_INVALID');
+  }
+  const extension = contentType === 'image/jpeg' ? 'jpg' : contentType === 'image/png' ? 'png'
+    : contentType === 'application/pdf' ? 'pdf' : 'txt';
+  const upload = await objects.create(`support/evidence/${id.slice('evidence:'.length)}.${extension}`, contentType);
+  try {
+    await upload.append(bytes);
+    return await upload.complete();
+  } catch (error) {
+    await upload.abort().catch(() => undefined);
+    throw error;
+  }
+}
+
+function attachmentSignatureValid(bytes: Uint8Array, contentType: string): boolean {
+  if (contentType === 'image/png') return bytes.length >= 8 && [137,80,78,71,13,10,26,10].every((value, index) => bytes[index] === value);
+  if (contentType === 'image/jpeg') return bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  if (contentType === 'application/pdf') return bytes.length >= 5 && Buffer.from(bytes.subarray(0, 5)).toString('ascii') === '%PDF-';
+  try { return !new TextDecoder('utf-8', { fatal: true }).decode(bytes).includes('\u0000'); } catch { return false; }
+}
+
+function attachmentName(value: unknown): string {
+  if (typeof value !== 'string') throw new Error('SUPPORT_ATTACHMENT_NAME_INVALID');
+  const normalized = value.trim();
+  if (normalized.length === 0 || normalized.length > 160 || /[\u0000-\u001f\u007f]/.test(normalized)) {
+    throw new Error('SUPPORT_ATTACHMENT_NAME_INVALID');
+  }
+  return normalized;
 }
 
 async function encrypt(kms: KmsClient, body: string): Promise<EncryptedMessage> {

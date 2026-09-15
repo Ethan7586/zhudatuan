@@ -16,14 +16,31 @@ export function closeTicketOperations(ports: SupportPortFactory): OperationActio
 async function update(request: OperationRequest, database: OperationDatabase, ports: SupportPortFactory) {
   const access = requireAccess(request); const body = bodyRecord(request); const id = request.input.path.caseid!;
   const current = await load(database, id, access.scope.id); const state = body.state === undefined ? current.state : ticketState(body.state);
+  if (request.input.expectedVersion === undefined) throw new Error('EXPECTED_VERSION_REQUIRED');
+  if (request.input.expectedVersion !== current.version) throw new Error('VERSION_CONFLICT');
   if (state !== current.state) current.aggregate.requireTransition(state);
   const priority = body.priority === undefined ? current.priority : ticketPriority(body.priority);
-  const result = await database.query(`update support.ticket ticket set priority=$3,state=$4,updated_at=clock_timestamp(),version=version+1
-    where ticket.id=$1 and ticket.scope_id=$2 and ticket.version=$5 returning ticket.*`, [id, current.scope, priority, state, current.version]);
+  const priorityReviewed = body.priority !== undefined;
+  const sla = priorityReviewed ? await ports(database).sla(current.scope, priority) : null;
+  const result = await database.query(`update support.ticket ticket set priority=$3,state=$4,updated_at=clock_timestamp(),version=version+1,
+    response_due_at=case when $6::boolean then case when $7::integer is null then null else clock_timestamp()+make_interval(secs=>$7) end
+      else response_due_at end,
+    resolution_due_at=case when $6::boolean then case when $8::integer is null then null else clock_timestamp()+make_interval(secs=>$8) end
+      else resolution_due_at end
+    where ticket.id=$1 and ticket.scope_id=$2 and ticket.version=$5 returning ticket.*`,
+  [id, current.scope, priority, state, request.input.expectedVersion, priorityReviewed, sla?.response ?? null, sla?.resolution ?? null]);
   if (!result.rows[0]) throw new Error('VERSION_CONFLICT');
   if (body.subject !== undefined) await database.query(`update support.conversation set subject=$2,updated_at=clock_timestamp(),version=version+1
     where id=$1`, [current.conversation, textField(body, 'subject')]);
-  await ports(database).history(id, current.scope, 'updated', access.actor.id, { priority, state, subject: body.subject ?? null });
+  const updated = result.rows[0] as Readonly<Record<string, unknown>>;
+  if (priorityReviewed) await Promise.all([
+    ...(updated.response_due_at === null ? [] : [ports(database).enqueue('supportsla', current.scope,
+      { ticket: id, phase: 'response' }, String(updated.response_due_at), `job:sla:response:${id}:v${current.version + 1}`)]),
+    ...(updated.resolution_due_at === null ? [] : [ports(database).enqueue('supportsla', current.scope,
+      { ticket: id, phase: 'resolution' }, String(updated.resolution_due_at), `job:sla:resolution:${id}:v${current.version + 1}`)]),
+  ]);
+  await ports(database).history(id, current.scope, priorityReviewed ? 'priority.reviewed' : 'updated', access.actor.id,
+    { priority, previousPriority: current.priority, state, subject: body.subject ?? null });
   return rowResult(result);
 }
 
