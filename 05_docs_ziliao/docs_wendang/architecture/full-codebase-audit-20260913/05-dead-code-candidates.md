@@ -1007,7 +1007,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 直接证据 | 迁移选择本地用户名 `ethan` 作为 canonical Owner、写入平台/租户 scope、暂时关闭 Owner 保护 trigger，并批量暂停 `*-test-*` membership/member/user；无法找到 Owner 或唯一 Owner 均会中止。 |
 | 运行边界 | `RegistrationMigrationPlan` 将其明示标记为“environment-specific Ethan platform owner reconciliation”并作为 omitted migration 记账；运行数据库边界与阿里云校验仍要求活动平台 Owner 数为 1。其他 Supabase/发布通道是否执行该原文件不由仓内静态证据证明。 |
 | 可否删除 | 否；它承担历史身份调和与迁移 ledger 责任，且删除、重放或改写均可能改变平台最高权限与测试隔离。 |
-| 二次复核 | 是；必须独立核验所有迁移执行器、生产 ledger、Owner 身份/组织 scope、测试账号保留策略和恢复方案。 |
+| 二次复核 | RV-0028 已完成源码迁移、registration执行计划、契约历史和当前Owner约束复核（2026-09-15），维持GX；生产ledger、真实Owner与恢复方案仍须经授权专项核验。 |
 
 ## 420. AU-420 平台 Owner 调和复核
 
