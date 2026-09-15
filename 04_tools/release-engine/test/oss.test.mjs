@@ -107,6 +107,7 @@ test('prepared inspection deduplicates an exact node-eligible artifact without h
 
 test('an existing immutable artifact can recover an UPLOADED Seal receipt without rewriting it', async () => {
   const fixture = await prepareFixture();
+  fixture.adapter.nodes['node-b'].deployments.app = {};
   const remote = memoryOss();
   const client = createOssClient(credentials(), { fetchImpl: remote.fetch });
   const published = await publishPreparedArtifact(fixture.adapter, publishOptions(fixture), { client });
@@ -120,6 +121,11 @@ test('an existing immutable artifact can recover an UPLOADED Seal receipt withou
   assert.equal(recovered.recovered, true);
   assert.equal(recovered.cacheStatus, 'hit_remote');
   assert.equal(recovered.seal.state.status, 'UPLOADED');
+  assert.deepEqual(recovered.recoveredNodes, ['node-a', 'node-b']);
+  await assert.rejects(requireFinalSealReceipt(fixture.adapter, {
+    sourceSha: fixture.sourceSha, target: 'app', node: 'node-b', artifactDigest: published.artifactIdentity,
+    controlPlaneSha: 'c'.repeat(40),
+  }, { client }), (error) => error.code === 'FINAL_SEAL_RECEIPT_MISSING' && error.details.status === 'UPLOADED');
   assert.equal(remote.objects.get(published.releaseIndex.object).toString('utf8'), before);
 });
 

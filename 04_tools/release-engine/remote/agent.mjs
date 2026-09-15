@@ -462,6 +462,8 @@ async function sealValidatedCandidate(context, options) {
   const current = await pointer(context.deployment.pointerRoot, 'current');
   const expectedCurrent = options.expectedCurrent === 'none' ? null : required(options.expectedCurrent, 'CANDIDATE_SEAL_EXPECTED_CURRENT_REQUIRED');
   const expectedCurrentSourceSha = options.expectedCurrentSourceSha === 'none' ? null : required(options.expectedCurrentSourceSha, 'CANDIDATE_SEAL_EXPECTED_CURRENT_SOURCE_REQUIRED');
+  const lineageMode = required(options.lineageMode, 'CANDIDATE_SEAL_LINEAGE_MODE_REQUIRED');
+  assert(['verified', 'already-superseded'].includes(lineageMode), 'CANDIDATE_SEAL_LINEAGE_MODE_INVALID');
   assert(candidate === found.release, 'CANDIDATE_SEAL_POINTER_MISMATCH', { expected: found.release, actual: candidate });
   assert(current === expectedCurrent, 'CANDIDATE_SEAL_CURRENT_MISMATCH', {
     expected: expectedCurrent,
@@ -482,6 +484,7 @@ async function sealValidatedCandidate(context, options) {
     candidate,
     expectedCurrent,
     expectedCurrentSourceSha,
+    lineageMode,
     controlPlane: context.controlPlane,
     validatedAt: new Date().toISOString(),
   };
@@ -527,6 +530,9 @@ async function deploySealedCandidate(context, options) {
     expected: seal.expectedCurrent,
     actual: current,
   });
+  if (seal.lineageMode === 'already-superseded' && current === seal.expectedCurrent) {
+    return verifySupersededCandidate(context, options, { identity, seal, found, current, started });
+  }
   const candidateBefore = found.candidate;
   await atomicPointer(join(context.deployment.pointerRoot, 'candidate'), found.release);
   const activation = await activate(context, {
@@ -550,6 +556,52 @@ async function deploySealedCandidate(context, options) {
     },
     activation: { ...activation, direct: true, mode: activation.alreadyCurrent ? 'sealed-verify-only' : 'sealed-activated' },
     timings: { artifactLookup: found.artifactLookupMs, download: 0, candidate: activation.timings?.candidate ?? 0, total: Date.now() - started },
+  };
+}
+
+async function verifySupersededCandidate(context, options, { identity, seal, found, current, started }) {
+  const manifest = await readJson(join(current, 'AI_DELIVERY_ARTIFACT.json'));
+  assert(manifest?.sourceSha === seal.expectedCurrentSourceSha, 'SUPERSEDED_CURRENT_SOURCE_CHANGED', {
+    expected: seal.expectedCurrentSourceSha, actual: manifest?.sourceSha,
+  });
+  const pointersBefore = await pointerSnapshot(context.deployment.pointerRoot);
+  const protectedBefore = await protectedProcessSnapshot(context);
+  const caddyBefore = await caddySemanticEvidence(context.policy);
+  const targetProcessBefore = await processId(context.deployment.restart);
+  const readiness = await waitForReadiness(context, { candidateDir: current, currentDir: current, ...contextSummary(context) });
+  const protectedAfter = await assertProtectedUnchanged(context, protectedBefore);
+  const caddyAfter = await caddySemanticEvidence(context.policy);
+  assert(caddyAfter?.digest === caddyBefore?.digest, 'CADDY_SEMANTIC_CHANGED', { before: caddyBefore?.digest, after: caddyAfter?.digest });
+  const targetProcessAfter = await processId(context.deployment.restart);
+  const receipt = await deploymentReceipt(context, manifest, {
+    pointersBefore,
+    rollbackPoint: { status: 'not-required', reason: 'current-supersedes-requested-source', pointers: pointersBefore },
+    capacity: await capacityEvidence(context, manifest.archive?.bytes ?? manifest.totalBytes ?? 0),
+    caddyBefore,
+    caddyAfter,
+    readiness,
+    targetProcessBefore,
+    targetProcessAfter,
+    protectedBefore,
+    protectedAfter,
+    finalStatus: 'success',
+  });
+  return {
+    schema: 'ai.delivery.oss-sealed-deploy.v1',
+    sourceSha: identity.sourceSha,
+    artifactSha256: `sha256:${identity.archiveSha256}`,
+    controlPlane: context.controlPlane,
+    cacheStatus: 'superseded_current',
+    downloadedBytes: 0,
+    reusedBytes: found.artifactBytes,
+    seal: { sealDigest: seal.sealDigest, expectedCurrent: seal.expectedCurrent, validatedAt: seal.validatedAt, restoredCandidate: false },
+    activation: {
+      mode: 'superseded-verify-only', alreadyCurrent: true, current, currentSourceSha: manifest.sourceSha,
+      requestedSourceSha: options.sourceSha, service: context.deployment.restart,
+      restart: restartEvidence(context.deployment.restart, false), readiness,
+      targetProcess: { before: targetProcessBefore, after: targetProcessAfter }, receipt,
+    },
+    timings: { artifactLookup: found.artifactLookupMs, download: 0, candidate: 0, total: Date.now() - started },
   };
 }
 

@@ -448,6 +448,8 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
           remoteResult.current.after ?? 'none',
           '--expected-current-source-sha',
           remoteResult.current.sourceSha ?? 'none',
+          '--lineage-mode',
+          lineage.status,
         ],
         timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
       },
@@ -560,12 +562,15 @@ export function assertPreparedSourceLineage(current, candidateSourceSha, mergeBa
     return { status: 'first-activation', currentSourceSha: null, candidateSourceSha };
   }
   invariant(/^[a-f0-9]{40}$/.test(current.sourceSha ?? ''), 'PREPARED_CURRENT_SOURCE_UNAVAILABLE', 'Current production release has no verifiable source SHA');
-  invariant(mergeBaseSha === current.sourceSha, 'PREPARED_SOURCE_DOES_NOT_CONTAIN_CURRENT', 'Candidate source does not contain the current production source', {
-    currentSourceSha: current.sourceSha,
-    candidateSourceSha,
-    mergeBaseSha,
+  if (mergeBaseSha === current.sourceSha) {
+    return { status: 'verified', currentSourceSha: current.sourceSha, candidateSourceSha, mergeBaseSha };
+  }
+  if (mergeBaseSha === candidateSourceSha) {
+    return { status: 'already-superseded', currentSourceSha: current.sourceSha, candidateSourceSha, mergeBaseSha };
+  }
+  invariant(false, 'PREPARED_SOURCE_DOES_NOT_CONTAIN_CURRENT', 'Candidate source and current production source have diverged', {
+    currentSourceSha: current.sourceSha, candidateSourceSha, mergeBaseSha,
   });
-  return { status: 'verified', currentSourceSha: current.sourceSha, candidateSourceSha, mergeBaseSha };
 }
 
 export function assertPreparedControlPlane(controlPlane, expected) {
