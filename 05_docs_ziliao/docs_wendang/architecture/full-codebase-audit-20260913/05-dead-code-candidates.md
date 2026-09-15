@@ -1292,7 +1292,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 直接证据 | 为 `payment.attempt` 增加 miniapp/jsapi 场景和 AppID SHA-256；未终态尝试必须同时拥有二者，并为 application+intent+时间建立索引。 |
 | 运行边界 | Payment create 写入 scene/application hash；Webhook 按观测应用核验；支付查询/退款任务读取同一尝试绑定。 |
 | 可否删除 | 否；承担资金渠道路由、应用隔离、回调归属和审计责任。 |
-| 二次复核 | 是；须验证 Miniapp/JSAPI 分流、Webhook AppID 不匹配、重试、历史终态、渠道凭据和回滚恢复。 |
+| 二次复核 | RV-0043 已完成：维持 GX；静态复核确认支付创建、网关、Webhook 定位和完整性校验均比较 scene/application hash。真实渠道分流、凭据、重试和恢复未验证。 |
 
 ## 462. AU-462 微信支付应用隔离复核
 
