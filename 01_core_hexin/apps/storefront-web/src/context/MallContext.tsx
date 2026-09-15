@@ -7,6 +7,7 @@ import type { AndroidAppPage, AppMode, LaptopPage, LoginCredentials, MallContext
 import { useDeviceNavigation } from './useDeviceNavigation';
 import { checkoutSelectedCartRequest, PaymentPhoneVerificationRequired, prepareCheckoutSelection, refreshRejectedCheckoutCart } from './checkoutSelectedCart';
 import { useProductionSync } from './useProductionSync';
+import { purchaseAvailabilityMessage } from './purchaseAvailabilityMessage';
 import { useToasts } from './useToasts';
 import { guestStorefrontProfile } from './guestStorefrontProfile';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
@@ -417,7 +418,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
       return false;
     }
     if (product.purchasable === false) {
-      showToast(product.qualificationReason === 'PURCHASE_LIMIT_EXCEEDED' ? '已达到该商品的限购上限' : '当前资格或城市暂不能购买该商品', 'warning');
+      showToast(purchaseAvailabilityMessage(product.qualificationReason), 'warning');
       return false;
     }
     if (!Number.isSafeInteger(quantity) || quantity < 1) return false;
