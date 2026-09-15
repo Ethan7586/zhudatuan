@@ -6577,3 +6577,26 @@
 | 验证方式 | 同一批准文件的 SHA 在 authorities、引用、capture 输入与验证 fixture 中一致；故意篡改任一字节稳定拒绝；历史引用有可解析冻结版本。 |
 | 回滚方式 | 回退独立 authority/reference 提交或恢复经批准的冻结副本；不触及运行制品。 |
 | 是否需要独立复核 | **是**；架构与发布 Owner 需重新追踪 authority consumer、批准版本、capture 行为和外部交接。 |
+
+## F-0343｜生产订单筛选被前端发送，但后端和契约未定义或消费
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Console 订单工作台 / Order Operation 契约 |
+| 类型 | 前后端契约漂移、用户可见查询正确性 |
+| 严重级别 | **P2** |
+| 置信度 | 高（当前前端、测试、OpenAPI/operation 定义和后端查询直接证据） |
+| 文件和精确位置 | `01_core_hexin/apps/console/src/feature/order/OrderQuery.ts:25-48`；`01_core_hexin/apps/console/src/feature/order/OrderQuery.test.ts:80-109`；`01_core_hexin/services/commerce/src/modules/order_dingdan/03_application_yingyong/services_fuwu/OrderOperations.ts:29-49`；`01_core_hexin/packages/contract/definitions/operations.yml:1554-1572`；`05_docs_ziliao/docs_wendang/订单管理升级前详细预案-WCHS-MCBS-20260901.md:126-136`。 |
+| 当前行为 | Console 在非 preview 的生产 scope 把 `placed`、`lifecycle`、`payment`、`fulfillment`、`mall`、`view` 作为“权威服务端筛选”发送，测试固定该行为；但 `order.orders.read` 的 operation/OpenAPI 未声明 query fields，当前 `OrderOperations` SQL 只消费内部 `order` 精确 ID 和 keyset cursor/limit，未读取六项筛选参数。 |
+| 预期行为 | 页面可操作且标为服务端筛选的每个字段，都应由稳定契约声明、后端按授权范围真实执行并有结果正确性测试；若能力未实现，应在生产界面禁用或明确标为不可用，而非静默发出无效参数。 |
+| 直接证据 | [FACT][E-AU-891-001] `OrderQuery.ts` 无 preview 分支、直接构造六项 query；[FACT][E-AU-891-002] `OrderQuery.test.ts` 明确命名“authoritative server filters to production scopes”；[FACT][E-AU-891-003] operation 定义无 request fields/OpenAPI parameters，Order SQL 条件仅含 `orders.id=$5` 与 cursor。预案仍保留“仅 preview 发送”的历史陈述。 |
+| 调用链或运行入口 | Console `/orders` → `readOrders` → SDK `GET /api/v1/orders` → `order.orders.read` → `OrderOperations` SQL。 |
+| 用户影响 | 运营人员可能以为日期、状态、商城或异常视图已缩小生产订单集合，实际得到未按选择条件筛选的结果，影响查单、售后、导出和异常处置判断。 |
+| 数据影响 | 当前读取路径无写入证据；基于错误集合做后续人工订单操作可能产生间接业务风险。 |
+| 安全影响 | SQL 仍用 scope/closure 条件限制范围，未发现跨范围读取证据；问题主要是筛选语义而非授权绕过。 |
+| 根因 | Console 能力与目标 OMS 预案先行，未与 `order.orders.read` 的参数 schema、服务端 projection 和端到端结果断言原子落地。 |
+| 建议方向 | 从修复时最新 `zdt-next` 建立单一 order-read-filter-contract 批次：逐项裁决保留/下线筛选，原子更新 operation schema、SDK、授权范围内 SQL/projection、UI 文案与真实数据测试；不要在同批处理订单写操作、VI 重构、导出、迁移或发布。 |
+| 预计修改范围 | Order contract/SDK、Console 查询/测试、Order read handler/投影及定向集成测试；由订单 Owner 先确认每个筛选的产品定义。 |
+| 验证方式 | 每项筛选以两个权限范围和相异数据集证明结果集合变化正确、组合筛选稳定、cursor 不重复/漏项、无筛选时向后兼容；契约拒绝未知字段或明确兼容策略。 |
+| 回滚方式 | 回退该独立契约/读模型批次；在无法保证语义时先禁用对应 UI 控件，不能保留静默无效筛选。 |
+| 是否需要独立复核 | **是**；订单、Console 与契约 Owner 必须独立追踪运行路由、参数解析、SQL/projection、生成 SDK 和真实结果样本。 |
