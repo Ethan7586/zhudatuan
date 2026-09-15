@@ -111,15 +111,17 @@ test('a started build can never migrate after lease expiry or observation loss',
   assert.equal(observed.reusedExistingTask, true);
 });
 
-test('build failure is final and never automatically retried', async () => {
+test('a new prepare request creates a fresh generation after a failed build', async () => {
   const store = memoryStore();
   const routed = await routeBuildRequest(store, { ...base, runners: slots }, clock());
   await markRunnerStarted(store, { ...base, leaseGeneration: routed.leaseGeneration, selectedRunnerName: routed.selectedRunnerName, now: fixedNow });
   const finished = await markRunnerFinished(store, { ...base, leaseGeneration: routed.leaseGeneration, status: 'failed', now: fixedNow });
   const observed = await routeBuildRequest(store, { ...base, runners: slots }, clock());
   assert.equal(finished.failure.retryable, false);
-  assert.equal(observed.phase, 'BUILD_FAILED');
-  assert.equal(observed.shouldBuild, false);
+  assert.equal(observed.phase, 'ROUTED');
+  assert.equal(observed.leaseGeneration, 2);
+  assert.equal(observed.shouldBuild, true);
+  assert.equal(observed.reusedExistingTask, false);
 });
 
 test('UPLOADED and later Seal stages bypass build routing', async () => {
