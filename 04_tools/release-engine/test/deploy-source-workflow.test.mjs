@@ -17,6 +17,8 @@ test('sealed-source deployment is explicit, consumes one closure manifest and ne
   assert.match(workflow.jobs.resolve.steps[0].run, /automatic-artifact-closure-\$SOURCE_SHA/);
   assert.match(workflow.jobs.resolve.steps[0].run, /gh run list --repo "\$GITHUB_REPOSITORY"/);
   assert.doesNotMatch(workflow.jobs.resolve.steps[0].run, /--event push/);
+  assert.match(workflow.jobs.resolve.steps[0].run, /actions\/runs\/\$\{candidate_id\}\/artifacts/);
+  assert.match(workflow.jobs.resolve.steps[0].run, /automatic-artifact-closure-\$\{SOURCE_SHA\}/);
   assert.match(workflow.jobs.resolve.steps[0].run, /gh run download "\$run_id" --repo "\$GITHUB_REPOSITORY"/);
   assert.doesNotMatch(workflowSource, /npm ci|prepare-artifact-aliyun|\bbuild\b|operation: validate-candidate/);
   assert.equal((workflowSource.match(/operation: deploy/g) ?? []).length, 3);

@@ -10,6 +10,23 @@ on:
         description: Exact zdt-next source SHA whose automatic closure completed successfully
         required: true
         type: string
+    secrets:
+      ZDT_RUNNER_READ_TOKEN:
+        required: true
+      ZDT_RELEASE_SSH_KEY:
+        required: true
+      ALIYUN_OSS_ACCESS_KEY_ID:
+        required: true
+      ALIYUN_OSS_ACCESS_KEY_SECRET:
+        required: true
+      ALIYUN_OSS_SECURITY_TOKEN:
+        required: false
+      ALIYUN_OSS_BUCKET:
+        required: true
+      ALIYUN_OSS_ENDPOINT:
+        required: true
+      ALIYUN_OSS_INTERNAL_ENDPOINT:
+        required: false
 
 permissions:
   actions: read
@@ -43,8 +60,16 @@ jobs:
           [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo 'head_sha must be one full lowercase Git SHA' >&2; exit 64; }
           runs="$RUNNER_TEMP/automatic-closure-runs.json"
           gh run list --repo "$GITHUB_REPOSITORY" --workflow auto-prepare-artifacts.yml --branch zdt-next --limit 100 \
-            --json databaseId,headSha,status,conclusion,url,createdAt > "$runs"
+            --json databaseId,headSha,event,status,conclusion,url,createdAt > "$runs"
           run_id="$(node -e "const r=require(process.argv[1]);const s=process.env.SOURCE_SHA;const x=r.find(v=>v.headSha===s&&v.status==='completed'&&v.conclusion==='success');if(x)process.stdout.write(String(x.databaseId))" "$runs")"
+          if [ -z "$run_id" ]; then
+            while read -r candidate_id; do
+              [ -n "$candidate_id" ] || continue
+              artifact_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${candidate_id}/artifacts" \
+                --jq ".artifacts[] | select(.name == \"automatic-artifact-closure-${SOURCE_SHA}\") | .id" | head -1)"
+              if [ -n "$artifact_id" ]; then run_id="$candidate_id"; break; fi
+            done < <(node -e "const r=require(process.argv[1]);for(const v of r)if(v.event==='workflow_dispatch'&&v.status==='completed'&&v.conclusion==='success')console.log(v.databaseId)" "$runs")
+          fi
           [ -n "$run_id" ] || { echo "No successful automatic closure exists for $SOURCE_SHA" >&2; exit 1; }
           closure_dir="$RUNNER_TEMP/automatic-closure-$run_id"
           mkdir -p "$closure_dir"
@@ -87,7 +112,15 @@ jobs:
       release_target: ${{ matrix.target }}
       release_node: ${{ matrix.node }}
       operation: deploy
-    secrets: inherit
+    secrets:
+      ZDT_RUNNER_READ_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
+      ZDT_RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
+      ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+      ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+      ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+      ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+      ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+      ALIYUN_OSS_INTERNAL_ENDPOINT: ${{ secrets.ALIYUN_OSS_INTERNAL_ENDPOINT }}
 
   runtimes:
     name: Deploy runtime ${{ matrix.target }} → ${{ matrix.node }}
@@ -102,7 +135,15 @@ jobs:
       release_target: ${{ matrix.target }}
       release_node: ${{ matrix.node }}
       operation: deploy
-    secrets: inherit
+    secrets:
+      ZDT_RUNNER_READ_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
+      ZDT_RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
+      ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+      ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+      ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+      ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+      ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+      ALIYUN_OSS_INTERNAL_ENDPOINT: ${{ secrets.ALIYUN_OSS_INTERNAL_ENDPOINT }}
 
   frontends:
     name: Deploy frontend ${{ matrix.target }} → ${{ matrix.node }}
@@ -117,4 +158,12 @@ jobs:
       release_target: ${{ matrix.target }}
       release_node: ${{ matrix.node }}
       operation: deploy
-    secrets: inherit
+    secrets:
+      ZDT_RUNNER_READ_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
+      ZDT_RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
+      ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+      ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+      ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+      ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+      ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+      ALIYUN_OSS_INTERNAL_ENDPOINT: ${{ secrets.ALIYUN_OSS_INTERNAL_ENDPOINT }}

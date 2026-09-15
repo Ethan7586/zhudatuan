@@ -15,6 +15,23 @@ on:
       seal_nodes_json:
         required: true
         type: string
+    secrets:
+      ZDT_RUNNER_READ_TOKEN:
+        required: true
+      ZDT_RELEASE_SSH_KEY:
+        required: true
+      ALIYUN_OSS_ACCESS_KEY_ID:
+        required: true
+      ALIYUN_OSS_ACCESS_KEY_SECRET:
+        required: true
+      ALIYUN_OSS_SECURITY_TOKEN:
+        required: false
+      ALIYUN_OSS_BUCKET:
+        required: true
+      ALIYUN_OSS_ENDPOINT:
+        required: true
+      ALIYUN_OSS_INTERNAL_ENDPOINT:
+        required: false
 
 permissions:
   actions: read
@@ -28,7 +45,13 @@ jobs:
       head_sha: ${{ inputs.head_sha }}
       release_target: ${{ inputs.release_target }}
       release_node: ${{ inputs.prepare_node }}
-    secrets: inherit
+    secrets:
+      ZDT_RUNNER_READ_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
+      ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+      ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+      ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+      ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+      ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
 
   seal:
     needs: prepare
@@ -42,4 +65,12 @@ jobs:
       release_target: ${{ inputs.release_target }}
       release_node: ${{ matrix.release_node }}
       operation: validate-candidate
-    secrets: inherit
+    secrets:
+      ZDT_RUNNER_READ_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
+      ZDT_RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
+      ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+      ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+      ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+      ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+      ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+      ALIYUN_OSS_INTERNAL_ENDPOINT: ${{ secrets.ALIYUN_OSS_INTERNAL_ENDPOINT }}
