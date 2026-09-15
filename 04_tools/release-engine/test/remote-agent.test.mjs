@@ -253,6 +253,29 @@ test('1.4 deploy consumes only a sealed candidate and never downloads during cut
   assert.equal(deployed.result.activation.receipt.finalStatus, 'success');
 });
 
+test('1.4 deploy restores its own sealed candidate when another source sealed later', async () => {
+  const fixture = await createFixture();
+  const baseline = await createArtifact(fixture, 'baseline', 'a'.repeat(40));
+  await invokeOss(fixture, baseline, await artifactPayload(baseline));
+  const first = await createArtifact(fixture, 'first-sealed', 'b'.repeat(40));
+  const firstValidation = await invokeOss(fixture, first, await artifactPayload(first), true, 'validate-oss-candidate-v3');
+  await invokeOss(fixture, first, {}, true, 'seal-validated-candidate-v3', {
+    expectedCurrent: firstValidation.result.current.after,
+    expectedCurrentSourceSha: firstValidation.result.current.sourceSha,
+  });
+  const later = await createArtifact(fixture, 'later-sealed', 'c'.repeat(40));
+  const laterValidation = await invokeOss(fixture, later, await artifactPayload(later), true, 'validate-oss-candidate-v3');
+  await invokeOss(fixture, later, {}, true, 'seal-validated-candidate-v3', {
+    expectedCurrent: laterValidation.result.current.after,
+    expectedCurrentSourceSha: laterValidation.result.current.sourceSha,
+  });
+
+  const deployed = await invokeOss(fixture, first, {}, true, 'deploy-sealed-candidate-v3');
+  assert.equal(deployed.result.activation.receipt.sourceSha, first.sourceSha);
+  assert.equal(deployed.result.seal.restoredCandidate, true);
+  assert.match(await readlink(join(fixture.pointerRoot, 'current')), new RegExp(first.sourceSha));
+});
+
 test('1.4 deploy rejects a sealed candidate when production changed after validation', async () => {
   const fixture = await createFixture();
   const baseline = await createArtifact(fixture, 'baseline', 'a'.repeat(40));

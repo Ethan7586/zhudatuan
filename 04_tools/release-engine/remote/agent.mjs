@@ -486,6 +486,10 @@ async function sealValidatedCandidate(context, options) {
     validatedAt: new Date().toISOString(),
   };
   const value = { ...unsigned, sealDigest: digest(unsigned) };
+  await writeAtomicJson(candidateSealPath(context, identity), value);
+  // Keep this latest-seal view for operators. Deployments read the immutable,
+  // identity-scoped receipt above, so a later candidate cannot replace another
+  // source version's deployment authority.
   await writeAtomicJson(join(context.deployment.pointerRoot, 'candidate-seal.json'), value);
   return value;
 }
@@ -493,8 +497,8 @@ async function sealValidatedCandidate(context, options) {
 async function deploySealedCandidate(context, options) {
   const started = Date.now();
   const identity = artifactIdentity(context, options);
-  const sealPath = join(context.deployment.pointerRoot, 'candidate-seal.json');
-  const seal = await readJson(sealPath);
+  const sealPath = candidateSealPath(context, identity);
+  const seal = await readJson(sealPath) ?? await readJson(join(context.deployment.pointerRoot, 'candidate-seal.json'));
   assert(seal, 'CANDIDATE_SEAL_MISSING', { sealPath });
   const claimedDigest = seal.sealDigest;
   const unsigned = { ...seal };
@@ -518,12 +522,13 @@ async function deploySealedCandidate(context, options) {
   );
   const found = await lookup(context, options);
   assert(found.exists && found.release === seal.candidate, 'CANDIDATE_SEAL_RELEASE_MISSING', { expected: seal.candidate, actual: found.release });
-  assert(found.candidate === seal.candidate, 'CANDIDATE_SEAL_CANDIDATE_CHANGED', { expected: seal.candidate, actual: found.candidate });
   const current = found.current;
   assert(current === seal.expectedCurrent || current === seal.candidate, 'CANDIDATE_SEAL_CURRENT_CHANGED', {
     expected: seal.expectedCurrent,
     actual: current,
   });
+  const candidateBefore = found.candidate;
+  await atomicPointer(join(context.deployment.pointerRoot, 'candidate'), found.release);
   const activation = await activate(context, {
     ...options,
     approval: `${context.project}:${identity.sourceSha}`,
@@ -537,10 +542,23 @@ async function deploySealedCandidate(context, options) {
     cacheStatus: 'sealed_candidate',
     downloadedBytes: 0,
     reusedBytes: found.artifactBytes,
-    seal: { sealDigest: seal.sealDigest, expectedCurrent: seal.expectedCurrent, validatedAt: seal.validatedAt },
+    seal: {
+      sealDigest: seal.sealDigest,
+      expectedCurrent: seal.expectedCurrent,
+      validatedAt: seal.validatedAt,
+      restoredCandidate: candidateBefore !== found.release,
+    },
     activation: { ...activation, direct: true, mode: activation.alreadyCurrent ? 'sealed-verify-only' : 'sealed-activated' },
     timings: { artifactLookup: found.artifactLookupMs, download: 0, candidate: activation.timings?.candidate ?? 0, total: Date.now() - started },
   };
+}
+
+function candidateSealPath(context, identity) {
+  return join(
+    context.deployment.pointerRoot,
+    'candidate-seals',
+    `${identity.sourceSha}-${identity.archiveSha256}-${identity.manifestDigest}.json`
+  );
 }
 
 async function prepareOssCandidate(context, options, direct) {
