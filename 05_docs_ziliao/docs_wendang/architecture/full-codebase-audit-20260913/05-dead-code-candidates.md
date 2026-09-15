@@ -2391,3 +2391,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 是；从最新主线重核需求 authority、提示词引用、Console/API/契约和订单读结果，不得通过删除计划掩盖 F-0343。 |
 
 - 订单升级前详细预案归 DC-0129。累计 G0 63、G1 133、G2 5、G3 0、GX 52；未删除任何文件。
+
+## DC-0130｜订单需求权威工作簿
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G0：不是垃圾，承担当前需求 authority 职责 |
+| 对象 | `订单需求20260430.xlsx`。 |
+| 证据 | `authorities.yml` 以相同 SHA、仓内相对路径及 16/274 行锁定 `orderRequirements`；`Authority.ts` 强制 realpath/范围/hash，`OrderRequirementProfile` 用专用 WorkbookReader 读取并生成 `requirements/order.yml` 的 OMS-001–014。 |
+| 保留原因 | 是订单产品范围、角色、Operation/测试/发布追溯链的唯一受控输入；二进制/无常规源码导入不表示闲置。 |
+| 可否删除 | 否；任何替换必须由需求 Owner 原子更新 authority、工作簿、生成物、契约追溯和验证证据。 |
+| 二次复核 | 是；从最新主线重算 SHA、逐项解析 authority 路径/行数/生成物并在具备依赖的隔离环境验证字节一致性。 |
+
+- 订单需求权威工作簿归 DC-0130。累计 G0 64、G1 133、G2 5、G3 0、GX 52；未删除任何文件。
