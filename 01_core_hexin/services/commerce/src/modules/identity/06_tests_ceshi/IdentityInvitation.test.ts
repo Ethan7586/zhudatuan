@@ -56,10 +56,17 @@ describe('operator invitation security boundary', () => {
   });
 
   it('rejects a second active invitation for the same phone and storefront', async () => {
-    const harness = invitationHarness({ activeInvitationRows: [{ id: 'invite:existing' }] });
+    const harness = invitationHarness({ activeInvitationRows: [{
+      id: 'invite:existing', version: 3, expires_at: '2026-10-01T00:00:00.000Z', destination_masked: '138 **** 8000',
+    }] });
 
     await expect(identityRegistrationOperations(context(harness.pool)).invoke(createRequest(managerAccess())))
-      .resolves.toEqual({ status: 409, body: { code: 'ADMINISTRATOR_INVITATION_ALREADY_ACTIVE' } });
+      .resolves.toEqual({ status: 409, body: {
+        code: 'ADMINISTRATOR_INVITATION_ALREADY_ACTIVE',
+        details: {
+          invitationId: 'invite:existing', version: 3, expiresAt: '2026-10-01T00:00:00.000Z', destinationMasked: '138 **** 8000',
+        },
+      } });
 
     expect(harness.queries.some(({ text }) => text.includes('use_count<max_uses'))).toBe(true);
     expect(harness.queries.some(({ text }) => text.includes('insert into member.invite'))).toBe(false);

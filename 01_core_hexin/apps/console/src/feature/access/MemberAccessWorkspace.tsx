@@ -1,5 +1,5 @@
 import { Empty, ResourceState, type ResourceCondition } from '@shop/design';
-import { keepPreviousData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -39,6 +39,7 @@ interface MemberAccessRow {
 
 export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAccessPrimary }) {
   const context = useConsoleContext();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [search, setSearch] = useSearchParams();
   const [draft, setDraft] = useState('');
@@ -254,7 +255,12 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
         </div>
       </section>
 
-      <MemberInvitationDialog context={context} open={invitationOpen} onClose={() => setInvitationOpen(false)} />
+      <MemberInvitationDialog
+        context={context}
+        open={invitationOpen}
+        onClose={() => setInvitationOpen(false)}
+        onCreated={() => { void queryClient.invalidateQueries({ queryKey: invitationRecordsKey(context) }); }}
+      />
       <MemberRegistrationResetDialog context={context} target={resetTarget} onClose={() => setResetTarget(undefined)} onReset={() => void memberQuery.refetch()} onInvite={() => setInvitationOpen(true)} />
     </>
   );

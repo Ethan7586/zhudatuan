@@ -107,12 +107,23 @@ export function membershipInvitationOperations(runtime: RealmOperationContext): 
                   and credential.provider='password' and credential.subject_hash=$2 and credential.status='active'))
             limit 1`, [actorAccount.realmId, destinationHash, storefronts.rows[0]!.id]);
           if (existingAdministrator.rows[0]) reject(409, 'ADMINISTRATOR_ALREADY_EXISTS');
-          const existingInvitation = await database.query<{ id: string }>(`select id from member.invite
+          const existingInvitation = await database.query<{
+            id: string;
+            version: number;
+            expires_at: string;
+            destination_masked: string | null;
+          }>(`select id,version,expires_at,destination_masked from member.invite
             where organization_id=$1 and storefront_organization_id=$2 and target_client='operator'
               and allowed_destination_hash=$3 and status='active' and use_count<max_uses
               and effective_at<=clock_timestamp() and expires_at>clock_timestamp()
             order by created_at desc limit 1`, [invitationScope, storefronts.rows[0]!.id, destinationHash]);
-          if (existingInvitation.rows[0]) reject(409, 'ADMINISTRATOR_INVITATION_ALREADY_ACTIVE');
+          const activeInvitation = existingInvitation.rows[0];
+          if (activeInvitation) reject(409, 'ADMINISTRATOR_INVITATION_ALREADY_ACTIVE', {
+            invitationId: activeInvitation.id,
+            version: activeInvitation.version,
+            expiresAt: activeInvitation.expires_at,
+            destinationMasked: activeInvitation.destination_masked,
+          });
         }
         const operatorRoleId = targetClient === 'operator'
           ? governanceLevel === 'senior_administrator'
