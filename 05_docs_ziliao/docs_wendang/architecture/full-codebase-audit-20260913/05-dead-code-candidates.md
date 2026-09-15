@@ -1474,7 +1474,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 运行结论 | 这是授权决策输入的隔离边界；后续专用角色 policy 是额外收敛，不是删除依据。 |
 | 数据/契约责任 | 保存风险速度计算所依赖的 actor 与 scope 决策历史。 |
 | 可否删除 | 禁止 |
-| 二次复核 | 是：current RLS、表级 grant、actor-less 请求和专用角色 policy 联合测试。 |
+| 二次复核 | RV-0055 已完成：维持 GX；静态复核确认 null-scope actor 限定、scope 授权和风险速度读取仍依赖该 policy。真实 RLS、角色和恢复未验证。 |
 
 - decision audit RLS 修复归 GX-0033。累计 G0 60、G1 83、G2 5、G3 0、GX 33；未删除任何文件。
 
