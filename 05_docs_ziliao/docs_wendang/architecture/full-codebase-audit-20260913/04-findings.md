@@ -4970,6 +4970,28 @@
 | 回滚方式 | 回退独立 checker/test 提交。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0308｜Registration bootstrap 部署门禁仍要求已移除的根 package 命令，关键边界验证被短路
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Registration bootstrap / release contract |
+| 类型 | 发布可验证性、one-shot 运维契约漂移 |
+| 严重级别 | **P2** |
+| 置信度 | 高（checker expectation、package script 缺失、build/delivery 声明和运行输出直接证据） |
+| 文件和精确位置 | `04_tools/scripts/check/registration-deployment.mjs:52-57`；`package.json` scripts；`04_tools/scripts/build-commerce.mjs:12`；`02_platform_pingtai/infrastructure/zhudatuan/aliyun/delivery.yml:29`。 |
+| 当前/预期 | checker强制根脚本等于 `node .../BootstrapRegistration.js`；当前 package scripts中不存在该 key，但 build map与delivery one-shot仍声明同一 artifact。固定基线抛 `REGISTRATION_BOOTSTRAP_PRODUCTION_COMMAND_INVALID`，之后 service/RDS init/reconciliation/migration checks全未执行。预期应明确 production启动权威是systemd/delivery还是开发者 package command，并按当前控制面验证。 |
+| 直接证据 | [FACT][E-AU-795-001] 定向命令在56行失败；[FACT][E-AU-795-002] package script查询返回missing，build map与delivery分别仍列出 BootstrapRegistration artifact。 |
+| 调用链或运行入口 | registration bootstrap delivery one-shot → systemd `zhudatuan-registration-bootstrap.service` → built BootstrapRegistration；checker试图额外把根 package script作为一致性证据。 |
+| 用户影响 | 团队无法依赖当前 checker证明 registration bootstrap 的最小权限/RDS boundary/migration target仍完整；未证明实际 bootstrap不可用。 |
+| 数据影响 | 本批未执行数据库脚本；若维护者绕过失效门禁，registration boundary 配置漂移更难在发布前发现。 |
+| 安全影响 | 独立 registration DB、sentinel、definer ACL和最小 role 是高敏感边界；当前自动静态证明被阻断，但没有越权或凭据泄露证据。 |
+| 根因 | 根开发者命令被移除或重命名后，checker仍把它当作生产控制面真值，未以 delivery/systemd作为主入口。 |
+| 建议方向 | 从最新主线建立 registration-bootstrap-contract 批次，先确认正式 one-shot 权威入口；若 package script不再需要，移除该断言并以 delivery/systemd验证替代；若仍需要，恢复受控 wrapper并明确只可在隔离流程调用。不要在审计分支执行或修改 bootstrap。 |
+| 预计修改范围 | checker、package/delivery contract tests或文档；不改 registration SQL/业务逻辑。 |
+| 验证方式 | current approved one-shot path通过全部静态边界验证；无授权本地命令不能绕过; RDS init/ACL/migration target的反事实必须失败。 |
+| 回滚方式 | 回退独立 checker/contract提交。 |
+| 是否需要独立复核 | 是（registration数据库边界）。 |
+
 ## F-0293｜Internal Mall 导入模式缺少目标数据库与本机边界
 
 | 字段 | 记录 |
