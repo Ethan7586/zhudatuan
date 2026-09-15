@@ -4208,7 +4208,7 @@
 "05_docs_ziliao/docs_wendang/多端前端集成说明.md","文档/多端前端集成说明.md","文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","人工/审计流程；运行引用待检索","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "05_docs_ziliao/docs_wendang/待办-财务子系统收尾.md","文档/待办-财务子系统收尾.md","文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","人工/审计流程；运行引用待检索","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "05_docs_ziliao/docs_wendang/微信支付生产接入与MVP验收.md","文档/微信支付生产接入与MVP验收.md","文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","人工/审计流程；运行引用待检索","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
-"05_docs_ziliao/docs_wendang/本地预览唯一版本说明.md","文档/本地预览唯一版本说明.md","文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","人工/审计流程；运行引用待检索","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
+"05_docs_ziliao/docs_wendang/本地预览唯一版本说明.md","文档/历史预览基线","文档","已深入审阅","2026-09-15","AU-830 PRODUCT-000A worktree/base/206-file attribution/endpoint/fresh migration evidence; runtime checker linkage/F-0310 cross-check","local-preview runtime checker attribution path; human historical record","P3/F-0310","[G0] retained historical preview baseline evidence; current audit branch is intentionally outside its fixed branch/base contract","否"
 "05_docs_ziliao/docs_wendang/正式商城上线验收清单.md","文档/正式商城上线验收清单.md","文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","人工/审计流程；运行引用待检索","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "05_docs_ziliao/docs_wendang/测试环境验收-会员与支付.md","文档/测试环境验收-会员与支付.md","文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","人工/审计流程；运行引用待检索","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "05_docs_ziliao/docs_wendang/生产型MVP开发说明.md","文档/生产型MVP开发说明.md","文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","人工/审计流程；运行引用待检索","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
