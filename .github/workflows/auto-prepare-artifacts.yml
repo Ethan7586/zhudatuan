@@ -1,5 +1,5 @@
 name: Automatic Artifact Closure 1.4.3
-run-name: Seal affected artifacts 1.4.3 for ${{ github.sha }}
+run-name: Seal affected artifacts 1.4.3 for ${{ inputs.head_sha || github.sha }}
 
 # This post-merge workflow never deploys. It prepares affected immutable artifacts and seals
 # candidates after zdt-next has already accepted the source commit.
@@ -7,8 +7,19 @@ on:
   push:
     branches:
       - zdt-next
+  workflow_dispatch:
+    inputs:
+      head_sha:
+        description: Exact failed zdt-next source closure to resume
+        required: true
+        type: string
+      base_sha:
+        description: Exact ancestor used by the failed closure plan
+        required: true
+        type: string
 
 permissions:
+  actions: read
   contents: read
 
 jobs:
@@ -28,13 +39,27 @@ jobs:
         with:
           node-version: 22.22.0
           cache: npm
+      - name: Verify exact failed closure recovery request
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ inputs.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo 'head_sha must be one full lowercase Git SHA' >&2; exit 64; }
+          failed="$RUNNER_TEMP/failed-automatic-closures.json"
+          gh run list --repo "$GITHUB_REPOSITORY" --workflow auto-prepare-artifacts.yml --branch zdt-next --event push --limit 100 \
+            --json headSha,status,conclusion,url > "$failed"
+          node -e "const r=require(process.argv[1]);const s=process.env.SOURCE_SHA;if(!r.some(v=>v.headSha===s&&v.status==='completed'&&v.conclusion==='failure'))throw new Error('No failed automatic closure exists for the exact source SHA')" "$failed"
       - name: Load planner dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Build automatic preparation matrix
         id: matrix
         env:
-          BEFORE_SHA: ${{ github.event.before }}
-          SOURCE_SHA: ${{ github.sha }}
+          BEFORE_SHA: ${{ inputs.base_sha || github.event.before }}
+          SOURCE_SHA: ${{ inputs.head_sha || github.sha }}
+          CONTROL_SHA: ${{ github.sha }}
         shell: bash
         run: |
           node --input-type=module <<'NODE'
@@ -42,13 +67,15 @@ jobs:
           import { loadAdapter } from './04_tools/release-engine/src/adapter.mjs';
           import { automaticClosureManifest, automaticClosureSelection } from './04_tools/release-engine/src/automatic-preparation.mjs';
           import { createPlan } from './04_tools/release-engine/src/planner.mjs';
-          import { commitMetadata } from './04_tools/release-engine/src/git.mjs';
+          import { assertGitAncestor, commitMetadata } from './04_tools/release-engine/src/git.mjs';
 
           const adapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
           const commit = await commitMetadata(adapter.projectRoot, process.env.SOURCE_SHA);
           const eventBefore = process.env.BEFORE_SHA ?? '';
           const before = eventBefore !== '' && !/^[0]+$/.test(eventBefore) ? eventBefore : commit.parents[0];
           if (!before) throw new Error('Automatic closure source has no first parent');
+          await assertGitAncestor(adapter.projectRoot, before, process.env.SOURCE_SHA);
+          await assertGitAncestor(adapter.projectRoot, process.env.SOURCE_SHA, process.env.CONTROL_SHA);
           const plan = await createPlan(adapter, { from: before, to: process.env.SOURCE_SHA });
           const selection = automaticClosureSelection(adapter, {
             plannedTargets: plan.deploymentOrder,
@@ -92,4 +119,12 @@ jobs:
       release_target: ${{ matrix.target }}
       prepare_node: ${{ matrix.prepare_node }}
       seal_nodes_json: ${{ matrix.seal_nodes_json }}
-    secrets: inherit
+    secrets:
+      ZDT_RUNNER_READ_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
+      ZDT_RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
+      ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+      ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+      ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+      ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+      ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+      ALIYUN_OSS_INTERNAL_ENDPOINT: ${{ secrets.ALIYUN_OSS_INTERNAL_ENDPOINT }}

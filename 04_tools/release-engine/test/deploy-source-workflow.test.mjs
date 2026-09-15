@@ -16,6 +16,9 @@ test('sealed-source deployment is explicit, consumes one closure manifest and ne
   assert.ok(workflow.on.workflow_call.inputs.head_sha.required);
   assert.match(workflow.jobs.resolve.steps[0].run, /automatic-artifact-closure-\$SOURCE_SHA/);
   assert.match(workflow.jobs.resolve.steps[0].run, /gh run list --repo "\$GITHUB_REPOSITORY"/);
+  assert.doesNotMatch(workflow.jobs.resolve.steps[0].run, /--event push/);
+  assert.match(workflow.jobs.resolve.steps[0].run, /actions\/runs\/\$\{candidate_id\}\/artifacts/);
+  assert.match(workflow.jobs.resolve.steps[0].run, /automatic-artifact-closure-\$\{SOURCE_SHA\}/);
   assert.match(workflow.jobs.resolve.steps[0].run, /gh run download "\$run_id" --repo "\$GITHUB_REPOSITORY"/);
   assert.doesNotMatch(workflowSource, /npm ci|prepare-artifact-aliyun|\bbuild\b|operation: validate-candidate/);
   assert.equal((workflowSource.match(/operation: deploy/g) ?? []).length, 3);
@@ -37,6 +40,7 @@ test('deployment waves stop forward progress after a failed earlier wave', () =>
 });
 
 test('automatic closure preserves its exact machine-readable deployment scope', () => {
+  assert.equal(auto.on.workflow_dispatch.inputs.base_sha.required, true);
   const upload = auto.jobs.plan.steps.find((step) => step.uses === 'actions/upload-artifact@v6');
   assert.equal(upload.with.name, 'automatic-artifact-closure-${{ steps.matrix.outputs.source_sha }}');
   assert.equal(upload.with.path, '.automatic-artifact-closure/closure.json');

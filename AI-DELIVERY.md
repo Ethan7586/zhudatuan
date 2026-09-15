@@ -57,3 +57,5 @@ Schema 只在字段出现不兼容变化时升级；产品版本升级不改写�
 Deploy 只消费 OSS 最终 Seal，不构建、不安装依赖、不准备缺失制品。Release Writer Lease 是唯一写者权威，远端目标锁是第二层互斥。数据库迁移保持 forward-only。缺少完整 source SHA、真实物理目标、最终 Seal 或一致生产事实时停止。
 
 灾难恢复不属于普通 1.4.3 路径，见 [RECOVERY.md](RECOVERY.md)。
+
+1.5.0 Readiness Doctor 尚处于独立分支第一批本地候选阶段，不改变现役 1.4.3 生产入口。候选合同与 OSS 最小权限审计见 `04_tools/release-engine/READINESS-1.5.md`。

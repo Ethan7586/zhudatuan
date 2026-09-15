@@ -27,6 +27,20 @@ on:
       ZDT_RUNNER_READ_TOKEN:
         description: Fine-grained token limited to repository Administration read for Primary health observation
         required: true
+      ZDT_RELEASE_SSH_KEY:
+        required: true
+      ALIYUN_OSS_ACCESS_KEY_ID:
+        required: true
+      ALIYUN_OSS_ACCESS_KEY_SECRET:
+        required: true
+      ALIYUN_OSS_SECURITY_TOKEN:
+        required: false
+      ALIYUN_OSS_BUCKET:
+        required: true
+      ALIYUN_OSS_ENDPOINT:
+        required: true
+      ALIYUN_OSS_INTERNAL_ENDPOINT:
+        required: false
 permissions:
   contents: read
 
