@@ -2,7 +2,7 @@
 
 - 基线：`5a1ce71eebbefaa826368a9e1dc17730f9363bc4`
 - 建立日期：2026-09-15
-- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0016、RV-0018、RV-0024 至 RV-0032 已完成；其余第二轮结论尚未开始。**
+- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0016、RV-0018、RV-0024 至 RV-0033 已完成；其余第二轮结论尚未开始。**
 - 规则：每项复核从当前固定审计基线的运行入口/调用链重新取证；不得只复述首审报告。任何分歧保守保留，不降低风险等级。
 
 ## P1 候选（17）
@@ -38,7 +38,8 @@
 | GX-0008 | 全域历史数据回填（RV-0030 已完成，维持 GX） | secure stage → domain projection → reconciliation/retirement |
 | GX-0009 | 全域历史数据对账（RV-0031 已完成，维持 GX） | evidence/hash → fail-closed assertions → legacy retirement |
 | GX-0010 | legacy 数据库对象退役（RV-0032 已完成，维持 GX） | reconciliation → maintenance-window drop → target-head assertion |
-| GX-0011–0012 | 权益/财务历史迁移 | migration ledger → current schema/function → API/Worker consumer → rollback/retention |
+| GX-0011 | 权益旧流水到财务总账（RV-0033 已完成，维持 GX） | benefit entries → finance journal/lot → current Worker/read model |
+| GX-0012 | 财务账本与结算生命周期迁移 | migration ledger → current schema/function → API/Worker consumer → rollback/retention |
 | GX-0013–0020 | 渠道/客服/通知/报表/扩展/导入/Membership 迁移 | migration → owning module/worker → authority/retention |
 | GX-0021–0024 | 微信支付/成员 scope/webhook/member audience | contract/route → authorization → database/event boundary |
 | GX-0025–0028 | runtime contract/target-head/函数重绑 | checksum/ledger → startup/readiness/release gate |

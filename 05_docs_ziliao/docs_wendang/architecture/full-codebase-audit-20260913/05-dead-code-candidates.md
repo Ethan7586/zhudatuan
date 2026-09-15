@@ -1082,7 +1082,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 直接证据 | 迁移将 `benefit.entry` 的正负金额逐条调用 `finance.post` 投影为带 scope 的复式总账，随后 `drop table benefit.entry`；同时回填 lot 与 lotmovement。 |
 | 运行边界 | 当前权益 API 从 `benefit.balance`（财务 entry/journal 投影）、lot 和 lotmovement 读取，`benefitgrant`/`benefitexpiry` Worker 继续写同一模型；迁移 ledger 与断言要求旧表不存在。 |
 | 可否删除 | 否；承担财务迁移、历史数据、不可逆退役、恢复和审计责任。 |
-| 二次复核 | 是；必须独立核验每 scope/币种的金额与笔数对账、journal 幂等键、备份可恢复性、目标 schema ledger、部署窗口与回滚演练。 |
+| 二次复核 | RV-0033 已完成权益→账本投影、旧表退役、当前余额读取和异步Worker入口复核（2026-09-15），维持GX；逐scope/币种对账、ledger与恢复仍须经授权专项核验。 |
 
 ## 452. AU-452 权益生命周期复核
 
