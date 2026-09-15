@@ -4519,7 +4519,7 @@
 | --- | --- |
 | 模块 | Supabase 券运营 / 备券、审批、发行、状态变更、核销、冲正与对账 |
 | 类型 | 身份与权限、资金正确性 |
-| 严重级别 | **P1 候选**；需独立复核当前数据库迁移 ledger 与 service-role 调用者后定级。 |
+| 严重级别 | **P2（RV-0024 已独立复核）**；数据库授权缺口成立，但固定基线未证实可达 service-role 调用者，不能维持 P1。 |
 | 置信度 | 高（固定基线 SQL 定义和权限表直接核验）；线上是否有调用者未验证。 |
 | 文件和精确位置 | `database/supabase/migrations/20260820110000_voucher_operations_foundation.sql:14-58,710-1263`。 |
 | 当前行为 | 迁移定义了 `voucher.reserve.create`、`voucher.reserve.approve`、`voucher.issue`、`voucher.status.manage`、`voucher.redeem`、`voucher.redemption.reverse`、`voucher.reconcile` 并分配给不同角色；七个对应的 `*_authorized` 写入 RPC 仅验证 membership 与 operator 匹配、同一经营范围、输入和幂等，不调用权限判定或授权证据校验。 |
@@ -4530,7 +4530,9 @@
 | 根因 | 将「授权」命名为函数后只实现身份和范围 guard，未将先前定义的动作权限接入写入条件。 |
 | 建议方向 | 先独立复核实际迁移 ledger、service-role 网络边界与调用者；若链路启用，从当时最新主线建立单一修复分支，为每个动作接入对应 permission/授权证据检查并补充拒绝性集成测试。 |
 | 验证/回滚 | 隔离数据库中为每个角色测试允许动作及相同 scope 但缺少目标 permission 的拒绝路径，验证余额、状态事件、审计和幂等；回滚为撤回独立修复提交。 |
-| 独立复核 | 是；P1 候选必须重新追踪数据库 grant、调用者和所有动作权限。 |
+| 独立复核 | 已完成：RV-0024（2026-09-15）。深读代表性reserve创建函数，并对其余六个函数的guard、grant和重定义进行差异核验；结论保守降为P2。 |
+
+[FACT][RV-0024][2026-09-15] 独立复核确认这七个`security definer` RPC仅在`20260820110000_voucher_operations_foundation.sql`定义，后续迁移未重定义；每个只检查`api_voucher_membership_actor_matches`和`api_voucher_membership_scope_allows`，不调用后来已存在的`api_membership_has_permission`或`api_authorization_evidence_matches`。它们撤销public/anon/authenticated权限但授予`service_role`执行权。全仓静态检索未找到这七个函数的HTTP、Worker或SDK调用者，仅找到一处数据库权限闭包测试引用。因此函数本身仍不能在数据库边界区分申请、审批、发行、核销、冲正和对账角色；但不存在固定仓内可达链来证明低权限成员现在能驱动service-role调用。按严重度标准从P1候选降为P2，不宣称线上越权已发生。
 
 ## F-0242｜门店范围函数替换曾移除成员到组织的授权路径，后续迁移恢复
 
