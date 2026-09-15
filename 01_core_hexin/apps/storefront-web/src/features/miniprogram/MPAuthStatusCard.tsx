@@ -4,6 +4,8 @@ import type { UserProfile } from '../../types';
 
 interface MPAuthStatusCardProps {
   authHref?: string;
+  onRetry?: () => void;
+  sessionError?: string | null;
   sessionStatus: SessionStatus;
   user: UserProfile;
 }
@@ -30,7 +32,7 @@ function FrostDewVisual() {
   );
 }
 
-export function MPAuthStatusCard({ authHref, sessionStatus, user }: MPAuthStatusCardProps) {
+export function MPAuthStatusCard({ authHref, onRetry, sessionError, sessionStatus, user }: MPAuthStatusCardProps) {
   const [welcomePhase, setWelcomePhase] = React.useState<'visible' | 'fading' | 'collapsing' | 'hidden'>('visible');
   const [isEnteringLogin, setIsEnteringLogin] = React.useState(false);
   const loginTimerRef = React.useRef<number | null>(null);
@@ -93,13 +95,29 @@ export function MPAuthStatusCard({ authHref, sessionStatus, user }: MPAuthStatus
     >
       {sessionStatus === 'checking' ? (
         <div
-          className={`${cardClassName} justify-center`}
+          className={`${cardClassName} justify-center gap-2.5`}
           role="status"
-          aria-label="正在确认会员身份"
+          aria-label={sessionError ?? '正在确认会员身份'}
           aria-live="polite"
           aria-busy="true"
         >
           <FrostDewVisual />
+          {sessionError ? (
+            <>
+              <span className="max-w-36 truncate text-xs font-semibold text-slate-600" title={sessionError}>
+                {sessionError}
+              </span>
+              {onRetry ? (
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  className="shrink-0 rounded-full border border-blue-200 px-2.5 py-1 text-xs font-semibold text-blue-700"
+                >
+                  重试
+                </button>
+              ) : null}
+            </>
+          ) : null}
         </div>
       ) : sessionStatus === 'guest' ? (
         <a
