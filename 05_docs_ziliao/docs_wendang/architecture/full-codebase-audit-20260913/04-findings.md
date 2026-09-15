@@ -6761,3 +6761,26 @@
 | 验证方式 | 每个 current 路径和命令可解析；matrix 不再作为未验证交付事实；引用方案可跳至当前 authority；冻结决议文本不被意外改变。 |
 | 回滚方式 | 回退独立文档/链接提交，保留完整历史快照。 |
 | 是否需要独立复核 | 否（P3）；上位决议/外部合同存在时由 Owner/架构/发布 Owner 复核。 |
+
+## F-0351｜VI 收敛计划引用已重组路径与不存在的生成/门禁命令
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | VI / 前端工具与实施文档 |
+| 类型 | 文档工具链漂移、设计验收误导 |
+| 严重级别 | **P3**（关联 F-0016） |
+| 置信度 | 高（计划、根脚本、当前生成器和既有审计证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/VI-CONVERGENCE-EXECUTION-PLAN.md:8-17,103-177,239-342`；`package.json:1-123`；`04_tools/scripts/build-web-tokens.mjs:1-30`；`04-findings.md:F-0016`。 |
+| 当前行为 | 计划仍指定根级 `apps/wechat-miniapp`/`packages/design-system`，并称 `build:miniapp-assets`、`check:miniapp`、`build:web-tokens`、`check:vi` 为现有或将新增的验收命令；当前根脚本未定义这些命令，现有 web token generator 读写 `01_core_hexin/packages/design`。F-0016 已证明旧 token CSS/检查路径与 canonical 输出脱节。 |
+| 预期行为 | 被当前方案引用的 VI 计划应把机制目标与可执行的 current generator/checker 分开，所有路径/命令可解析，且历史 baseline/目标状态显式标注。 |
+| 直接证据 | [FACT][E-AU-901-001] 计划的路径/命令/任务陈述；[FACT][E-AU-901-002] 根 scripts 未定义四个命令；[FACT][E-AU-901-003] generator 当前输出；[FACT][E-AU-901-004] AU-849/F-0016 既有证据。 |
+| 调用链或运行入口 | 数据支付/pilot notes → VI 计划 → 人工样式/门禁操作；实际 token 生成/质量 → 当前 scripts/package commands。 |
+| 用户影响 | 执行者可能运行不存在的命令、修改错误 token 副本或误把历史 VI baseline 当作当前质量状态。 |
+| 数据影响 | 无直接数据写入。 |
+| 安全影响 | 无直接安全影响；未授权素材治理仍应保留。 |
+| 根因 | 仓库与 design package 重组后，实施计划未与 current scripts/quality authority 同步。 |
+| 建议方向 | 从修复时最新 `zdt-next` 建立单一 vi-plan-toolchain-currentness 批次：冻结历史基线，链接 current generator/checker/paths，裁决 F-0016 的 token authority 后再更新验收命令；不得在同批批量改 CSS、生成、引入素材或改产品界面。 |
+| 预计修改范围 | VI 计划、pilot note 链接及工具/质量入口说明。 |
+| 验证方式 | 每个命令存在、针对正确 source/output 执行；故意改变 canonical token 时目标 checker 稳定失败；无外部素材未经授权进入制品。 |
+| 回滚方式 | 回退独立文档/入口提交，保留历史计划。 |
+| 是否需要独立复核 | 否（P3）；若恢复/替换 VI gate，由 VI、前端和工具 Owner 复核。 |
