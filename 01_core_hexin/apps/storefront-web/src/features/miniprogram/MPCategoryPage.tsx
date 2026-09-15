@@ -14,7 +14,13 @@ export const MPCategoryPage: React.FC = () => {
   const setMpPageRef = React.useRef(setMpPage);
   setMpPageRef.current = setMpPage;
 
-  const currentCategory = categories.find((category) => category.id === activeCategoryId) || categories[0];
+  // The preview catalog is replaced by the qualified member catalog after the
+  // session hydrates. Category ids may change across that handoff, so a stale
+  // id must never filter a page to an empty result.
+  const resolvedCategoryId = categories.some((category) => category.id === activeCategoryId)
+    ? activeCategoryId
+    : (categories[0]?.id ?? 'cat_all');
+  const currentCategory = categories.find((category) => category.id === resolvedCategoryId) || categories[0];
 
   if (!currentCategory) {
     return (
@@ -32,10 +38,10 @@ export const MPCategoryPage: React.FC = () => {
   }
 
   const filteredProducts = React.useMemo(() => products.filter((product) => {
-    const matchesCategory = activeCategoryId === 'cat_all' || product.categoryId === activeCategoryId;
+    const matchesCategory = resolvedCategoryId === 'cat_all' || product.categoryId === resolvedCategoryId;
     const matchesKeyword = !keyword || product.title.includes(keyword) || product.subtitle?.includes(keyword);
     return matchesCategory && matchesKeyword;
-  }), [activeCategoryId, keyword, products]);
+  }), [keyword, products, resolvedCategoryId]);
   const showCategoryRail = categories.length > 1;
   const stockedCategoryId = categories.find((category) => products.some((product) => product.categoryId === category.id))?.id;
   const openProduct = React.useCallback((productId: string) => setMpPageRef.current('detail', productId), []);

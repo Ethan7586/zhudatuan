@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useMall } from '../../context/MallContext';
-import { canAttemptAuthenticatedCartAdd } from '../../context/purchaseAvailabilityMessage';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { InstantCartAddButton } from '../../components/mobile/InstantCartAddButton';
 import { preloadMiniProgramPage } from '../../components/mobile/miniProgramPageLoaders';
 import { Share2, Headphones, ShoppingCart, ShieldCheck, Truck, CheckCircle2, ChevronRight, Heart, Store, CreditCard } from 'lucide-react';
 
 export const MPDetailPage: React.FC = () => {
-  const { mobileProductId, setMpPage, addToCart, cartCount, prepareCart, sessionStatus, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
+  const { mobileProductId, setMpPage, addToCart, cartCount, prepareCart, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedSpec, setSelectedSpec] = useState<Record<string, string>>({});
   const [quantity, setQuantity] = useState(1);
@@ -206,11 +205,7 @@ export const MPDetailPage: React.FC = () => {
         <InstantCartAddButton
           ariaLabel={`加入购物车：${product.title}`}
           className="flex min-h-10 flex-1 items-center justify-center rounded-xl bg-[var(--sw-brand)] px-3 text-xs font-bold text-white shadow-[0_5px_14px_rgba(37,99,235,0.18)] disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
-          disabled={product.stockCount <= 0 || (product.purchasable === false && !canAttemptAuthenticatedCartAdd(
-            product.purchasable,
-            product.qualificationReason,
-            sessionStatus === 'authenticated',
-          ))}
+          disabled={product.stockCount <= 0 || product.purchasable === false}
           label="加入购物车"
           listingId={product.id}
           onAdd={() => addToCart(product, quantity, selectedSpec)}

@@ -8,6 +8,9 @@ const MEMBER_OWNED_OPERATIONS = new Set([
   'member.profile.read',
   'member.addresses.read',
   'member.addresses.manage',
+  'cart.current.read',
+  'cart.items.put',
+  'cart.items.batch',
 ]);
 
 const STOREFRONT_MALL_OPERATIONS = new Set([

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canAttemptAuthenticatedCartAdd, purchaseAvailabilityMessage } from './purchaseAvailabilityMessage';
+import { purchaseAvailabilityMessage } from './purchaseAvailabilityMessage';
 
 describe('purchaseAvailabilityMessage', () => {
   it('does not mislabel an inventory gap as a city restriction', () => {
@@ -14,11 +14,5 @@ describe('purchaseAvailabilityMessage', () => {
 
   it('uses a neutral fallback for unknown server reasons', () => {
     expect(purchaseAvailabilityMessage('CITY_NOT_ELIGIBLE')).toBe('该商品暂不可购买，请稍后重试');
-  });
-
-  it('allows an authenticated cart command to resolve a stale public LOGIN_REQUIRED flag', () => {
-    expect(canAttemptAuthenticatedCartAdd(false, 'LOGIN_REQUIRED', true)).toBe(true);
-    expect(canAttemptAuthenticatedCartAdd(false, 'OUT_OF_STOCK', true)).toBe(false);
-    expect(canAttemptAuthenticatedCartAdd(false, 'LOGIN_REQUIRED', false)).toBe(false);
   });
 });

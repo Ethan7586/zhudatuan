@@ -15,17 +15,3 @@ export function purchaseAvailabilityMessage(reason: string | undefined): string 
       return '该商品暂不可购买，请稍后重试';
   }
 }
-
-/**
- * The anonymous catalogue intentionally marks every item LOGIN_REQUIRED. Once
- * identity has authenticated the member, that stale presentation flag must not
- * disable the cart control: the cart command remains the server-side authority
- * for membership, price, stock, and purchase-limit validation.
- */
-export function canAttemptAuthenticatedCartAdd(
-  purchasable: boolean | undefined,
-  purchaseReason: string | undefined,
-  authenticated: boolean,
-): boolean {
-  return authenticated && purchasable === false && purchaseReason === 'LOGIN_REQUIRED';
-}

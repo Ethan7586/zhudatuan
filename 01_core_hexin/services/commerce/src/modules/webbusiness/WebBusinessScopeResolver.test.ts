@@ -18,7 +18,7 @@ const actor: Actor = {
 };
 
 describe('WebBusinessScopeResolver', () => {
-  it('resolves all member profile and address operations to the authenticated owner', async () => {
+  it('resolves member-owned profile, address, and cart operations to the authenticated owner', async () => {
     const queries: Readonly<{ sql: string; values: readonly unknown[] | undefined }>[] = [];
     const owner: Scope = { kind: 'owner', id: 'member:one', path: [] };
     const pool = { query: async (sql: string, values?: readonly unknown[]) => {
@@ -26,10 +26,13 @@ describe('WebBusinessScopeResolver', () => {
       return result([{ scope: owner }]);
     } } as unknown as DatabasePool;
     const resolver = new WebBusinessScopeResolver(pool);
-    for (const operation of ['member.profile.read', 'member.addresses.read', 'member.addresses.manage']) {
+    for (const operation of [
+      'member.profile.read', 'member.addresses.read', 'member.addresses.manage',
+      'cart.current.read', 'cart.items.put', 'cart.items.batch',
+    ]) {
       await expect(resolver.resolve(actor, operation, 'untrusted-address-id')).resolves.toEqual(owner);
     }
-    expect(queries).toHaveLength(3);
+    expect(queries).toHaveLength(6);
     expect(queries.every(({ sql, values }) => sql === 'select access.web_member_scope($1,$2) scope'
       && values?.[0] === actor.membership && values[1] === actor.session)).toBe(true);
   });
