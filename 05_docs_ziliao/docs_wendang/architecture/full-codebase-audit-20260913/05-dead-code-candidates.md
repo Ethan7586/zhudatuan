@@ -1834,3 +1834,17 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | G1不强制；拟收敛前由 Local Preview Owner 确认当前 branch/base/preview topology、secrets policy和是否已有替代工具。 |
 
 - Local preview checkers 归 DC-0087。累计 G0 62、G1 98、G2 5、G3 0、GX 44；未删除任何文件。
+
+## DC-0088｜Operation contract 字段推断器的自动入口缺口
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `04_tools/scripts/check/infer-operation-contract-fields.mjs`。 |
+| 疑似原因 | 固定基线未发现根 package script、workflow或release manifest自动调用。 |
+| 保留证据 | 它以TypeScript AST和可选 Vitest失败报告提取 runtime write operation的请求/响应字段，并可受控合并回 explicit operations contract；这是一项人工契约补全责任。 |
+| 未排除项 | 人工 contract maintenance、CI外部wrapper、历史修复/生成流程和未替代的字段追踪职责。 |
+| 可否删除 | 否；未满足公共/运维契约、替代和第二次复核条件。 |
+| 二次复核 | G1不强制；拟收敛前确认当前 Contract Owner 的人工/CI入口、apply审查流程与替代生成器。 |
+
+- Operation contract field inference 归 DC-0088。累计 G0 62、G1 99、G2 5、G3 0、GX 44；未删除任何文件。

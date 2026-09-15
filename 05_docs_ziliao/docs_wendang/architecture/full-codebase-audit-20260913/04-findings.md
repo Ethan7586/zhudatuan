@@ -4948,6 +4948,28 @@
 | 回滚方式 | 回退独立测试/fixture 提交。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0311｜Operation contract 字段推断器在13个关键写没有 source 映射时仍可成功并写回不完整合同
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Contract maintenance / runtime write evidence |
+| 类型 | 契约完整性、生成工具可信度 |
+| 严重级别 | **P3** |
+| 置信度 | 高（summary output、AST定位规则和apply路径直接证据） |
+| 文件和精确位置 | `04_tools/scripts/check/infer-operation-contract-fields.mjs:17-25,61-77,84-107,132-159`。 |
+| 当前/预期 | `--summary`报告79 runtime关键写中66个有source、59个有request fields、35个有response fields，13个 operation未映射source；无论missingSource是否为空脚本均退出0。`--apply`会基于当前推断合并并写回 `operations.yml`。预期应把未映射关键写作为阻断/明确审查项，或将推断输出严格标为非完整建议。 |
+| 直接证据 | [FACT][E-AU-798-001] 默认只读summary列出13个missingSource（含finance reconciliation、invoice、identity.wechat、member mall/sovereignty、order receive）；[FACT][E-AU-798-002] source定位仅识别包含operation id的TS property assignment等模式；[FACT][E-AU-798-003] `--apply`调用writeFile写回operations source而未要求missingSource为空。 |
+| 调用链或运行入口 | 人工 contract maintenance → AST/Vitest augmentation → optional `--apply` → operations.yml；未找到根自动入口。 |
+| 用户影响 | 维护者可能把自动补全字段误作所有关键写的完整业务契约，遗漏operation的请求/响应字段或实现来源。 |
+| 数据影响 | 本批没有写 operations.yml；若人工未审查地使用apply，可能将不完整元数据持久化。 |
+| 安全影响 | 高风险写操作的字段/契约审查可出现盲区；未发现运行时授权绕过。 |
+| 根因 | AST启发式不能覆盖所有 operation registration/handler形态，而工具没有将source coverage作为成功前置条件。 |
+| 建议方向 | 从最新主线建立 operation-field-inference-evidence 批次：为每个runtime write建立明确source map或拒绝未映射项；将apply改为输出review patch/require explicit allowlist，并为动态/array/module registration写fixture。 |
+| 预计修改范围 | 推断器、operation source manifest/fixture及生成流程；不改业务handler。 |
+| 验证方式 | 79个runtime write均有解释性source mapping，或每个allowlisted exception有owner/理由；新未映射critical write必须非零退出；apply前后仅改变已审查字段。 |
+| 回滚方式 | 回退独立工具/fixture提交，保留现有operations定义。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0302｜MVP 交付门禁的状态枚举与当前需求矩阵不兼容，首条即失败
 
 | 字段 | 记录 |
