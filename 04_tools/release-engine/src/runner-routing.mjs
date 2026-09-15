@@ -163,7 +163,7 @@ async function findExistingSealStage(client, project, request) {
   for (const [suffix, stage] of [['final-seal.json', 'SEALED'], ['candidate-validation.json', 'VALIDATED'], ['uploaded.json', 'UPLOADED']]) {
     for (const object of objects.filter((item) => item.endsWith(suffix))) {
       const value = await optionalJson(client, object);
-      if (value?.request_id === request.request_id && value?.key?.control_plane_sha === request.control_plane_sha) return stage;
+      if (value?.request_id === request.request_id && value?.seal_key && object.includes(`/${request.control_plane_sha}/`)) return stage;
     }
   }
   return null;

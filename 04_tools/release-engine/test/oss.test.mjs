@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
-import { createOssClient, finalizePreparedSeal, findFinalSealReceipt, inspectPreparedArtifact, publishPreparedArtifact, publishWorkflowEvidence, requireFinalSealReceipt, resolveDownloadEndpoint, resolvePreparedArtifact } from '../src/oss.mjs';
+import { createOssClient, finalizePreparedSeal, findFinalSealReceipt, inspectPreparedArtifact, publishPreparedArtifact, publishWorkflowEvidence, recoverPreparedArtifact, requireFinalSealReceipt, resolveDownloadEndpoint, resolvePreparedArtifact } from '../src/oss.mjs';
 import { runCommand } from '../src/runner.mjs';
 import { digest, prettyStableJson, sha256 } from '../src/stable.mjs';
 
@@ -103,6 +103,24 @@ test('prepared inspection deduplicates an exact node-eligible artifact without h
   const inspected = await inspectPreparedArtifact(fixture.adapter, options, { client });
   assert.equal(inspected.exists, true);
   assert.equal(inspected.artifactIdentity, published.artifactIdentity);
+});
+
+test('an existing immutable artifact can recover an UPLOADED Seal receipt without rewriting it', async () => {
+  const fixture = await prepareFixture();
+  const remote = memoryOss();
+  const client = createOssClient(credentials(), { fetchImpl: remote.fetch });
+  const published = await publishPreparedArtifact(fixture.adapter, publishOptions(fixture), { client });
+  const before = remote.objects.get(published.releaseIndex.object).toString('utf8');
+
+  const recovered = await recoverPreparedArtifact(fixture.adapter, {
+    sourceSha: fixture.sourceSha, target: 'app', node: 'node-a', controlSha: 'c'.repeat(40),
+    requestId: 'receipt-recovery', actorRole: 'build', buildRunner: 'fixture-recovery',
+  }, { client });
+
+  assert.equal(recovered.recovered, true);
+  assert.equal(recovered.cacheStatus, 'hit_remote');
+  assert.equal(recovered.seal.state.status, 'UPLOADED');
+  assert.equal(remote.objects.get(published.releaseIndex.object).toString('utf8'), before);
 });
 
 test('workflow evidence is content-addressed and immutable per run attempt', async () => {

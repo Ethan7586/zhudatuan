@@ -312,16 +312,18 @@ jobs:
           exists="$(node -e "const r=require('./.prepare-release/evidence/prepared-inspection.json');process.stdout.write(String(r.ok&&r.result.exists))")"
           printf 'exists=%s\n' "$exists" >> "$GITHUB_OUTPUT"
           if [ "$exists" = true ]; then
-            echo 'Exact immutable artifact exists, but this Seal has no authoritative upload receipt; rebuilding only to recover that receipt.' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Exact immutable artifact exists; recover its Seal upload receipt without rebuilding or overwriting it.' >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Install build dependencies
+        if: steps.prepared.outputs.exists != 'true'
         run: |
           started_at="$(date +%s%3N)"
           npm ci --ignore-scripts --no-audit --no-fund
           printf 'dependency_install_ms=%s\n' "$(( $(date +%s%3N) - started_at ))" >> "$RUNNER_TEMP/zdt-runner-timings"
 
       - name: Build and package twice from isolated empty state roots
+        if: steps.prepared.outputs.exists != 'true'
         id: package
         shell: bash
         run: |
@@ -414,7 +416,7 @@ jobs:
           printf 'package_path=%s\n' "$left_package" >> "$GITHUB_OUTPUT"
 
       - name: Run prepared Storefront artifact on Linux x64
-        if: inputs.release_target == 'storefront'
+        if: inputs.release_target == 'storefront' && steps.prepared.outputs.exists != 'true'
         env:
           PACKAGE_PATH: ${{ steps.package.outputs.package_path }}
         run: |
@@ -427,6 +429,7 @@ jobs:
             > .prepare-release/storefront-runtime-evidence.json
 
       - name: Publish immutable artifact and manifests to OSS
+        if: steps.prepared.outputs.exists != 'true'
         id: publish
         env:
           PACKAGE_PATH: ${{ steps.package.outputs.package_path }}
@@ -466,6 +469,24 @@ jobs:
             --format json | tee .prepare-release/evidence/publish-envelope.json
           node -e "const r=require('./.prepare-release/evidence/publish-envelope.json');const x=r.result;if(!r.ok)process.exit(1);process.stdout.write('Prepared: '+x.sourceSha+' '+x.target+' '+x.artifactIdentity+' '+x.cacheStatus+' '+x.timings.total+'ms\\n')" \
             >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Recover Seal upload receipt from immutable artifact
+        if: steps.prepared.outputs.exists == 'true'
+        env:
+          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+          ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node "$RELEASE_CLI" recover-prepared --adapter "$RELEASE_ADAPTER" --project-root "$GITHUB_WORKSPACE" \
+            --source-sha "$RELEASE_SHA" --control-sha "$CONTROL_SHA" \
+            --target "$RELEASE_TARGET" --node "$RELEASE_NODE" \
+            --request-id "$RUNNER_REQUEST_ID" --actor-role build --build-runner "$RUNNER_NAME" \
+            --format json | tee .prepare-release/evidence/recover-envelope.json
+          node -e "const r=require('./.prepare-release/evidence/recover-envelope.json');if(!r.ok||r.result.recovered!==true||r.result.seal.state.status!=='UPLOADED')process.exit(1)"
 
       - name: Preserve raw preparation evidence in immutable OSS
         if: always()
