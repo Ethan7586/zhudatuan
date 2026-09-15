@@ -1232,7 +1232,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 直接证据 | 迁移约束 manifest 签名/哈希/大小、安装 endpoint HTTPS 与 secret 引用，旧 draft 安装统一转 disabled，重建 enabled 唯一性/RLS，并启动 extensionhealth 扫描任务。 |
 | 运行边界 | Extension repository 加载/更新安装并调度健康任务；健康 Worker 按结果转 enabled/degraded/disabled 并记录事件，Channel 扩展 sink 依赖该安装状态。 |
 | 可否删除 | 否；承担外部供应链、租户范围、凭据引用、安装状态、健康恢复和审计责任。 |
-| 二次复核 | 是；须验证签名/contract 校验、secret 引用、HTTPS、状态转移、健康重试、跨 scope RLS、禁用恢复和迁移 ledger。 |
+| 二次复核 | RV-0039 已完成：维持 GX；静态复核确认安装状态、加载授权、正式健康任务和事件消费仍依赖目标结构。存量转换、签名、密钥、RLS、重放和恢复未验证。 |
 
 ## 458. AU-458 扩展生命周期复核
 
