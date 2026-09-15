@@ -475,9 +475,21 @@ export function createOssClient(configuration, dependencies = {}) {
   };
   const fetchImpl = dependencies.fetchImpl ?? fetch;
   const now = dependencies.now ?? (() => new Date());
+  const monotonicNow = dependencies.monotonicNow ?? (() => performance.now());
+  let authoritativeTimestamp = null;
+  let authoritativeObservedAt = null;
+  if (dependencies.now !== undefined) {
+    authoritativeTimestamp = now().getTime();
+    authoritativeObservedAt = monotonicNow();
+  }
 
   return Object.freeze({
     endpoint: auth.endpoint,
+    authoritativeNow() {
+      invariant(authoritativeTimestamp !== null && authoritativeObservedAt !== null, 'OSS_AUTHORITATIVE_TIME_UNAVAILABLE',
+        'A trusted OSS response time is required before evaluating a distributed lease');
+      return new Date(authoritativeTimestamp + Math.max(0, monotonicNow() - authoritativeObservedAt));
+    },
     async headObject(object) {
       const response = await request('HEAD', object);
       if (response.status === 404) return { exists: false, object };
@@ -567,6 +579,11 @@ export function createOssClient(configuration, dependencies = {}) {
         const error = new Error(`OSS returned transient HTTP ${response.status}`);
         error.status = response.status;
         throw error;
+      }
+      const serverDate = Date.parse(response.headers.get('date') ?? '');
+      if (Number.isFinite(serverDate)) {
+        authoritativeTimestamp = serverDate;
+        authoritativeObservedAt = monotonicNow();
       }
       return response;
     }, {

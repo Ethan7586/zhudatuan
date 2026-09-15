@@ -44,6 +44,10 @@
 
 Schema 只在字段出现不兼容变化时升级；产品版本升级不改写已稳定的 v1 身份协议。
 
+### 1.4.2 一次性兼容策略
+
+1.4.2 制品与历史回执保持只读。它们可以用于摘要核对和生产 current/previous 取证，但不能直接进入 1.4.3 候选验证、不能自动生成新 Seal，也不能因旧 Action 成功而升级。需要迁移的目标必须走一次正常 1.4.3 Prepare：在 Build 侧冷构建并与已有不可变对象核对，相同对象只幂等复用，随后用当前 control-plane SHA 完成候选验证和新 final Seal。Deploy 现场不重建、不修改旧 artifact；任一步失败都不移动现有 1.4.2 current。
+
 ## 安全边界
 
 Deploy 只消费 OSS 最终 Seal，不构建、不安装依赖、不准备缺失制品。Release Writer Lease 是唯一写者权威，远端目标锁是第二层互斥。数据库迁移保持 forward-only。缺少完整 source SHA、真实物理目标、最终 Seal 或一致生产事实时停止。

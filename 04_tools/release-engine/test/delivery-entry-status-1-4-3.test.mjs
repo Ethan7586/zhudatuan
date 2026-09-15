@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { parse } from 'yaml';
 
-import { evaluateAuthoritativeDeliveryStatus } from '../src/delivery-status.mjs';
+import { evaluateAuthoritativeDeliveryStatus, formatDeliveryStatusHuman } from '../src/delivery-status.mjs';
 import { DeliveryError } from '../src/errors.mjs';
 import { findSealLifecycleState } from '../src/oss.mjs';
 import { createSealLifecycleStore } from '../src/seal-lifecycle.mjs';
@@ -36,6 +36,7 @@ test('Action success without final Seal remains not prepared or at the authorita
 test('status discovers the current Seal lifecycle directly from immutable OSS objects', async () => {
   const objects = new Map();
   const client = {
+    authoritativeNow() { return new Date('2026-09-16T00:00:00Z'); },
     async listPrefix(prefix) { return [...objects.keys()].filter((object) => object.startsWith(prefix)); },
     async getObject(object, missingCode = 'OSS_OBJECT_NOT_FOUND') {
       if (!objects.has(object)) throw new DeliveryError(missingCode, 'missing');
@@ -65,7 +66,10 @@ test('matching final Seal and remote candidate returns SEALED', () => {
 
 test('current matching the exact Seal returns DEPLOYED', () => {
   const remote = { ...availableRemote, current: candidateSeal.candidate, currentArtifact: artifact };
-  assert.equal(evaluateAuthoritativeDeliveryStatus(input(lifecycle('SEALED', { final }), remote)).status, 'DEPLOYED');
+  const result = evaluateAuthoritativeDeliveryStatus(input(lifecycle('SEALED', { final }), remote));
+  assert.equal(result.status, 'DEPLOYED');
+  assert.match(formatDeliveryStatusHuman(result), /^交付状态：已部署/m);
+  assert.equal(JSON.parse(JSON.stringify(result)).status, 'DEPLOYED');
 });
 
 test('previous matching the Seal never impersonates current', () => {

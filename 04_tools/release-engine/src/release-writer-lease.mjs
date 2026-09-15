@@ -21,7 +21,10 @@ export function createReleaseWriterRequest({ runnerRequestId, operation, sealKey
 export function createReleaseWriterLeaseStore(client, identity, dependencies = {}) {
   assertClient(client);
   const key = normalizeIdentity(identity);
-  const now = dependencies.now ?? (() => new Date());
+  const now = dependencies.now ?? (() => {
+    invariant(typeof client.authoritativeNow === 'function', 'RELEASE_WRITER_AUTHORITATIVE_TIME_UNAVAILABLE', 'Release Writer Lease requires trusted OSS time');
+    return client.authoritativeNow();
+  });
   const scheduleInterval = dependencies.setInterval ?? globalThis.setInterval;
   const cancelInterval = dependencies.clearInterval ?? globalThis.clearInterval;
   const paths = writerLeasePaths(key);

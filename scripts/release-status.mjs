@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-import { evaluateAuthoritativeDeliveryStatus } from '../04_tools/release-engine/src/delivery-status.mjs';
+import { evaluateAuthoritativeDeliveryStatus, formatDeliveryStatusHuman } from '../04_tools/release-engine/src/delivery-status.mjs';
 import { findSealLifecycleState, ossClientFromEnvironment } from '../04_tools/release-engine/src/oss.mjs';
 import { createReleaseWriterLeaseStore } from '../04_tools/release-engine/src/release-writer-lease.mjs';
 
@@ -55,7 +55,7 @@ if (remoteCommand.status === 0) {
 const latestAction = auxiliaryAction();
 const result = evaluateAuthoritativeDeliveryStatus({ sourceSha, target, physicalNode, sealLifecycle, writer, remote, latestAction });
 if (outputMode === '--json') process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
-else printHuman(result);
+else process.stdout.write(formatDeliveryStatusHuman(result));
 
 function auxiliaryAction() {
   const listed = command('gh', ['run', 'list', '--workflow', 'delivery-1-4-3.yml', '--branch', 'zdt-next',
@@ -72,24 +72,4 @@ function auxiliaryAction() {
 function command(executable, arguments_) {
   const result = spawnSync(executable, arguments_, { cwd: root, encoding: 'utf8' });
   return { status: result.status ?? 1, stdout: result.stdout ?? '', stderr: result.stderr ?? '' };
-}
-
-function printHuman(result) {
-  const labels = {
-    NOT_PREPARED: '尚未准备',
-    BUILDING: '正在封装',
-    UPLOADED: '已上传，等待验证',
-    VALIDATED: '已验证，等待封板',
-    SEALED: '已封板，可以部署',
-    DEPLOYED: '已部署',
-    FAILED: '失败，需要处理',
-    UNKNOWN: '权威状态暂时无法完整读取',
-  };
-  process.stdout.write(`交付状态：${labels[result.status] ?? result.status}\n`);
-  process.stdout.write(`证据完整度：${result.evidence.completeness}\n`);
-  if (result.current) process.stdout.write(`当前：${result.current.sourceSha ?? '未知'}${result.current.matchesSeal ? '（匹配本次封板）' : ''}\n`);
-  if (result.previous) process.stdout.write(`上一版本：${result.previous.sourceSha ?? '未知'}（仅作回滚事实）\n`);
-  if (result.activeReleaseWriter) process.stdout.write(`发布写者：${result.activeReleaseWriter.activeWriter}\n`);
-  if (result.failureCode) process.stdout.write(`原因：${result.failureCode}\n`);
-  if (result.recentActionUrl) process.stdout.write(`最近任务（辅助）：${result.recentActionUrl}\n`);
 }

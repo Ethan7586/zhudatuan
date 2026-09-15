@@ -422,6 +422,11 @@ function credentials() {
 }
 
 function memoryOss({ denyList = false, denyMissingHead = false } = {}) {
+  const response = (body, init = {}) => {
+    const headers = new Headers(init.headers);
+    headers.set('date', 'Wed, 16 Sep 2026 00:00:00 GMT');
+    return new Response(body, { ...init, headers });
+  };
   const state = {
     objects: new Map(),
     puts: 0,
@@ -432,25 +437,25 @@ function memoryOss({ denyList = false, denyMissingHead = false } = {}) {
       const object = decodeURIComponent(requestUrl.pathname.replace(/^\//, ''));
       if (method === 'GET' && object === '' && requestUrl.searchParams.get('list-type') === '2') {
         state.lists += 1;
-        if (denyList) return new Response('denied', { status: 403 });
+        if (denyList) return response('denied', { status: 403 });
         const prefix = requestUrl.searchParams.get('prefix') ?? '';
         const keys = [...state.objects.keys()].filter((key) => key.startsWith(prefix)).sort();
-        return new Response(`<ListBucketResult><IsTruncated>false</IsTruncated>${keys.map((key) => `<Contents><Key>${encodeURIComponent(key)}</Key></Contents>`).join('')}</ListBucketResult>`, { status: 200 });
+        return response(`<ListBucketResult><IsTruncated>false</IsTruncated>${keys.map((key) => `<Contents><Key>${encodeURIComponent(key)}</Key></Contents>`).join('')}</ListBucketResult>`, { status: 200 });
       }
       const existing = state.objects.get(object);
       if (method === 'HEAD') {
-        if (!existing) return new Response(null, { status: denyMissingHead ? 403 : 404 });
-        return new Response(null, { status: 200, headers: { 'content-length': String(existing.body.byteLength), 'x-oss-meta-sha256': existing.sha256 } });
+        if (!existing) return response(null, { status: denyMissingHead ? 403 : 404 });
+        return response(null, { status: 200, headers: { 'content-length': String(existing.body.byteLength), 'x-oss-meta-sha256': existing.sha256 } });
       }
-      if (method === 'GET') return existing ? new Response(existing.body, { status: 200, headers: { 'content-length': String(existing.body.byteLength), 'x-oss-meta-sha256': existing.sha256 } }) : new Response('missing', { status: 404 });
+      if (method === 'GET') return existing ? response(existing.body, { status: 200, headers: { 'content-length': String(existing.body.byteLength), 'x-oss-meta-sha256': existing.sha256 } }) : response('missing', { status: 404 });
       if (method === 'PUT') {
-        if (existing && new Headers(options.headers).get('x-oss-forbid-overwrite') === 'true') return new Response('exists', { status: 409 });
+        if (existing && new Headers(options.headers).get('x-oss-forbid-overwrite') === 'true') return response('exists', { status: 409 });
         const body = Buffer.from(options.body);
         state.objects.set(object, { body, sha256: sha256(body), contentType: new Headers(options.headers).get('content-type') });
         state.puts += 1;
-        return new Response(null, { status: 200 });
+        return response(null, { status: 200 });
       }
-      return new Response('unsupported', { status: 405 });
+      return response('unsupported', { status: 405 });
     },
   };
   return state;

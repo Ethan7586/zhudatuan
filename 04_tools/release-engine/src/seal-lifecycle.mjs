@@ -69,7 +69,10 @@ export function createSealLifecycleStore(client, options) {
   const project = exact(options.project, NAME_PATTERN, 'SEAL_PROJECT_INVALID');
   const key = createSealKey(options);
   const paths = sealObjectPaths(project, key, options.prefix);
-  const now = options.now ?? (() => new Date());
+  const now = options.now ?? (() => {
+    invariant(typeof client.authoritativeNow === 'function', 'SEAL_AUTHORITATIVE_TIME_UNAVAILABLE', 'Seal lease requires trusted OSS time');
+    return client.authoritativeNow();
+  });
 
   return Object.freeze({ key, paths, read, begin, markUploaded, markValidated, seal, fail });
 

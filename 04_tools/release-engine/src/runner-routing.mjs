@@ -28,7 +28,10 @@ export function createRunnerRequest(input) {
 export async function routeBuildRequest(client, input, dependencies = {}) {
   assertClient(client);
   const request = createRunnerRequest(input);
-  const now = dependencies.now ?? (() => new Date());
+  const now = dependencies.now ?? (() => {
+    invariant(typeof client.authoritativeNow === 'function', 'RUNNER_AUTHORITATIVE_TIME_UNAVAILABLE', 'Runner lease requires trusted OSS time');
+    return client.authoritativeNow();
+  });
   const leaseMs = Number(input.leaseMs ?? 180_000);
   invariant(Number.isSafeInteger(leaseMs) && leaseMs >= 30_000 && leaseMs <= 900_000,
     'RUNNER_LEASE_DURATION_INVALID', 'Runner routing lease must be between 30 seconds and 15 minutes');

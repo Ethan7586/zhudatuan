@@ -124,6 +124,20 @@ export function evaluateAuthoritativeDeliveryStatus(input) {
   });
 }
 
+export function formatDeliveryStatusHuman(result) {
+  const labels = {
+    NOT_PREPARED: '尚未准备', BUILDING: '正在封装', UPLOADED: '已上传，等待验证', VALIDATED: '已验证，等待封板',
+    SEALED: '已封板，可以部署', DEPLOYED: '已部署', FAILED: '失败，需要处理', UNKNOWN: '权威状态暂时无法完整读取',
+  };
+  const lines = [`交付状态：${labels[result.status] ?? result.status}`, `证据完整度：${result.evidence.completeness}`];
+  if (result.current) lines.push(`当前：${result.current.sourceSha ?? '未知'}${result.current.matchesSeal ? '（匹配本次封板）' : ''}`);
+  if (result.previous) lines.push(`上一版本：${result.previous.sourceSha ?? '未知'}（仅作回滚事实）`);
+  if (result.activeReleaseWriter) lines.push(`发布写者：${result.activeReleaseWriter.activeWriter}`);
+  if (result.failureCode) lines.push(`原因：${result.failureCode}`);
+  if (result.recentActionUrl) lines.push(`最近任务（辅助）：${result.recentActionUrl}`);
+  return `${lines.join('\n')}\n`;
+}
+
 export function parseMergeTreeConflictFiles(output) {
   const lines = String(output).split(/\r?\n/);
   const separator = lines.indexOf('');

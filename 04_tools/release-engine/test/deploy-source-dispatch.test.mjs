@@ -21,11 +21,12 @@ test('one sealed-source command uses the sole 1.4.3 orchestration and never prep
   assert.match(workflow, /uses: \.\/\.github\/workflows\/deploy-source-aliyun\.yml/);
 });
 
-test('the unified dispatcher executes one observable workflow run', async (t) => {
+test('the unified dispatcher waits for delayed run visibility without redispatching', async (t) => {
   const fixture = await mkdtemp(join(tmpdir(), 'zdt-delivery-1-4-3-'));
   t.after(() => rm(fixture, { recursive: true, force: true }));
   const bin = join(fixture, 'bin');
   const log = join(fixture, 'calls.jsonl');
+  const observations = join(fixture, 'observations');
   const sha = 'a'.repeat(40);
   await mkdir(bin);
   await writeFile(join(bin, 'git'), `#!/bin/sh\nprintf '%s\\n' '${sha}'\n`);
@@ -35,11 +36,11 @@ test('the unified dispatcher executes one observable workflow run', async (t) =>
 const fs=require('node:fs');const a=process.argv.slice(2);fs.appendFileSync(process.env.CALL_LOG,JSON.stringify(a)+'\\n');
 if(a[0]==='api')console.log('${sha}');
 if(a[0]==='workflow'&&a[1]==='view')console.log('name: Delivery Control 1.4.3');
-if(a[0]==='run'&&a[1]==='list')console.log(a[a.indexOf('--limit')+1]==='1'?'100':'101');
+if(a[0]==='run'&&a[1]==='list'){if(a[a.indexOf('--limit')+1]==='1')console.log('100');else{let n=fs.existsSync(process.env.OBSERVATIONS)?Number(fs.readFileSync(process.env.OBSERVATIONS)):0;n++;fs.writeFileSync(process.env.OBSERVATIONS,String(n));if(n>=3)console.log('101')}}
 `, { mode: 0o755 });
   const source = (await readFile(join(root, 'scripts/delivery-dispatch.sh'), 'utf8')).replace(/^export PATH=.*$/m, '');
   const result = spawnSync('bash', ['-c', source, 'delivery-dispatch.sh', 'deploy-source', sha], {
-    cwd: root, encoding: 'utf8', env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, CALL_LOG: log },
+    cwd: root, encoding: 'utf8', env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, CALL_LOG: log, OBSERVATIONS: observations },
   });
   assert.equal(result.status, 0, result.stderr);
   const calls = (await readFile(log, 'utf8')).trim().split('\n').map(JSON.parse);
@@ -47,5 +48,6 @@ if(a[0]==='run'&&a[1]==='list')console.log(a[a.indexOf('--limit')+1]==='1'?'100'
     'workflow', 'run', 'delivery-1-4-3.yml', '--ref', 'zdt-next', '-f', 'operation=deploy-source', '-f', `head_sha=${sha}`,
     '-f', 'release_target=', '-f', 'physical_node=',
   ]]);
+  assert.equal(await readFile(observations, 'utf8'), '3');
   assert.ok(calls.some((args) => args[0] === 'run' && args[1] === 'watch' && args[2] === '101'));
 });

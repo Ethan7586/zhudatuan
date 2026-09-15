@@ -328,7 +328,7 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
   const requestedNode = nodes[0];
   invariant(Boolean(adapter.nodes[requestedNode]?.deployments?.[target]), 'PREPARED_DEPLOY_NODE_TARGET_MISMATCH', `Unknown deployment ${requestedNode}/${target}`);
   const resolvedDeployment = resolveDeployment(adapter, requestedNode, target);
-  const resolution = await resolvePreparedArtifact(adapter, { ...options, node: requestedNode });
+  const resolution = await resolvePreparedArtifact(adapter, { ...options, node: requestedNode, allowLegacy: false });
   const publicClient = ossClientFromEnvironment(options.endpoint);
   const downloadEndpoint = resolveDownloadEndpoint(publicClient.endpoint, options.internalEndpoint ?? process.env.ALIYUN_OSS_INTERNAL_ENDPOINT);
   const downloadClient = ossClientFromEnvironment(downloadEndpoint);

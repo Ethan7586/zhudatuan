@@ -21,11 +21,11 @@ test('accepts the current registered deployment chain', () => {
   assert.equal(summary.nodes, Object.keys(current.adapter.nodes).length);
 });
 
-test('rejects a missing target even when unrelated text retains its name', () => {
+test('rejects a missing reusable target input even when unrelated text retains its name', () => {
   const workflow = structuredClone(current.workflow);
-  workflow.on.workflow_dispatch.inputs.release_target.options = workflow.on.workflow_dispatch.inputs.release_target.options.filter((target) => target !== 'console');
+  delete workflow.on.workflow_call.inputs.release_target;
   workflow.documentation = 'console';
-  assert.throws(() => validateDeploymentContract({ ...current, workflow }), /DEPLOY_WORKFLOW_TARGETS_MISMATCH/);
+  assert.throws(() => validateDeploymentContract({ ...current, workflow }), /DEPLOY_WORKFLOW_TARGET_INPUT_INVALID/);
 });
 
 test('rejects a prepared deployment whose deploy command is only a comment', () => {
@@ -58,6 +58,7 @@ test('rejects a manifest and remote pointer disagreement', () => {
 test('rejects a restartable target without rollback baseline or health checks', () => {
   const withoutBaseline = structuredClone(current.policy);
   withoutBaseline.nodes['zhudatuan-l0'].deployments['identity-api'].seedInputs = [];
+  delete withoutBaseline.nodes['zhudatuan-l0'].deployments['identity-api'].baselineStrategy;
   assert.throws(() => validateDeploymentContract({ ...current, policy: withoutBaseline }), /DEPLOY_ROLLBACK_BASELINE_MISSING/);
 
   const withoutHealth = structuredClone(current.policy);
