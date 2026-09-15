@@ -1463,7 +1463,7 @@
 | --- | --- |
 | 模块 | Authz / Access角色管理 / Console |
 | 类型 | 权限提升、角色委派、治理边界 |
-| 严重级别 | **P1 候选**；未完成 RV-0009 前不作最终 P1 |
+| 严重级别 | **P1**；RV-0009 已于 2026-09-15 从权限目录/Console、角色写入、assignment 与 Owner-only 迁移重新取证确认 |
 | 置信度 | 高：UI可选集、HTTP permission、服务端写入、assignment和membership投影控制流已连通；线上是否存在受限role manager或已利用记录未知 |
 | 文件和精确位置 | `packages/authz/src/PermissionCatalog.ts:20-29`；`contract/definitions/operations.yml:418-433`；Console `AccessRoleCatalog.ts:18-26`、`RoleEditor.tsx:61-88,216-243`、`AccessRoleCommand.ts:29-36`；Commerce `AccessOperations.ts:22-64,185-305`；migration `20260829060000_zhudatuan_operator_invitation_registration.sql:85-145`、`20260902140000_align_senior_administrator_business_permissions.sql:109-130` |
 | 当前行为 | [FACT][E-AU-010-004/006] 任何拥有`access.role.manage`与对应Operation capability的Console主体都看到全部184个permission。服务端仅要求`permissions`为字符串数组，随后把所有存在的code写入custom role，不比较actor effective permissions，也不排除内建高级管理员明确列为Owner-only的`access.role.manage`、`access.scope.manage`、`capability.assignment.manage`、`identity.registration.reset`等。角色分配只按固定`role-senior-administrator-v1:` ID要求Owner；相同关键权限装入custom role不会触发该分支，数据库随后把它们投影到目标Membership grants |
@@ -1478,7 +1478,9 @@
 | 预计修改范围 | Access角色命令、permission委派元数据或现有治理resolver、Console可选集、数据库角色/版本处理、定向HTTP/DB测试；具体范围待产品定稿 |
 | 验证方式 | Owner、受限role manager、普通管理员三主体 × 自有permission、非自有普通permission、Owner-only permission × create/assign/self/other/跨scope；逐项核对HTTP、role rows、access_version和下一请求实际授权 |
 | 回滚方式 | 修复批次回退单一提交；对已创建的越界custom role另做受管数据清单和可逆迁移，先保存role/assignment/version快照 |
-| 是否需要独立复核 | 是，RV-0009；必须重新检查线上角色数据、不能只复述旧handoff文档 |
+| 是否需要独立复核 | 已完成代码与契约重追；未来修复和线上数据处置仍须独立变更后复核 |
+
+**RV-0009（二次独立复核，2026-09-15）：确认 P1。** Console 向角色编辑者暴露完整权限目录，服务端将任意 active permission code 写入 custom role；只有固定 senior role ID 受 Owner 限制，custom role 内容不受同等 ceiling。详见 `records/AU-914-rv-0009-custom-role-delegation-ceiling/summary.md`；线上角色数据和调用记录仍未读取。
 
 为什么不是 P0：固定基线证明可执行权限提升机制，但本次没有读取线上角色、assignment、调用日志或异常授权记录，不能证明正在发生严重事故。`P0`必须有当前事故证据，不能沿用历史文档标签。
 
