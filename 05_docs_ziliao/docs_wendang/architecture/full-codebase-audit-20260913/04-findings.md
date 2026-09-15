@@ -529,7 +529,7 @@
 | --- | --- |
 | 模块 | 发布与运行 / GitHub → release engine → ECS agent |
 | 类型 | 发布门禁、失败检测、回滚语义 |
-| 严重级别 | **P1 候选**；未完成 RV-0002 前不作最终 P1 |
+| 严重级别 | **P1**；RV-0002 已于 2026-09-15 从唯一生产 workflow、engine/agent 分支和可执行反事实测试重新取证确认 |
 | 置信度 | 高：固定 workflow、两条 agent 分支和反事实测试直接证明；事故频率与全部用户影响未知 |
 | 文件和精确位置 | `.github/workflows/deploy.yml:65-109`；`04_tools/release-engine/src/planner.mjs:19-53,189-212`；`04_tools/release-engine/src/engine.mjs:114-119,357-477`；`04_tools/release-engine/remote/agent.mjs:240-305,388-470,472-712`；`04_tools/release-engine/test/remote-agent.test.mjs:64-75` |
 | 当前行为 | [FACT][E-AU-004-004][E-AU-004-005][E-AU-004-006][E-AU-004-019] 正式 Deploy 在 plan/deploy 两处固定 `--direct`。Direct 仍校验 source、archive/tree/critical files 并传播 restart 错误，但明确跳过 preflight、tests、typecheck、production approval、candidate checks、capacity、Caddy 语义、目标/受保护进程、readiness、外部域名验收和健康失败自动回滚；真实成功 run 只形成 direct-activated 回执 |
@@ -544,9 +544,11 @@
 | 预计修改范围 | Deploy workflow、release mode/receipt 契约和定向 remote-agent tests；具体启用哪些门禁待 Ethan 决定 |
 | 验证方式 | 第二审计者重新追踪 workflow→planner→engine→agent；覆盖 restart成功但candidate失败、health失败、Caddy变化、受保护PID变化、外部404、rollback失败的穷举反事实 |
 | 回滚方式 | 回退独立 workflow/模式提交即可恢复 Direct；任何已经执行的数据库 migration 仍按 forward-only处理 |
-| 是否需要独立复核 | 是，RV-0002；P1 候选必须 100% 重追入口 |
+| 是否需要独立复核 | 已完成 RV-0002；未来发布治理变更仍须独立变更后复核 |
 
 为什么不是 P0：未发现正在造成严重数据损失、安全事故或全系统中断的证据；F-0001 的两个 404 也尚未建立到 Direct 的排他因果。当前只能保留 P1 候选。
+
+**RV-0002（二次独立复核，2026-09-15）：确认 P1。** 当前唯一生产 workflow 的 plan/deploy 均固定 `--direct`；该分支跳过 approval、candidate checks、preflight、capacity、Caddy/受保护进程对账、readiness、外部验收和健康失败自动回滚。现有定向反事实测试以失败的 candidate/health command 仍得到 Direct success，已通过。详见 `records/AU-908-rv-0002-production-direct-gates/summary.md`；没有实施修复。
 
 ## F-0016｜HBBTZN Console 有两个无共享锁的生产 pointer writer
 
