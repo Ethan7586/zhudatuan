@@ -1172,7 +1172,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 直接证据 | 迁移从 `catalog.sourcelisting` 回填 `channel.externalobject.scope_id`；任何未能关联的旧记录会抛出 `EXTERNAL_MAPPING_SCOPE_BACKFILL_REQUIRED`，随后将列设为非空，并将三张表的唯一性改为包含 scope。 |
 | 运行边界 | Channel sync 写入 `(provider,scope_id,objecttype,externalid,sourceversion)`；Catalog source projection 与查询均显式携带 scope；`channel.externalobject` RLS 依 `access.scope_allowed(scope_id)` 授权。 |
 | 可否删除 | 否；承担租户隔离、外部对象幂等键、历史回填、Webhook/渠道同步正确路由和恢复责任。 |
-| 二次复核 | 是；必须独立验证回填缺口为零、相同 external id 跨 scope 的并存行为、RLS、渠道重放、冲突键、备份恢复和部署 ledger。 |
+| 二次复核 | RV-0035 已完成：维持 GX；静态复核确认回填缺口 fail-closed、运行写入/作业事件显式携带 scope。生产回填结果、RLS 实效、渠道重放、备份恢复和部署 ledger 未验证。 |
 
 ## 454. AU-454 渠道 scope 映射复核
 
