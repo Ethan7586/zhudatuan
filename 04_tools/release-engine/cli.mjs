@@ -87,7 +87,13 @@ export function parseArguments(args) {
     const value = rest[++index];
     if (value === undefined || value.startsWith('--')) throw new Error(`ARGUMENT_VALUE_REQUIRED:${token}`);
     if (key === 'node') options.nodes.push(value);
-    else if (key === 'file') options.files.push(value);
+    else if (key === 'file') {
+      // Plans may accept repeated --file filters, while publish-evidence consumes
+      // one exact evidence file. Preserve both representations so an evidence
+      // upload does not silently lose its file argument.
+      options.files.push(value);
+      options.file = value;
+    }
     else options[key] = value;
   }
   if (options.nodes.length === 1) options.node = options.nodes[0];

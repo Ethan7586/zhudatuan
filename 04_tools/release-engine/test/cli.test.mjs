@@ -41,6 +41,24 @@ test('artifact preparation is an explicit boolean CLI option with separate publi
   assert.match(result.stdout, /--state-directory/);
 });
 
+test('workflow evidence receives its exact --file argument', () => {
+  const missingEvidence = 'missing-workflow-evidence.json';
+  const result = spawnSync(process.execPath, [
+    'cli.mjs', 'publish-evidence',
+    '--adapter', join(releaseEngineRoot, '../../02_platform_pingtai/infrastructure/release/zdt-next.release.json'),
+    '--file', missingEvidence,
+    '--kind', 'prepare',
+    '--source-sha', 'a'.repeat(40),
+    '--target', 'storefront',
+    '--github-run-id', '10',
+    '--github-run-attempt', '1',
+  ], { cwd: releaseEngineRoot, encoding: 'utf8' });
+
+  assert.equal(result.status, 1);
+  assert.doesNotMatch(result.stderr, /EVIDENCE_FILE_REQUIRED/);
+  assert.match(result.stderr, /ENOENT/);
+});
+
 test('prepared commands require exact control provenance and expected remote digests', async () => {
   const adapter = {
     project: 'fixture',
