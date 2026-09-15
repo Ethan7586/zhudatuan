@@ -6784,3 +6784,26 @@
 | 验证方式 | 每个命令存在、针对正确 source/output 执行；故意改变 canonical token 时目标 checker 稳定失败；无外部素材未经授权进入制品。 |
 | 回滚方式 | 回退独立文档/入口提交，保留历史计划。 |
 | 是否需要独立复核 | 否（P3）；若恢复/替换 VI gate，由 VI、前端和工具 Owner 复核。 |
+
+## F-0352｜VI T1 打样记录的参照提交、路径和历史通过结论不能复核当前工具链
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | VI / 工具链工程记录 |
+| 类型 | 历史验证证据漂移、实施误导 |
+| 严重级别 | **P3** |
+| 置信度 | 高（记录、当前 git 历史、generator、根脚本直接证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/VI-CONVERGENCE-PILOT-NOTES.md:1-18,136-182`；`04_tools/scripts/build-web-tokens.mjs:1-30`；`package.json:1-123`。 |
+| 当前行为 | 记录引用 `fafc0b7` 打样提交、根级 design-system/apps 路径和已接入的命令，并称三应用构建/miniapp 检查通过；当前可见 generator 历史不含该参照提交，generator 指向 `01_core_hexin/packages/design`，根脚本未定义文中命令。 |
+| 预期行为 | 历史打样的经验可保留，但其 commit、路径、命令、产物与测试结果必须标为对应历史基线；当前工具链结论需由当前可重现命令证明。 |
+| 直接证据 | [FACT][E-AU-902-001] 记录的提交/路径/通过声称；[FACT][E-AU-902-002] generator 现行 source/output；[FACT][E-AU-902-003] 当前根 script 清单；[FACT][E-AU-902-004] 脚本 git 历史未见 `fafc0b7`。 |
+| 调用链或运行入口 | VI 执行计划 → pilot notes → 人工生成/验证判断；实际工具入口 → 当前 generator/package scripts。 |
+| 用户影响 | 维护者可能把无法复现的历史通过结论当成当前 gate，或按旧路径改错 token 副本。 |
+| 数据影响 | 无直接数据写入。 |
+| 安全影响 | 无直接安全影响。 |
+| 根因 | 打样记录未与仓库重组和 current quality toolchain 建立可验证的历史/现行边界。 |
+| 建议方向 | 从修复时最新 `zdt-next` 建立单一 vi-pilot-evidence-currentness 批次：冻结历史提交/结果，链接 current generator/paths/commands，并引用 F-0016/AU-901 的现行裁决；不得生成、批量改 UI 或改变 token 母版。 |
+| 预计修改范围 | 打样记录与 VI 计划的交叉链接/证据说明。 |
+| 验证方式 | 历史 commit 可解析或明确不可用；current 命令/路径可解析；当前生成/构建只能以新的受控测试结果写入。 |
+| 回滚方式 | 回退独立文档/链接提交，保留历史记录。 |
+| 是否需要独立复核 | 否（P3）；若用作正式设计门禁证据，VI/工具 Owner 复核。 |
