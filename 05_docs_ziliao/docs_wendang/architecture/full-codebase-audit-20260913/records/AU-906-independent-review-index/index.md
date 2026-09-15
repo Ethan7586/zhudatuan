@@ -74,6 +74,7 @@
 | GX-0044 | Meal OrderDraft 下单契约（RV-0020 已完成，维持 GX） | manifest/factory → order port → non-idempotent request/recovery |
 | GX-0045 | 公司模板克隆（RV-0065 静态复核完成，专项验证待授权） | DB function → role/RLS → topology/identity clone/recovery |
 | GX-0046 | Storefront compatibility legacy 运维（RV-0066 已完成，维持 GX） | legacy deploy → purchase guard → systemd/backup recovery |
+| GX-0047 | Linux readiness fixture（RV-0067 已完成，维持 GX） | isolated unit → readiness/rollback → protected snapshots |
 
 ## 未编号高风险台账差额（12 个对象 + 2 个计数未知项）
 
