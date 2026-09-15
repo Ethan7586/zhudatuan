@@ -169,13 +169,14 @@ test('GitHub reset and OSS HEAD, GET and PUT transient errors use finite retry w
   assert.equal(conflictAttempts, 1);
 });
 
-test('workflow contracts unify manual and automatic routing and forbid Larger Runner labels', async () => {
+test('workflow contracts keep runner routing dependency-light and forbid Larger Runner labels', async () => {
   const root = new URL('../../../', import.meta.url);
-  const [prepare, automatic, manual, engine] = await Promise.all([
+  const [prepare, automatic, manual, engine, cli] = await Promise.all([
     readFile(new URL('.github/workflows/prepare-artifact-aliyun.yml', root), 'utf8'),
     readFile(new URL('.github/workflows/auto-prepare-one-target.yml', root), 'utf8'),
     readFile(new URL('scripts/delivery-dispatch.sh', root), 'utf8'),
     readFile(new URL('04_tools/release-engine/src/engine.mjs', root), 'utf8'),
+    readFile(new URL('04_tools/release-engine/cli.mjs', root), 'utf8'),
   ]);
   assert.match(automatic, /build_runner: auto/);
   assert.match(manual, /workflow='delivery-1-4-3\.yml'/);
@@ -183,6 +184,8 @@ test('workflow contracts unify manual and automatic routing and forbid Larger Ru
   assert.match(prepare, /select-runner/);
   assert.match(prepare, /GH_TOKEN: \$\{\{ secrets\.ZDT_RUNNER_READ_TOKEN \}\}/);
   assert.match(engine, /recheck-runner-capacity/);
+  assert.doesNotMatch(cli, /import \{ doctorCommand \} from '\.\/src\/doctor\.mjs'/);
+  assert.match(cli, /await import\('\.\/src\/doctor\.mjs'\)/);
   assert.match(prepare, /ubuntu-24\.04/);
   assert.doesNotMatch(prepare, /ubuntu-latest-\d+-core|larger|xlarge|[1-9][0-9]-core/i);
 });
