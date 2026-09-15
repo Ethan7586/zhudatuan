@@ -4794,6 +4794,28 @@
 | 验证/回滚 | 在隔离构建中人为超过对应 app budget，确认 gate 失败；若已下线，确认 config schema/文档不再宣称保护。回滚为撤回单一 quality-policy change。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0304｜调用图门禁仍按重组前顶层路径和退休目录判断，679 项全量输出不可判读
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Quality / static call graph |
+| 类型 | 架构边界、质量门禁可信度 |
+| 严重级别 | **P2** |
+| 置信度 | 高（路径条件、当前源码根和全量运行输出直接证据） |
+| 文件和精确位置 | `04_tools/scripts/check/calls.mjs:14-18,35-43,72-88,174-232`。 |
+| 当前/预期 | entrypoint 与 client/service boundary 逻辑要求相对路径首段为 `apps/services`，当前生产源码为 `01_core_hexin/apps|services|packages|extensions`；同时 `retiredParts`包含仍在当前树的 `auth-web`、`storefront-web` 等。完整扫描报679项。预期是基于当前 source inventory 的根归类，并将已正式存在的应用与真正 retired compatibility tree 区分。 |
+| 直接证据 | [FACT][E-AU-784-001] `--self-test`只验证临时 AST import/route，不覆盖真实仓库根分类且通过；[FACT][E-AU-784-002] 全量命令输出 `violations=679`，含 storefront mock imports、当前 `@smart-wing` compatibility imports 和大量 webbusiness/localinfra/seed `UNREACHABLE_PRODUCTION_SOURCE`；[FACT][E-AU-784-003] 这些规则使用顶层路径条件，而真实路径以 `01_core_hexin/` 开始。 |
+| 调用链或运行入口 | `npm run check:calls` → `calls.mjs` → shared source discovery + six sub-callgraph auditors。 |
+| 用户影响 | 不直接改变运行路径；门禁不能提供可信“零未达文件/零违规调用”结论，真实边界违规可能被结构性噪声掩盖。 |
+| 数据影响 | 只读源码。 |
+| 安全影响 | 无直接利用证据；身份、数据和 job 调用关系的静态回归检查可靠性下降。 |
+| 根因 | 源码重组与兼容包策略演进后，entry/boundary/retired rules未从共享 source inventory 统一推导。 |
+| 建议方向 | 从修复时最新 `zdt-next`建立单一 callgraph-root-contract 批次：先定义当前生产 roots、正式 entrypoints、兼容包与 retired tree；再为每类规则加入真实路径 fixture，最后逐个复核剩余输出。禁止直接 suppress 679项。 |
+| 预计修改范围 | calls checker、shared source inventory、定向 fixtures；不改业务调用。 |
+| 验证方式 | 当前已知入口可达；已知 compatibility import按策略分类；植入跨层/未解析/生产测试 import仍必须失败；剩余结果逐条可解释。 |
+| 回滚方式 | 回退独立 checker/fixture 提交。 |
+| 是否需要独立复核 | 是（架构边界门禁）。 |
+
 ## F-0300｜Schema 写入所有权门禁将业务目录名误作数据库 schema，固定基线 127 条失败不可判读
 
 | 字段 | 记录 |
