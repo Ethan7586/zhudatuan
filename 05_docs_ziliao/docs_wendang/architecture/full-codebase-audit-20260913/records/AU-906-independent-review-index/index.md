@@ -2,7 +2,7 @@
 
 - 基线：`5a1ce71eebbefaa826368a9e1dc17730f9363bc4`
 - 建立日期：2026-09-15
-- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0016、RV-0018、RV-0024 至 RV-0049 已完成；其余第二轮结论尚未开始。**
+- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0016、RV-0018、RV-0024 至 RV-0063 已完成；未定位高风险差额的第二轮结论尚未开始。**
 - 规则：每项复核从当前固定审计基线的运行入口/调用链重新取证；不得只复述首审报告。任何分歧保守保留，不降低风险等级。
 
 ## P1 候选（17）
@@ -52,10 +52,23 @@
 | GX-0022 | 成员个人数据 scope 授权函数（RV-0044 已完成，维持 GX） | migration → API context → RLS/member boundary |
 | GX-0023 | 支付 Webhook scope resolver 演进（RV-0045 已完成，维持 GX） | migrations → webhook → scoped function/RLS |
 | GX-0024 | 跨域 member audience 契约（RV-0046 已完成，维持 GX） | migration → capability → personal scope/RLS |
-| GX-0025–0028 | runtime contract/target-head/函数重绑 | checksum/ledger → startup/readiness/release gate |
-| GX-0029–0036 | invitation/session/store/audit/Console 契约 | API/handler → RLS/audit/outbox → tests |
-| GX-0037–0040 | Platform Owner 授权/Reporting Cockpit | permission grant → operation → read model/SQL/RLS |
-| GX-0041 | 历史测试登录材料 | 文档 → current domain/account governance/rotation evidence；禁止尝试登录 |
+| GX-0025 | Runtime contract head checksum（RV-0047 已完成，维持 GX） | checksum/ledger → startup/readiness/release gate |
+| GX-0026 | Membership 权威函数 schema 重绑（RV-0048 已完成，维持 GX） | migration → function definition → identity/access callers |
+| GX-0027 | Membership scopegrant 历史规范化（RV-0049 已完成，维持 GX） | normalization → scope resolver → active grants |
+| GX-0028 | Runtime target-head error-contract 封板（RV-0050 已完成，维持 GX） | target checksum → later migration guards → error contract |
+| GX-0029 | Invitation 生命周期与注册政策绑定（RV-0051 已完成，维持 GX） | policy migration → invitation/registration route → lifecycle |
+| GX-0030 | Invitation resource scope resolver 演进（RV-0052 已完成，维持 GX） | resolver migration → Experience/Access → resource scope |
+| GX-0031 | Identity session 管理与撤销事件（RV-0053 已完成，维持 GX） | session operations → revocation/event → authenticated requests |
+| GX-0032 | Store management scope 与授权函数演进（RV-0054 已完成，维持 GX） | scope migration → provisioning runtime → permission function |
+| GX-0033 | Decision audit actor/scope RLS 修复（RV-0055 已完成，维持 GX） | RLS policy → risk decision writer → scoped audit reads |
+| GX-0034 | Platform Owner 门店管理权限授予（RV-0056 已完成，维持 GX） | owner permission → partner operation → scope gate |
+| GX-0035 | Console member manage/password assurance（RV-0057 已完成，维持 GX） | operation contract → member lifecycle → session assurance |
+| GX-0036 | Console contract runtime ledger 封板（RV-0058 已完成，维持 GX） | migration ledger → readiness/repair → compatibility |
+| GX-0037 | Platform Owner Console 只读授权（RV-0059 已完成，维持 GX） | permission grant → capability → Console/API read gates |
+| GX-0038 | Platform Owner card library read（RV-0060 已完成，维持 GX） | permission grant → voucher read → sensitive-field projection |
+| GX-0039 | Platform Owner Cockpit catalog/inventory read（RV-0061 已完成，维持 GX） | permission grant → read handlers → scope boundary |
+| GX-0040 | Reporting Cockpit 跨域汇总（RV-0062 已完成，维持 GX） | Dashboard → repository → cockpit overload/RLS |
+| GX-0041 | 历史测试登录材料（RV-0063 已完成，维持 GX） | 文档 → current domain/account governance/rotation evidence；禁止尝试登录 |
 
 ## 未定位高风险差额（14）
 
