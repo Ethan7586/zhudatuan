@@ -218,6 +218,11 @@ test('deployment obtains exact final Seal and Writer Lease before SSH while pres
   assert.match(engine, /: authoritativeSeal\.key;/);
   assert.match(engine, /controlPlaneSha: sealIdentity\.control_plane_sha/);
   assert.match(engine, /operation: candidateOnly \? 'validate-candidate' : 'deploy'/);
+  assert.match(engine, /verify-superseded-control/);
+  assert.match(engine, /verify-superseded-current/);
+  assert.match(engine, /cacheStatus: 'superseded_current'/);
+  assert.ok(engine.indexOf('verify-superseded-control') < engine.indexOf('verify-superseded-current'));
+  assert.match(engine, /Remote Agent or policy differs before superseded health verification/);
   assert.match(engine, /requestId: releaseRequest\.request_id, runnerRequestId: runnerRequest\.request_id/);
   assert.match(workflow, /--writer-identity "\$RUNNER_NAME"/);
   assert.match(workflow, /ZDT_RUNNER_READ_TOKEN/);

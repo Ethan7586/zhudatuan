@@ -163,6 +163,7 @@ test('OSS final Seal receipt is the reusable authority for status and deployment
     controlPlaneSha: 'b'.repeat(40),
   }, { client });
   assert.equal(required.receipt.schema, 'ai.delivery.final-seal.v1');
+  assert.equal(required.validation.schema, 'ai.delivery.candidate-validation.v1');
   assert.deepEqual(required.receipt.routing, {
     request_id: 'fixture-request', selected_runner_class: 'aliyun', selected_runner_name: 'fixture-build',
     lease_generation: 1, lease_expires_at: '2026-09-16T00:03:00.000Z', overflow_reason: null,

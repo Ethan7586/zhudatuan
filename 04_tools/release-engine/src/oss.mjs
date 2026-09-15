@@ -397,7 +397,7 @@ export async function requireFinalSealReceipt(adapter, options, dependencies = {
   invariant(state.status === 'SEALED', 'FINAL_SEAL_RECEIPT_MISSING', 'OSS final Seal receipt is missing; Action success is not Seal authority', {
     status: state.status, sealKey: lifecycle.key.seal_key, finalSealReceiptObject: lifecycle.paths.final, ...recovery,
   });
-  return { key: lifecycle.key, object: lifecycle.paths.final, receipt: state.final, reused: true };
+  return { key: lifecycle.key, object: lifecycle.paths.final, receipt: state.final, validation: state.validated, reused: true };
 }
 
 export async function resolveExactFinalSealReceipt(adapter, options, dependencies = {}) {
