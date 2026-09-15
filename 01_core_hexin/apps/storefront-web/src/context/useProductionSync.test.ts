@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { ProductionApiError } from '../services/productionApi';
-import { authenticatedMall, loadProgressiveCatalog, shouldRetainProductionSnapshot } from './useProductionSync';
+import {
+  authenticatedMall,
+  loadProgressiveCatalog,
+  loadQualifiedCatalogWithRecovery,
+  shouldRetainProductionSnapshot,
+  shouldRetryQualifiedCatalog,
+} from './useProductionSync';
 
 describe('production synchronization recovery', () => {
   it('retains the visible snapshot during a temporary network interruption', () => {
@@ -9,6 +15,25 @@ describe('production synchronization recovery', () => {
 
   it('treats an identity-session failure as terminal before the member shell is published', () => {
     expect(shouldRetainProductionSnapshot(new ProductionApiError('登录会话已失效', 401, 'AUTHENTICATION_REQUIRED'))).toBe(false);
+  });
+
+  it('recovers a qualified catalog after a transient production restart', async () => {
+    let attempts = 0;
+    const waits: number[] = [];
+    const result = await loadQualifiedCatalogWithRecovery(async () => {
+      attempts += 1;
+      if (attempts === 1) throw new ProductionApiError('商城服务暂时繁忙', 503, 'SERVICE_UNAVAILABLE', 'request:one');
+      return { items: [apiProduct('member')], pagination: { nextCursor: null } };
+    }, () => undefined, async (milliseconds) => { waits.push(milliseconds); });
+
+    expect(result.map((item) => item.id)).toEqual(['member']);
+    expect(waits).toEqual([500]);
+  });
+
+  it('does not disguise a real login or permission denial as a retryable outage', () => {
+    expect(shouldRetryQualifiedCatalog(new ProductionApiError('登录会话已失效', 401, 'AUTHENTICATION_REQUIRED'))).toBe(false);
+    expect(shouldRetryQualifiedCatalog(new ProductionApiError('没有权限', 403, 'SCOPE_DENIED'))).toBe(false);
+    expect(shouldRetryQualifiedCatalog(new ProductionApiError('商城服务暂时繁忙', 503, 'SERVICE_UNAVAILABLE'))).toBe(true);
   });
 
   it('builds the stable member shell before account data arrives', () => {

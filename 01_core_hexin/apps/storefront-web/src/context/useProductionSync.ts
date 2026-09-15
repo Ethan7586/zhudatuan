@@ -30,6 +30,8 @@ type CatalogPageLoader = (options?: PublicCatalogOptions) => Promise<{ items: Ap
 type CatalogPagePublisher = (items: ApiProduct[]) => void;
 type CatalogContinuation = () => Promise<void>;
 
+const QUALIFIED_CATALOG_RETRY_DELAYS = [500, 1_500, 3_000] as const;
+
 export async function loadProgressiveCatalog(
   loadPage: CatalogPageLoader,
   publish: CatalogPagePublisher,
@@ -70,6 +72,31 @@ function waitForCatalogIdle(): Promise<void> {
 
 export function shouldRetainProductionSnapshot(error: unknown): boolean {
   return error instanceof ProductionApiError && error.status === 0;
+}
+
+/** A deployment restart must not leave an authenticated member permanently on the public catalog. */
+export function shouldRetryQualifiedCatalog(error: unknown): boolean {
+  return error instanceof ProductionApiError && (error.status === 0 || error.status === 404 || error.status >= 500);
+}
+
+export async function loadQualifiedCatalogWithRecovery(
+  loadPage: CatalogPageLoader,
+  publish: CatalogPagePublisher,
+  wait: (milliseconds: number) => Promise<void> = waitForQualifiedCatalogRetry,
+): Promise<ApiProduct[]> {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await loadProgressiveCatalog(loadPage, publish);
+    } catch (error) {
+      const delay = QUALIFIED_CATALOG_RETRY_DELAYS[attempt];
+      if (!shouldRetryQualifiedCatalog(error) || delay === undefined) throw error;
+      await wait(delay);
+    }
+  }
+}
+
+function waitForQualifiedCatalogRetry(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => globalThis.setTimeout(resolve, milliseconds));
 }
 
 export function authenticatedMall(bootstrap: ApiBootstrap): EnterpriseMall {
@@ -176,11 +203,18 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     // Member catalog qualification is an independent capability. Do not make
     // it wait for balances, orders, or ledgers: those reads are supplementary
     // and can fail without changing the member's purchase eligibility.
-    void productionApiRequest.then((productionApi) => loadProgressiveCatalog(
+    void productionApiRequest.then((productionApi) => loadQualifiedCatalogWithRecovery(
       productionApi.listQualifiedProducts,
       publisher.commitQualified,
     ))
-      .catch(async () => {
+      .catch(async (error: unknown) => {
+        if (error instanceof ProductionApiError) {
+          console.warn('[storefront] qualified catalog unavailable after recovery', {
+            code: error.code,
+            status: error.status,
+            requestId: error.requestId,
+          });
+        }
         try {
           await publicCatalogRequest;
         } catch {
