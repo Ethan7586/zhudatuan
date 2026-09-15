@@ -1899,3 +1899,15 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 是；由Release Owner确认最新控制面和制品封板流程。 |
 
 - Console release build归 DC-0092。累计 G0 62、G1 101、G2 5、G3 0、GX 47；未删除任何文件。
+
+## DC-0093｜RequirementGen 主生成器的高风险合同写入职责
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除，需专项设计 |
+| 对象 | `04_tools/tools/requirementgen/src/RequirementGenerator.ts`。 |
+| 风险/保留证据 | 由冻结workbook/operations定义生成五份requirements文档及`RequirementCatalog.generated.ts`；默认模式直接写入受版本控制合同，`--check`是唯一审计可用分支。 |
+| 可否删除 | 否；替代或改动必须在最新主线的独立生成治理批次中逐输出比较、验证权威hash和回滚。 |
+| 二次复核 | 是；由Requirement/Contract Owner确认生成环境依赖、输出消费者与发布契约。 |
+
+- RequirementGen主生成器归 DC-0093。累计 G0 62、G1 101、G2 5、G3 0、GX 48；未删除任何文件。
