@@ -4794,6 +4794,28 @@
 | 验证/回滚 | 在隔离构建中人为超过对应 app budget，确认 gate 失败；若已下线，确认 config schema/文档不再宣称保护。回滚为撤回单一 quality-policy change。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0332｜卡券目标架构把重组前路径与占位迁移写成升级清单
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Documentation / Voucher target architecture |
+| 类型 | 实施路径准确性、迁移与删除治理 |
+| 严重级别 | **P3** |
+| 置信度 | 高（文档路径、固定基线文件系统与当前 Voucher runtime 入口均为直接证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/voucher/Architecture.md:740-765,774-790`；实际源码根为 `01_core_hexin/services/...` 与 `01_core_hexin/apps/...`，受管迁移根为 `02_platform_pingtai/database/supabase/migrations/`。 |
+| 当前/预期 | 文档将契约、SDK、测试、迁移和旧文件列为 `packages/...`、`services/...`、`apps/...`、`database/...` 根路径；固定基线中这些根相对路径不存在，列出的四个 `20260901xxxxxx_voucher_target_*` 迁移也不存在。实际 Voucher 运行模块与 Console 文件仍位于带顶层分区前缀的路径。预期是目标态文档明确其为未实施草案，并使用当前可解析路径或单独的未来目录约定。 |
+| 直接证据 | [FACT][E-AU-862-001] 文件 740-751、760-765、774-790 的路径在固定基线均无对应对象；[FACT][E-AU-862-002] `01_core_hexin/services/commerce/src/modules/voucher/module.manifest.ts:8-43` 仍注册 19 个 operation 和四类 job；[FACT][E-AU-862-003] `VoucherTargetContract.test.ts:12-76` 固定 74 个 `frozen` target operation 并断言不进入 runtime controller/capability artifact。 |
+| 调用链或运行入口 | 人工实施者 → Voucher Architecture → 路径/迁移/旧文件处置清单；非运行时调用链。 |
+| 用户影响 | 实施者可能在不存在目录创建迁移或按不完整、无前缀的清单误定位当前运行文件；当前功能不会因阅读文档自动改变。 |
+| 数据影响 | 若误把占位迁移当作可执行步骤，可能产生与受管迁移目录脱节的后续变更；本审计未执行任何迁移。 |
+| 安全影响 | 无直接外部安全漏洞。 |
+| 根因 | 仓库目录重组后，目标态架构树和切换清单未同步为可解析的当前路径，且未来占位命名没有显式与当前已部署事实分隔。 |
+| 建议方向 | 从当时最新 `zdt-next` 建立单一 voucher-architecture-navigation 批次：标注目标/已实现状态，修正或解释路径前缀，并把未来迁移编号改为明确的待实施约定；不创建迁移、不删除旧代码、不启用冻结 operation。 |
+| 预计修改范围 | 单一架构文档及可选链接/路径校验。 |
+| 验证方式 | 每个当前路径可解析到固定主线对象；目标迁移/删除段明确不可执行前置条件；阅读者可区分 19 个运行 operation 与 74 个 frozen target operation。 |
+| 回滚方式 | 回退独立文档导航提交。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0331｜指标目录指向不存在的 telemetry/capacity 相对路径
 
 | 字段 | 记录 |
