@@ -40,7 +40,7 @@
 | --- | --- |
 | 模块 | 发布与运行 / Auth、Console 静态制品 |
 | 类型 | 运行配置漂移、可用性、发布事实源分裂 |
-| 严重级别 | **P1 候选**；未完成 RV-0001 前不作最终 P1 |
+| 严重级别 | **P1**；RV-0001 已于 2026-09-15 从公网入口、manifest、发布 pointer、Caddy root 与验收逻辑重新取证确认 |
 | 置信度 | 高：两个公网状态、active Caddy、两个 pointer/index 和成功发布回执均直接核验；影响人数和持续时间未知 |
 | 文件和精确位置 | `02_platform_pingtai/infrastructure/release/zdt-next.release.json:584-611`；`02_platform_pingtai/infrastructure/zhudatuan/aliyun/Caddyfile:65-115`；线上 `/etc/caddy/Caddyfile:66,115`（2026-09-13 只读观察） |
 | 当前行为 | [FACT][E-AU-001-020][E-AU-001-021][E-AU-004-010][E-AU-004-019] 线上 Caddy 分别指向 runtime-recovery current 下的 Auth/Console dist，两处都无 index；正式 release target current 的两份 static/index.html 都存在；对应 Direct run 曾返回 success，而两个公网根均返回 404 |
@@ -55,9 +55,11 @@
 | 预计修改范围 | [UNKNOWN] 可能涉及 Caddy 配置、release target/policy 或激活流程中的一处或数处；复核前不得猜定 |
 | 验证方式 | 第二审计者重新核对实例身份、Caddy active config、两个 current 指针、制品版本和直连 SNI；穷举 200/404/5xx/连接失败，并检查其它域名无变化 |
 | 回滚方式 | 修复批次保留原 Caddy 与原 pointer，按当时正式发布流程回切；本次未执行 |
-| 是否需要独立复核 | 是，RV-0001；P1 强制 100% 重追入口 |
+| 是否需要独立复核 | 已完成 RV-0001；未来修复变更仍须独立变更后复核 |
 
 为什么不是 P0：当前证明两个前端入口 404，但没有证据证明正在发生严重数据损失、安全事故或全系统中断，也未独立确认影响规模。按用户定义，不能为了谨慎而把证据不足的 P1 候选升级为 P0。
+
+**RV-0001（二次独立复核，2026-09-15）：确认 P1。** 新一轮只读 GET 再次取得 `accounts.fufu.wang/` 与 `console.fufu.wang/` 的 404；固定基线的 node manifest 明确将两者作为 identity/console surface，发布 policy 写入 `/opt/zhudatuan/targets/{auth-web,console}/current/static`，而 fufu Caddy 仍从 `/opt/zhudatuan/current/.../dist` 提供同一前端。Direct 发布跳过外部验收，Auth 无单目标公网验收。详见 `records/AU-907-rv-0001-auth-console-release-pointer/summary.md`；没有实施修复。
 
 ## F-0002｜正式 Playwright 入口引用四个不存在的 workspace
 
