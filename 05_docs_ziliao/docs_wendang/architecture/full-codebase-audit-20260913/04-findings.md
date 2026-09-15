@@ -5068,6 +5068,23 @@
 | 验证/回滚 | 正常workbook保持相同sheet/cell结果；超限archive稳定拒绝且不耗尽内存；回滚为独立reader/test提交。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0317｜RequirementTrace 以关键词和模块首个 API 生成需求链路，不能证明具体契约绑定
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Tooling / requirement trace generation |
+| 类型 | 需求追踪精度、架构证据语义 |
+| 严重级别 | **P2** |
+| 置信度 | 高（静态映射算法及generator caller直接证据；未生成制品） |
+| 文件和精确位置 | `04_tools/tools/requirementgen/src/RequirementTrace.ts:41-131`；`RequirementGenerator.ts:38-43,65-85`。 |
+| 当前/预期 | module为固定中文正则的首个命中；operation只从同owner候选中按GET/非GET返回首项；route/journey是静态模块表。预期需求追踪应保留“推断”状态或由requirements显式声明并验证具体operation、route与test，而非把同模块第一个API当作语义对应。 |
+| 直接证据 | [FACT][E-AU-818-001] `moduleFor` 41-66按顺序first-match；[FACT][E-AU-818-002] `operationFor` 70-77不比较operation名称、字段或业务语义；[FACT][E-AU-818-003] route/journey 79-122为固定表；[FACT][E-AU-818-004] generator把trace写入每项，但同时将status固定为Designed。 |
+| 调用链或运行入口 | Authority workbook → RequirementGenerator → generated requirement documents/check:requirements。 |
+| 用户/数据/安全影响 | 不改变线上请求、数据或授权；可能使需求排期、覆盖报告或后续实现错误地关联到同模块但不相等的 API/页面/旅程。 |
+| 建议方向 | 从最新主线单独建立 requirement-trace-evidence batch：为每条需求保存显式operation/route/test reference或标记inferred；对推断结果与真实注册表/route/test独立验证，禁止将推断升格为accepted/released证据。 |
+| 验证/回滚 | 对同模块多GET/多command反例，未明确绑定时输出inferred/missing；显式绑定必须解析到真实route、operation和test；回滚为独立生成器/schema/test提交。 |
+| 是否需要独立复核 | 是。 |
+
 ## F-0302｜MVP 交付门禁的状态枚举与当前需求矩阵不兼容，首条即失败
 
 | 字段 | 记录 |
