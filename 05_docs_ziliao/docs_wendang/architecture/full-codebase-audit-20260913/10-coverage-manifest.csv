@@ -4200,7 +4200,7 @@
 "05_docs_ziliao/docs_wendang/voucher/Flows.md","文档/voucher","目标调用/数据流文档","已深入审阅","2026-09-15","AU-864；发行、核销、退款、作业、失败恢复与实际 job/operation 对账","voucher 文档组；人工流程阅读","中/G1","[FACT] 四类运行 job 已注册；订单/审批/逐项发行/部分退款等是冻结目标流程，不是上线证明；归 DC-0116","是（产品/架构/财务 Owner）"
 "05_docs_ziliao/docs_wendang/voucher/Operations.md","文档/voucher","目标操作追踪/测试契约文档","已深入审阅","2026-09-15","AU-866；全文矩阵、Target Contract 读取、YAML/route/policy/schema/runtime 分类对账","VoucherTargetContract.test.ts；人工契约阅读","P3/F-0333；G0","[FACT] 测试直接读取并逐操作核对该矩阵；schema prose 与 named 定义冲突为 F-0333，capabilities.yml 描述由 F-0041 覆盖","否"
 "05_docs_ziliao/docs_wendang/voucher/README.md","文档/voucher","产品/目标架构文档","已深入审阅","2026-09-15","AU-861；全文目标、现有能力与冻结 contract/runtime 交叉核验","voucher 文档组；人工产品/架构阅读","中/G1","[FACT] 目标 B2B 模型与当前 19 个 runtime operation 分离；74 个目标 operation 仍 frozen，归设计基线管理","是（产品/架构 Owner）"
-"05_docs_ziliao/docs_wendang/上线准备计划-2026-08-20.md","文档/上线准备计划-2026-08-20.md","文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","人工/审计流程；运行引用待检索","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
+"05_docs_ziliao/docs_wendang/上线准备计划-2026-08-20.md","文档/历史发布计划","历史发布/风险计划","已深入审阅","2026-09-15","AU-872；评分、P0/P1、路线、工程约束、验证命令与当前控制面边界核验","人工历史风险/发布阅读","中/G1","[FACT] integration/merge-20260820 历史计划；旧路径/脚本/凭据/分数不能当当前状态或执行授权，归 DC-0120","是（发布/安全/产品 Owner）"
 "05_docs_ziliao/docs_wendang/主打团代码审计.pdf","文档/主打团代码审计.pdf","二进制/专用文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","人工/审计流程；运行引用待检索","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "05_docs_ziliao/docs_wendang/主打团登录系统评估.html","文档/主打团登录系统评估.html","HTML","暂未审阅","","CP-00 建档；CP-00A 证据语义","人工/审计流程；运行引用待检索","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "05_docs_ziliao/docs_wendang/代码与前端开发规范.md","文档/代码与前端开发规范.md","文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","人工/审计流程；运行引用待检索","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
