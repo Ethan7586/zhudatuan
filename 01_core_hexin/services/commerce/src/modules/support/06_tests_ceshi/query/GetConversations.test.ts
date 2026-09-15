@@ -112,6 +112,21 @@ describe('support conversation queries', () => {
     expect((all.body as { views: unknown }).views).toEqual({ handling: 2, review: 2, created: 1, all: 3 });
   });
 
+  it('enriches a linked order through the order module public query', async () => {
+    await database.exec("update support.conversation set order_id='order:one' where id='conversation:one'");
+    const order = async () => ({ id: 'order:one', scope: 'platform:root', member: 'member:one', number: 'SO-1001',
+      state: 'active', paymentState: 'paid', fulfillmentState: 'shipped', totalMinor: 12900 });
+    const action = getConversationsOperations({} as KmsClient,
+      (() => ({ member: async () => 'member:one', order })) as unknown as SupportPortFactory)['support.cases.read'];
+    if (typeof action !== 'function') throw new Error('SUPPORT_CASES_ACTION_MISSING');
+
+    const result = await action(caseRequest('all'), database as unknown as OperationDatabase);
+
+    expect((result.body as { items: unknown[] }).items).toEqual([expect.objectContaining({ order: expect.objectContaining({
+      number: 'SO-1001', paymentState: 'paid', fulfillmentState: 'shipped', totalMinor: 12900,
+    }) })]);
+  });
+
   it('returns only clean attachments through a short-lived authorized URL', async () => {
     await database.exec(`insert into support.evidence values('evidence:one','conversation:one','object:one','${'a'.repeat(64)}',
       'image/png',256,'clean','proof.png','internal','2026-08-30T10:20:00Z')`);

@@ -29,6 +29,9 @@
 .supporthistory time { color: #9aa5b5; font-size: 9px; }
 .supporthistory li span { grid-column: 1 / -1; overflow: hidden; color: #7d899b; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .supportcontextactions { padding: 15px 20px 18px; }
+.supportcontextactions > label { display: grid; gap: 6px; margin-bottom: 9px; color: #6f7f99; font-size: 11px; }
+.supportcontextactions select { min-height: 36px; border: 1px solid #d4ddea; border-radius: 7px; outline: 0; background: #fff; color: #283750; padding: 0 8px; font: inherit; font-size: 12px; font-weight: 700; }
+.supportcontextactions select:focus { border-color: var(--support-blue); box-shadow: 0 0 0 3px rgb(15 111 255 / 9%); }
 .supportcontextactions > div { display: grid; grid-template-columns: .72fr 1.45fr 1fr; gap: 8px; }
 .supportcontextactions button { min-height: 42px; border: 1px solid #c5cfdd; border-radius: 6px; background: #fff; color: #31405a; font-size: 12px; font-weight: 700; }
 .supportcontextactions button:last-child { border-color: #bad1f8; background: #e8f1ff; color: #4f77b8; }

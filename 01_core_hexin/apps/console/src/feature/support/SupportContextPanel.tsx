@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import type { SupportCase, SupportHistory } from './SupportSchema';
+import type { SupportAgent, SupportCase, SupportHistory } from './SupportSchema';
 import {
   shortIdentifier,
   supportChannelLabel,
@@ -13,14 +13,24 @@ import {
   type SupportPriorityGrade,
 } from './SupportPresentation';
 
-export function SupportContextPanel({ brandName, selectedCase, caseId, canReview, reviewing, reviewError, history, onReview }: Readonly<{
+export function SupportContextPanel({ brandName, selectedCase, caseId, agents, canAssign, canEscalate, canAdvance, actionPending,
+  actionError, canReview, reviewing, reviewError, history, onAssign, onEscalate, onAdvance, onReview }: Readonly<{
   brandName: string;
   selectedCase?: SupportCase;
   caseId?: string;
+  agents: readonly SupportAgent[];
+  canAssign: boolean;
+  canEscalate: boolean;
+  canAdvance: boolean;
+  actionPending: boolean;
+  actionError?: string;
   canReview: boolean;
   reviewing: boolean;
   reviewError?: string;
   history: readonly SupportHistory[];
+  onAssign: (agent: string) => Promise<void>;
+  onEscalate: () => Promise<void>;
+  onAdvance: () => Promise<void>;
   onReview: (grade: SupportPriorityGrade) => Promise<void>;
 }>) {
   return (
@@ -29,17 +39,18 @@ export function SupportContextPanel({ brandName, selectedCase, caseId, canReview
       {selectedCase === undefined ? <ContextEmpty {...(caseId === undefined ? {} : { caseId })} /> : <>
         <ContextSection>
           <ContextRow label="受理商城" value={brandName} strong />
-          <ContextRow label="当前责任方" value="待接入" />
-          <ContextRow label="关联订单" value={selectedCase.order_id ?? '未关联'} />
-          <ContextRow label="退款状态" value="待接入" tone="warning" />
-          <ContextRow label="物流状态" value="待接入" tone="success" />
-          <ContextRow label="SLA" value={selectedCase.response_due_at === null ? '暂无' : `响应期限 ${supportTime(selectedCase.response_due_at)}`} tone="warning" />
+          <ContextRow label="当前责任方" value={selectedCase.assigned_agent_id === null ? '待分配' : shortIdentifier(selectedCase.assigned_agent_id)} />
+          <ContextRow label="关联订单" value={selectedCase.order?.number ?? selectedCase.order_id ?? '未关联'} />
+          <ContextRow label="订单状态" value={selectedCase.order === null || selectedCase.order === undefined ? '不适用' : orderStateLabel(selectedCase.order.state)} />
+          <ContextRow label="退款状态" value={selectedCase.order === null || selectedCase.order === undefined ? '不适用' : paymentStateLabel(selectedCase.order.paymentState)} tone="warning" />
+          <ContextRow label="物流状态" value={selectedCase.order === null || selectedCase.order === undefined ? '不适用' : fulfillmentStateLabel(selectedCase.order.fulfillmentState)} tone="success" />
+          <ContextRow label="SLA" value={slaLabel(selectedCase)} tone="warning" />
         </ContextSection>
         <ContextSection title="用户信息">
           <div className="supportcontextidentity">发起人</div>
-          <ContextRow label="用户昵称" value="暂无" />
-          <ContextRow label="手机号码" value="暂无" />
-          <ContextRow label="会员等级" value="待接入" />
+          <ContextRow label="用户标识" value={selectedCase.member_id === null || selectedCase.member_id === undefined ? '匿名/系统' : shortIdentifier(selectedCase.member_id)} />
+          <ContextRow label="手机号码" value="未向工单暴露" />
+          <ContextRow label="会员等级" value="由会员中心管理" />
         </ContextSection>
         <ContextSection title="工单信息">
           <ContextTime label="创建时间" value={selectedCase.created_at} />
@@ -53,18 +64,41 @@ export function SupportContextPanel({ brandName, selectedCase, caseId, canReview
         <PriorityReview priority={selectedCase.priority} canReview={canReview} reviewing={reviewing}
           {...(reviewError === undefined ? {} : { error: reviewError })} onReview={onReview} />
         <HistoryTimeline items={history} />
-        <section className="supportcontextactions" aria-label="下一批接入的工单操作">
-          <strong>操作</strong>
-          <div>
-            <button type="button" disabled title="下一批接入">转交</button>
-            <button type="button" disabled title="下一批接入">升级至平台支持</button>
-            <button type="button" disabled title="下一批接入">完成工单</button>
-          </div>
-          <p>以上操作将在下一批接入</p>
-        </section>
+        <WorkflowActions caseId={selectedCase.id} state={selectedCase.state} agents={agents} canAssign={canAssign}
+          canEscalate={canEscalate} canAdvance={canAdvance} pending={actionPending}
+          {...(actionError === undefined ? {} : { error: actionError })} onAssign={onAssign} onEscalate={onEscalate} onAdvance={onAdvance} />
       </>}
     </aside>
   );
+}
+
+function WorkflowActions({ caseId, state, agents, canAssign, canEscalate, canAdvance, pending, error, onAssign, onEscalate,
+  onAdvance }: Readonly<{ caseId: string; state: string; agents: readonly SupportAgent[]; canAssign: boolean; canEscalate: boolean;
+    canAdvance: boolean; pending: boolean; error?: string; onAssign: (agent: string) => Promise<void>;
+    onEscalate: () => Promise<void>; onAdvance: () => Promise<void> }>) {
+  const [agent, setAgent] = useState('');
+  const [confirmClose, setConfirmClose] = useState(false);
+  useEffect(() => { setAgent(''); setConfirmClose(false); }, [caseId, state]);
+  const normalized = state.toLowerCase();
+  const advanceLabel = normalized === 'resolved' ? (confirmClose ? '再次确认关闭' : '关闭工单')
+    : normalized === 'closed' ? '重新打开' : '完成工单';
+  const advance = () => {
+    if (normalized === 'resolved' && !confirmClose) { setConfirmClose(true); return; }
+    void onAdvance();
+  };
+  return <section className="supportcontextactions" aria-labelledby="supportactiontitle">
+    <strong id="supportactiontitle">操作</strong>
+    <label><span>转交处理人</span><select aria-label="转交处理人" value={agent} disabled={!canAssign || pending}
+      onChange={(event) => setAgent(event.target.value)}><option value="">请选择可用坐席</option>
+      {agents.filter(({ state: agentState }) => agentState === 'available').map((item) =>
+        <option key={item.id} value={item.id}>{shortIdentifier(item.membership_id)} · {item.capacity} 容量</option>)}</select></label>
+    <div>
+      <button type="button" disabled={!canAssign || pending || agent.length === 0} onClick={() => { void onAssign(agent); }}>确认转交</button>
+      <button type="button" disabled={!canEscalate || pending} onClick={() => { void onEscalate(); }}>升级至平台支持</button>
+      <button type="button" disabled={!canAdvance || pending} onClick={advance}>{pending ? '处理中…' : advanceLabel}</button>
+    </div>
+    <p role="status" aria-live="polite">{error ?? (!canAssign && !canEscalate && !canAdvance ? '当前身份没有工单操作权限' : '所有操作都会写入工单记录')}</p>
+  </section>;
 }
 
 function PriorityReview({ priority, canReview, reviewing, error, onReview }: Readonly<{
@@ -107,7 +141,32 @@ function historyDetail(item: SupportHistory): string {
     return `${supportPriorityGrade(evidence.priority)} · ${supportPriorityLabel(evidence.priority)}`;
   }
   if (item.kind === 'attachment.uploaded' && typeof evidence.name === 'string') return evidence.name;
+  if ((item.kind === 'assigned' || item.kind === 'reassigned') && typeof evidence.agent === 'string') return `处理人 ${shortIdentifier(evidence.agent)}`;
+  if (item.kind === 'platform.escalated') return '目标：平台支持';
   return `操作人 ${shortIdentifier(item.actor_id ?? '系统')}`;
+}
+
+function orderStateLabel(value: string): string {
+  const labels: Readonly<Record<string, string>> = { active: '进行中', cancelled: '已取消', completed: '已完成', pending: '待处理' };
+  return labels[value.toLowerCase()] ?? value;
+}
+
+function paymentStateLabel(value: string): string {
+  const labels: Readonly<Record<string, string>> = { unpaid: '未支付', paid: '未退款', partially_refunded: '部分退款',
+    refunded: '已退款', cancelled: '已取消' };
+  return labels[value.toLowerCase()] ?? value;
+}
+
+function fulfillmentStateLabel(value: string): string {
+  const labels: Readonly<Record<string, string>> = { pending: '待履约', allocated: '待发货', shipped: '运输中',
+    delivered: '已送达', completed: '已完成', cancelled: '已取消' };
+  return labels[value.toLowerCase()] ?? value;
+}
+
+function slaLabel(ticket: SupportCase): string {
+  if (ticket.response_due_at === null && ticket.resolution_due_at === null) return '暂无策略';
+  if (ticket.response_due_at !== null) return `响应 ${supportTime(ticket.response_due_at)}`;
+  return `解决 ${supportTime(ticket.resolution_due_at)}`;
 }
 
 function ContextSection({ title, children }: Readonly<{ title?: string; children: ReactNode }>) {

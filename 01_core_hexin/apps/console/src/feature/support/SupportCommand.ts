@@ -1,4 +1,5 @@
-import { createFetchSupportAttachmentsCreate, createFetchSupportCasesCreate, createFetchSupportCasesUpdate,
+import { createFetchSupportAssignmentsManage, createFetchSupportAttachmentsCreate, createFetchSupportCasesClose,
+  createFetchSupportCasesCreate, createFetchSupportCasesReopen, createFetchSupportCasesUpdate,
   createFetchSupportMessagesSend } from '@shop/sdk/support';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { consoleCommand } from '../../shared/api/Client';
@@ -10,6 +11,9 @@ const casesCreate = createFetchSupportCasesCreate(appConfig.apiBaseUrl);
 const messagesSend = createFetchSupportMessagesSend(appConfig.apiBaseUrl);
 const casesUpdate = createFetchSupportCasesUpdate(appConfig.apiBaseUrl);
 const attachmentsCreate = createFetchSupportAttachmentsCreate(appConfig.apiBaseUrl);
+const assignmentsManage = createFetchSupportAssignmentsManage(appConfig.apiBaseUrl);
+const casesClose = createFetchSupportCasesClose(appConfig.apiBaseUrl);
+const casesReopen = createFetchSupportCasesReopen(appConfig.apiBaseUrl);
 const MESSAGE_LIMIT = 4000;
 const ATTACHMENT_LIMIT = 1024 * 1024;
 const ATTACHMENT_TYPES = new Set(['image/jpeg', 'image/png', 'application/pdf', 'text/plain']);
@@ -63,6 +67,53 @@ export function canReviewSupportCase(context: ConsoleContext): boolean {
   return context.session.csrf !== undefined
     && context.session.permissions.includes('support.case.manage')
     && context.session.capabilities.includes('support.cases.update');
+}
+
+export function canAssignSupportCase(context: ConsoleContext): boolean {
+  return context.session.csrf !== undefined
+    && context.session.permissions.includes('support.assignment.manage')
+    && context.session.capabilities.includes('support.assignments.manage');
+}
+
+export function canEscalateSupportCase(context: ConsoleContext, caseState: string): boolean {
+  return canReviewSupportCase(context) && !['resolved', 'closed'].includes(caseState.trim().toLowerCase());
+}
+
+export function canAdvanceSupportCase(context: ConsoleContext, caseState: string): boolean {
+  const capability = caseState.trim().toLowerCase() === 'resolved' ? 'support.cases.close'
+    : caseState.trim().toLowerCase() === 'closed' ? 'support.cases.reopen' : 'support.cases.update';
+  return context.session.csrf !== undefined
+    && context.session.permissions.includes('support.case.manage')
+    && context.session.capabilities.includes(capability);
+}
+
+export async function assignSupportCase(context: ConsoleContext, caseId: string, caseVersion: number, agentId: string,
+  signal?: AbortSignal) {
+  if (!canAssignSupportCase(context)) throw new Error('SUPPORT_ASSIGNMENT_NOT_AVAILABLE');
+  return assignmentsManage({ path: { assignmentid: `assignment:${crypto.randomUUID()}` },
+    body: { case: caseId, agent: agentId, reason: 'manual-transfer' } }, consoleCommand(context.scope, {
+    accessVersion: context.session.accessVersion, expectedVersion: caseVersion, csrfToken: context.session.csrf!,
+    ...(signal === undefined ? {} : { signal }),
+  }));
+}
+
+export async function escalateSupportCase(context: ConsoleContext, caseId: string, caseVersion: number, caseState: string,
+  signal?: AbortSignal) {
+  if (!canEscalateSupportCase(context, caseState)) throw new Error('SUPPORT_ESCALATION_NOT_AVAILABLE');
+  return SupportCaseSchema.parse(await casesUpdate({ path: { caseid: caseId }, body: { escalation: 'platform' } },
+    consoleCommand(context.scope, { accessVersion: context.session.accessVersion, expectedVersion: caseVersion,
+      csrfToken: context.session.csrf!, ...(signal === undefined ? {} : { signal }) })));
+}
+
+export async function advanceSupportCase(context: ConsoleContext, caseId: string, caseVersion: number, caseState: string,
+  signal?: AbortSignal) {
+  if (!canAdvanceSupportCase(context, caseState)) throw new Error('SUPPORT_LIFECYCLE_NOT_AVAILABLE');
+  const command = consoleCommand(context.scope, { accessVersion: context.session.accessVersion, expectedVersion: caseVersion,
+    csrfToken: context.session.csrf!, ...(signal === undefined ? {} : { signal }) });
+  const state = caseState.trim().toLowerCase();
+  if (state === 'resolved') return SupportCaseSchema.parse(await casesClose({ path: { caseid: caseId } }, command));
+  if (state === 'closed') return SupportCaseSchema.parse(await casesReopen({ path: { caseid: caseId } }, command));
+  return SupportCaseSchema.parse(await casesUpdate({ path: { caseid: caseId }, body: { state: 'resolved' } }, command));
 }
 
 export async function reviewSupportPriority(context: ConsoleContext, caseId: string, caseVersion: number,

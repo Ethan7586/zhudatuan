@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { OperationActions, OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import { requireAccess, rowResult } from '../../../../foundation/application/ModuleOperations';
 import type { OperationRequest } from '../../../../foundation/application/OperationHandler';
@@ -15,7 +16,9 @@ export function closeTicketOperations(ports: SupportPortFactory): OperationActio
 
 async function update(request: OperationRequest, database: OperationDatabase, ports: SupportPortFactory) {
   const access = requireAccess(request); const body = bodyRecord(request); const id = request.input.path.caseid!;
-  const current = await load(database, id, access.scope.id); const state = body.state === undefined ? current.state : ticketState(body.state);
+  const current = await load(database, id, access.scope.id); const escalation = escalationTarget(body.escalation);
+  if (escalation !== null && body.state !== undefined) throw new Error('SUPPORT_ESCALATION_STATE_AMBIGUOUS');
+  const state = escalation === null ? (body.state === undefined ? current.state : ticketState(body.state)) : 'waiting';
   if (request.input.expectedVersion === undefined) throw new Error('EXPECTED_VERSION_REQUIRED');
   if (request.input.expectedVersion !== current.version) throw new Error('VERSION_CONFLICT');
   if (state !== current.state) current.aggregate.requireTransition(state);
@@ -33,22 +36,32 @@ async function update(request: OperationRequest, database: OperationDatabase, po
   if (body.subject !== undefined) await database.query(`update support.conversation set subject=$2,updated_at=clock_timestamp(),version=version+1
     where id=$1`, [current.conversation, textField(body, 'subject')]);
   const updated = result.rows[0] as Readonly<Record<string, unknown>>;
+  if (escalation !== null) {
+    const created = await database.query(`insert into support.escalation(id,ticket_id,reason,target,state,created_at,scope_id)
+      values($1,$2,'manual-platform',$3,'open',clock_timestamp(),$4)
+      on conflict(ticket_id,reason) do nothing returning id`, [`escalation:${randomUUID()}`, id, escalation, current.scope]);
+    if (!created.rows[0]) throw new Error('SUPPORT_ESCALATION_ALREADY_OPEN');
+  }
   if (priorityReviewed) await Promise.all([
     ...(updated.response_due_at === null ? [] : [ports(database).enqueue('supportsla', current.scope,
       { ticket: id, phase: 'response' }, String(updated.response_due_at), `job:sla:response:${id}:v${current.version + 1}`)]),
     ...(updated.resolution_due_at === null ? [] : [ports(database).enqueue('supportsla', current.scope,
       { ticket: id, phase: 'resolution' }, String(updated.resolution_due_at), `job:sla:resolution:${id}:v${current.version + 1}`)]),
   ]);
-  await ports(database).history(id, current.scope, priorityReviewed ? 'priority.reviewed' : 'updated', access.actor.id,
-    { priority, previousPriority: current.priority, state, subject: body.subject ?? null });
+  await ports(database).history(id, current.scope, priorityReviewed ? 'priority.reviewed' : escalation === null ? 'updated' : 'platform.escalated',
+    access.actor.id, { priority, previousPriority: current.priority, state, subject: body.subject ?? null,
+      ...(escalation === null ? {} : { target: escalation }) });
   return rowResult(result);
 }
 
 async function transition(request: OperationRequest, database: OperationDatabase, target: TicketState, ports: SupportPortFactory) {
   const access = requireAccess(request); const id = request.input.path.caseid!; const current = await load(database, id, access.scope.id);
+  if (request.input.expectedVersion === undefined) throw new Error('EXPECTED_VERSION_REQUIRED');
+  if (request.input.expectedVersion !== current.version) throw new Error('VERSION_CONFLICT');
   current.aggregate.requireTransition(target);
   const result = await database.query(`update support.ticket set state=$3,updated_at=clock_timestamp(),version=version+1
-    where id=$1 and scope_id=$2 and version=$4 returning *`, [id, current.scope, target, current.version]);
+    where id=$1 and scope_id=$2 and version=$4 returning *`, [id, current.scope, target, request.input.expectedVersion]);
+  if (!result.rows[0]) throw new Error('VERSION_CONFLICT');
   await ports(database).history(id, current.scope, target, access.actor.id, {}); return rowResult(result);
 }
 
@@ -65,4 +78,9 @@ function ticketState(value: unknown): TicketState {
 }
 function ticketPriority(value: unknown): TicketPriority {
   if (!['low','normal','high','urgent'].includes(String(value))) throw new Error('SUPPORT_PRIORITY_INVALID'); return value as TicketPriority;
+}
+function escalationTarget(value: unknown): 'platform' | null {
+  if (value === undefined) return null;
+  if (value !== 'platform') throw new Error('SUPPORT_ESCALATION_TARGET_INVALID');
+  return value;
 }
