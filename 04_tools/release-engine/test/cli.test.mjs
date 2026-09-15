@@ -143,6 +143,10 @@ test('legacy baseline evidence requires one successful exact workflow receipt', 
   const expected = { sourceSha, artifactSha256, legacyRunId, legacyRunAttempt, target, expectedCurrent };
 
   assert.equal(assertLegacyDeploymentEvidence(metadata, log, expected).current, expectedCurrent);
+  assert.equal(
+    assertLegacyDeploymentEvidence(metadata, log.replace(`CURRENT_${receiptTarget}=`, `CURRENT_${target}=`), expected).current,
+    expectedCurrent
+  );
   assert.throws(
     () => assertLegacyDeploymentEvidence({ ...metadata, conclusion: 'failure' }, log, expected),
     (error) => error.code === 'CURRENT_BASELINE_LEGACY_RUN_UNTRUSTED'
