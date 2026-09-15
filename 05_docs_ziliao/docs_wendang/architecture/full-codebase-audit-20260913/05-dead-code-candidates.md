@@ -1429,7 +1429,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 运行结论 | 后续覆盖是演进，不是删除依据；错误改写会改变 handler 授权范围。 |
 | 数据/契约责任 | 确立 invitation 的组织归属和 operation→resource 数据所有权投影。 |
 | 可否删除 | 禁止 |
-| 二次复核 | 是：以真实数据库 current definition、grant 和跨组织反事实调用复核。 |
+| 二次复核 | RV-0052 已完成：维持 GX；静态复核确认邀请/Experience 资源反查 fail-closed，后续会话解析和就绪检查仍依赖函数族。真实定义、grant、跨组织与恢复未验证。 |
 
 - invitation/experience scope resolver 演进归 GX-0030。累计 G0 60、G1 83、G2 5、G3 0、GX 30；未删除任何文件。
 
