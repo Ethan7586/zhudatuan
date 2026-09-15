@@ -1049,7 +1049,7 @@
 | --- | --- |
 | 模块 | 契约定义 / Member / Access Pipeline |
 | 类型 | 业务授权、读写权限边界、持久数据修改 |
-| 严重级别 | **P1 候选**；未完成 RV-0008 前不作最终 P1 |
+| 严重级别 | **P1**；RV-0008 已于 2026-09-15 从契约/迁移、route authorization、写 handler 与 Console fixture 重新取证确认 |
 | 置信度 | 高：定义、生成绑定、前端调用、授权解算、handler 和数据库写入已连通；线上主体与调用记录未验证 |
 | 文件和精确位置 | packages/contract/definitions/operations.yml:678-717；contract/src/StorefrontMemberContract.test.ts:28-53；Commerce OperationController.ts:299-323；AccessPipeline.ts:52-99；PgAccessResolvers.ts:145-154；MemberCustomProfileOperations.ts:25-128；Console StorefrontMemberCommand.ts:9-28、StorefrontMemberRoute.test.tsx:305-316；migration 20260911010000:43-47、20260829060000:149-170 |
 | 当前行为 | [FACT][E-AU-007-004][E-AU-010-014] `member.storefront.config.manage` 与 `member.storefront.custom.manage` 均声明 `member.read`。Controller 把该 permission 原样交给 AccessPipeline；数据库 capability 解算按 Operation permission 匹配 membership grants。Console 测试上下文只有 `member.read` 仍拥有两 manage capabilities，真实命令调用 PUT；handler 会 INSERT/DELETE 标签、字段和会员资料；AU-010 重新核对 Authz 内核，未发现任何额外写权限判断 |
@@ -1064,7 +1064,9 @@
 | 预计修改范围 | operations 定义、生成物、受管迁移/发布绑定、权限/角色 fixtures、Console 和 Commerce 授权测试；不得顺手收窄其它权限 |
 | 验证方式 | 构造仅 `member.read`、仅确认写权限、显式deny、无entitlement、不同scope五组端到端请求；确认数据库前后值、审计记录与失败无部分写 |
 | 回滚方式 | 修复批次回退单一权限映射提交及对应受管迁移；保留原角色快照和数据备份，禁止在审计分支直接操作 |
-| 是否需要独立复核 | 是，RV-0008；必须重新从角色/entitlement到数据库写入取证 |
+| 是否需要独立复核 | 已完成 RV-0008；未来权限变更仍须独立变更后复核 |
+
+**RV-0008（二次独立复核，2026-09-15）：确认 P1。** 两个 PUT manage operation 在契约和受管 migration 都绑定 `member.read`；授权管线无额外写判定，handler 会持久 upsert/delete，Console fixture 明确将仅 `member.read` 视为正常写 capability 来源。详见 `records/AU-913-rv-0008-storefront-member-write-permission/summary.md`；未读取线上角色或数据。
 
 为什么不是 P0：本次没有读取线上角色、entitlement、请求日志或数据变更，不能证明正在发生事故。
 
