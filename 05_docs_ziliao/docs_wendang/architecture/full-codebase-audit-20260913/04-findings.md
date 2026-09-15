@@ -6531,3 +6531,26 @@
 | 验证方式 | 每一现行链接和命令可解析；历史统计具有日期/基线；当前身份/展示/交付边界与实际配置一致。 |
 | 回滚方式 | 回退独立文档和校验提交；不涉及制品、线上状态或业务数据。 |
 | 是否需要独立复核 | 否（P3）；若外部验收合同引用该说明，交由产品/发布 Owner 复核。 |
+
+## F-0341｜296 条需求展开索引声明的工作簿哈希与当前权威 mapping 不一致
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 需求追踪 / 人工派生索引 |
+| 类型 | 文档派生物漂移、需求可追溯性 |
+| 严重级别 | **P3** |
+| 置信度 | 高（文档哈希、当前工作簿散列、mapping 元数据与 generator 输出列表直接证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/福利商城296条需求修改点.md:1-5`；`05_docs_ziliao/docs_wendang/requirements/mapping.json:1-6`；`04_tools/tools/requirementgen/src/RequirementGenerator.ts:159-182`；`04_tools/scripts/audit/requirements.mjs:10-35`。 |
+| 当前行为 | 展开索引自称由 mapping 展开且引用 `6f5a…` 工作簿哈希；当前权威工作簿与 mapping 使用 `78cfc3…`。generator 生成 mapping/YAML，不生成该 Markdown；正式 requirement graph gate 不读取该索引。 |
+| 预期行为 | 若人工展开索引仍保留为需求阅读入口，必须以当前 authority/mapping 受控生成或明确标为历史快照，且哈希、数量、ID、操作/路由映射不得与机器权威源漂移。 |
+| 直接证据 | [FACT][E-AU-883-001] 文档首行源哈希 `6f5a…`；[FACT][E-AU-883-002] 当前工作簿和 mapping 的 `78cfc3…`；[FACT][E-AU-883-003] generator outputs 不含该 Markdown，gate inputs 也不含该 Markdown。 |
+| 调用链或运行入口 | 人工需求阅读/实施计划 → 展开索引；正式需求事实 → authority workbook → mapping/YAML/contract → `check:requirementgraph`。 |
+| 用户影响 | 使用该索引的人可能把过期的需求来源、路由、操作或完成状态当作当前事实，造成实现优先级、验收和发布判断偏差。 |
+| 数据影响 | 无直接数据写入。 |
+| 安全影响 | 无直接安全影响；错误需求映射可间接影响权限/支付等需求审查覆盖。 |
+| 根因 | 人工 Markdown 派生物未纳入 requirement generator 与正式 gate 的哈希/输出一致性检查。 |
+| 建议方向 | 从修复时最新 `zdt-next` 建立单一 requirement-human-index 批次：决定从当前 mapping 生成并在 gate 校验，或标记历史并将阅读入口指向 machine-readable authority；不得在同批更改需求内容、代码或发布状态。 |
+| 预计修改范围 | 该索引、requirement generator/检查或引用文档。 |
+| 验证方式 | 重生后哈希/数量/ID/操作/路由与 mapping 一致；故意改动 authority 或 mapping 时生成/检查稳定失败；状态不因存在映射而误升为验收/发布。 |
+| 回滚方式 | 回退独立文档/生成器/检查提交，保留历史快照。 |
+| 是否需要独立复核 | 否（P3）；若它被外部需求合同引用，需求 Owner 复核。 |
