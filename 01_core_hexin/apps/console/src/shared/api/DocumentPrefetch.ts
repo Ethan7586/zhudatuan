@@ -324,15 +324,17 @@ export function startDocumentPrefetch(
       value,
     };
   }));
-  preloadDirectSettingsRoute();
+  preloadDirectRoute();
 }
 
-function preloadDirectSettingsRoute(): void {
+function preloadDirectRoute(): void {
   const route = location.pathname.match(/\/settings\/(members|access|qualification|notification)\/?$/)?.[1];
   const loading = route === 'members' ? import('../../feature/member/MemberRoute')
     : route === 'access' ? import('../../feature/access/AccessRoute')
       : route === 'qualification' ? import('../../feature/qualification/QualificationRoute')
         : route === 'notification' ? import('../../feature/notification/NotificationRoute')
+          : /^\/scopes\/(platform|distributor|tenant|enterprise|mall)\/[^/]+\/support(?:\/[^/]+)?\/?$/.test(location.pathname)
+            ? import('../../feature/support/SupportRoute')
           : undefined;
   void loading?.catch(() => undefined);
 }

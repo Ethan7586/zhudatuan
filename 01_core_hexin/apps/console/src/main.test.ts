@@ -55,6 +55,7 @@ describe('console bootstrap document', () => {
     expect(prefetch).toContain('window.__consoleSupportPrefetch = tracked(');
     expect(prefetch).toContain("'/api/v1/support/cases?limit=50'");
     expect(prefetch).toContain("value.capabilities.includes('support.cases.read')");
+    expect(prefetch).toContain("import('../../feature/support/SupportRoute')");
   });
 
   it('starts only the current direct management read alongside scope hydration', () => {
