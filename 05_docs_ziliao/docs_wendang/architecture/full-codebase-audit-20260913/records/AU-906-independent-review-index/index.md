@@ -2,10 +2,10 @@
 
 - 基线：`5a1ce71eebbefaa826368a9e1dc17730f9363bc4`
 - 建立日期：2026-09-15
-- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011 至 RV-0018、RV-0024 至 RV-0075 已完成；F-0249 仍待独立复核，另有两个无对象标识的历史计数差额待追溯。**
+- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011 至 RV-0018、RV-0024 至 RV-0076 已完成；全部已定位 P1 候选均已复核，另有两个无对象标识的历史计数差额待追溯。**
 - 规则：每项复核从当前固定审计基线的运行入口/调用链重新取证；不得只复述首审报告。任何分歧保守保留，不降低风险等级。
 
-## P1 复核队列（18）
+## 高优先级复核队列（19）
 
 | 首审问题 | RV | 模块 | 第二轮最小入口 |
 | --- | --- | --- | --- |
@@ -27,6 +27,7 @@
 | F-0241 | RV-0024（已完成，降为 P2） | 券资金写入 | RPC → action permission → service-role/RLS/ledger |
 | F-0243 | RV-0025（已完成，确认 P1） | 财务动作凭证 | proof issuance → command transaction consumption |
 | F-0252 | RV-0026（已完成，降为 P2） | 财务对账 | candidate selection → ambiguity → ledger/result |
+| F-0249 | RV-0076（已完成，降为 P2） | Web Business API 启动兼容性门 | main warning catch → unit readiness → runtime drift/contract gap |
 
 ## GX（50 个已枚举）
 

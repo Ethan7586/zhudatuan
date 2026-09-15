@@ -4674,17 +4674,17 @@
 | --- | --- |
 | 模块 | Commerce Web Business API startup/数据库安全边界 |
 | 类型 | 正确性、可用性与权限启动门 |
-| 严重级别 | **P1** |
+| 严重级别 | **P2（RV-0076 已独立复核）**；主进程会吞掉首轮兼容性错误，但两套受控 systemd unit 均在 `ExecStartPost` 运行 readiness，后者会重新检查大多数状态并以失败阻止 unit 启动，不能维持“启动即持续暴露”的 P1 结论。 |
 | 置信度 | 高 |
 | 文件和精确位置 | `01_core_hexin/services/commerce/src/bootstrap/WebBusinessApiRuntime.ts:92-95`；`.../entry/WebBusinessApiMain.ts:20-36`；`.../WebBusinessApiRuntime.test.ts:17-59`。 |
-| 当前/预期 | runtime 对 `assertWebBusinessRuntimeCompatibility` 的任意 reject 使用 `.catch` 写出 warning，随后创建 handlers；entry 无额外健康门，继续 `bootstrapApi` 并 `listen`。预期为 dedicated role、recovery、schema/contract、表/函数、授权或 payment/finance 禁写边界不健康时在监听前 fail-closed。 |
-| 直接证据 | [FACT][E-AU-506-001] 兼容性调用的 catch 只执行 `console.warn('WEB_BUSINESS_RUNTIME_COMPATIBILITY_WARNING', cause)`；[FACT][E-AU-506-002] 同一函数之后继续构建 runtime；[FACT][E-AU-506-003] deployed entry 无条件基于返回的 runtime 调用 `listen`。 |
-| 调用链或运行入口 | `WebBusinessApiMain` → `createWebBusinessApiRuntime` → compatibility warning catch → `bootstrapApi` → `PublicCatalogHttpHandler` → `listen`。 |
-| 用户/数据/安全影响 | 配置、迁移或 DB grant 漂移时，API 可在不满足其声明安全前置条件的状态下暴露服务；可能表现为错误响应、不可预期写入或受限边界偏离。未验证生产存在不健康实例、实际越权、数据错误或日志告警可见性。 |
-| 根因 | 将启动兼容性断言视作非阻塞 observability warning，但没有独立的 fail-closed gate。 |
-| 建议方向 | 从当时最新主线建立单一修复分支；先以隔离数据库和真实 entry 验证是否有外部 supervisor gate，若无则使 incompatibility 阻止 runtime 返回/listen，并保留结构化运维诊断。 |
-| 验证/回滚 | 隔离数据库分别破坏 role、表/函数、forbidden grant、recovery 或 marker，断言进程在 listen 前退出；回滚为撤回单一 startup-gate 改动。 |
-| 是否需要独立复核 | **是**；P1 已加入 `records/AU-506-web-business-api-runtime-test/independent-review-queue.csv`，复核必须重新走 runtime→entry→外部健康门。 |
+| 当前/预期 | main 对首轮 compatibility reject 写 warning 后会创建 handlers 并 `listen`；但两套受控 unit 的 `ExecStartPost` 运行 ReadyMain，后者重查大多数状态，503 会使启动失败。预期为主进程、就绪状态与后续健康门对全部关键 compatibility 字段保持同一 fail-closed 语义。 |
+| 直接证据 | [FACT][E-AU-506-001] main catch 只写 warning；[FACT][E-AU-506-002] 后续创建 runtime；[FACT][E-AU-506-003] entry 调用 `listen`；[FACT][RV-0076] 两套 unit 都执行 ReadyMain，runtime health 对 helper reject 返回 503。 |
+| 调用链或运行入口 | `WebBusinessApiMain` → warning catch → `listen` → systemd `ExecStartPost` ReadyMain → `/health/ready` → `webBusinessRuntimeCompatibility`。 |
+| 用户/数据/安全影响 | 启动阶段大多数不兼容会被 unit 就绪钩子阻止。运行中 DB/权限漂移时，进程可继续监听但 readiness 为 503；contract checksum 漂移还可能绕过 helper。未验证生产实例、请求影响、数据错误或越权。 |
+| 根因 | 兼容性状态被分别用于主进程、readiness 与 release health；首轮 catch 与 `contract` 布尔聚合使三者并非完全同一门禁。 |
+| 建议方向 | 从当时最新主线建立单一运行时健康治理分支，先用隔离数据库确认系统监督器对 readiness 503 的反应，再统一启动/运行中门禁和 `contract` 负例。 |
+| 验证/回滚 | 隔离数据库分别破坏 role、表/函数、forbidden grant、recovery、marker 与单独 contract checksum，验证 ExecStartPost、运行中 readiness、supervisor 行为与请求拒绝；回滚为撤回单一治理提交。 |
+| 是否需要独立复核 | 已完成：RV-0076（2026-09-15）。重查 main、runtime module、ReadyMain、两套 systemd unit 和 release policy。运行中数据库状态漂移仍可使已监听进程继续服务而 readiness 返回 503；并且 F-0250 的 `contract` 状态未进入 helper reject 条件。二者均为 P2，不证明 P1 或 P0。 |
 
 ## F-0250｜Web Business API 查询运行契约却未以失败结果阻止启动
 
