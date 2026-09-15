@@ -4794,6 +4794,28 @@
 | 验证/回滚 | 在隔离构建中人为超过对应 app budget，确认 gate 失败；若已下线，确认 config schema/文档不再宣称保护。回滚为撤回单一 quality-policy change。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0331｜指标目录指向不存在的 telemetry/capacity 相对路径
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Documentation / metrics navigation |
+| 类型 | 配置来源链接、运行资料可达性 |
+| 严重级别 | **P3** |
+| 置信度 | 高（Markdown 相对路径解析后目标不存在；实际配置文件存在于不同目录） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/metrics/catalog.md:20`；实际配置：`02_platform_pingtai/config/telemetry.yml`、`02_platform_pingtai/config/capacity.yml`。 |
+| 当前/预期 | 指标目录将初始 SLO/capacity 链接写为 `../../config/telemetry.yml` 与 `../../config/capacity.yml`；从 `docs_wendang/metrics/` 解析会落到不存在的 `docs_wendang/config/`。预期是链接指向实际平台配置，或明确这是非运行参考。 |
+| 直接证据 | [FACT][E-AU-858-001] 两个相对目标文件均不存在；[FACT][E-AU-858-002] 固定基线中实际文件位于 `02_platform_pingtai/config/`，`RuntimeCatalog.generated.ts` 也将 cache/capacity 指为生成输入；[FACT][E-AU-858-003] telemetry SLO/redaction 键无运行消费者的独立问题已由 F-0261 记录。 |
+| 调用链或运行入口 | 人工指标/告警读者 → metrics catalog → SLO/capacity 配置；非运行时调用链。 |
+| 用户影响 | 操作者无法从指标目录抵达实际阈值/容量来源，可能使用不存在路径或把目录表当成唯一配置。 |
+| 数据影响 | 无直接数据影响。 |
+| 安全影响 | 无直接安全漏洞。 |
+| 根因 | 文档移动或目录重组后，相对路径未随平台配置实际位置更新。 |
+| 建议方向 | 从当时最新 `zdt-next` 建立单一 docs-metrics-navigation batch：修正两个链接并在目录中注明 metrics catalog 不替代 telemetry 的运行消费者；不调整任何阈值、告警、配置或运行代码。 |
+| 预计修改范围 | 单一 Markdown 文档和可选链接校验。 |
+| 验证方式 | Markdown 链接解析到现有配置文件；读者能区分指标目录、阈值配置和实际运行 consumer。 |
+| 回滚方式 | 回退独立文档链接提交。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0330｜机器规则台账把历史快照统计称为“当前”，遗漏固定基线新增入口
 
 | 字段 | 记录 |
