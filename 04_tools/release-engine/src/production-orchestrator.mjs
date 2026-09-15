@@ -3,6 +3,7 @@ import { promisify } from 'node:util';
 
 import { DeliveryError, invariant, redactDeliveryDetails } from './errors.mjs';
 import { evaluateReleaseBundle } from './delivery-reconcile.mjs';
+import { finalizePreparedSeal, requireFinalSealReceipt, resolvePreparedArtifact } from './oss.mjs';
 import { isTransientNetworkFailure } from './retry.mjs';
 import { digest } from './stable.mjs';
 
@@ -13,9 +14,95 @@ const CANONICAL = '/Users/Ethan/.codex/bin/zdt-delivery';
 
 export const RELEASE_REQUEST_SCHEMA = 'ai.delivery.production-release-request.v1';
 export const ORCHESTRATION_SCHEMA = 'ai.delivery.production-orchestration.v1';
+export const SEALED_CLOSURE_SCHEMA = 'zdt-automatic-artifact-closure/v2';
 export const ORCHESTRATION_STATES = Object.freeze([
   'REQUESTED', 'READINESS', 'PREPARING', 'RESUMING', 'SEALED', 'BUNDLE_READY', 'DEPLOYING', 'HEALTHY', 'FAILED_RETRYABLE', 'FAILED_BLOCKED',
 ]);
+
+export async function finalizeProductionClosureManifest(adapter, draft, options = {}, dependencies = {}) {
+  invariant(draft?.schemaVersion === 'zdt-automatic-artifact-closure/v1', 'CLOSURE_DRAFT_SCHEMA_INVALID', 'Closure draft schema is unsupported');
+  const sourceSha = exact(draft.sourceSha, SHA, 'CLOSURE_SOURCE_SHA_INVALID');
+  const controlPlaneSha = exact(options.controlPlaneSha, SHA, 'CLOSURE_CONTROL_SHA_INVALID');
+  const resolveSeal = dependencies.resolveSeal ?? (async ({ target, node }) => {
+    const prepared = await resolvePreparedArtifact(adapter, { sourceSha, target, node, allowLegacy: false }, dependencies);
+    const artifactDigest = prepared.manifest.artifact.sha256;
+    let recovered = false;
+    let seal;
+    try {
+      seal = await requireFinalSealReceipt(adapter, { sourceSha, target, node, artifactDigest, controlPlaneSha }, dependencies);
+    } catch (error) {
+      if (error?.code !== 'FINAL_SEAL_RECEIPT_MISSING' || error?.details?.resumeFrom !== 'RESUME_FROM_FINAL_SEAL_WRITE') throw error;
+      await finalizePreparedSeal(adapter, { sourceSha, target, node, artifactDigest, controlPlaneSha,
+        requestId: `closure-${sourceSha.slice(0, 16)}-${target}-${node}`.slice(0, 128), actorRole: 'release',
+        releaseRunner: options.releaseRunner ?? 'automatic-closure-finalizer' }, dependencies);
+      seal = await requireFinalSealReceipt(adapter, { sourceSha, target, node, artifactDigest, controlPlaneSha }, dependencies);
+      recovered = true;
+    }
+    return { artifactDigest, provenanceDigest: prepared.provenance.provenanceDigest, seal, recovered };
+  });
+  const waveNames = ['migrations', 'runtimes', 'frontends'];
+  const waves = Object.fromEntries(await Promise.all(waveNames.map(async (wave) => [wave, await Promise.all((draft.waves?.[wave] ?? []).map(async (placement) => {
+    const target = exact(placement.target, NAME, 'CLOSURE_TARGET_INVALID');
+    const node = exact(placement.node, NAME, 'CLOSURE_NODE_INVALID');
+    const resolved = await resolveSeal({ target, node, sourceSha, controlPlaneSha });
+    invariant(resolved?.seal?.receipt && resolved.seal.key?.control_plane_sha === controlPlaneSha,
+      'CLOSURE_FINAL_SEAL_IDENTITY_MISMATCH', 'Closure final Seal does not match its control plane');
+    return Object.freeze({ target, node, artifact_digest: resolved.artifactDigest, provenance_digest: resolved.provenanceDigest,
+      seal_control_sha: controlPlaneSha, seal_key: resolved.seal.key.seal_key,
+      final_seal_receipt_object: resolved.seal.object, final_seal_digest: resolved.seal.receipt.seal_digest,
+      seal_recovered: resolved.recovered === true });
+  }))])));
+  const entries = waveNames.flatMap((wave) => waves[wave].map((entry) => ({ wave, ...entry })));
+  const gate = entries.length === 0 ? Object.freeze({ schema: 'ai.delivery.release-bundle-gate.v1', sourceSha, controlPlaneSha,
+    allowDeploy: true, action: 'ALLOW_NOOP', components: [], nextSafeAction: 'accept-noop-closure' }) : evaluateReleaseBundle({
+    sourceSha, controlPlaneSha,
+    requiredComponents: entries.map((entry) => ({ componentId: componentId(entry), target: entry.target, physicalNode: entry.node,
+      artifactDigest: entry.artifact_digest, provenanceDigest: entry.provenance_digest, exactResource: entry.final_seal_receipt_object })),
+    componentStates: entries.map((entry) => ({ componentId: componentId(entry), sourceSha, controlPlaneSha, target: entry.target,
+      physicalNode: entry.node, artifactDigest: entry.artifact_digest, provenanceDigest: entry.provenance_digest,
+      exactResource: entry.final_seal_receipt_object, state: 'SEALED' })),
+  });
+  invariant(gate.allowDeploy === true, 'CLOSURE_BUNDLE_GATE_DENIED', 'Closure cannot succeed until every exact final Seal is present', {
+    components: gate.components, nextSafeAction: gate.nextSafeAction,
+  });
+  const unsigned = { schemaVersion: SEALED_CLOSURE_SCHEMA, sourceSha, beforeSha: draft.beforeSha, controlPlaneSha,
+    targets: draft.targets, reconciliation: draft.reconciliation, preparations: draft.preparations, waves,
+    bundleGate: gate, finalizedAt: (dependencies.now?.() ?? new Date()).toISOString() };
+  return Object.freeze({ ...unsigned, closureDigest: digest(unsigned) });
+}
+
+export function verifyProductionClosureManifest(value, expectedSourceSha = null) {
+  invariant(value?.schemaVersion === SEALED_CLOSURE_SCHEMA, 'SEALED_CLOSURE_SCHEMA_INVALID', 'Only a finalized v2 closure may deploy');
+  const sourceSha = exact(value.sourceSha, SHA, 'CLOSURE_SOURCE_SHA_INVALID');
+  if (expectedSourceSha !== null) invariant(sourceSha === expectedSourceSha, 'SEALED_CLOSURE_SOURCE_MISMATCH', 'Closure source differs from the deployment request');
+  const controlPlaneSha = exact(value.controlPlaneSha, SHA, 'CLOSURE_CONTROL_SHA_INVALID');
+  const waveNames = ['migrations', 'runtimes', 'frontends'];
+  const seen = new Set();
+  const entries = [];
+  for (const wave of waveNames) {
+    invariant(Array.isArray(value.waves?.[wave]), 'SEALED_CLOSURE_WAVE_MISSING', `Closure wave is missing: ${wave}`);
+    for (const entry of value.waves[wave]) {
+      exact(entry.target, NAME, 'CLOSURE_TARGET_INVALID'); exact(entry.node, NAME, 'CLOSURE_NODE_INVALID');
+      exact(entry.artifact_digest, /^sha256:[a-f0-9]{64}$/, 'CLOSURE_ARTIFACT_DIGEST_INVALID');
+      exact(entry.provenance_digest, /^sha256:[a-f0-9]{64}$/, 'CLOSURE_PROVENANCE_DIGEST_INVALID');
+      invariant(entry.seal_control_sha === controlPlaneSha, 'CLOSURE_SEAL_CONTROL_MISMATCH', 'Closure Seal control SHA differs');
+      exact(entry.seal_key, /^sha256:[a-f0-9]{64}$/, 'CLOSURE_SEAL_KEY_INVALID');
+      invariant(typeof entry.final_seal_receipt_object === 'string' && entry.final_seal_receipt_object.endsWith('/final-seal.json'),
+        'CLOSURE_FINAL_SEAL_OBJECT_INVALID', 'Closure final Seal object is invalid');
+      exact(entry.final_seal_digest, /^sha256:[a-f0-9]{64}$/, 'CLOSURE_FINAL_SEAL_DIGEST_INVALID');
+      const placement = `${entry.target}/${entry.node}`;
+      invariant(!seen.has(placement), 'CLOSURE_PLACEMENT_DUPLICATE', 'Closure contains a duplicate target placement');
+      seen.add(placement); entries.push({ wave, ...entry });
+    }
+  }
+  const unsigned = { ...value }; delete unsigned.closureDigest;
+  invariant(value.closureDigest === digest(unsigned), 'SEALED_CLOSURE_DIGEST_MISMATCH', 'Closure manifest digest differs');
+  invariant(value.bundleGate?.allowDeploy === true && value.bundleGate?.controlPlaneSha === controlPlaneSha,
+    'SEALED_CLOSURE_GATE_DENIED', 'Closure bundle gate does not authorize deployment');
+  return Object.freeze({ ...value, deploymentEntries: Object.freeze(entries) });
+}
+
+function componentId(entry) { return `${entry.wave}:${entry.target}:${entry.node}`; }
 
 export async function createProductionReleaseRequest(spec, dependencies = {}) {
   const sourceSha = exact(spec.sourceSha, SHA, 'RELEASE_SOURCE_SHA_INVALID');

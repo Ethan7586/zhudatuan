@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
-import { createOssClient, finalizePreparedSeal, findFinalSealReceipt, inspectPreparedArtifact, publishPreparedArtifact, publishWorkflowEvidence, recoverPreparedArtifact, requireFinalSealReceipt, resolveDownloadEndpoint, resolvePreparedArtifact } from '../src/oss.mjs';
+import { createOssClient, finalizePreparedSeal, findFinalSealReceipt, inspectPreparedArtifact, publishPreparedArtifact, publishWorkflowEvidence, recoverPreparedArtifact, requireFinalSealReceipt, resolveDownloadEndpoint, resolveExactFinalSealReceipt, resolvePreparedArtifact } from '../src/oss.mjs';
 import { runCommand } from '../src/runner.mjs';
 import { digest, prettyStableJson, sha256 } from '../src/stable.mjs';
 
@@ -165,6 +165,11 @@ test('OSS final Seal receipt is the reusable authority for status and deployment
   assert.equal((await findFinalSealReceipt(fixture.adapter, {
     sourceSha: fixture.sourceSha, target: 'app', node: 'node-a',
   }, { client })).object, required.object);
+  const resolvedAcrossControlPlaneUpgrade = await resolveExactFinalSealReceipt(fixture.adapter, {
+    sourceSha: fixture.sourceSha, target: 'app', node: 'node-a', controlPlaneSha: 'e'.repeat(40),
+  }, { client });
+  assert.equal(resolvedAcrossControlPlaneUpgrade.object, required.object);
+  assert.equal(resolvedAcrossControlPlaneUpgrade.key.control_plane_sha, 'b'.repeat(40));
   await assert.rejects(
     () => requireFinalSealReceipt(fixture.adapter, {
       sourceSha: fixture.sourceSha, target: 'app', node: 'node-a', artifactDigest: published.artifactIdentity,

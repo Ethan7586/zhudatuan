@@ -49,6 +49,16 @@ jobs:
       has_runtimes: ${{ steps.closure.outputs.has_runtimes }}
       has_frontends: ${{ steps.closure.outputs.has_frontends }}
     steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.22.0
+          cache: npm
+      - name: Load orchestration dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Resolve exact successful automatic closure
         id: closure
         env:
@@ -61,25 +71,27 @@ jobs:
           runs="$RUNNER_TEMP/automatic-closure-runs.json"
           gh run list --repo "$GITHUB_REPOSITORY" --workflow auto-prepare-artifacts.yml --branch zdt-next --limit 100 \
             --json databaseId,headSha,event,status,conclusion,url,createdAt > "$runs"
-          run_id="$(node -e "const r=require(process.argv[1]);const s=process.env.SOURCE_SHA;const x=r.find(v=>v.headSha===s&&v.status==='completed'&&v.conclusion==='success');if(x)process.stdout.write(String(x.databaseId))" "$runs")"
-          if [ -z "$run_id" ]; then
-            while read -r candidate_id; do
-              [ -n "$candidate_id" ] || continue
-              artifact_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${candidate_id}/artifacts" \
-                --jq ".artifacts[] | select(.name == \"automatic-artifact-closure-${SOURCE_SHA}\") | .id" | head -1)"
-              if [ -n "$artifact_id" ]; then run_id="$candidate_id"; break; fi
-            done < <(node -e "const r=require(process.argv[1]);for(const v of r)if(v.event==='workflow_dispatch'&&v.status==='completed'&&v.conclusion==='success')console.log(v.databaseId)" "$runs")
-          fi
-          [ -n "$run_id" ] || { echo "No successful automatic closure exists for $SOURCE_SHA" >&2; exit 1; }
-          closure_dir="$RUNNER_TEMP/automatic-closure-$run_id"
-          mkdir -p "$closure_dir"
-          gh run download "$run_id" --repo "$GITHUB_REPOSITORY" --name "automatic-artifact-closure-$SOURCE_SHA" --dir "$closure_dir"
+          run_id=''
+          closure_dir=''
+          while read -r candidate_id; do
+            [ -n "$candidate_id" ] || continue
+            artifact_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${candidate_id}/artifacts" \
+              --jq ".artifacts[] | select(.name == \"automatic-artifact-closure-${SOURCE_SHA}\") | .id" | head -1)"
+            [ -n "$artifact_id" ] || continue
+            candidate_dir="$RUNNER_TEMP/automatic-closure-$candidate_id"
+            mkdir -p "$candidate_dir"
+            gh run download "$candidate_id" --repo "$GITHUB_REPOSITORY" --name "automatic-artifact-closure-$SOURCE_SHA" --dir "$candidate_dir"
+            if CLOSURE="$candidate_dir/closure.json" node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import { verifyProductionClosureManifest } from './04_tools/release-engine/src/production-orchestrator.mjs';
+          verifyProductionClosureManifest(JSON.parse(readFileSync(process.env.CLOSURE, 'utf8')), process.env.SOURCE_SHA);
+          NODE
+            then run_id="$candidate_id"; closure_dir="$candidate_dir"; break; fi
+          done < <(node -e "const r=require(process.argv[1]);const s=process.env.SOURCE_SHA;for(const v of r)if(v.status==='completed'&&v.conclusion==='success'&&(v.headSha===s||v.event==='workflow_dispatch'))console.log(v.databaseId)" "$runs")
+          [ -n "$run_id" ] || { echo "No successful finalized v2 closure exists for $SOURCE_SHA" >&2; exit 1; }
           CLOSURE="$closure_dir/closure.json" GITHUB_OUTPUT="$GITHUB_OUTPUT" node <<'NODE'
           const fs = require('node:fs');
           const closure = JSON.parse(fs.readFileSync(process.env.CLOSURE, 'utf8'));
-          if (closure.schemaVersion !== 'zdt-automatic-artifact-closure/v1' || closure.sourceSha !== process.env.SOURCE_SHA) {
-            throw new Error('Automatic closure identity does not match the deployment request');
-          }
           const names = ['migrations', 'runtimes', 'frontends'];
           let count = 0;
           for (const name of names) {
@@ -114,6 +126,10 @@ jobs:
       release_target: ${{ matrix.target }}
       release_node: ${{ matrix.node }}
       operation: deploy
+      seal_control_sha: ${{ matrix.seal_control_sha }}
+      seal_artifact_digest: ${{ matrix.artifact_digest }}
+      seal_key: ${{ matrix.seal_key }}
+      seal_receipt_object: ${{ matrix.final_seal_receipt_object }}
     secrets:
       ZDT_RUNNER_READ_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
       ZDT_RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
@@ -139,6 +155,10 @@ jobs:
       release_target: ${{ matrix.target }}
       release_node: ${{ matrix.node }}
       operation: deploy
+      seal_control_sha: ${{ matrix.seal_control_sha }}
+      seal_artifact_digest: ${{ matrix.artifact_digest }}
+      seal_key: ${{ matrix.seal_key }}
+      seal_receipt_object: ${{ matrix.final_seal_receipt_object }}
     secrets:
       ZDT_RUNNER_READ_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
       ZDT_RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
@@ -164,6 +184,10 @@ jobs:
       release_target: ${{ matrix.target }}
       release_node: ${{ matrix.node }}
       operation: deploy
+      seal_control_sha: ${{ matrix.seal_control_sha }}
+      seal_artifact_digest: ${{ matrix.artifact_digest }}
+      seal_key: ${{ matrix.seal_key }}
+      seal_receipt_object: ${{ matrix.final_seal_receipt_object }}
     secrets:
       ZDT_RUNNER_READ_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
       ZDT_RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}

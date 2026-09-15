@@ -211,10 +211,12 @@ test('deployment obtains exact final Seal and Writer Lease before SSH while pres
     readFile(new URL('.github/workflows/deploy-prepared-aliyun.yml', root), 'utf8'),
     readFile(new URL('04_tools/release-engine/remote/agent.mjs', root), 'utf8'),
   ]);
-  const finalSeal = engine.indexOf('await requireFinalSealReceipt(adapter');
+  const finalSeal = engine.indexOf('await resolveExactFinalSealReceipt(adapter');
   const writer = engine.indexOf('await writerStore.run(writerOptions');
   const remote = engine.indexOf('const remote = await runCommand(', writer);
   assert.ok(finalSeal >= 0 && writer > finalSeal && remote > writer);
+  assert.match(engine, /: authoritativeSeal\.key;/);
+  assert.match(engine, /controlPlaneSha: sealIdentity\.control_plane_sha/);
   assert.match(engine, /operation: candidateOnly \? 'validate-candidate' : 'deploy'/);
   assert.match(engine, /requestId: releaseRequest\.request_id, runnerRequestId: runnerRequest\.request_id/);
   assert.match(workflow, /--writer-identity "\$RUNNER_NAME"/);

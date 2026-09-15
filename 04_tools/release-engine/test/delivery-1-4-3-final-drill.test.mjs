@@ -70,7 +70,7 @@ test('1.4.2 compatibility is read-only and cannot bypass the 1.4.3 Seal path', a
     readFile(join(root, '04_tools/release-engine/remote/agent.mjs'), 'utf8'),
   ]);
   assert.match(engine, /resolvePreparedArtifact\(adapter, \{ \.\.\.options, node: requestedNode, allowLegacy: false \}\)/);
-  assert.ok(engine.indexOf('await requireFinalSealReceipt(adapter') < engine.indexOf('await writerStore.run(writerOptions'));
+  assert.ok(engine.indexOf('await resolveExactFinalSealReceipt(adapter') < engine.indexOf('await writerStore.run(writerOptions'));
   assert.match(guide, /1\.4\.2 制品与历史回执保持只读/);
   assert.match(guide, /不能自动生成新 Seal/);
   assert.doesNotMatch(workflow, /npm ci|\brelease\s+--\s+(?:build|package|publish)\b/);

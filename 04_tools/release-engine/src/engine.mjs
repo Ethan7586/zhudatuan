@@ -9,7 +9,7 @@ import { DeliveryError, invariant } from './errors.mjs';
 import { assertBuildRefIsCheckedOut, assertWorktreeClean, currentHead } from './git.mjs';
 import { layerCommand } from './layer.mjs';
 import { acquireLocks } from './lock.mjs';
-import { finalizePreparedSeal, inspectPreparedArtifact, ossClientFromEnvironment, publishPreparedArtifact, publishWorkflowEvidence, recoverPreparedArtifact, requireFinalSealReceipt, resolveDownloadEndpoint, resolvePreparedArtifact } from './oss.mjs';
+import { finalizePreparedSeal, inspectPreparedArtifact, ossClientFromEnvironment, publishPreparedArtifact, publishWorkflowEvidence, recoverPreparedArtifact, requireFinalSealReceipt, resolveDownloadEndpoint, resolveExactFinalSealReceipt, resolvePreparedArtifact } from './oss.mjs';
 import { createPlan } from './planner.mjs';
 import { runCommand } from './runner.mjs';
 import { markRunnerFinished, markRunnerStarted, routeBuildRequest } from './runner-routing.mjs';
@@ -343,11 +343,24 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
   const remoteAgent = transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs';
   const artifact = resolution.manifest.artifact;
   const runtimeManifest = resolution.manifest.runtimeManifest;
-  const authoritativeSeal = candidateOnly ? null : await requireFinalSealReceipt(adapter, {
-    ...options, sourceSha, target, node: requestedNode, artifactDigest: artifact.sha256, controlPlaneSha: controlSha,
+  const manifestSealControlSha = options.sealControlSha;
+  const authoritativeSeal = candidateOnly ? null : manifestSealControlSha
+    ? await requireFinalSealReceipt(adapter, { ...options, sourceSha, target, node: requestedNode,
+      artifactDigest: required(options.sealArtifactDigest, 'PREPARED_DEPLOY_SEAL_ARTIFACT_DIGEST_REQUIRED'),
+      controlPlaneSha: manifestSealControlSha })
+    : await resolveExactFinalSealReceipt(adapter, { ...options, sourceSha, target, node: requestedNode });
+  if (authoritativeSeal) {
+    invariant(authoritativeSeal.key.artifact_digest === artifact.sha256, 'PREPARED_DEPLOY_SEAL_ARTIFACT_MISMATCH', 'Closure Seal artifact differs from the prepared artifact');
+    if (options.sealKey) invariant(authoritativeSeal.key.seal_key === options.sealKey, 'PREPARED_DEPLOY_SEAL_KEY_MISMATCH', 'Closure Seal key differs from OSS authority');
+    if (options.sealReceiptObject) invariant(authoritativeSeal.object === options.sealReceiptObject,
+      'PREPARED_DEPLOY_SEAL_OBJECT_MISMATCH', 'Closure final Seal object differs from OSS authority');
+  }
+  const sealIdentity = candidateOnly
+    ? createSealKey({ sourceSha, releaseTarget: target, physicalNode: requestedNode, artifactDigest: artifact.sha256, controlPlaneSha: controlSha })
+    : authoritativeSeal.key;
+  const runnerRequest = createRunnerRequest({
+    sourceSha, releaseTarget: target, physicalNode: requestedNode, controlPlaneSha: sealIdentity.control_plane_sha,
   });
-  const runnerRequest = createRunnerRequest({ sourceSha, releaseTarget: target, physicalNode: requestedNode, controlPlaneSha: controlSha });
-  const sealIdentity = createSealKey({ sourceSha, releaseTarget: target, physicalNode: requestedNode, artifactDigest: artifact.sha256, controlPlaneSha: controlSha });
   const releaseRequest = createReleaseWriterRequest({
     runnerRequestId: runnerRequest.request_id,
     operation: candidateOnly ? 'validate-candidate' : 'deploy',
@@ -504,9 +517,9 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
   };
   });
   if (writerExecution.value?.reusedWriterResult === true) {
-    const finalSeal = await requireFinalSealReceipt(adapter, {
+    const finalSeal = candidateOnly ? await requireFinalSealReceipt(adapter, {
       ...options, sourceSha, target, node: requestedNode, artifactDigest: artifact.sha256, controlPlaneSha: controlSha,
-    });
+    }) : authoritativeSeal;
     return {
       schema: candidateOnly ? 'ai.delivery.prepared-candidate.v1' : 'ai.delivery.prepared-deploy.v1',
       project: adapter.project, sourceSha, artifactSourceSha: sourceSha,
