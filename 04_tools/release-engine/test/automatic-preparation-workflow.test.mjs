@@ -26,6 +26,10 @@ test('automatic closure runs after zdt-next pushes or an exact historical replay
   assert.equal(oneTarget.jobs.prepare.with.build_runner, 'auto');
   assert.equal(oneTarget.jobs.seal.uses, './.github/workflows/deploy-prepared-aliyun.yml');
   assert.equal(oneTarget.jobs.seal.with.operation, 'validate-candidate');
+  const finalizerNode = automatic.jobs.finalize.steps.find((step) => step.uses === 'actions/setup-node@v6');
+  assert.equal(finalizerNode.with['node-version'], '22.22.0');
+  assert.equal(finalizerNode.with.cache, undefined);
+  assert.equal(automatic.jobs.finalize.steps.some((step) => /npm ci/.test(step.run ?? '')), false);
   assert.match(source, /automaticClosureSelection/);
   assert.match(source, /commitMetadata/);
   assert.match(source, /assertGitAncestor/);
