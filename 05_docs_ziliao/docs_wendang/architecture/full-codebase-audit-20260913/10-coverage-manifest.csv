@@ -3401,7 +3401,7 @@
 "04_tools/scripts/check/supplychain.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "04_tools/scripts/check/tests.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "04_tools/scripts/check/transactions.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
-"04_tools/scripts/check/web-business-deployment.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
+"04_tools/scripts/check/web-business-deployment.mjs","工具/scripts","JavaScript源码","已深入审阅","2026-09-15","AU-796 public path/Caddy/delivery/systemd/runtime/operation closure contract；Caddy matcher absent","人工/quality Web Business deployment contract入口待复核","P2/F-0309","[G0] Web Business deployment gate；obsolete Caddy topology blocks verification","是（F-0309独立复核）"
 "04_tools/scripts/data/cleanup-supplier-business-simulation.sql","工具/scripts","SQL","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "04_tools/scripts/data/seed-supplier-business-simulation.sql","工具/scripts","SQL","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "04_tools/scripts/evidence/frontendmanifest.mjs","工具/scripts","JavaScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","根npm脚本或内部工具workspace","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"

@@ -4816,6 +4816,28 @@
 | 回滚方式 | 回退独立 checker/fixture 提交。 |
 | 是否需要独立复核 | 是（架构边界门禁）。 |
 
+## F-0309｜Web Business 发布门禁要求已不存在的 Caddy matcher，公开业务路由 ownership 无法验证
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Web Business API / release contract |
+| 类型 | 发布可验证性、公开 API 路由边界 |
+| 严重级别 | **P2** |
+| 置信度 | 高（checker matcher、当前 Caddy 与运行输出直接证据；线上状态未验证） |
+| 文件和精确位置 | `04_tools/scripts/check/web-business-deployment.mjs:53-58,279-284`；`02_platform_pingtai/infrastructure/zhudatuan/aliyun/Caddyfile:97-110`。 |
+| 当前/预期 | checker要求 `@webBusinessApi path …`，再以历史 `api.zhudatuan.com` block继续校验；当前Caddy没有该 matcher，`api.fufu.wang` site仅声明 `reverse_proxy localhost:3001`。固定基线抛 `WEB_BUSINESS_CADDY_MATCHER_MISSING`，后续 delivery/systemd/role/operation closure无执行。预期是当前正式 API site能以结构化配置证明每个公开 business path 的 owner、method、upstream和拒绝路径。 |
+| 直接证据 | [FACT][E-AU-796-001] 定向命令在57行失败；[FACT][E-AU-796-002] checker regex要求旧单行 matcher，现行Caddy的 API site无此声明并已使用fufu host/3001 upstream。 |
+| 调用链或运行入口 | Web Business release verification → static Caddy/delivery/runtime checker；实际API request routing未由本批运行。 |
+| 用户影响 | 团队无法用该门禁证明公开 member/catalog/cart/benefit/order paths仍由预期专用 runtime处理；未证明用户请求已路由错误。 |
+| 数据影响 | 未执行读写；错误 route owner将来可能导致跨 scope/契约差异，但本批无实际数据库影响证据。 |
+| 安全影响 | 公共 API 的暴露面、method/path allowlist和专用 role隔离失去可运行的发布前证明。 |
+| 根因 | Caddy/API 站点拓扑演进后，checker仍依赖旧 matcher文法和旧 host block边界。 |
+| 建议方向 | 从最新主线建立 web-business-release-contract 批次：先确认当前 selected API upstream/owner，然后从 Caddy parser或明确 route manifest派生检查，覆盖每个 public path、method、negative route、专用 role和 upstream；不要仅改字符串或线上 reload。 |
+| 预计修改范围 | Web Business checker、Caddy/delivery route contract、定向 fixtures；不改业务操作代码。 |
+| 验证方式 | current selected host与所有 public paths通过；错误 host/upstream/method/forbidden operation必须失败；隔离candidate上做HTTP route对照后再考虑发布。 |
+| 回滚方式 | 回退独立 checker/fixture/contract提交。 |
+| 是否需要独立复核 | 是（公开 API 发布边界）。 |
+
 ## F-0300｜Schema 写入所有权门禁将业务目录名误作数据库 schema，固定基线 127 条失败不可判读
 
 | 字段 | 记录 |
