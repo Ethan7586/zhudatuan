@@ -84,6 +84,8 @@ jobs:
     if: inputs.operation == 'deploy'
     uses: ./.github/workflows/deploy-prepared-aliyun.yml
     with:
+      auth_mode: static-access-key
+      role_kind: releaser
       head_sha: ${{ inputs.head_sha }}
       release_target: ${{ inputs.release_target }}
       release_node: ${{ inputs.physical_node }}

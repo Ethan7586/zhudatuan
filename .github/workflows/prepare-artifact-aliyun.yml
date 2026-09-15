@@ -24,6 +24,14 @@ on:
         description: Physical node eligible for the prepared artifact
         required: true
         type: string
+      auth_mode:
+        description: Explicit cloud authentication mode
+        required: true
+        type: string
+      role_kind:
+        description: Least-privilege role; this workflow requires builder
+        required: true
+        type: string
     secrets:
       ZDT_RUNNER_READ_TOKEN:
         description: Fine-grained token limited to repository Administration read for Runner observation
@@ -47,6 +55,9 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  AI_DELIVERY_AUTH_MODE: ${{ inputs.auth_mode }}
+  AI_DELIVERY_ROLE_KIND: ${{ inputs.role_kind }}
+  AI_DELIVERY_ALLOW_STATIC_ACCESS_KEY: ${{ inputs.auth_mode == 'static-access-key' }}
   NODE_VERSION: 22.22.0
   NPM_VERSION: 10.9.4
   RUNNER_IMAGE: ubuntu-24.04-x64
@@ -170,6 +181,9 @@ jobs:
       - name: Validate exact single-target request
         shell: bash
         run: |
+          [ "$AI_DELIVERY_ROLE_KIND" = builder ] || { echo 'role_kind must be builder' >&2; exit 64; }
+          [[ "$AI_DELIVERY_AUTH_MODE" =~ ^(oidc-sts|static-access-key)$ ]] || { echo 'unsupported auth_mode' >&2; exit 64; }
+          if [ "$AI_DELIVERY_AUTH_MODE" = static-access-key ]; then echo '::warning::static-access-key is deprecated compatibility mode; migrate to oidc-sts'; fi
           if [[ ! "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
             echo "head_sha must be one full lowercase Git commit SHA" >&2
             exit 64

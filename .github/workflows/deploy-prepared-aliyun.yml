@@ -23,6 +23,14 @@ on:
         description: Validate a candidate or atomically deploy it
         required: true
         type: string
+      auth_mode:
+        description: Explicit cloud authentication mode
+        required: true
+        type: string
+      role_kind:
+        description: Least-privilege role; this workflow requires releaser
+        required: true
+        type: string
     secrets:
       ZDT_RUNNER_READ_TOKEN:
         description: Fine-grained token limited to repository Administration read for Primary health observation
@@ -49,6 +57,9 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  AI_DELIVERY_AUTH_MODE: ${{ inputs.auth_mode }}
+  AI_DELIVERY_ROLE_KIND: ${{ inputs.role_kind }}
+  AI_DELIVERY_ALLOW_STATIC_ACCESS_KEY: ${{ inputs.auth_mode == 'static-access-key' }}
   NODE_VERSION: 22.22.0
   RELEASE_SHA: ${{ inputs.head_sha }}
   RELEASE_NODE: ${{ inputs.release_node }}
@@ -73,6 +84,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          [ "$AI_DELIVERY_ROLE_KIND" = releaser ] || { echo 'role_kind must be releaser' >&2; exit 64; }
+          [[ "$AI_DELIVERY_AUTH_MODE" =~ ^(oidc-sts|static-access-key)$ ]] || { echo 'unsupported auth_mode' >&2; exit 64; }
+          if [ "$AI_DELIVERY_AUTH_MODE" = static-access-key ]; then echo '::warning::static-access-key is deprecated compatibility mode; migrate to oidc-sts'; fi
           if [[ ! "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]] || [[ ! "$CONTROL_SHA" =~ ^[0-9a-f]{40}$ ]]; then
             echo "source and control-plane SHAs must be full lowercase Git commit SHAs" >&2
             exit 64

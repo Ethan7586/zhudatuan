@@ -74,17 +74,27 @@ export function createSealLifecycleStore(client, options) {
     return client.authoritativeNow();
   });
 
-  return Object.freeze({ key, paths, read, begin, markUploaded, markValidated, seal, fail });
+  return Object.freeze({ key, paths, read, readExactFinal, begin, markUploaded, markValidated, seal, fail });
 
-  async function read() {
-    const [identity, uploaded, validated, final, objects] = await Promise.all([
-      optionalJson(paths.identity), optionalJson(paths.uploaded), optionalJson(paths.validated), optionalJson(paths.final), client.listPrefix(paths.root),
+  async function readExactFinal() {
+    const [identity, uploaded, validated, final] = await Promise.all([
+      optionalJson(paths.identity), optionalJson(paths.uploaded), optionalJson(paths.validated), optionalJson(paths.final),
     ]);
     if (identity) assertIdentity(identity);
     if (final) {
       assertFinal(final, validated);
       return state('SEALED', final.updated_at, { identity, uploaded, validated, final, receipt: final });
     }
+    if (validated) return state('VALIDATED', validated.updated_at, { identity, uploaded, validated });
+    if (uploaded) return state('UPLOADED', uploaded.updated_at, { identity, uploaded });
+    return state('ABSENT', null, { identity, retryable: true });
+  }
+
+  async function read() {
+    const exact = await readExactFinal();
+    const { identity, uploaded, validated } = exact;
+    if (exact.status === 'SEALED') return exact;
+    const objects = await client.listPrefix(paths.root);
     const leases = await jsonObjects(objects.filter((path) => path.startsWith(paths.leases) && /\/[0-9]+\.json$/.test(path)));
     const failures = await jsonObjects(objects.filter((path) => path.startsWith(paths.failures) && path.endsWith('.json')));
     const latestLease = leases.sort((left, right) => right.generation - left.generation)[0];
@@ -189,7 +199,7 @@ export function createSealLifecycleStore(client, options) {
       completed_stages: ['BUILDING', 'UPLOADED', 'VALIDATED', 'SEALED'], updated_at: now().toISOString(),
     };
     const receipt = { ...unsigned, seal_digest: digest(unsigned) };
-    const publication = await putJson(paths.final, receipt);
+    const publication = await putJson(paths.final, receipt, { verifyAfterUncertain: true });
     return { receipt, reused: publication.status === 'hit_remote' };
   }
 
@@ -227,8 +237,8 @@ export function createSealLifecycleStore(client, options) {
     return Promise.all(objects.map(async (path) => JSON.parse((await client.getObject(path)).toString('utf8'))));
   }
 
-  async function putJson(path, value) {
-    return client.putImmutable(path, Buffer.from(prettyStableJson(value)), 'application/json');
+  async function putJson(path, value, options) {
+    return client.putImmutable(path, Buffer.from(prettyStableJson(value)), 'application/json', options);
   }
 
   function assertIdentity(identity) {
@@ -248,6 +258,13 @@ export function createSealLifecycleStore(client, options) {
     delete unsigned.seal_digest;
     invariant(final.schema === FINAL_SEAL_SCHEMA && final.seal_key === key.seal_key && claimed === digest(unsigned),
       'FINAL_SEAL_INVALID', 'Final Seal receipt is invalid');
+    invariant(final.key?.source_sha === key.source_sha && final.key?.control_plane_sha === key.control_plane_sha
+      && final.key?.release_target === key.release_target && final.key?.physical_node === key.physical_node
+      && final.key?.artifact_digest === key.artifact_digest,
+    'FINAL_SEAL_IDENTITY_MISMATCH', 'Final Seal receipt identity differs from the exact request', {
+      failureClass: 'SEAL_IDENTITY_MISMATCH', retryable: false, resumeAllowed: false, resumeFrom: null,
+      nextSafeAction: 'stop-and-review-seal-identity', exactResource: paths.final,
+    });
     invariant(validated && final.candidate_validation?.digest === digest(validated), 'FINAL_SEAL_VALIDATION_MISMATCH', 'Final Seal validation evidence differs');
   }
 }

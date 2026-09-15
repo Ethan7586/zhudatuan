@@ -75,20 +75,21 @@ test('Prefix authorization failure is classified independently', () => {
   assert.deepEqual(contractFor('prefix fixture/app is not authorized: forbidden').redactedDetails.diagnosis.candidateCauses, ['PREFIX_NOT_AUTHORIZED']);
 });
 
-test('List failure reports an exact HEAD/GET alternative without claiming List is unnecessary everywhere', async () => {
+test('exact read failure reports the release index and preserves bounded generation List needs', async () => {
   const result = await doctorCommand(adapter, options, deps({ ossClient: failingOss('AccessDenied ExplicitDeny') }));
   const check = result.checks.find(({ id }) => id === 'oss-read');
-  assert.match(check.evidence.exactReadAlternative, /release-index-r4-seal-lifecycle\.json$/);
+  assert.match(check.evidence.object, /release-index-r4-seal-lifecycle\.json$/);
+  assert.equal(check.evidence.listUsed, false);
   assert.ok(check.evidence.listStillRequiredFor.includes('runner-lease-generation-discovery'));
 });
 
-test('allowed Get never upgrades unknown write authority to PASS', async () => {
+test('allowed exact reads never upgrade unknown write authority to PASS', async () => {
   let gets = 0;
   const object = `fixture/app/${sourceSha}/seals/v1/node-a/digest/${controlSha}/final-seal.json`;
   const result = await doctorCommand(adapter, options, deps({ ossClient: {
-    async listPrefix() { return [object]; }, async getObject() { gets += 1; return Buffer.from('{}'); },
+    async headObject() { gets += 1; return { exists: true }; }, async getObject() { return Buffer.from('{}'); },
     async putImmutable() { throw new Error('Doctor must never write'); },
-  } }));
+  }, exactSealProbe: async () => ({ object }) }));
   assert.equal(gets, 1);
   assert.equal(result.checks.find(({ id }) => id === 'oss-write-capability').status, 'UNVERIFIED');
 });
@@ -103,7 +104,7 @@ test('secrets are absent from structured errors, logs and snapshots', () => {
 
 test('Doctor failure cannot trigger Prepare, Seal, Deploy or a write lease', async () => {
   let reads = 0;
-  const result = await doctorCommand(adapter, options, deps({ ossClient: { async listPrefix() { reads += 1; throw ossDenied('ExplicitDeny'); } } }));
+  const result = await doctorCommand(adapter, options, deps({ ossClient: { async headObject() { reads += 1; throw ossDenied('ExplicitDeny'); } } }));
   assert.equal(reads, 1);
   assert.deepEqual(result.boundaries, { readOnly: true, prepareTriggered: false, sealCreated: false, deployTriggered: false,
     runnerSwitched: false, writerLeaseAcquired: false, productionPointerMoved: false });
@@ -154,7 +155,7 @@ function deps(overrides = {}) {
   return {
     environment: environment(), workflows: {},
     githubProbe: async () => ({ latestControlSha: controlSha, runners }),
-    ossClient: { async listPrefix() { return []; }, async getObject() { return Buffer.from('{}'); } },
+    ossClient: { async headObject() { return { exists: false }; }, async getObject() { return Buffer.from('{}'); } },
     remoteProbe: async () => ({ current: '/opt/app/current', previous: '/opt/app/previous', rollbackVisible: true }),
     ...overrides,
   };
@@ -163,11 +164,12 @@ function deps(overrides = {}) {
 function environment(overrides = {}) {
   return {
     ZDT_RUNNER_READ_TOKEN: 'fake-runner-token', ALIYUN_OSS_ACCESS_KEY_ID: 'fake-id', ALIYUN_OSS_ACCESS_KEY_SECRET: 'fake-key',
-    ALIYUN_OSS_BUCKET: 'fixture-bucket', ALIYUN_OSS_ENDPOINT: 'https://oss-cn-test.aliyuncs.com', ...overrides,
+    ALIYUN_OSS_BUCKET: 'fixture-bucket', ALIYUN_OSS_ENDPOINT: 'https://oss-cn-test.aliyuncs.com',
+    AI_DELIVERY_AUTH_MODE: 'static-access-key', AI_DELIVERY_ROLE_KIND: 'observer', AI_DELIVERY_ALLOW_STATIC_ACCESS_KEY: 'true', ...overrides,
   };
 }
 
-function failingOss(detail) { return { async listPrefix() { throw ossDenied(detail); } }; }
+function failingOss(detail) { return { async headObject() { throw ossDenied(detail); } }; }
 function ossDenied(detail) { return new DeliveryError('OSS_LIST_FAILED', 'OSS_LIST_FAILED: HTTP 403', { status: 403, detail }); }
 function contractFor(detail) { return deliveryErrorContract(ossDenied(detail), { stage: 'runner-selection', affectedCapability: 'oss-read' }); }
 function error(result, code) { const found = result.errors.find((item) => item.code === code); assert.ok(found, code); return found; }

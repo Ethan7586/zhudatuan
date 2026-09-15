@@ -16,7 +16,7 @@
 
 | 阶段 | 调用位置 | 操作 | Key/Prefix | 身份 | 结论 |
 | --- | --- | --- | --- | --- | --- |
-| Doctor | `doctor.mjs` | List/Get | `<project>/<target>/<source>/` | Observer | 只读；403 必须阻断 |
+| Doctor | `doctor.mjs` | exact Head/Get | `<project>/<target>/<source>/release-index-r4-seal-lifecycle.json`，再由索引推导 final Seal | Observer | 不再 List；404 表示未准备，403 必须阻断 |
 | Runner 路由 | `runner-routing.mjs` | List/Get/immutable Put | `runner-routing/v1/requests/<request-id>/` | Build orchestrator | lease generation 当前依赖 List |
 | Runner 槽位 | `runner-routing.mjs` | List/Get/immutable Put | `runner-routing/v1/slots/<slot>/claims/` | Build orchestrator | claim generation 当前依赖 List |
 | 制品索引 | `oss.mjs` | exact Get/Head/immutable Put | `<project>/<target>/<source>/release-index-r4-seal-lifecycle.json` | Build | 已知 Key，不需要 List |
@@ -26,7 +26,17 @@
 | Writer Lease | `release-writer-lease.mjs` | List/Get/immutable Put | exact writer root 的 `leases/`、`renewals/` | Release | generation 发现仍依赖 List |
 | Deploy | `oss.mjs` / remote agent | exact Get | final Seal、manifest、archive | Release | 不需要 bucket 枚举 |
 
-可在第二批移除的 List：制品索引解析、已知 artifact digest 与 control SHA 后的 final Seal 读取。必须先引入不可变 current-generation/current-seal 指针才能移除的 List：Runner request lease、slot claim、Seal lease/failure、Writer lease/renewal。Doctor 只提出替代建议，不改变真实策略。
+第二批已经移除 Doctor 的 List，以及 Deploy 成功读取已知 final Seal 时的 List。仍须 List 的范围只有 generation 发现：Runner request lease、slot claim、未封板 Seal 的 lease/failure、Writer lease/renewal。
+
+## OIDC/STS 与不可变指针后续协议
+
+正式身份模式是 GitHub OIDC → 阿里云 `AssumeRoleWithOIDC`；`static-access-key` 只保留为必须显式选择并产生告警的兼容模式。信任必须同时绑定仓库、`zdt-next` 或受保护的 `production` Environment、可执行 workflow、事件和 audience。依据：[GitHub OIDC](https://docs.github.com/en/actions/reference/security/oidc)、[Alibaba Cloud AssumeRoleWithOIDC](https://www.alibabacloud.com/help/en/ram/developer-reference/api-sts-2015-04-01-assumerolewithoidc)。本批不创建真实 Provider/Role，也不执行真实 STS，所以信任关系保持 `UNVERIFIED`。
+
+第三批若要消除 generation List，必须先实现并发安全的不可变指针协议：每个 generation 先写不可变记录；current claim 以预期前代 digest 为条件提交；同 generation 冲突必须停止；读方 exact Get current 后校验记录 digest、父链和作用域；迁移期间旧 List 只读、双读比较但不得双写；全部历史对象保留，禁止覆盖。OSS 条件写/CAS 能力和冲突演练未被证明前，不实施该协议，也不删除现有 List 权限。
+
+`FINAL_SEAL_RECEIPT_MISSING` 不再等同于一种失败。机器决策固定输出 `failureClass`、`retryable`、`resumeAllowed`、`resumeFrom`、`nextSafeAction`、`exactResource`：一致的 final Seal 是幂等成功；uploaded 与 candidate validation 完整时从 `RESUME_FROM_FINAL_SEAL_WRITE` 继续；写结果不确定先 exact Head/Get；临时 STS 过期可有限刷新；403 不重试并报告身份、角色、action、精确路径；任一身份字段不一致立即安全阻断。完整自动 Resume 留给后续批次。
+
+组件准备使用 `fail-fast: false` 的独立 matrix，Console 与 web-api 等组件互不因单个失败而取消构建/封板。整套生产切换必须等待 Closure 所需组件全部 final sealed；跨组件原子放行尚未实现，因此机器门禁明确保持关闭，不能以局部封板成功替代整套可切换。
 
 Resume 不绕过 Readiness：OSS/RAM 403、Secret 合同、Runner 可见性或祖先关系任一失败都保持 `resumeAllowed=false`；只有修复原权限并重新通过 Doctor 后，才允许重放同一 source/base，不生成替代 source，不直接进入 Deploy。
 
