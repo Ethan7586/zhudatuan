@@ -1367,7 +1367,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 直接证据 | 通过 `pg_get_functiondef` 重写 session/membership/version/resource-scope/capability 五个函数的 `member.membership` 引用；不符合预期源码或出现残留引用即异常。 |
 | 运行边界 | Identity 会话解析、授权 membership 解析/版本、资源 scope 与 capability operation 都调用这些函数。 |
 | 可否删除 | 否；承担动态 SQL 定义、身份授权、迁移升级和恢复责任。 |
-| 二次复核 | 是；须核验所有函数签名/权限、函数定义、会话解析、access version、resource scope、capability 和 rollback 语义。 |
+| 二次复核 | RV-0048 已完成：维持 GX；静态复核确认重绑以旧定义为前置、全函数残留扫描 fail-closed，当前安全解析器仍调用对应会话/版本/scope/capability 路径。生产权限、会话和恢复未验证。 |
 
 ## 467. AU-467 Membership 函数重绑复核
 
