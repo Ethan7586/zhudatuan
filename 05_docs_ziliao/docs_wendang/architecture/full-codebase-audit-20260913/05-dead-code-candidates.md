@@ -1534,7 +1534,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 运行结论 | 这是解决 Owner Console 可用性断链的精确授权，写权限与资源范围仍单独控制。 |
 | 数据/契约责任 | 保存 Owner 对控制台只读板块的已发布能力边界。 |
 | 可否删除 | 禁止 |
-| 二次复核 | 是：role assignment、allow/deny 优先、12项 operation scope 和 Console 发布单元。 |
+| 二次复核 | RV0059 已完成：12 项均为固定 read permission/operation 对；迁移移除同项 deny 后只插入 allow，AccessPipeline 仍逐请求校验 permission、scope、capability、step-up 与风险门禁；GX 维持。 |
 
 - platform Owner Console read grant 归 GX-0037。累计 G0 60、G1 83、G2 5、G3 0、GX 37；未删除任何文件。
 
