@@ -1549,7 +1549,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 运行结论 | 这是高权限但范围限制的卡券库存读取授权，不是向 Owner 开放卡券写操作。 |
 | 数据/契约责任 | 规定平台 Owner 对 cardpool/分配/导入摘要的可见性边界。 |
 | 可否删除 | 禁止 |
-| 二次复核 | 是：role permission、RLS/allocator scope、卡密字段和审计输出。 |
+| 二次复核 | RV0060 已完成：仅 `voucher.cardlibrary.read` 的 deny→allow，实际 operation 为 `voucher.cardlibraries.read`；列表查询受 scope/allocation 限制且不投影卡密密文/指纹，GX 维持。 |
 
 - platform Owner card-library read grant 归 GX-0038。累计 G0 60、G1 83、G2 5、G3 0、GX 38；未删除任何文件。
 
