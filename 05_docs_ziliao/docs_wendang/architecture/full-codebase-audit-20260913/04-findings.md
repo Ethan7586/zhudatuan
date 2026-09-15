@@ -2212,7 +2212,7 @@
 | --- | --- |
 | 模块 | Auth Web runtime identity node |
 | 类型 | 身份凭据目的地、运行配置供应链 |
-| 严重级别 | P1候选 |
+| 严重级别 | **P1（RV-0075 已独立复核确认）** |
 | 置信度 | 高：parser、安装、测试和请求正文调用链直接可证；live值未核验 |
 | 文件和精确位置 | `auth-web/src/services/identityNodeEnvironment.ts:16-58`；`canonicalIdentity.ts:302-411,464-470`；`canonicalRegistration.ts:247-285`；SDK `IdentityNodeRegistry.ts:151-217`；`identityNodeRuntime.test.ts:8-43` |
 | 当前行为 | [FACT][E-AU-019-005] runtime envelope的digest/source字段仅校验格式；registry只要求当前accounts host匹配并接受任意HTTPS API/回跳origin。测试中的generated节点使用`.invalid` API/console/storefront仍成功安装。后续currentIdentityNode把该API作为含账号、密码、OTP或注册正文的fetch目的地 |
@@ -2227,7 +2227,7 @@
 | 预计修改范围 | runtime生成/激活、Auth installer、SDK投影与反事实测试；必须拆批 |
 | 验证方式 | 当前accounts host+外域API反事实必须被拒；合法新增节点通过；真实浏览器CORS/请求目的地和回滚演练 |
 | 回滚方式 | 回退独立runtime绑定提交并恢复上一份已知正确runtime artifact |
-| 是否需要独立复核 | 是，RV-0012 |
+| 是否需要独立复核 | 已完成：RV-0075（2026-09-15）。浏览器 runtime installer 仅校验当前 accounts host，注册器仅校验 HTTPS origin 形状；AutoNode 的生成/摘要与服务端 Manifest 自检没有被浏览器校验或绑定到 API origin。故可构造同一 accounts host、外域 API origin 的形状合法 runtime 并被当前前端接受，登录/注册请求会以该 origin 发送凭据正文。未读取线上 runtime、未发起真实请求，未发现凭据泄露证据，故维持 P1 而非 P0。 |
 
 ## F-0084｜Auth build快渲染与runtime全局替换形成双版本节点状态
 

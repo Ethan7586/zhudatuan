@@ -2,10 +2,10 @@
 
 - 基线：`5a1ce71eebbefaa826368a9e1dc17730f9363bc4`
 - 建立日期：2026-09-15
-- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011、RV-0013 至 RV-0018、RV-0024 至 RV-0074 已完成；仅两个无对象标识的历史计数差额待追溯。**
+- 状态：**RV-0001 至 RV-0006、RV-0007 至 RV-0009、RV-0011 至 RV-0018、RV-0024 至 RV-0075 已完成；F-0249 仍待独立复核，另有两个无对象标识的历史计数差额待追溯。**
 - 规则：每项复核从当前固定审计基线的运行入口/调用链重新取证；不得只复述首审报告。任何分歧保守保留，不降低风险等级。
 
-## P1 候选（17）
+## P1 复核队列（18）
 
 | 首审问题 | RV | 模块 | 第二轮最小入口 |
 | --- | --- | --- | --- |
@@ -18,6 +18,7 @@
 | F-0036 | RV-0008（已完成，确认 P1） | Storefront member 写权限 | route → authorization → DB 写入/RLS |
 | F-0053 | RV-0009（已完成，确认 P1） | 自定义角色委派 | role grant → capability ceiling → 数据库/契约 |
 | F-0065 | RV-0011（已完成，确认 P1） | 遥测/审计脱敏 | 生产入口 → redactor → 输出/持久化 |
+| F-0083 | RV-0075（已完成，确认 P1） | Auth runtime 凭据目的地 | same-origin runtime → registry parser → login/registration request origin |
 | F-0094 | RV-0013（已完成，确认 P1） | Provider webhook | provider event → 签名 → event-id 去重 |
 | F-0096 | RV-0014（已完成，确认 P1） | Vendor 连接 | 配置/base URL → 签名传输 → allowlist |
 | F-0097 | RV-0015（已完成，确认 P1） | Vendor 响应资源限制 | transport → byte/JSON 深度 → caller/retry |
