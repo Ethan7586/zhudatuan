@@ -6554,3 +6554,26 @@
 | 验证方式 | 重生后哈希/数量/ID/操作/路由与 mapping 一致；故意改动 authority 或 mapping 时生成/检查稳定失败；状态不因存在映射而误升为验收/发布。 |
 | 回滚方式 | 回退独立文档/生成器/检查提交，保留历史快照。 |
 | 是否需要独立复核 | 否（P3）；若它被外部需求合同引用，需求 Owner 复核。 |
+
+## F-0342｜架构基线文件的实际 SHA 与上游锁定的 Authority 哈希不一致
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 架构 authority / 发布完整性 |
+| 类型 | 内容完整性漂移、目标 Authority Snapshot 不可复核 |
+| 严重级别 | **P2** |
+| 置信度 | 高（实际 SHA 与多个上游精确文本直接证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/福利商城架构和补齐修改清单.md`（完整文件 SHA）；`福利商城代码修改清单.md:8`；`福利商城全系统根治方案.md:71,6212`。 |
+| 当前行为 | 架构文件实际 SHA-256 为 `d4a94ab427ef26ed451930c1b47b98949121737533905ac0515d5f553d5b048b`；代码蓝图和根治/全系统方案仍将同一路径锁定为 `48f7d95dfad87aa9cc06705ff52a35561d7dabfb1ef5e75636e8418405a24ad2`，并把后者列作 Authority Snapshot 的精确 canonicalPath 预期值。 |
+| 预期行为 | 所有把文件作为受控 authority 输入的路径、SHA、size/mode 和引用应对应同一批准版本；变更必须原子更新 authority/reference 或明确冻结历史版本。 |
+| 直接证据 | [FACT][E-AU-889-001] 当前文件 SHA 为 `d4a94…`；[FACT][E-AU-889-002] 两份上游文档固定 `48f7d…`；[FACT][E-AU-889-003] 全系统方案将该预期 SHA 纳入 AuthoritySnapshot 精确条目。 |
+| 调用链或运行入口 | 架构/代码蓝图/全系统方案 → 计划中的 AuthorityAuthorization/AuthoritySnapshot → 未来 cutover/post-tree 授权；当前该控制面是否执行为 [UNVERIFIED]。 |
+| 用户影响 | 若按文档实施 authority capture 或依赖其 SHA 判定基线，可能直接拒绝当前文件，或迫使操作者绕过完整性控制；当前运行产品未证实受影响。 |
+| 数据影响 | 无直接数据库写入证据。 |
+| 安全影响 | 破坏目标发布/变更审计的内容绑定清晰度；未发现当前发布绕过或线上攻击证据。 |
+| 根因 | 架构文件更新后，上游锁定哈希与拟议 authority snapshot 记录未同步更新，或引用目标历史版本但缺少明确冻结副本。 |
+| 建议方向 | 从修复时最新 `zdt-next` 建立单一 authority-hash-reconciliation 批次：先确认哪个版本为批准 authority、是否存在外部历史副本和是否有当前 capture consumer；随后原子更新或正式冻结所有引用/测试。不得混入架构内容、代码、部署或凭据变更。 |
+| 预计修改范围 | Authority/reference 文档、相关 hash/fixture/检查；视 Owner 决定是否新增冻结副本。 |
+| 验证方式 | 同一批准文件的 SHA 在 authorities、引用、capture 输入与验证 fixture 中一致；故意篡改任一字节稳定拒绝；历史引用有可解析冻结版本。 |
+| 回滚方式 | 回退独立 authority/reference 提交或恢复经批准的冻结副本；不触及运行制品。 |
+| 是否需要独立复核 | **是**；架构与发布 Owner 需重新追踪 authority consumer、批准版本、capture 行为和外部交接。 |
