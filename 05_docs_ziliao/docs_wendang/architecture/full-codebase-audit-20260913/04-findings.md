@@ -5130,6 +5130,28 @@
 | 回滚方式 | 回退独立工具/test/编排参数提交；已生成 pool 需按发布制品恢复流程重新生成，不在此审计分支操作。 |
 | 是否需要独立复核 | 是（GX 发布制品写入边界）。 |
 
+## F-0320｜顶层文档入口与当前运行/交付控制面漂移
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Documentation / architecture and release operations |
+| 类型 | 文档准确性、发布控制面 |
+| 严重级别 | **P2** |
+| 置信度 | 高（文档文本、文件存在性与当前 release adapter 直接证据） |
+| 文件和精确位置 | `05_docs_ziliao/docs_wendang/README.md:8-25`；`ARCHITECTURE.md:5-25`；`ALIYUN-OSS-CDN-SHARED-MEDIA.md:3-12`；`04_tools/release-engine/adapters/zdt-next/service-targets.mjs:1-10`。 |
+| 当前/预期 | README 指向不存在的 `zdt.md` 与根目录 `ZHU-VI-1.3/`，而当前 VI 正式入口是 `VI_shijue/current/ZHU-VI-1.5/`。ARCHITECTURE 将生产描述为一个 Commerce ApiMain/JobsMain 制品，adapter 实际列出 identity、mall provisioning、purchase、web、catalog、jobs、webhook 等独立 targets。OSS/CDN 文档将 `infrastructure/aliyun/deploy.sh` 表述为生产发布入口；当前受控交付操作只允许通过 `zdt-delivery prepare/deploy`。预期文档应明确历史/设计态与当前事实，并只引用允许的交付控制面。 |
+| 直接证据 | [FACT][E-AU-828-001] `zdt.md`、根目录 `ZHU-VI-1.3` 均不存在；[FACT][E-AU-828-002] Auth Web 直接导入 VI 1.5 current assets（AU-822）；[FACT][E-AU-828-003] service-target adapter 列出 7 类独立运行 target；[FACT][E-AU-828-004] OSS 文档要求 `deploy.sh`，与本审计所适用的受控交付接口不一致。 |
+| 调用链或运行入口 | 人工架构理解/发布操作 → 顶层文档；实际运行/发布真值 → release-engine adapter 与受控 delivery control plane。 |
+| 用户影响 | 维护者可能依旧架构图估计部署边界或按旧脚本尝试生产交付，造成错误操作、错误回滚假设或审计结论漂移。 |
+| 数据影响 | 没有文档被自动执行的证据；错误操作指引可能间接影响发布制品与服务可用性。 |
+| 安全影响 | 旧部署路径可能绕开当前控制面约束；未证实已发生绕过。 |
+| 根因 | 顶层文档未被纳入与运行/发布配置同一变更契约，历史设计与当前控制面并存但没有状态标记。 |
+| 建议方向 | 从最新主线建立独立 documentation-control-plane batch：校正/移除不存在入口，明确 VI 1.5 正式来源，为历史架构加状态；从实际 service-target/受控交付命令生成或链接运行与发布说明，禁止旧脚本作为操作指南。 |
+| 预计修改范围 | 三份顶层文档及可能的文档链接/自动一致性检查；不改任何运行配置或发布脚本。 |
+| 验证方式 | 文档所有本仓路径存在；运行单元与 adapter inventory 对齐；文档不再指示旧部署入口；历史说明有清晰状态。 |
+| 回滚方式 | 回退独立文档/校验提交；不涉及制品、代码或线上状态。 |
+| 是否需要独立复核 | 是（生产交付说明）。 |
+
 ## F-0302｜MVP 交付门禁的状态枚举与当前需求矩阵不兼容，首条即失败
 
 | 字段 | 记录 |
