@@ -1754,3 +1754,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | G1 不强制；若拟收敛，先只读核验当前 `zdt-delivery` 实现、构建机 bootstrap logs、release runbook 与最近 delivery receipt 的实际 argv。 |
 
 - 隔离依赖准备辅助脚本归 DC-0081。累计 G0 62、G1 94、G2 5、G3 0、GX 42；未删除任何文件。
+
+## DC-0082｜Linux readiness 的 root/systemd 隔离演练 fixture
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除，需专项设计 |
+| 对象 | `04_tools/release-engine/test/linux-readiness-fixture.mjs`。 |
+| 仓内接入情况 | 未找到该 fixture 或其 `AI_DELIVERY_FIXTURE_*` 环境变量的仓内静态启动者。 |
+| 保留/高风险证据 | 仅 Linux root 可启动；输入强制收窄到 `/opt/ai-delivery/fixtures/readiness-*`、随机 service name 和高位端口。它会创建 systemd transient target/sentinel units、写入测试 policy/releases/layers、执行 candidate activation/rollback/hard-fail/timeout，并在前后 snapshot `sfl-*hbbtzn-l1*` 受保护进程及 `/opt/sfl` pointers，断言不变。 |
+| 可否删除 | 否；即使无静态引用，它也可能由仓外 release host/CI 演练入口执行，且承担真实 readiness/rollback 事故演练与生产邻接隔离证明。 |
+| 二次复核 | 是；在专用、非生产 Linux host 上独立核验实际 launcher、root/systemd namespace、随机端口冲突、fixture cleanup receipt、受保护单元/指针只读快照和失败恢复；不得在生产节点或审计工作树执行。 |
+
+- Linux readiness fixture 归 DC-0082。累计 G0 62、G1 94、G2 5、G3 0、GX 43；未删除任何文件。
