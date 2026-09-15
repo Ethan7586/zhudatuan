@@ -4882,6 +4882,28 @@
 | 回滚方式 | 回退独立 checker/test 提交。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0306｜身份通知恢复测试仍断言历史 scope fallback 文本，固定基线一半失败
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Identity notification recovery evidence |
+| 类型 | 测试可信度、节点 scope 契约漂移 |
+| 严重级别 | **P2** |
+| 置信度 | 高（test expectation、生产写入参数和定向运行输出直接证据） |
+| 文件和精确位置 | `04_tools/scripts/check/identity-notification-recovery.test.mjs:22-29`；`RegistrationOperations.ts:81-86`；`RealmOperationContext.ts:20-29`。 |
+| 当前/预期 | 测试要求 source 包含 `notificationScope ?? null`；实际 `runtime.job` insert传入 `notificationScope ?? realm.nodeId`。定向 Node test 的 systemd subtest通过、scope subtest失败。预期是直接验证根/子节点的 notification job scope 行为，或至少断言当前可解释的 fallback，而非历史字符串。 |
+| 直接证据 | [FACT][E-AU-791-001] 固定基线 test结果为1 pass/1 fail；[FACT][E-AU-791-002] RealmOperationContext 对 sovereign child设置 `notificationScope=manifest.node_id`，RegistrationOperations 对未注入 scope 使用当前 realm node id。 |
+| 调用链或运行入口 | Identity registration challenge → `runtime.job(kind=identitynotification, scope_id)` → IdentityNotificationJobs runtime；systemd unit负责 worker restart policy。 |
+| 用户影响 | 该测试不能作为跨节点通知 scope 或恢复行为的可靠证据；未证明真实消息错投、漏投或 retry失效。 |
+| 数据影响 | 未写数据库；真实 job scope 尚未由本测试验证。 |
+| 安全影响 | 错误 scope 若发生可能影响身份验证码/通知隔离，但本批没有实际越界证据。 |
+| 根因 | Notification scope fallback从 null 演进为 realm node id后，静态测试未同步其行为契约。 |
+| 建议方向 | 从最新主线建立 identity-notification-scope-evidence 批次，以受控数据库 fixture覆盖 root、sovereign child、missing manifest、internal runtime restart/reclaim；保留 systemd static assertion但不再把文本片段当端到端证明。 |
+| 预计修改范围 | 单一 static test，可能加最小 PG integration fixture；不改通知业务逻辑。 |
+| 验证方式 | 明确构造 root/child context，断言 scope_id及消费者 claim范围；故意使用另一个 node scope时必须不可 claim；停止/重启后仅验证受控 job recovery。 |
+| 回滚方式 | 回退独立测试/fixture 提交。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0302｜MVP 交付门禁的状态枚举与当前需求矩阵不兼容，首条即失败
 
 | 字段 | 记录 |
