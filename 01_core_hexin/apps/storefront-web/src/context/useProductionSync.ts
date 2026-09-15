@@ -23,6 +23,7 @@ interface ProductionSyncSetters {
   setFavorites: Dispatch<SetStateAction<string[]>>;
   setQuickViewProduct: Dispatch<SetStateAction<Product | null>>;
   setSessionStatus: Dispatch<SetStateAction<SessionStatus>>;
+  setSessionError: Dispatch<SetStateAction<string | null>>;
   setCatalogSyncStatus: Dispatch<SetStateAction<CatalogSyncStatus>>;
 }
 
@@ -31,6 +32,7 @@ type CatalogPagePublisher = (items: ApiProduct[]) => void;
 type CatalogContinuation = () => Promise<void>;
 
 const QUALIFIED_CATALOG_RETRY_DELAYS = [500, 1_500, 3_000] as const;
+const SESSION_BOOTSTRAP_RETRY_DELAYS = [350, 900, 2_000, 4_000] as const;
 
 export async function loadProgressiveCatalog(
   loadPage: CatalogPageLoader,
@@ -71,7 +73,20 @@ function waitForCatalogIdle(): Promise<void> {
 }
 
 export function shouldRetainProductionSnapshot(error: unknown): boolean {
-  return error instanceof ProductionApiError && error.status === 0;
+  return !shouldCloseMemberSession(error);
+}
+
+export function shouldCloseMemberSession(error: unknown): boolean {
+  return error instanceof ProductionApiError && (error.status === 401 || error.code === 'AUTHENTICATION_REQUIRED');
+}
+
+export function shouldRetrySessionBootstrap(error: unknown): boolean {
+  if (!(error instanceof ProductionApiError)) return error instanceof TypeError;
+  return error.status === 0 || error.status === 408 || error.status === 425 || error.status === 429 || error.status >= 500;
+}
+
+export function sessionBootstrapRetryDelay(attempt: number): number | undefined {
+  return SESSION_BOOTSTRAP_RETRY_DELAYS[attempt];
 }
 
 /** A deployment restart must not leave an authenticated member permanently on the public catalog. */
@@ -137,6 +152,7 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     setters.setUser((previous) => mergeAuthenticatedMemberProfile(previous, bootstrap));
     setters.setCurrentMall(resolvedMall);
     setters.setMalls([resolvedMall]);
+    setters.setSessionError(null);
     setters.setSessionStatus('authenticated');
   };
 
@@ -169,11 +185,14 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
       bootstrap = (await productionApi.getSession()).bootstrap;
     } catch (error) {
       if (syncVersion !== syncVersionRef.current) return;
-      if (!shouldRetainProductionSnapshot(error)) {
+      if (shouldCloseMemberSession(error)) {
         closeMemberData();
+        setters.setSessionError(null);
         setters.setSessionStatus('guest');
       } else {
-        setters.setSessionStatus((current) => current === 'checking' ? 'guest' : current);
+        setters.setSessionError(shouldRetrySessionBootstrap(error)
+          ? '网络波动，正在恢复登录状态'
+          : (error instanceof ProductionApiError ? error.message : '身份服务暂时不可用'));
       }
       try {
         const storefront = await (await productionApiRequest).getPublicStorefront();
@@ -284,14 +303,39 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
 
   useEffect(() => {
     if (!enabled) return;
+    let disposed = false;
+    let retryAttempt = 0;
+    let retryTimer: number | null = null;
+    const clearRetry = () => {
+      if (retryTimer !== null) window.clearTimeout(retryTimer);
+      retryTimer = null;
+    };
+    const synchronize = () => {
+      clearRetry();
+      void refreshProductionData().then(() => {
+        retryAttempt = 0;
+      }).catch((error: unknown) => {
+        if (disposed || !shouldRetrySessionBootstrap(error)) return;
+        const delay = sessionBootstrapRetryDelay(retryAttempt);
+        retryAttempt += 1;
+        if (delay === undefined) {
+          setters.setSessionError('网络连接尚未恢复，请点击重试');
+          return;
+        }
+        retryTimer = window.setTimeout(synchronize, delay);
+      });
+    };
     // Publish identity first; balances, orders and catalog continue without
     // blocking the first authenticated frame.
-    void refreshProductionData().catch(() => undefined);
+    synchronize();
     const handleOnline = () => {
-      void refreshProductionData().catch(() => undefined);
+      retryAttempt = 0;
+      synchronize();
     };
     window.addEventListener('online', handleOnline);
     return () => {
+      disposed = true;
+      clearRetry();
       window.removeEventListener('online', handleOnline);
       syncVersionRef.current += 1;
       productionRefreshRef.current = null;

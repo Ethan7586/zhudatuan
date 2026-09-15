@@ -29,28 +29,30 @@ export function requireConsoleRuntimeConfig(): ConsoleAppConfig {
   return installedConfig;
 }
 
-async function loadProductionConfig(hostname: string): Promise<ConsoleAppConfig> {
-  const nodeResponsePromise = fetch('/console-runtime.json', {
+export async function loadProductionConfig(hostname: string, fetcher: typeof fetch = fetch): Promise<ConsoleAppConfig> {
+  const request = {
     cache: 'no-store',
     credentials: 'same-origin',
     headers: { accept: 'application/json' },
     redirect: 'error',
-  });
+  } as const;
+  // Most static deployments serve the SPA document for an absent runtime file.
+  // Start the immutable artifact fallback immediately so that compatibility
+  // detection never turns into a serial network wait.
+  const nodeResponsePromise = fetcher('/console-runtime.json', request);
+  const artifactResponsePromise = fetcher('/console-build.json', request);
   const nodeResponse = await nodeResponsePromise;
   const contentType = nodeResponse.headers.get('content-type')?.toLowerCase() ?? '';
   if (nodeResponse.ok && contentType.includes('json')) {
+    void artifactResponsePromise.catch(() => undefined);
     const runtime = await parseSflConsoleNodeRuntime(await nodeResponse.json());
     return install(resolveConsoleNodeRuntimeConfig(runtime, hostname));
   }
   if (!nodeResponse.ok && nodeResponse.status !== 404) {
+    void artifactResponsePromise.catch(() => undefined);
     throw new Error(`CONSOLE_NODE_RUNTIME_CONFIG_HTTP_${nodeResponse.status}`);
   }
-  const response = await fetch('/console-build.json', {
-    cache: 'no-store',
-    credentials: 'same-origin',
-    headers: { accept: 'application/json' },
-    redirect: 'error',
-  });
+  const response = await artifactResponsePromise;
   if (!response.ok) throw new Error(`CONSOLE_RUNTIME_CONFIG_HTTP_${response.status}`);
   const artifact = await parseSflConsoleArtifact(await response.json());
   return install(resolveConsoleAppConfig(artifact, hostname));

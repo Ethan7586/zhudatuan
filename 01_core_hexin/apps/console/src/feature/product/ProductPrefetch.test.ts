@@ -26,7 +26,7 @@ describe('product page prefetch', () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     await Promise.all([prefetchProducts(client, context), prefetchProducts(client, context)]);
 
-    const filter = { q: '', category: '', supplier: '', mall: '', status: '', limit: 50, preview: false };
+    const filter = { q: '', category: '', supplier: '', mall: '', status: '', limit: 20, preview: false };
     expect(requests).toBe(1);
     expect(client.getQueryData(productKey(context, filter))).toEqual(response);
     expect(prefetchProducts(client, context)).toBeUndefined();

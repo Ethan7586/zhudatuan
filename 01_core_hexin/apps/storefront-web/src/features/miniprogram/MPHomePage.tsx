@@ -56,7 +56,7 @@ export function homeCampaignIndexForScroll(scrollLeft: number, viewportWidth: nu
 }
 
 export const MPHomePage: React.FC = () => {
-  const { user, currentMall, mpPage, sessionStatus, catalogSyncStatus, setMpPage, addToCart, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
+  const { user, currentMall, mpPage, sessionError, sessionStatus, catalogSyncStatus, refreshProductionData, setMpPage, addToCart, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
   const [activeBanner, setActiveBanner] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [authHref, setAuthHref] = useState<string | undefined>(undefined);
@@ -147,8 +147,12 @@ export const MPHomePage: React.FC = () => {
 
       <MPAuthStatusCard
         authHref={authHref}
+        sessionError={sessionError}
         sessionStatus={sessionStatus}
         user={user}
+        onRetry={() => {
+          void refreshProductionData().catch(() => undefined);
+        }}
       />
 
       {/* 搜索框区 */}

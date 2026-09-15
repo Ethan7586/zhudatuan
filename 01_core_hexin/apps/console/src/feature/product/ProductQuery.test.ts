@@ -11,7 +11,7 @@ import { readProducts, type ProductQuery } from './ProductQuery';
 const response = { items: [], count: 0, total_count: 0,
   status_counts: { needs_attention: 0, pending_review: 0, published: 0, unpublished: 0 } };
 const prefetchQuery = {
-  q: '', category: '', supplier: '', mall: '', status: '', limit: 50, preview: false,
+  q: '', category: '', supplier: '', mall: '', status: '', limit: 20, preview: false,
 } as const;
 const filter: ProductQuery = prefetchQuery;
 const context: ConsoleContext = {
@@ -44,12 +44,23 @@ describe('product document prefetch', () => {
   it('falls back when the prefetched filter does not match', async () => {
     window.__consoleProductPrefetch = resolvedPrefetch({
       scopeKind: 'mall', scopeId: 'mall:one', accessVersion: 7,
-      query: { ...prefetchQuery, limit: 20 }, value: response,
+      query: { ...prefetchQuery, limit: 50 }, value: response,
     });
     api.listingsRead.mockResolvedValue(response);
 
     await readProducts(context, filter, new AbortController().signal);
     expect(api.listingsRead).toHaveBeenCalledOnce();
+  });
+
+  it('bounds an omitted catalog page size to the lightweight first page', async () => {
+    api.listingsRead.mockResolvedValue(response);
+
+    await readProducts(context, { q: '', category: '', preview: false }, new AbortController().signal);
+
+    expect(api.listingsRead).toHaveBeenCalledWith(
+      expect.objectContaining({ query: expect.objectContaining({ limit: 20 }) }),
+      expect.anything(),
+    );
   });
 
   it('uses an exact prefetched supply network read', async () => {

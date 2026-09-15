@@ -19,7 +19,7 @@ import { changeProductPageSize, goToNextProductPage, goToPreviousProductPage, sw
 import { canManageListing, canReadPublicationTask, publishReadyListings, readPublicationTask,
   readyPublicationUnavailableReason, retryPublicationFailures, setListingPublication,
   type ListingPublicationAction } from './ProductPublicationCommand';
-import { productKey, readProducts, type ProductQuery } from './ProductQuery';
+import { PRODUCT_CATALOG_DEFAULT_PAGE_LIMIT, productKey, readProducts, type ProductQuery } from './ProductQuery';
 import type { CatalogPublicationTask, Listing, ProductFilter } from './ProductSchema';
 import { ProductTable, ProductTableSkeleton, type ProductColumnKey } from './ProductTable';
 import './product.css';
@@ -55,7 +55,7 @@ export function ProductCatalogRoute() {
   const partnerWorkspace = context.scope.kind === 'supplier' || context.scope.kind === 'brand';
   const freeWorkspace = !partnerWorkspace && search.get('workspace') === 'free';
   const previewScope = context.scope.kind === 'platform' && context.scope.id === 'platform:preview';
-  const defaultPageSize = 50;
+  const defaultPageSize = PRODUCT_CATALOG_DEFAULT_PAGE_LIMIT;
   const limitValue = Number(search.get('limit') ?? defaultPageSize);
   const limit = pageSizes.has(limitValue) ? limitValue : defaultPageSize;
   const pageValue = Number(search.get('page') ?? 1);

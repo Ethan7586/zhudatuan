@@ -14,6 +14,7 @@ import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontStat
 import type { CartQuantitySync, CartQuantityUpdate } from './cartQuantitySync';
 import { addCartItemOptimistically, rollbackCartQuantity, setCartQuantityOptimistically } from './cartOptimisticState';
 import { switchDefaultAddressOptimistically } from './addressDefaultState';
+import { cartSessionDecision, queueCartAddition, type PendingCartAddition } from './cartSessionRecovery';
 import type { ApiPaymentResult } from '../services/productionApi.types';
 import type { CanonicalPaymentProgress } from '../services/canonicalCheckout';
 import type { WechatJsapiPaymentOutcome } from '../services/wechatJsapiPayment';
@@ -91,6 +92,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const cartCacheScopeRef = useRef<string | null>(null);
   const cartMutationVersionRef = useRef(0);
   const cartItemSnapshotsRef = useRef(new Map<string, CartItem>());
+  const pendingCartAdditionRef = useRef<PendingCartAddition | null>(null);
   const refreshCartRequestRef = useRef<Promise<void> | null>(null);
   const activePaymentSessionRef = useRef<PaymentRecoveryRecord | null>(null);
   const paymentInFlightRef = useRef(false);
@@ -236,6 +238,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
       setFavorites,
       setQuickViewProduct,
       setSessionStatus,
+      setSessionError,
       setCatalogSyncStatus,
     },
     !isShowcase
@@ -361,6 +364,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     cartQuantitySyncRef.current?.cancel();
     cartQuantitySyncRef.current = null;
     cartQuantitySyncLoadRef.current = null;
+    pendingCartAdditionRef.current = null;
     sessionGenerationRef.current += 1;
     cancelProductionSync();
     setSessionStatus('guest');
@@ -413,7 +417,26 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
       showToast('测试商品仅用于系统验证，不能加入购物车', 'warning');
       return false;
     }
-    if (sessionStatus !== 'authenticated' && !showcaseService) {
+    const sessionDecision = cartSessionDecision(sessionStatus, Boolean(showcaseService));
+    if (sessionDecision === 'queue') {
+      const shouldStartSessionRecovery = pendingCartAdditionRef.current === null;
+      pendingCartAdditionRef.current = queueCartAddition(
+        pendingCartAdditionRef.current,
+        product,
+        quantity,
+        selectedSpec,
+      );
+      showToast(
+        sessionError
+          ? '网络波动，正在恢复登录状态，恢复后将自动加入购物车'
+          : '正在确认登录状态，确认后将自动加入购物车',
+        'info',
+        { channel: 'cart', durationMs: 1_800 },
+      );
+      if (shouldStartSessionRecovery) void refreshProductionData().catch(() => undefined);
+      return false;
+    }
+    if (sessionDecision === 'require-login') {
       showToast('商品可以直接浏览；登录后才能确认会员价与加入购物车', 'warning');
       return false;
     }
@@ -453,7 +476,20 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
       return true;
     }
     return false;
-  }, [publishCart, scheduleCartQuantityUpdate, sessionStatus, showcaseService, showToast]);
+  }, [publishCart, refreshProductionData, scheduleCartQuantityUpdate, sessionError, sessionStatus, showcaseService, showToast]);
+
+  useEffect(() => {
+    if (showcaseService || sessionStatus === 'checking') return;
+    const pending = pendingCartAdditionRef.current;
+    if (pending === null) return;
+    pendingCartAdditionRef.current = null;
+    if (sessionStatus === 'guest') {
+      showToast('商品可以直接浏览；登录后才能确认会员价与加入购物车', 'warning', { channel: 'cart' });
+      return;
+    }
+    const currentProduct = productsRef.current.find((product) => product.id === pending.productId) ?? pending.product;
+    handleAddToCart(currentProduct, pending.quantity, { ...pending.selectedSpec });
+  }, [handleAddToCart, sessionStatus, showcaseService, showToast]);
 
   const handleUpdateCartQuantity = useCallback((cartItemId: string, quantity: number): boolean => {
     if (!showcaseService && sessionStatus === 'authenticated') {

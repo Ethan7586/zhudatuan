@@ -152,9 +152,9 @@ export function startDocumentPrefetch(
     const supplyNetwork = match?.[3] === 'supply-chain';
     const workspace = new URLSearchParams(location.search).get('workspace');
     const selectionCenter = !supplyNetwork && (workspace === 'selection' || workspace === 'pending');
-    const requestedLimit = Number(new URLSearchParams(location.search).get('limit') ?? 50);
+    const requestedLimit = Number(new URLSearchParams(location.search).get('limit') ?? 20);
     const limit = supplyNetwork ? 1 : selectionCenter ? [20, 50, 100].includes(requestedLimit) ? requestedLimit : 20
-      : [20, 50, 100].includes(requestedLimit) ? requestedLimit : 50;
+      : [20, 50, 100].includes(requestedLimit) ? requestedLimit : 20;
     const search = new URLSearchParams(location.search);
     const preview = supplyNetwork || (direct.kind === 'platform' && direct.id === 'platform:preview');
     const query: Readonly<{
@@ -225,7 +225,6 @@ export function startDocumentPrefetch(
     const requestedCursor = new URLSearchParams(location.search).get('cursor') ?? undefined;
     const memberCursor = route === 'members' ? requestedCursor : undefined;
     const accessCursor = route === 'access' ? requestedCursor : undefined;
-    const capabilities = Array.isArray(value.capabilities) ? value.capabilities : [];
     const headers = {
       'x-scope-hint': direct.id,
       'x-access-version': String(value.accessVersion),
@@ -240,10 +239,10 @@ export function startDocumentPrefetch(
       accessVersion: value.accessVersion!,
       memberCursor,
       accessCursor,
-      members: route === 'members' || capabilities.includes('member.members.read')
+      members: route === 'members'
         ? readJson<unknown>(`/api/v1/members?${memberParameters.toString()}`, headers).promise
         : Promise.resolve(undefined),
-      access: route === 'access' || capabilities.includes('access.center.read')
+      access: route === 'access'
         ? readJson<unknown>(`/api/v1/access/center?${accessParameters.toString()}`, headers).promise
         : Promise.resolve(undefined),
     };
@@ -325,16 +324,28 @@ export function startDocumentPrefetch(
       value,
     };
   }));
-  preloadDirectSettingsRoute();
+  preloadDirectRoute();
 }
 
-function preloadDirectSettingsRoute(): void {
-  const route = location.pathname.match(/\/settings\/(members|access|qualification|notification)\/?$/)?.[1];
-  const loading = route === 'members' ? import('../../feature/member/MemberRoute')
-    : route === 'access' ? import('../../feature/access/AccessRoute')
-      : route === 'qualification' ? import('../../feature/qualification/QualificationRoute')
-        : route === 'notification' ? import('../../feature/notification/NotificationRoute')
-          : undefined;
+function preloadDirectRoute(): void {
+  const settingsRoute = location.pathname.match(/\/settings\/(members|access|qualification|notification)\/?$/)?.[1];
+  const entryRoute = location.pathname.match(/^\/scopes\/(platform|distributor|tenant|enterprise|mall)\/[^/]+\/(cockpit|products|supply-chain|orders|storefront-members)(?:\/[^/]+)?\/?$/)?.[2];
+  const selectionWorkspace = ['selection', 'pending'].includes(new URLSearchParams(location.search).get('workspace') ?? '');
+  const loading = settingsRoute === 'members' ? import('../../feature/member/MemberRoute')
+    : settingsRoute === 'access' ? import('../../feature/access/AccessRoute')
+      : settingsRoute === 'qualification' ? import('../../feature/qualification/QualificationRoute')
+        : settingsRoute === 'notification' ? import('../../feature/notification/NotificationRoute')
+          : /^\/scopes\/(platform|distributor|tenant|enterprise|mall)\/[^/]+\/support(?:\/[^/]+)?\/?$/.test(location.pathname)
+            ? import('../../feature/support/SupportRoute')
+            : entryRoute === 'cockpit' ? import('../../feature/cockpit/CockpitRoute')
+              : entryRoute === 'products' ? Promise.all([
+                import('../../feature/product/ProductRoute'),
+                selectionWorkspace ? import('../../feature/product/ProductSelectionRoute') : import('../../feature/product/ProductCatalogRoute'),
+              ])
+                : entryRoute === 'supply-chain' ? import('../../feature/supply-chain/SupplyChainRoute')
+                  : entryRoute === 'orders' ? import('../../feature/order/OrderRoute')
+                    : entryRoute === 'storefront-members' ? import('../../feature/storefront-member/StorefrontMemberRoute')
+                      : undefined;
   void loading?.catch(() => undefined);
 }
 
