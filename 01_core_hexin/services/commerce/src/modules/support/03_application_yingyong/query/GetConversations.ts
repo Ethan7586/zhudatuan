@@ -47,7 +47,11 @@ export function getConversationsOperations(kms: KmsClient, ports: SupportPortFac
         left join support.agent assigned on assigned.id=ticket.assigned_agent_id where exists(select 1 from organization.unitclosure
           where ancestor_id=$1 and descendant_id=ticket.scope_id)`, [access.scope.id, access.membership.id, member]);
       const pageResult = keysetResult(result, page, 'updated_at');
-      return { ...pageResult, body: { ...(pageResult.body as Readonly<Record<string, unknown>>),
+      const body = pageResult.body as { readonly items: readonly Readonly<Record<string, unknown>>[] };
+      const repository = ports(database);
+      const items = await Promise.all(body.items.map(async (item) => ({ ...item,
+        order: typeof item.order_id === 'string' ? await repository.order(item.order_id, access.scope.id, member, false) : null })));
+      return { ...pageResult, body: { ...body, items,
         views: counts.rows[0] ?? { handling: 0, review: 0, created: 0, all: 0 } } };
     },
     'support.messages.read': operationLifecycle({

@@ -1,6 +1,7 @@
 import { formatDate } from '../../shared/ui/Format';
 
 const states: Readonly<Record<string, string>> = Object.freeze({
+  assigned: '处理中',
   closed: '已关闭',
   open: '待处理',
   pending: '处理中',
@@ -62,9 +63,10 @@ export function supportHistoryLabel(kind: string): string {
   if (kind === 'message') return '发送公开回复';
   if (kind === 'opened') return '创建工单';
   if (kind === 'assigned' || kind === 'reassigned') return '分配处理人';
+  if (kind === 'platform.escalated') return '升级至平台支持';
   if (kind === 'resolved') return '标记已解决';
   if (kind === 'closed') return '关闭工单';
-  if (kind === 'reopened') return '重新打开工单';
+  if (kind === 'reopened' || kind === 'open') return '重新打开工单';
   return '更新工单';
 }
 

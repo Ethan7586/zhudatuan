@@ -13,17 +13,24 @@ export function assignTicketOperations(ports: SupportPortFactory): OperationActi
   return {
     'support.assignments.manage': async (request, database) => {
       const access = requireAccess(request); const body = bodyRecord(request); const ticket = textField(body, 'case'); const agent = textField(body, 'agent');
-      const locked = await database.query<{ scope_id: string; conversation_id: string; member_id: string | null }>(`select ticket.scope_id,
-        ticket.conversation_id,conversation.member_id from support.ticket ticket join support.conversation conversation
+      if (request.input.expectedVersion === undefined) throw new Error('EXPECTED_VERSION_REQUIRED');
+      const locked = await database.query<{ scope_id: string; conversation_id: string; member_id: string | null; version: number }>(`select ticket.scope_id,
+        ticket.conversation_id,conversation.member_id,ticket.version from support.ticket ticket join support.conversation conversation
         on conversation.id=ticket.conversation_id join support.agent agent
-        on agent.id=$3 and agent.scope_id=ticket.scope_id where ticket.id=$1 and ticket.state<>'closed' and exists(select 1
+        on agent.id=$3 and agent.scope_id=ticket.scope_id and agent.state='available'
+        and (select count(*) from support.ticket workload where workload.assigned_agent_id=agent.id
+          and workload.state in('assigned','waiting'))<agent.capacity
+        where ticket.id=$1 and ticket.state<>'closed' and exists(select 1
         from organization.unitclosure where ancestor_id=$2 and descendant_id=ticket.scope_id) for update of ticket`, [ticket, access.scope.id, agent]);
       const target = locked.rows[0]; if (!target) throw new Error('SUPPORT_ASSIGNMENT_INVALID');
+      if (target.version !== request.input.expectedVersion) throw new Error('VERSION_CONFLICT');
       await database.query('update support.assignment set released_at=clock_timestamp() where ticket_id=$1 and released_at is null', [ticket]);
       const result = await database.query(`insert into support.assignment(id,ticket_id,agent_id,reason,assigned_at,scope_id)
         values($1,$2,$3,$4,clock_timestamp(),$5) returning *`, [request.input.path.assignmentid!, ticket, agent,
         textField(body, 'reason'), target.scope_id]);
-      await database.query("update support.ticket set assigned_agent_id=$2,state='assigned',updated_at=clock_timestamp(),version=version+1 where id=$1", [ticket, agent]);
+      const updated = await database.query("update support.ticket set assigned_agent_id=$2,state='assigned',updated_at=clock_timestamp(),version=version+1 where id=$1 and version=$3 returning id",
+        [ticket, agent, request.input.expectedVersion]);
+      if (!updated.rows[0]) throw new Error('VERSION_CONFLICT');
       if (target.member_id) await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,
         payload,trace_id,occurred_at,available_at) values($1::text,'support.ticket.assigned',1,'ticket',$2::text,$3::text,
         jsonb_build_object('ticket',$2::text,'conversation',$4::text,'agent',$5::text,'member',$6::text),

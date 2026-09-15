@@ -1,13 +1,16 @@
-import { createFetchSupportCasesRead, createFetchSupportHistoryRead, createFetchSupportMessagesRead } from '@shop/sdk/support';
+import { createFetchSupportAgentsRead, createFetchSupportCasesRead, createFetchSupportHistoryRead,
+  createFetchSupportMessagesRead } from '@shop/sdk/support';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { consumeDocumentPrefetch } from '../../shared/api/DocumentPrefetch';
 import { consoleRequest } from '../../shared/api/Client';
 import { appConfig } from '../../shared/config/AppConfig';
-import { SupportCasePageSchema, SupportHistoryPageSchema, SupportMessagePageSchema, type SupportCaseView } from './SupportSchema';
+import { SupportAgentPageSchema, SupportCasePageSchema, SupportHistoryPageSchema, SupportMessagePageSchema,
+  type SupportCaseView } from './SupportSchema';
 
 const casesRead = createFetchSupportCasesRead(appConfig.apiBaseUrl);
 const messagesRead = createFetchSupportMessagesRead(appConfig.apiBaseUrl);
 const historyRead = createFetchSupportHistoryRead(appConfig.apiBaseUrl);
+const agentsRead = createFetchSupportAgentsRead(appConfig.apiBaseUrl);
 
 export const supportCaseKey = (context: ConsoleContext, view: SupportCaseView = 'handling', cursor?: string) => Object.freeze([
   'console', context.scope.kind, context.scope.id, context.session.accessVersion, 'support.cases.read', view, cursor ?? null, 50,
@@ -17,6 +20,9 @@ export const supportMessageKey = (context: ConsoleContext, caseId: string, curso
 ] as const);
 export const supportHistoryKey = (context: ConsoleContext, caseId: string) => Object.freeze([
   'console', context.scope.kind, context.scope.id, context.session.accessVersion, 'support.history.read', caseId, 100,
+] as const);
+export const supportAgentKey = (context: ConsoleContext) => Object.freeze([
+  'console', context.scope.kind, context.scope.id, context.session.accessVersion, 'support.agents.read', 100,
 ] as const);
 
 export async function readCases(context: ConsoleContext, view: SupportCaseView, cursor: string | undefined, signal: AbortSignal) {
@@ -31,6 +37,10 @@ export async function readMessages(context: ConsoleContext, caseId: string, curs
 }
 export async function readHistory(context: ConsoleContext, caseId: string, signal: AbortSignal) {
   return SupportHistoryPageSchema.parse(await historyRead({ path: { caseid: caseId }, query: { limit: 100 } },
+    consoleRequest(context.scope, signal, context.session.accessVersion)));
+}
+export async function readAgents(context: ConsoleContext, signal: AbortSignal) {
+  return SupportAgentPageSchema.parse(await agentsRead({ query: { limit: 100 } },
     consoleRequest(context.scope, signal, context.session.accessVersion)));
 }
 

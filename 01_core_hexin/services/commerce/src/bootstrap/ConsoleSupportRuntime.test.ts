@@ -31,7 +31,8 @@ describe('console support runtime', () => {
           expect(sql).toContain("has_table_privilege(current_user,'support.agent','SELECT')");
           expect(sql).toContain("has_table_privilege(current_user,'support.assignmentrule','SELECT')");
           expect(sql).toContain("has_table_privilege(current_user,'support.sla','SELECT')");
-          expect(sql).toContain("has_table_privilege(current_user,'support.assignment','INSERT')");
+          expect(sql).toContain("has_table_privilege(current_user,'support.assignment','SELECT,INSERT,UPDATE')");
+          expect(sql).toContain("has_table_privilege(current_user,'support.escalation','SELECT,INSERT')");
           expect(sql).toContain("has_table_privilege(current_user,'runtime.job','INSERT')");
           expect(values).toContain(CONSOLE_SUPPORT_SCHEMA_VERSION);
           expect(values).toContain(CONSOLE_SUPPORT_SCHEMA_CHECKSUM);

@@ -9,11 +9,18 @@ import type { SupportCase, SupportMessage } from './SupportSchema';
 import { Component } from './SupportRoute';
 
 const mocks = vi.hoisted(() => ({
+  advanceSupportCase: vi.fn(),
+  assignSupportCase: vi.fn(),
+  canAdvanceSupportCase: vi.fn(),
+  canAssignSupportCase: vi.fn(),
   canCreateSupportCase: vi.fn(),
+  canEscalateSupportCase: vi.fn(),
   canReviewSupportCase: vi.fn(),
   canSendSupportMessage: vi.fn(),
   canUploadSupportAttachment: vi.fn(),
   createSupportCase: vi.fn(),
+  escalateSupportCase: vi.fn(),
+  readAgents: vi.fn(),
   readCases: vi.fn(),
   readHistory: vi.fn(),
   readMessages: vi.fn(),
@@ -23,20 +30,28 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('./SupportQuery', () => ({
+  readAgents: mocks.readAgents,
   readCases: mocks.readCases,
   readHistory: mocks.readHistory,
   readMessages: mocks.readMessages,
   supportCaseKey: (_context: unknown, view: string, cursor?: string) => ['support-cases', view, cursor ?? null],
   supportMessageKey: (_context: unknown, caseId: string, cursor?: string) => ['support-messages', caseId, cursor ?? null],
   supportHistoryKey: (_context: unknown, caseId: string) => ['support-history', caseId],
+  supportAgentKey: () => ['support-agents'],
 }));
 
 vi.mock('./SupportCommand', () => ({
+  advanceSupportCase: mocks.advanceSupportCase,
+  assignSupportCase: mocks.assignSupportCase,
+  canAdvanceSupportCase: mocks.canAdvanceSupportCase,
+  canAssignSupportCase: mocks.canAssignSupportCase,
   canCreateSupportCase: mocks.canCreateSupportCase,
+  canEscalateSupportCase: mocks.canEscalateSupportCase,
   canReviewSupportCase: mocks.canReviewSupportCase,
   canSendSupportMessage: mocks.canSendSupportMessage,
   canUploadSupportAttachment: mocks.canUploadSupportAttachment,
   createSupportCase: mocks.createSupportCase,
+  escalateSupportCase: mocks.escalateSupportCase,
   reviewSupportPriority: mocks.reviewSupportPriority,
   sendSupportMessage: mocks.sendSupportMessage,
   uploadSupportAttachment: mocks.uploadSupportAttachment,
@@ -83,9 +98,11 @@ const context: ConsoleContext = {
     actor: 'actor:support-test',
     membership: 'membership:support-test',
     accessVersion: 8,
-    permissions: ['support.cases.read', 'support.messages.read', 'support.message.send', 'support.case.create', 'support.case.manage', 'support.history.read'],
+    permissions: ['support.cases.read', 'support.messages.read', 'support.message.send', 'support.case.create', 'support.case.manage',
+      'support.history.read', 'support.assignment.manage', 'support.agent.read'],
     capabilities: ['support.cases.read', 'support.messages.read', 'support.messages.send', 'support.cases.create', 'support.cases.update',
-      'support.attachments.create', 'support.history.read'],
+      'support.cases.close', 'support.cases.reopen', 'support.attachments.create', 'support.assignments.manage', 'support.agents.read',
+      'support.history.read'],
     csrf: 'csrf-support-console-test',
     target: 'console',
     scope: { kind: 'enterprise', id: 'enterprise:1', name: '宏泰甄选' },
@@ -105,13 +122,21 @@ beforeAll(() => {
 
 beforeEach(() => {
   mocks.readCases.mockResolvedValue({ items: [supportCase], count: 1, views: { handling: 1, review: 1, created: 2, all: 3 } });
+  mocks.readAgents.mockResolvedValue({ items: [{ id: 'agent:next', membership_id: 'membership:next', skills: ['general'],
+    capacity: 8, state: 'available' }], count: 1 });
   mocks.readMessages.mockResolvedValue({ items: messages, attachments: [], count: messages.length });
   mocks.readHistory.mockResolvedValue({ items: [], count: 0 });
   mocks.canCreateSupportCase.mockReturnValue(true);
+  mocks.canAssignSupportCase.mockReturnValue(true);
+  mocks.canEscalateSupportCase.mockReturnValue(true);
+  mocks.canAdvanceSupportCase.mockReturnValue(true);
   mocks.canReviewSupportCase.mockReturnValue(true);
   mocks.canSendSupportMessage.mockReturnValue(true);
   mocks.canUploadSupportAttachment.mockReturnValue(true);
   mocks.createSupportCase.mockResolvedValue({ ...supportCase, id: 'case:new-service' });
+  mocks.assignSupportCase.mockResolvedValue({ id: 'assignment:new' });
+  mocks.escalateSupportCase.mockResolvedValue({ ...supportCase, state: 'waiting', version: 13 });
+  mocks.advanceSupportCase.mockResolvedValue({ ...supportCase, state: 'resolved', version: 13 });
   mocks.reviewSupportPriority.mockResolvedValue({ ...supportCase, priority: 'urgent', version: 13 });
   mocks.sendSupportMessage.mockResolvedValue({ id: 'message:sent-1' });
   mocks.uploadSupportAttachment.mockResolvedValue({ id: 'evidence:one', state: 'pending' });
@@ -136,7 +161,7 @@ describe('Support Chat VI route', () => {
     expect(within(caseContext).getByText('宏泰甄选')).toBeTruthy();
     expect(within(caseContext).getByText('福利售后')).toBeTruthy();
     expect(within(caseContext).getByText('order:SW-20260830-1001')).toBeTruthy();
-    expect(within(caseContext).queryByText('agent:wing-07')).toBeNull();
+    expect(within(caseContext).getByText('agent:wing-07')).toBeTruthy();
     expect(within(caseContext).queryByText('member:10086')).toBeNull();
     expect(mocks.readMessages).toHaveBeenCalledWith(context, supportCase.id, undefined, expect.any(AbortSignal));
   });
@@ -306,7 +331,7 @@ describe('Support Chat VI route', () => {
     await waitFor(() => expect(mocks.readCases.mock.calls.length).toBeGreaterThan(1));
   });
 
-  it('uses the service-center copy and enables the review queue while keeping future operations inert', async () => {
+  it('uses the service-center copy and exposes authorized lifecycle operations', async () => {
     renderRoute(`/scopes/enterprise/enterprise%3A1/support/${encodeURIComponent(supportCase.id)}`);
     await screen.findByText(messages[0].body);
 
@@ -316,9 +341,9 @@ describe('Support Chat VI route', () => {
     expect(screen.getByRole('button', { name: /待我审批/ }).hasAttribute('disabled')).toBe(false);
     expect(screen.getByRole('tab', { name: '内部备注' }).hasAttribute('disabled')).toBe(false);
     expect(screen.getByRole('tab', { name: '协同供应商' }).hasAttribute('disabled')).toBe(true);
-    expect(screen.getByRole('button', { name: '转交' }).hasAttribute('disabled')).toBe(true);
-    expect(screen.getByRole('button', { name: '升级至平台支持' }).hasAttribute('disabled')).toBe(true);
-    expect(screen.getByRole('button', { name: '完成工单' }).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByRole('button', { name: '确认转交' }).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByRole('button', { name: '升级至平台支持' }).hasAttribute('disabled')).toBe(false);
+    expect(screen.getByRole('button', { name: '完成工单' }).hasAttribute('disabled')).toBe(false);
     expect(document.body.textContent).not.toMatch(/SMART WING|ZHUDATUAN SUPPORT|客服坐席|客户/);
   });
 });

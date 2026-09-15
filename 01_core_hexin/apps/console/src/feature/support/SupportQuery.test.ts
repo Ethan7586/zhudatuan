@@ -3,14 +3,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 
-const api = vi.hoisted(() => ({ casesRead: vi.fn(), historyRead: vi.fn(), messagesRead: vi.fn() }));
+const api = vi.hoisted(() => ({ agentsRead: vi.fn(), casesRead: vi.fn(), historyRead: vi.fn(), messagesRead: vi.fn() }));
 vi.mock('@shop/sdk/support', () => ({
+  createFetchSupportAgentsRead: () => api.agentsRead,
   createFetchSupportCasesRead: () => api.casesRead,
   createFetchSupportHistoryRead: () => api.historyRead,
   createFetchSupportMessagesRead: () => api.messagesRead,
 }));
 
-import { readCases, readHistory } from './SupportQuery';
+import { readAgents, readCases, readHistory } from './SupportQuery';
 
 const context: ConsoleContext = {
   session: {
@@ -28,6 +29,7 @@ afterEach(() => {
   delete window.__consoleSupportPrefetch;
   delete window.__consoleAbortDocumentPrefetch;
   api.casesRead.mockReset();
+  api.agentsRead.mockReset();
   api.historyRead.mockReset();
 });
 
@@ -70,5 +72,15 @@ describe('support document prefetch', () => {
 
     expect(value.items[0]).toMatchObject({ sequence: 1, kind: 'priority.reviewed' });
     expect(api.historyRead).toHaveBeenCalledWith(expect.objectContaining({ path: { caseid: 'case:one' }, query: { limit: 100 } }), expect.anything());
+  });
+
+  it('reads the scoped agent roster used by manual transfer', async () => {
+    api.agentsRead.mockResolvedValue({ items: [{ id: 'agent:one', membership_id: 'membership:one', skills: ['general'],
+      capacity: 10, state: 'available' }], count: 1 });
+
+    const value = await readAgents(context, new AbortController().signal);
+
+    expect(value.items[0]).toMatchObject({ id: 'agent:one', state: 'available' });
+    expect(api.agentsRead).toHaveBeenCalledWith(expect.objectContaining({ query: { limit: 100 } }), expect.anything());
   });
 });
