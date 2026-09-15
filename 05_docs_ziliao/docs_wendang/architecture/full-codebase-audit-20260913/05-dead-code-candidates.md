@@ -1702,3 +1702,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | G1不强制；任何退役前在生产节点只读核验 service state/listeners/local access log、release history、Caddy active config与运维文档。 |
 
 - Console Support 运行面调用缺口归 DC-0077。累计 G0 60、G1 91、G2 5、G3 0、GX 41；未删除任何文件。
+
+## DC-0078｜hbbtzn L1 Caddy 路由片段的仓内接入缺口
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `02_platform_pingtai/infrastructure/projects_xiangmu/hbbtzn/deployment/sfl-l1-console-routes.caddy` 与 `sfl-l1-storefront-routes.caddy`。 |
+| 疑似原因 | 固定基线的当前 Caddy 主配置、发布配置和自动化脚本没有导入这两份 snippet。 |
+| 保留证据 | hbbtzn project identity 是 preserved/release-ineligible 的配置型租户；片段要求 alias Worker 提供 L1 node/surface headers，可能由仓外节点 Caddy、DNS/Worker、历史回滚或租户恢复流程装载。 |
+| 可否删除 | 否；未满足外部配置引用、发布/回滚职责、租户隔离行为和独立复核等 G3 条件。 |
+| 二次复核 | G1 不强制；拟变更前只读检查 hbbtzn 节点 active Caddy import、alias Worker header 发放、访问日志、release history 与恢复 runbook。 |
+
+- hbbtzn L1 Caddy 片段归 DC-0078。累计 G0 62、G1 92、G2 5、G3 0、GX 41；未删除任何文件。
