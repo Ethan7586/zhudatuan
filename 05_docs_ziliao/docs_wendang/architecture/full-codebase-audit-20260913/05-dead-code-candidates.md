@@ -1741,3 +1741,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 否；升级前需确认静态引用、npm scripts、CI workflow和测试负责人实际使用。 |
 
 - Browser MVP fixture server 归 DC-0080。累计 G0 62、G1 93、G2 5、G3 0、GX 42；未删除任何文件。
+
+## DC-0081｜隔离依赖准备辅助脚本的仓内启动缺口
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `04_tools/release-engine/adapters/zdt-next/prepare-isolated-dependencies.sh` 与其唯一仓内下游 `assert-workspace-isolation.mjs`。 |
+| 疑似原因 | 固定基线的 release manifest、CLI、GitHub workflow、README 和脚本 source 未找到对 prepare shell script 的静态启动；isolation assertion 仅由该 shell script 调用。 |
+| 保留证据 | 脚本在隔离工作树创建 hard-link 复用的 `node_modules`，随后拒绝指向 workspace 外的 package symlink；可能由仓外 `zdt-delivery`、构建宿主 bootstrap、人工受控恢复或未纳入仓内的 release policy 调用。 |
+| 可否删除 | 否；未满足外部调用、构建宿主、恢复职责、可观察行为及独立复核等 G3 条件。 |
+| 二次复核 | G1 不强制；若拟收敛，先只读核验当前 `zdt-delivery` 实现、构建机 bootstrap logs、release runbook 与最近 delivery receipt 的实际 argv。 |
+
+- 隔离依赖准备辅助脚本归 DC-0081。累计 G0 62、G1 94、G2 5、G3 0、GX 42；未删除任何文件。
