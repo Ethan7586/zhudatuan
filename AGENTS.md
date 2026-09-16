@@ -11,6 +11,7 @@
 ## Runner 1.6 发布口令
 
 - 普通发布可使用 `/Users/Ethan/.codex/bin/zdt-delivery release <full-source-sha>` 或 `deploy <full-source-sha>`；指定落点时分别使用 `release <full-source-sha> <target> <physical-node>` 或 `deploy <target> <full-source-sha> <physical-node>`。两个名字调用同一个 Runner 发布核心，谁被调用就用谁，不建立优先级或第二套发布路径；状态、重试和回滚分别使用 `status`、`retry`、`rollback`。
+- 指定单个目标和物理节点时，制品缺失由同一 Runner 仅构建该目标制品、再仅发布到指定节点；缓存命中直接发布。控制端不准备制品，也不扩大到其他节点。
 - 控制端只获取最新发布控制面、派发 GitHub 工作流、查询并展示结果；不得在控制端安装依赖、构建、上传、部署或回滚。
 - 实际执行优先使用阿里云 Runner；无法接单时使用 GitHub Hosted Runner。两者调用同一个发布核心，本机不是第三执行路线。
 - 业务 Source SHA 与最新控制面 SHA 必须分别保留。

@@ -15,6 +15,8 @@ zdt-delivery rollback <target> <physical-node>
 
 `deploy` and `release` are interchangeable names for the same release path. `deploy` with an explicit target uses the historical target-first argument order; the wrapper forwards it to `release` with Source SHA first. Neither command has priority over the other.
 
+For one physical node, use `zdt-delivery release <full-source-sha> <target> <physical-node>` or `zdt-delivery deploy <target> <full-source-sha> <physical-node>`. If that target's immutable artifact is absent or incomplete, the same Runner builds and publishes only that target's artifact, then deploys only the named node. A cache hit skips the build. The control-side machine never builds or prepares the artifact.
+
 Aliyun Build runners are selected first when one is online and idle. Missing, offline, busy, or unreadable Aliyun state selects GitHub Hosted immediately. A failure before the shared core starts also uses GitHub Hosted. Both locations invoke `.github/actions/runner-1-6/action.yml` and `scripts/runner-1-6.sh`; there is no second release implementation.
 
 The control-side machine never installs release dependencies, builds, packages, uploads, deploys, or rolls back. Historical recovery remains separate under `RECOVERY.md`.

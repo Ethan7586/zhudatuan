@@ -182,15 +182,19 @@ test('normal path uses direct artifact deployment and does not depend on old aut
   }
 });
 
-test('exact production cutover skips dependencies and build and reports the one-minute objective', async () => {
+test('exact release builds only a missing target artifact before deploying one node', async () => {
   const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
   const exactBranch = core.indexOf('if (exactScope) return deployExact');
   const dependencyInstall = core.indexOf("name: 'install-control-dependencies'");
   const exactFunction = core.indexOf('async function deployExact');
   assert.ok(exactBranch > 0 && exactBranch < dependencyInstall && exactFunction > dependencyInstall);
   const exactSource = core.slice(exactFunction, core.indexOf('async function deployTarget'));
-  assert.doesNotMatch(exactSource, /npm|buildRelease|packageRelease|createReleasePlan/);
-  assert.match(exactSource, /ARTIFACT_NOT_READY/);
+  assert.match(exactSource, /if \(!cached\.exists\)/);
+  assert.match(exactSource, /createReleasePlan\(adapter, \{ from: `\$\{sourceSha\}\^`, to: sourceSha, target, prepare: true \}\)/);
+  assert.match(exactSource, /await buildAndPublish\(adapter, controlRoot, plan, client, \{ sourceSha, target, node \}\)/);
+  assert.ok(exactSource.indexOf('await buildAndPublish') < exactSource.indexOf('await deployTarget'));
+  assert.match(exactSource, /cacheStatus: 'reused'|let cacheStatus = 'reused'/);
+  assert.doesNotMatch(exactSource, /physicalPlacements\(adapter/);
   assert.match(exactSource, /productionSloMs: 60_000/);
   assert.match(exactSource, /productionDurationMs <= 60_000/);
 });
@@ -215,8 +219,11 @@ test('release installs dependencies only when a cache miss requires a build', as
   const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
   const release = core.slice(core.indexOf('async function release'), core.indexOf('async function installDependencies'));
   assert.ok(release.indexOf('const plan = await createReleasePlan') < release.indexOf('if (needsBuild)'));
-  assert.ok(release.indexOf('if (needsBuild)') < release.indexOf('await installDependencies'));
-  assert.ok(release.indexOf('await installDependencies') < release.indexOf('await buildRelease'));
+  assert.match(release, /await buildAndPublish\(adapter, controlRoot, plan, client, \{ sourceSha, targets: plan\.deploymentOrder \}\)/);
+  const sharedBuild = core.slice(core.indexOf('async function buildAndPublish'), core.indexOf('async function installDependencies'));
+  assert.ok(sharedBuild.indexOf('await installDependencies') < sharedBuild.indexOf('await buildRelease'));
+  assert.ok(sharedBuild.indexOf('await buildRelease') < sharedBuild.indexOf('await packageRelease'));
+  assert.ok(sharedBuild.indexOf('await packageRelease') < sharedBuild.indexOf('await publishSimpleArtifacts'));
   assert.match(core, /name: 'install-control-dependencies'/);
   assert.match(core, /name: 'install-source-dependencies'/);
   assert.match(core, /resolve\(controlRoot\) !== resolve\(adapter\.projectRoot\)/);
@@ -234,7 +241,7 @@ test('status observes configured physical nodes without source checkout or a rel
   assert.match(status, /all-configured-placements/);
   const action = await readFile(join(root, '.github/actions/runner-1-6/action.yml'), 'utf8');
   assert.match(action, /inputs\.operation == 'release' \|\| inputs\.operation == 'retry'/);
-  assert.match(action, /inputs\.target == ''/);
+  assert.doesNotMatch(action, /inputs\.target == ''/);
   const workflow = await readFile(join(root, '.github/workflows/delivery-1-6.yml'), 'utf8');
   assert.match(workflow, /inputs\.operation == 'status'/);
   assert.match(workflow, /filter: blob:none/);
