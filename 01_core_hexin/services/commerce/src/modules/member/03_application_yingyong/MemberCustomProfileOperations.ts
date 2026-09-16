@@ -4,10 +4,10 @@ import {
   StorefrontMemberCustomProfileUpdateSchema,
   StorefrontMemberProfileConfigSchema,
   type OperationId,
-  type StorefrontMemberCustomField,
   type StorefrontMemberCustomProfileUpdate,
   type StorefrontMemberProfileConfig,
 } from '@shop/contract';
+import { validateMemberCustomFieldValue, validateMemberProfileConfig } from '@shop/l-kernel/member-profile';
 import { requireAccess, type OperationActions, type OperationDatabase } from '../../../foundation/application/ModuleOperations';
 import type { OperationRequest } from '../../../foundation/application/OperationHandler';
 import { bodyRecord } from '../../../foundation/interface/Validation';
@@ -25,7 +25,7 @@ export function memberCustomProfileActions(): OperationActions {
     'member.storefront.config.manage': async (request, database) => {
       const scope = mallScope(request);
       const config = StorefrontMemberProfileConfigSchema.parse(bodyRecord(request));
-      validateConfig(config);
+      validateMemberProfileConfig(config);
       await saveConfig(database, scope, config);
       return { status: 200, body: await readConfig(database, scope) };
     },
@@ -108,7 +108,7 @@ async function saveProfile(database: OperationDatabase, scope: string, membershi
   if (!target.rows[0]) throw new Error('RESOURCE_NOT_FOUND');
   const definitions = await database.query('select id,name,field_type type,options,sort_order,enabled from member.storefrontcustomfield where organization_id=$1 and enabled', [scope]);
   const fields = new Map(definitions.rows.map((row) => StorefrontMemberCustomFieldSchema.parse(row)).map((field) => [field.id, field]));
-  for (const item of update.custom_field_values) validateFieldValue(fields.get(item.field_id), item.value);
+  for (const item of update.custom_field_values) validateMemberCustomFieldValue(fields.get(item.field_id), item.value);
   await database.query('delete from member.storefrontmembertag where organization_id=$1 and membership_id=$2', [scope, membership]);
   for (const tag of update.custom_tag_ids) {
     const result = await database.query(
@@ -125,19 +125,4 @@ async function saveProfile(database: OperationDatabase, scope: string, membershi
     values($1,$2,$3,$4::jsonb,clock_timestamp())`,
       [scope, membership, item.field_id, JSON.stringify(item.value)]
     );
-}
-
-function validateConfig(config: StorefrontMemberProfileConfig): void {
-  for (const field of config.fields) if ((field.type === 'select' || field.type === 'multiselect') !== field.options.length > 0) throw new Error('CUSTOM_FIELD_OPTIONS_INVALID');
-}
-function validateFieldValue(field: StorefrontMemberCustomField | undefined, value: unknown): void {
-  if (!field) throw new Error('CUSTOM_PROFILE_CONFIGURATION_STALE');
-  const matches =
-    value === null ||
-    ((field.type === 'text' || field.type === 'date' || field.type === 'remark') && typeof value === 'string') ||
-    (field.type === 'number' && typeof value === 'number' && Number.isFinite(value)) ||
-    (field.type === 'switch' && typeof value === 'boolean') ||
-    (field.type === 'select' && typeof value === 'string' && field.options.includes(value)) ||
-    (field.type === 'multiselect' && Array.isArray(value) && value.every((item) => typeof item === 'string' && field.options.includes(item)));
-  if (!matches) throw new Error('CUSTOM_FIELD_VALUE_INVALID');
 }
