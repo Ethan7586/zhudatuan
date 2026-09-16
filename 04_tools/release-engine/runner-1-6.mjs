@@ -62,7 +62,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 
 async function release(adapter, controlRoot, sourceSha) {
   context.stage = 'dependencies';
-  await runCommand({ name: 'install-release-dependencies', argv: ['npm', 'ci', '--ignore-scripts', '--no-audit', '--no-fund'], timeoutMs: 20 * 60_000 }, commandContext(adapter));
+  const install = { argv: ['npm', 'ci', '--ignore-scripts', '--no-audit', '--no-fund'], timeoutMs: 20 * 60_000 };
+  await runCommand({ ...install, name: 'install-control-dependencies' }, { ...commandContext(adapter), projectRoot: controlRoot });
+  if (resolve(controlRoot) !== resolve(adapter.projectRoot)) {
+    await runCommand({ ...install, name: 'install-source-dependencies' }, commandContext(adapter));
+  }
   context.stage = 'plan';
   const plan = await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha });
   const releaseId = `r16-${sourceSha}`;
