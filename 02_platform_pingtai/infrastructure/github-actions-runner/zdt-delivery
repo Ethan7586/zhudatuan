@@ -7,6 +7,14 @@ case "$operation" in
   release|retry)
     { [ "$#" -eq 2 ] || [ "$#" -eq 4 ]; } || { echo "Usage: zdt-delivery $operation <full-source-sha-or-release-id> [target physical-node]" >&2; exit 64; }
     ;;
+  deploy)
+    { [ "$#" -eq 2 ] || [ "$#" -eq 4 ]; } || { echo 'Usage: zdt-delivery deploy <full-source-sha> | deploy <target> <full-source-sha> <physical-node>' >&2; exit 64; }
+    if [ "$#" -eq 4 ]; then
+      set -- release "$3" "$2" "$4"
+    else
+      set -- release "$2"
+    fi
+    ;;
   status)
     [ "$#" -eq 2 ] || { echo 'Usage: zdt-delivery status <full-source-sha-or-release-id>' >&2; exit 64; }
     ;;
@@ -18,6 +26,7 @@ case "$operation" in
     ;;
   *)
     echo 'Usage: zdt-delivery release <full-source-sha> [target physical-node]' >&2
+    echo '       zdt-delivery deploy <full-source-sha> | deploy <target> <full-source-sha> <physical-node>' >&2
     echo '       zdt-delivery status <full-source-sha-or-release-id>' >&2
     echo '       zdt-delivery retry <release-id> [target physical-node]' >&2
     echo '       zdt-delivery rollback <target> <physical-node>' >&2
