@@ -38,6 +38,17 @@ describe('Engineering and architecture center', () => {
     expect(screen.getByText(/不参与发布与部署门禁/)).toBeTruthy();
   });
 
+  it('keeps unadopted MB slices dark and locally adopted but unverified code gray', () => {
+    renderPage('system/engineering');
+    const directory = screen.getByText('会员目录').closest('.engineeringkernelslice');
+    const detail = screen.getByText('会员基础档案读取').closest('.engineeringkernelslice');
+    const custom = screen.getByText('自定义档案字段校验').closest('.engineeringkernelslice');
+    expect(directory?.getAttribute('data-state')).toBe('legacy');
+    expect(detail?.getAttribute('data-state')).toBe('legacy');
+    expect(custom?.getAttribute('data-state')).toBe('pending');
+    expect(screen.queryByText('线上已验证')).toBeNull();
+  });
+
   it('routes the four center tabs within the current scope', () => {
     renderPage('system/engineering');
     const tabs = screen.getByRole('navigation', { name: '工程与架构中心页面' });

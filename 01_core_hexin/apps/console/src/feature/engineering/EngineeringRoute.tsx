@@ -14,6 +14,20 @@ const technologies = [
   ['边缘与交付', 'GitHub Actions · 阿里云 OSS / ECS · Cloudflare DNS'],
 ] as const;
 
+const memberKernelSlices = [
+  { name: '会员目录', sourceSha: null, deployedSha: null, verifiedSha: null, detail: '仍由原 Member 模块读取' },
+  { name: '会员基础档案读取', sourceSha: null, deployedSha: null, verifiedSha: null, detail: '仍由原 Member 模块读取' },
+  { name: '自定义档案字段校验', sourceSha: '4562a7a15818178de874764dbd51bb1666241b50',
+    deployedSha: null, verifiedSha: null, detail: '本地已调用 L-kernel；线上未验收' },
+] as const;
+
+function kernelState(slice: (typeof memberKernelSlices)[number]): 'legacy' | 'pending' | 'verified' {
+  if (slice.sourceSha === null) return 'legacy';
+  return slice.deployedSha !== null && slice.deployedSha === slice.verifiedSha ? 'verified' : 'pending';
+}
+
+const kernelStateLabel = { legacy: '未接入', pending: '未部署／待验证', verified: '线上已验证' } as const;
+
 export function EngineeringOverviewContent() {
   return <>
     <MetricGrid metrics={[
@@ -58,6 +72,20 @@ export function EngineeringOverviewContent() {
         </dl>
       </article>
     </div>
+
+    <article className="engineeringpanel engineeringkernel">
+      <header><div><span>L-KERNEL · L1</span><h2>会员内核继承状态</h2></div><small>按切片展示 · 只读证据快照</small></header>
+      <div className="engineeringkernelgrid">
+        {memberKernelSlices.map((slice) => {
+          const state = kernelState(slice);
+          return <section key={slice.name} className="engineeringkernelslice" data-state={state}>
+            <span className="engineeringkernelstate">{kernelStateLabel[state]}</span>
+            <strong>{slice.name}</strong><small>{slice.detail}</small>
+          </section>;
+        })}
+      </div>
+      <p className="engineeringkernelcaption">暗色＝未接入 · 灰色＝本地已接入但未部署或未验收 · 点亮＝同一切片的线上代码和真实 L1 验收均有证据。状态不参与业务或发布判断。</p>
+    </article>
 
     <article className="engineeringpanel engineeringstack">
       <header><div><span>TECHNOLOGY STACK</span><h2>商城技术栈</h2></div><small>版本来自当前仓库与交付基线</small></header>
