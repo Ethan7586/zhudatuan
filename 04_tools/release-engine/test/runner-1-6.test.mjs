@@ -206,11 +206,13 @@ test('release installs dependencies before dynamic impact planning', async () =>
   assert.match(core, /resolve\(controlRoot\) !== resolve\(adapter\.projectRoot\)/);
 });
 
-test('status plans without dependency installation and observes placements in parallel', async () => {
+test('status plans without dependency installation and bounds parallel SSH observations', async () => {
   const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
   const status = core.slice(core.indexOf('async function status'), core.indexOf('async function rollback'));
   assert.doesNotMatch(status, /installDependencies|npm ci/);
-  assert.match(status, /Promise\.all\(placements\.map/);
+  assert.match(status, /observePlacements\(placements, 4/);
+  assert.match(status, /mode: 'bounded-parallel'/);
+  assert.match(status, /transientSshFailure/);
   const impact = await readFile(join(root, '04_tools/release-engine/adapters/zdt-next/service-impact.mjs'), 'utf8');
   assert.doesNotMatch(impact, /(?:from|require\()['"]esbuild['"]/);
 });
