@@ -294,46 +294,39 @@ printf 'CONTROL_UPDATED agent=sha256:${agentSha256} policy=sha256:${policySha256
 }
 
 async function status(adapter, controlRoot, sourceSha) {
-  context.stage = 'dependencies';
-  progress('dependencies', { sourceSha, operation: 'status' });
-  await installDependencies(adapter, controlRoot);
+  const startedAt = performance.now();
   context.stage = 'plan';
+  progress('plan', { sourceSha, operation: 'status' });
   const plan = await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha });
-  const targets = [];
-  for (const target of plan.deploymentOrder) {
-    for (const node of physicalPlacements(adapter, target)) {
-      context.stage = 'status';
-      context.target = target;
-      context.node = node;
-      let remote;
-      try {
-        remote = await remoteControl(adapter, target, node, 'status');
-      } catch (error) {
-        targets.push({ target, node, state: 'UNKNOWN', currentSourceSha: null, previousSourceSha: null, health: null, diagnostic: observationDiagnostic(error) });
-        continue;
-      }
-      const currentSha = remote.result?.currentArtifact?.sourceSha ?? null;
-      const previousSha = remote.result?.previousArtifact?.sourceSha ?? null;
-      let health = null;
-      let state;
-      if (currentSha === sourceSha) {
-        context.stage = 'health';
-        try {
-          health = (await remoteControl(adapter, target, node, 'verify')).result?.readiness ?? null;
-          state = 'HEALTHY';
-        } catch (error) {
-          const diagnostic = observationDiagnostic(error);
-          state = diagnostic.remoteFailure ? 'FAILED' : 'UNKNOWN';
-          targets.push({ target, node, state, currentSourceSha: currentSha, previousSourceSha: previousSha, health, diagnostic });
-          continue;
-        }
-      } else if (previousSha === sourceSha) state = 'ROLLED_BACK';
-      else state = 'FAILED';
-      targets.push({ target, node, state, currentSourceSha: currentSha, previousSourceSha: previousSha, health });
-    }
-  }
+  const placements = plan.deploymentOrder.flatMap((target) => physicalPlacements(adapter, target).map((node) => ({ target, node })));
+  context.stage = 'status';
+  progress('status', { sourceSha, total: placements.length, mode: 'parallel' });
+  const targets = await Promise.all(placements.map(({ target, node }) => observeTarget(adapter, sourceSha, target, node)));
   const state = aggregateStatus(targets.map((target) => target.state));
-  return { state, releaseId: `r16-${sourceSha}`, sourceSha, controlSha: process.env.CONTROL_SHA, executor: executor(), targets };
+  const durationMs = Math.round(performance.now() - startedAt);
+  progress('complete', { sourceSha, operation: 'status', state, durationMs });
+  return { state, releaseId: `r16-${sourceSha}`, sourceSha, controlSha: process.env.CONTROL_SHA, executor: executor(), durationMs, targets };
+}
+
+async function observeTarget(adapter, sourceSha, target, node) {
+  let remote;
+  try {
+    remote = await remoteControl(adapter, target, node, 'status');
+  } catch (error) {
+    return { target, node, state: 'UNKNOWN', currentSourceSha: null, previousSourceSha: null, health: null, diagnostic: observationDiagnostic(error) };
+  }
+  const currentSha = remote.result?.currentArtifact?.sourceSha ?? null;
+  const previousSha = remote.result?.previousArtifact?.sourceSha ?? null;
+  if (currentSha !== sourceSha) {
+    return { target, node, state: previousSha === sourceSha ? 'ROLLED_BACK' : 'FAILED', currentSourceSha: currentSha, previousSourceSha: previousSha, health: null };
+  }
+  try {
+    const health = (await remoteControl(adapter, target, node, 'verify')).result?.readiness ?? null;
+    return { target, node, state: 'HEALTHY', currentSourceSha: currentSha, previousSourceSha: previousSha, health };
+  } catch (error) {
+    const diagnostic = observationDiagnostic(error);
+    return { target, node, state: diagnostic.remoteFailure ? 'FAILED' : 'UNKNOWN', currentSourceSha: currentSha, previousSourceSha: previousSha, health: null, diagnostic };
+  }
 }
 
 async function rollback(adapter, controlRoot, target, node) {
