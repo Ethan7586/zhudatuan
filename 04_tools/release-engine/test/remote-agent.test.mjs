@@ -59,6 +59,10 @@ test('stages, activates, rolls back and reports status with immutable releases',
   const verified = await invoke(fixture, 'verify', second);
   assert.equal(verified.result.current, firstCurrent);
   assert.equal(verified.result.checks.length, 1);
+  const observed = await invokeObserve(fixture, ['app']);
+  assert.equal(observed.result.targets[0].target, 'app');
+  assert.equal(observed.result.targets[0].status.current, firstCurrent);
+  assert.equal(observed.result.targets[0].verification.readiness.status, 'ready');
 });
 
 test('OSS direct mode checks health and automatically restores the immutable previous release', async () => {
@@ -1185,6 +1189,14 @@ async function invoke(fixture, action, artifact, approval = null, node = 'local'
     args.push('--source-sha', artifact.sourceSha, '--approval', approval ?? `fixture:seed-layout:${artifact.sourceSha}`);
   }
   const result = await execFileAsync(process.execPath, args, {
+    env: { ...process.env, ...(fixture.environment ?? {}), AI_DELIVERY_POLICY_ROOT: fixture.policyRoot },
+    maxBuffer: 1024 * 1024,
+  });
+  return JSON.parse(result.stdout);
+}
+
+async function invokeObserve(fixture, targets, node = 'local') {
+  const result = await execFileAsync(process.execPath, [agent, 'observe', '--project', 'fixture', '--node', node, '--targets', targets.join(',')], {
     env: { ...process.env, ...(fixture.environment ?? {}), AI_DELIVERY_POLICY_ROOT: fixture.policyRoot },
     maxBuffer: 1024 * 1024,
   });

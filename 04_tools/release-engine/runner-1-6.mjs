@@ -300,57 +300,29 @@ async function status(adapter, controlRoot, sourceSha) {
   const plan = await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha });
   const placements = plan.deploymentOrder.flatMap((target) => physicalPlacements(adapter, target).map((node) => ({ target, node })));
   context.stage = 'status';
-  progress('status', { sourceSha, total: placements.length, mode: 'bounded-parallel', parallelism: 4 });
-  const targets = await observePlacements(placements, 4, ({ target, node }) => observeTarget(adapter, sourceSha, target, node));
+  const nodeTargets = Map.groupBy(placements, ({ node }) => node);
+  progress('status', { sourceSha, total: placements.length, mode: 'one-connection-per-node', connections: nodeTargets.size });
+  const observations = new Map();
+  await Promise.all([...nodeTargets].map(async ([node, entries]) => {
+    const remote = await remoteObserveNode(adapter, node, entries.map(({ target }) => target));
+    for (const observation of remote.result?.targets ?? []) observations.set(`${node}:${observation.target}`, observation);
+  }));
+  const targets = placements.map(({ target, node }) => observedTarget(sourceSha, target, node, observations.get(`${node}:${target}`)));
   const state = aggregateStatus(targets.map((target) => target.state));
   const durationMs = Math.round(performance.now() - startedAt);
   progress('complete', { sourceSha, operation: 'status', state, durationMs });
   return { state, releaseId: `r16-${sourceSha}`, sourceSha, controlSha: process.env.CONTROL_SHA, executor: executor(), durationMs, targets };
 }
 
-async function observePlacements(placements, parallelism, observe) {
-  const results = new Array(placements.length);
-  let next = 0;
-  await Promise.all(Array.from({ length: Math.min(parallelism, placements.length) }, async () => {
-    while (next < placements.length) {
-      const index = next++;
-      results[index] = await observe(placements[index]);
-    }
-  }));
-  return results;
-}
-
-async function observeTarget(adapter, sourceSha, target, node) {
-  let remote;
-  try {
-    remote = await remoteObservation(adapter, target, node, 'status');
-  } catch (error) {
-    return { target, node, state: 'UNKNOWN', currentSourceSha: null, previousSourceSha: null, health: null, diagnostic: observationDiagnostic(error) };
-  }
-  const currentSha = remote.result?.currentArtifact?.sourceSha ?? null;
-  const previousSha = remote.result?.previousArtifact?.sourceSha ?? null;
+function observedTarget(sourceSha, target, node, observation) {
+  if (!observation) return { target, node, state: 'UNKNOWN', currentSourceSha: null, previousSourceSha: null, health: null, diagnostic: { code: 'OBSERVATION_MISSING' } };
+  const currentSha = observation.status?.currentArtifact?.sourceSha ?? null;
+  const previousSha = observation.status?.previousArtifact?.sourceSha ?? null;
   if (currentSha !== sourceSha) {
     return { target, node, state: previousSha === sourceSha ? 'ROLLED_BACK' : 'FAILED', currentSourceSha: currentSha, previousSourceSha: previousSha, health: null };
   }
-  try {
-    const health = (await remoteObservation(adapter, target, node, 'verify')).result?.readiness ?? null;
-    return { target, node, state: 'HEALTHY', currentSourceSha: currentSha, previousSourceSha: previousSha, health };
-  } catch (error) {
-    const diagnostic = observationDiagnostic(error);
-    return { target, node, state: diagnostic.remoteFailure ? 'FAILED' : 'UNKNOWN', currentSourceSha: currentSha, previousSourceSha: previousSha, health: null, diagnostic };
-  }
-}
-
-async function remoteObservation(adapter, target, node, action) {
-  try {
-    return await remoteControl(adapter, target, node, action);
-  } catch (error) {
-    const details = error.details ?? {};
-    const transientSshFailure = details.exitCode === 255 || /Connection (?:closed|reset)|timed out/i.test(details.output ?? '');
-    if (!transientSshFailure) throw error;
-    await new Promise((resolveDelay) => setTimeout(resolveDelay, 100));
-    return remoteControl(adapter, target, node, action);
-  }
+  if (observation.error) return { target, node, state: 'FAILED', currentSourceSha: currentSha, previousSourceSha: previousSha, health: null, diagnostic: observation.error };
+  return { target, node, state: 'HEALTHY', currentSourceSha: currentSha, previousSourceSha: previousSha, health: observation.verification?.readiness ?? null };
 }
 
 async function rollback(adapter, controlRoot, target, node) {
@@ -380,6 +352,23 @@ async function remoteControl(adapter, target, node, action) {
     {
       name: `${action}:${node}:${target}`,
       argv: sshArgv(host, [transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs', action, '--project', adapter.project, '--node', deployment.executionNode, '--target', target]),
+      timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
+    },
+    commandContext(adapter)
+  );
+  return parseRemote(result.output);
+}
+
+async function remoteObserveNode(adapter, node, targets) {
+  invariant(targets.length > 0, 'STATUS_TARGETS_REQUIRED', `status targets missing for ${node}`);
+  const deployment = resolveDeployment(adapter, node, targets[0]);
+  const transport = deployment.node.transport ?? adapter.transport;
+  const host = process.env[transport.hostEnv ?? 'AI_DELIVERY_SSH_HOST'] ?? transport.host;
+  invariant(host, 'DEPLOY_SSH_HOST_MISSING', `SSH host missing for ${node}`);
+  const result = await runCommand(
+    {
+      name: `observe:${node}`,
+      argv: sshArgv(host, [transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs', 'observe', '--project', adapter.project, '--node', deployment.executionNode, '--targets', targets.join(',')]),
       timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
     },
     commandContext(adapter)
