@@ -5,6 +5,7 @@ import { invariant } from './errors.mjs';
 import { assertBuildRefIsCheckedOut } from './git.mjs';
 import { createPlan } from './planner.mjs';
 import { runCommand } from './runner.mjs';
+import { runIndependent } from './run-independent.mjs';
 import { createRun, readJson, statePaths, writeJson } from './state.mjs';
 
 export async function createReleasePlan(adapter, options) {
@@ -23,14 +24,17 @@ export async function buildRelease(adapter, planPath) {
   const runDirectory = dirname(planPath);
   const phases = { preflight: [], tests: [], typecheck: [], build: [] };
   const timings = { preflight: 0, tests: 0, typecheck: 0, build: 0, materialize: 0 };
-  for (const phase of ['preflight', 'tests', 'typecheck', 'build']) {
+  const runPhase = async (phase) => {
     let index = 0;
     for (const command of plan.actions[phase]) {
       const result = await runCommand(command, commandContext(adapter, plan, runDirectory, command.target, `${phase}-${index++}-${command.name}`));
       phases[phase].push(result);
       timings[phase] += result.durationMs;
     }
-  }
+  };
+  await runPhase('preflight');
+  await runIndependent([() => runPhase('tests'), () => runPhase('typecheck')]);
+  await runPhase('build');
   const materializeStarted = performance.now();
   const targets = [];
   for (const target of plan.deploymentOrder) targets.push(await materializeTarget(adapter, target, runDirectory, plan.changes));

@@ -9,6 +9,7 @@ import { buildRelease, createReleasePlan, packageRelease } from './src/build-cor
 import { asDeliveryError, DeliveryError, invariant } from './src/errors.mjs';
 import { simpleDownloadEndpoint, simpleOssClientFromEnvironment } from './src/oss-client-1-6.mjs';
 import { runCommand } from './src/runner.mjs';
+import { runIndependent } from './src/run-independent.mjs';
 import { inspectSimpleArtifact, publishSimpleArtifacts, resolveSimpleArtifact } from './src/simple-artifact-store.mjs';
 
 const SHA = /^[a-f0-9]{40}$/;
@@ -84,6 +85,7 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
     context.stage = 'build';
     progress('build', { sourceSha, targets: plan.deploymentOrder });
     const built = await buildRelease(adapter, plan.planPath);
+    progress('build-complete', { sourceSha, timings: built.timings });
     context.stage = 'package';
     progress('package', { sourceSha, targets: plan.deploymentOrder });
     const packaged = await packageRelease(adapter, built.buildPath);
@@ -126,10 +128,13 @@ async function installDependencies(adapter, controlRoot) {
   const lockfile = await stat(join(controlRoot, 'package-lock.json')).then((value) => ({ present: true, bytes: value.size })).catch((error) => ({ present: false, error: error.code ?? error.message }));
   process.stdout.write(`RUNNER_1_6_DIAGNOSTIC=${JSON.stringify({ stage: 'dependencies', controlRoot, controlSha: process.env.CONTROL_SHA ?? null, controlLockfile: lockfile })}\n`);
   const install = { argv: ['npm', 'ci', '--ignore-scripts', '--no-audit', '--no-fund'], timeoutMs: 20 * 60_000 };
-  await runCommand({ ...install, name: 'install-control-dependencies' }, { ...commandContext(adapter), projectRoot: controlRoot });
+  const started = performance.now();
+  const installs = [() => runCommand({ ...install, name: 'install-control-dependencies' }, { ...commandContext(adapter), projectRoot: controlRoot })];
   if (resolve(controlRoot) !== resolve(adapter.projectRoot)) {
-    await runCommand({ ...install, name: 'install-source-dependencies' }, commandContext(adapter));
+    installs.push(() => runCommand({ ...install, name: 'install-source-dependencies' }, commandContext(adapter)));
   }
+  const results = await runIndependent(installs);
+  process.stdout.write(`RUNNER_1_6_DIAGNOSTIC=${JSON.stringify({ stage: 'dependencies-complete', durationMs: Math.round(performance.now() - started), installs: results.map(({ name, durationMs }) => ({ name, durationMs })) })}\n`);
 }
 
 async function deployExact(adapter, controlRoot, sourceSha, target, node) {
