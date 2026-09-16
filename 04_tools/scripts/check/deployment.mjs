@@ -9,16 +9,17 @@ import { validateAdapter } from '../../release-engine/src/adapter.mjs';
 
 const root = resolve(import.meta.dirname, '../../..');
 
-export function validateDeploymentContract({ adapter, policy, workflow }) {
+export function validateDeploymentContract({ adapter, policy, workflow, action }) {
   validateAdapter(adapter);
   assert(policy?.schema === 'ai.delivery.remote-policy.v1', 'DEPLOY_POLICY_SCHEMA_INVALID');
   assert(policy.project === adapter.project, 'DEPLOY_POLICY_PROJECT_MISMATCH');
-  for (const field of ['incomingRoot', 'lockRoot', 'rollbackRoot', 'auditRoot']) {
+  for (const field of ['incomingRoot', 'rollbackRoot', 'auditRoot']) {
     assert(typeof policy[field] === 'string' && policy[field].startsWith('/'), `DEPLOY_POLICY_${field.toUpperCase()}_INVALID`);
   }
+  assert(!('lockRoot' in policy) && !('staleLockSeconds' in policy), 'DEPLOY_POLICY_LOCK_AUTHORITY_FORBIDDEN');
 
   const physicalDeployments = validateDeploymentOwnership(adapter, policy);
-  const workflowSummary = validateDeployWorkflow(adapter, workflow);
+  const workflowSummary = validateDeployWorkflow(adapter, workflow, action);
 
   return Object.freeze({
     project: adapter.project,
@@ -65,7 +66,7 @@ function validateDeploymentOwnership(adapter, policy) {
   return actual.length;
 }
 
-function validateDeployWorkflow(adapter, workflow) {
+function validateDeployWorkflow(adapter, workflow, action) {
   const inputs = workflow?.on?.workflow_dispatch?.inputs;
   assert(inputs?.operation?.required === true && inputs.operation.type === 'choice', 'DEPLOY_WORKFLOW_OPERATION_INPUT_INVALID');
   assert(sameValues(inputs.operation.options, ['release', 'status', 'retry', 'rollback']), 'DEPLOY_WORKFLOW_OPERATION_OPTIONS_INVALID');
@@ -80,6 +81,10 @@ function validateDeployWorkflow(adapter, workflow) {
   assert(execute?.['runs-on'] === '${{ fromJSON(needs.route.outputs.runs_on) }}', 'DEPLOY_WORKFLOW_DYNAMIC_RUNNER_MISSING');
   assert(fallback?.['runs-on'] === 'ubuntu-24.04', 'DEPLOY_WORKFLOW_HOSTED_FALLBACK_MISSING');
   assert(String(fallback?.if).includes("core_started != 'true'"), 'DEPLOY_WORKFLOW_FALLBACK_SCOPE_INVALID');
+  assert(action?.outputs?.started?.value === '${{ steps.started.outputs.value }}', 'DEPLOY_ACTION_STARTED_OUTPUT_MISSING');
+  const startedStep = action?.runs?.steps?.findIndex((step) => step.id === 'started');
+  const coreStep = action?.runs?.steps?.findIndex((step) => String(step.run ?? '').includes('scripts/runner-1-6.sh'));
+  assert(startedStep >= 0 && coreStep > startedStep, 'DEPLOY_ACTION_STARTED_BOUNDARY_INVALID');
   const executeCore = execute?.steps?.find((step) => step.uses === './.github/actions/runner-1-6');
   const fallbackCore = fallback?.steps?.find((step) => step.uses === './.github/actions/runner-1-6');
   assert(executeCore && fallbackCore, 'DEPLOY_WORKFLOW_SHARED_CORE_MISSING');
@@ -167,6 +172,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     adapter: JSON.parse(readFileSync(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8')),
     policy: JSON.parse(readFileSync(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8')),
     workflow: parse(readFileSync(resolve(root, '.github/workflows/delivery-1-6.yml'), 'utf8')),
+    action: parse(readFileSync(resolve(root, '.github/actions/runner-1-6/action.yml'), 'utf8')),
   });
   console.log(`deployment contract: project=${summary.project} targets=${summary.targets} channels=${summary.channels} nodes=${summary.nodes} physical=${summary.physicalDeployments} commands=${summary.workflowCommands}`);
 }

@@ -14,11 +14,11 @@ on:
         required: false
         type: string
       release_target:
-        description: Required only for rollback
+        description: Optional with physical node for fast exact release/retry; required for rollback
         required: false
         type: string
       physical_node:
-        description: Required only for rollback
+        description: Optional with release target for fast exact release/retry; required for rollback
         required: false
         type: string
 
@@ -56,10 +56,16 @@ jobs:
               if [[ "$IDENTIFIER" =~ ^[0-9a-f]{40}$ ]]; then source_sha="$IDENTIFIER"
               elif [[ "$IDENTIFIER" =~ ^r16-([0-9a-f]{40})$ ]]; then source_sha="${BASH_REMATCH[1]}"
               else echo 'release/status requires a full Source SHA or r16 release id' >&2; exit 64; fi
+              if [ "$OPERATION" = release ] && { [ -n "$RELEASE_TARGET" ] || [ -n "$PHYSICAL_NODE" ]; }; then
+                [ -n "$RELEASE_TARGET" ] && [ -n "$PHYSICAL_NODE" ] || { echo 'exact release requires both target and physical node' >&2; exit 64; }
+              fi
               ;;
             retry)
               [[ "$IDENTIFIER" =~ ^r16-([0-9a-f]{40})$ ]] || { echo 'retry requires an r16 release id' >&2; exit 64; }
               source_sha="${BASH_REMATCH[1]}"
+              if [ -n "$RELEASE_TARGET" ] || [ -n "$PHYSICAL_NODE" ]; then
+                [ -n "$RELEASE_TARGET" ] && [ -n "$PHYSICAL_NODE" ] || { echo 'exact retry requires both target and physical node' >&2; exit 64; }
+              fi
               ;;
             rollback)
               [ -n "$RELEASE_TARGET" ] && [ -n "$PHYSICAL_NODE" ] || { echo 'rollback requires target and physical node' >&2; exit 64; }

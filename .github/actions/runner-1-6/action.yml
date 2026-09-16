@@ -17,6 +17,10 @@ inputs:
     default: ''
   runner-class:
     required: true
+outputs:
+  started:
+    description: True once the shared release core is about to execute
+    value: ${{ steps.started.outputs.value }}
 runs:
   using: composite
   steps:
@@ -31,8 +35,11 @@ runs:
       uses: actions/setup-node@v6
       with:
         node-version: 22.22.0
-    - name: Start shared release core
-      id: core
+    - name: Mark shared release core started
+      id: started
+      shell: bash
+      run: echo 'value=true' >> "$GITHUB_OUTPUT"
+    - name: Run shared release core
       shell: bash
       env:
         CONTROL_ROOT: ${{ github.workspace }}
@@ -42,5 +49,4 @@ runs:
         PHYSICAL_NODE: ${{ inputs.physical-node }}
         RUNNER_CLASS: ${{ inputs.runner-class }}
       run: |
-        echo 'started=true' >> "$GITHUB_OUTPUT"
         bash scripts/runner-1-6.sh "${{ inputs.operation }}"

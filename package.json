@@ -44,7 +44,6 @@
     "build": "npm run build:workspace && npm run build:commerce",
     "typecheck": "npm run typecheck --workspaces --if-present && tsc -p 03_quality_ceshi/tests/browser/tsconfig.json --noEmit",
     "lint": "eslint . --max-warnings 0",
-    "release": "node 04_tools/release-engine/cli.mjs",
     "test:release-engine": "node --test 04_tools/release-engine/test/*.test.mjs",
     "test": "npm run test:unit",
     "test:unit": "npm run test --workspaces --if-present",

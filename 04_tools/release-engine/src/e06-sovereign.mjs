@@ -305,7 +305,6 @@ async function preparePolicy(root, containers, runtime) {
     project: PROJECT,
     allowedRoots: [root],
     incomingRoot: root,
-    lockRoot: join(root, 'locks'),
     auditRoot: join(root, 'audit'),
     minimumFreeBytes: 1,
     readiness: { timeoutMs: 10_000, intervalMs: 100, attemptTimeoutMs: 2_000, hardFailureGraceMs: 500 },

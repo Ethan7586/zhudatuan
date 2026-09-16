@@ -4,16 +4,19 @@ set -euo pipefail
 
 operation="${1:-}"
 case "$operation" in
-  release|status|retry)
-    [ "$#" -eq 2 ] || { echo "Usage: zdt-delivery $operation <full-source-sha-or-release-id>" >&2; exit 64; }
+  release|retry)
+    { [ "$#" -eq 2 ] || [ "$#" -eq 4 ]; } || { echo "Usage: zdt-delivery $operation <full-source-sha-or-release-id> [target physical-node]" >&2; exit 64; }
+    ;;
+  status)
+    [ "$#" -eq 2 ] || { echo 'Usage: zdt-delivery status <full-source-sha-or-release-id>' >&2; exit 64; }
     ;;
   rollback)
     [ "$#" -eq 3 ] || { echo 'Usage: zdt-delivery rollback <target> <physical-node>' >&2; exit 64; }
     ;;
   *)
-    echo 'Usage: zdt-delivery release <full-source-sha>' >&2
+    echo 'Usage: zdt-delivery release <full-source-sha> [target physical-node]' >&2
     echo '       zdt-delivery status <full-source-sha-or-release-id>' >&2
-    echo '       zdt-delivery retry <release-id>' >&2
+    echo '       zdt-delivery retry <release-id> [target physical-node]' >&2
     echo '       zdt-delivery rollback <target> <physical-node>' >&2
     exit 64
     ;;

@@ -33,7 +33,7 @@ export function deliveryErrorContract(error, context = {}) {
   const transient = category === 'TRANSIENT';
   const diagnosis = diagnoseAccessDenial(status, detail);
   const nextSafeAction = context.nextSafeAction ?? (value.code === 'OSS_LIST_FAILED' && securityDenial
-    ? 'repair-minimal-ram-policy-and-rerun-doctor'
+    ? 'repair-minimal-ram-policy-and-retry-the-same-operation'
     : transient ? 'retry-same-readiness-check' : 'stop-and-review-readiness-evidence');
   return Object.freeze({
     code: value.code,

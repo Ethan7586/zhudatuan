@@ -627,7 +627,7 @@
     {
       "id": "delivery-tooling",
       "targets": [],
-      "include": [".github/workflows/delivery-1-6.yml",".github/actions/runner-1-6/**",".github/workflows/quality-aliyun.yml",".github/workflows/legacy-direct-recovery-aliyun.yml",".github/workflows/legacy-oss-recovery-aliyun.yml",".github/workflows/register-current-baseline-aliyun.yml","scripts/delivery-dispatch.sh","scripts/runner-1-6.sh","AI-DELIVERY.md","RECOVERY.md","04_tools/release-engine/**","02_platform_pingtai/infrastructure/github-actions-runner/**","02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh","02_platform_pingtai/infrastructure/release/zdt-next.release.json","02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json"],
+      "include": [".github/workflows/delivery-1-6.yml",".github/actions/runner-1-6/**",".github/workflows/quality-aliyun.yml",".github/workflows/legacy-oss-recovery-aliyun.yml","scripts/delivery-dispatch.sh","scripts/runner-1-6.sh","AI-DELIVERY.md","RECOVERY.md","04_tools/release-engine/**","02_platform_pingtai/infrastructure/github-actions-runner/**","02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh","02_platform_pingtai/infrastructure/release/zdt-next.release.json","02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json"],
       "reason": "delivery tooling is validated in the planning job and is not a production artifact"
     },
     {

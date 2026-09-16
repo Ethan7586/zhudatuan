@@ -12,6 +12,7 @@ const current = Object.freeze({
   adapter: JSON.parse(await readFile(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8')),
   policy: JSON.parse(await readFile(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8')),
   workflow: parse(await readFile(resolve(root, '.github/workflows/delivery-1-6.yml'), 'utf8')),
+  action: parse(await readFile(resolve(root, '.github/actions/runner-1-6/action.yml'), 'utf8')),
 });
 
 test('accepts the current registered deployment chain', () => {
@@ -19,6 +20,12 @@ test('accepts the current registered deployment chain', () => {
   assert.equal(summary.project, 'zdt-next');
   assert.equal(summary.targets, Object.keys(current.adapter.targets).length);
   assert.equal(summary.nodes, Object.keys(current.adapter.nodes).length);
+});
+
+test('rejects any remote lock authority', () => {
+  const policy = structuredClone(current.policy);
+  policy.lockRoot = '/run/lock/ai-delivery';
+  assert.throws(() => validateDeploymentContract({ ...current, policy }), /DEPLOY_POLICY_LOCK_AUTHORITY_FORBIDDEN/);
 });
 
 test('rejects a missing rollback target input', () => {
@@ -37,6 +44,12 @@ test('rejects automatic runner switching after the core started', () => {
   const workflow = structuredClone(current.workflow);
   workflow.jobs['hosted-startup-fallback'].if = '${{ always() && needs.execute.result == "failure" }}';
   assert.throws(() => validateDeploymentContract({ ...current, workflow }), /DEPLOY_WORKFLOW_FALLBACK_SCOPE_INVALID/);
+});
+
+test('rejects a shared action that does not export the core-started boundary', () => {
+  const action = structuredClone(current.action);
+  delete action.outputs.started;
+  assert.throws(() => validateDeploymentContract({ ...current, action }), /DEPLOY_ACTION_STARTED_OUTPUT_MISSING/);
 });
 
 test('rejects a manifest and remote pointer disagreement', () => {

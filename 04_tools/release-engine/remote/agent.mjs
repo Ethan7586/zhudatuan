@@ -2,7 +2,6 @@
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { appendFile, chmod, copyFile, cp, link, lstat, mkdir, readFile, readlink, readdir, realpath, rename, rm, statfs, symlink, writeFile } from 'node:fs/promises';
-import { hostname } from 'node:os';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { spawn } from 'node:child_process';
 import { performance } from 'node:perf_hooks';
@@ -39,16 +38,7 @@ try {
   const nodePolicy = policy.nodes?.[nodeKey];
   const deployment = nodePolicy?.deployments?.[targetId];
   assert(deployment, 'DEPLOYMENT_NOT_ALLOWED');
-  const preparedActions = new Set([
-    'deploy-oss-direct',
-    'validate-oss-candidate',
-    'deploy-oss-direct-v2',
-    'validate-oss-candidate-v2',
-    'deploy-sealed-candidate-v3',
-    'register-current-baseline-v3',
-    'seal-validated-candidate-v3',
-    'validate-oss-candidate-v3',
-  ]);
+  const preparedActions = new Set(['deploy-oss-direct', 'validate-oss-candidate', 'deploy-oss-direct-v2', 'validate-oss-candidate-v2', 'validate-oss-candidate-v3']);
   const controlPlane = preparedActions.has(action) ? await preparedControlPlane(options, policyBody) : null;
   const context = { project, node: nodeKey, target: targetId, deployment, nodePolicy, policy, controlPlane };
   loadedContext = context;
@@ -57,27 +47,20 @@ try {
   let result;
   if (action === 'lookup') result = await lookup(context, options);
   else if (action === 'layer-lookup') result = await dependencyLayerLookup(context, options);
-  else if (action === 'stage-layer') result = await withLocks(context, false, () => stageDependencyLayer(context, options), { version: options.digest, operation: 'stage-dependency-layer' });
-  else if (action === 'reuse') result = await withLocks(context, false, () => reuse(context, options), { version: options.treeDigest, operation: 'reuse-artifact' });
-  else if (action === 'reuse-direct') result = await withLocks(context, false, () => reuse(context, options, true), { version: options.treeDigest, operation: 'reuse-artifact-direct' });
-  else if (action === 'stage') result = await withLocks(context, false, () => stage(context, options), { version: options.treeDigest });
-  else if (action === 'stage-direct') result = await withLocks(context, false, () => stage(context, options, true), { version: options.treeDigest, operation: 'stage-direct' });
-  else if (action === 'validate-oss-candidate' || action === 'validate-oss-candidate-v2' || action === 'validate-oss-candidate-v3')
-    result = await withLocks(context, false, () => validateOssCandidate(context, options), { version: options.sourceSha, operation: 'validate-oss-candidate' });
-  else if (action === 'seal-validated-candidate-v3')
-    result = await withLocks(context, false, () => sealValidatedCandidate(context, options), { version: options.sourceSha, operation: 'seal-validated-candidate' });
-  else if (action === 'deploy-sealed-candidate-v3')
-    result = await withLocks(context, true, () => deploySealedCandidate(context, options), { version: options.sourceSha, operation: 'deploy-sealed-candidate' });
-  else if (action === 'register-current-baseline-v3')
-    result = await withLocks(context, true, () => registerCurrentBaseline(context, options), { version: options.sourceSha, operation: 'register-current-baseline' });
-  else if (action === 'deploy-oss-direct' || action === 'deploy-oss-direct-v2') result = await withLocks(context, true, () => deployOssDirect(context, options), { version: options.sourceSha, operation: 'deploy-oss-direct' });
+  else if (action === 'stage-layer') result = await stageDependencyLayer(context, options);
+  else if (action === 'reuse') result = await reuse(context, options);
+  else if (action === 'reuse-direct') result = await reuse(context, options, true);
+  else if (action === 'stage') result = await stage(context, options);
+  else if (action === 'stage-direct') result = await stage(context, options, true);
+  else if (action === 'validate-oss-candidate' || action === 'validate-oss-candidate-v2' || action === 'validate-oss-candidate-v3') result = await validateOssCandidate(context, options);
+  else if (action === 'deploy-oss-direct' || action === 'deploy-oss-direct-v2') result = await deployOssDirect(context, options);
   else if (action === 'preflight') result = await preflight(context);
-  else if (action === 'baseline') result = await withLocks(context, true, () => importBaseline(context, options), { version: options.sourceSha, operation: 'import-baseline' });
-  else if (action === 'seed') result = await withLocks(context, true, () => seed(context, options), { version: options.sourceSha, operation: 'seed-layout' });
-  else if (action === 'activate') result = await withLocks(context, true, () => activate(context, options), { version: options.approval?.split(':').at(-1) });
-  else if (action === 'activate-direct') result = await withLocks(context, true, () => activateDirect(context, options), { version: options.sourceSha, operation: 'activate-direct' });
-  else if (action === 'rollback') result = await withLocks(context, true, () => rollback(context), { operation: 'rollback' });
-  else if (action === 'verify') result = await withLocks(context, false, () => verifyCurrent(context), { operation: 'verify' });
+  else if (action === 'baseline') result = await importBaseline(context, options);
+  else if (action === 'seed') result = await seed(context, options);
+  else if (action === 'activate') result = await activate(context, options);
+  else if (action === 'activate-direct') result = await activateDirect(context, options);
+  else if (action === 'rollback') result = await rollback(context);
+  else if (action === 'verify') result = await verifyCurrent(context);
   else if (action === 'status') result = await status(context);
   else throw failure('ACTION_UNKNOWN', { action });
 
@@ -370,197 +353,6 @@ async function validateOssCandidate(context, options) {
   return prepareOssCandidate(context, options, false);
 }
 
-async function registerCurrentBaseline(context, options) {
-  const sourceSha = required(options.sourceSha, 'CURRENT_BASELINE_SOURCE_SHA_REQUIRED');
-  const artifactSha256 = required(options.legacyArtifactSha256, 'CURRENT_BASELINE_ARTIFACT_SHA256_REQUIRED');
-  const expectedCurrent = required(options.expectedCurrent, 'CURRENT_BASELINE_EXPECTED_CURRENT_REQUIRED');
-  const legacyRunId = required(options.legacyRunId, 'CURRENT_BASELINE_LEGACY_RUN_ID_REQUIRED');
-  const legacyRunAttempt = required(options.legacyRunAttempt, 'CURRENT_BASELINE_LEGACY_RUN_ATTEMPT_REQUIRED');
-  const legacyWorkflowPath = required(options.legacyWorkflowPath, 'CURRENT_BASELINE_LEGACY_WORKFLOW_REQUIRED');
-  assert(/^[a-f0-9]{40}$/.test(sourceSha), 'CURRENT_BASELINE_SOURCE_SHA_INVALID');
-  assert(/^[a-f0-9]{64}$/.test(artifactSha256), 'CURRENT_BASELINE_ARTIFACT_SHA256_INVALID');
-  assert(/^[1-9][0-9]*$/.test(legacyRunId) && /^[1-9][0-9]*$/.test(legacyRunAttempt), 'CURRENT_BASELINE_LEGACY_RUN_INVALID');
-  assert(
-    legacyWorkflowPath === '.github/workflows/deploy-oss.yml'
-      || legacyWorkflowPath === '.github/workflows/legacy-oss-recovery-aliyun.yml',
-    'CURRENT_BASELINE_LEGACY_WORKFLOW_INVALID'
-  );
-  assert(options.approval === `${context.project}:register-current-baseline:${sourceSha}:${artifactSha256}`, 'CURRENT_BASELINE_APPROVAL_INVALID');
-
-  const root = context.deployment.pointerRoot;
-  assertAllowedRoot(context.policy, root);
-  const currentBefore = await pointer(root, 'current');
-  assert(currentBefore === expectedCurrent, 'CURRENT_BASELINE_POINTER_CHANGED', { expected: expectedCurrent, actual: currentBefore });
-  const release = await safeReleaseDirectory(context, currentBefore);
-  assert(basename(release) === `${sourceSha.slice(0, 12)}-${artifactSha256.slice(0, 16)}`, 'CURRENT_BASELINE_RELEASE_ID_MISMATCH', {
-    expected: `${sourceSha.slice(0, 12)}-${artifactSha256.slice(0, 16)}`,
-    actual: basename(release),
-  });
-  assert(!(await readJson(join(release, 'AI_DELIVERY_ARTIFACT.json'))), 'CURRENT_BASELINE_RELEASE_ALREADY_MANAGED', { release });
-
-  const targetProcessBefore = await processId(context.deployment.restart);
-  const protectedBefore = await protectedProcessSnapshot(context);
-  const evidenceBefore = await treeEvidence(release);
-  await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: release, currentDir: release, ...contextSummary(context) });
-  const readiness = await waitForReadiness(context, { candidateDir: release, currentDir: release, ...contextSummary(context) });
-  const path = baselineEvidencePath(context, release);
-  const existing = await readJson(path);
-  if (existing) {
-    const verified = await verifyBaselineEvidence(context, release, existing);
-    assert(verified.sourceSha === sourceSha && verified.artifactSha256 === `sha256:${artifactSha256}`, 'CURRENT_BASELINE_ALREADY_REGISTERED', { path });
-  } else {
-    const unsigned = {
-      schema: 'ai.delivery.current-baseline.v1',
-      project: context.project,
-      node: context.node,
-      target: context.target,
-      release,
-      pointerValue: currentBefore,
-      sourceSha,
-      artifactSha256: `sha256:${artifactSha256}`,
-      treeDigest: evidenceBefore.treeDigest,
-      fileCount: evidenceBefore.fileCount,
-      entryCount: evidenceBefore.entryCount,
-      totalBytes: evidenceBefore.totalBytes,
-      legacyDeployment: { workflowPath: legacyWorkflowPath, runId: legacyRunId, runAttempt: legacyRunAttempt },
-      controlPlane: context.controlPlane,
-      registeredAt: new Date().toISOString(),
-    };
-    await writeAtomicJson(path, { ...unsigned, baselineDigest: digest(unsigned) });
-    await chmod(path, 0o444);
-    await verifyBaselineEvidence(context, release, await readJson(path));
-  }
-
-  const currentAfter = await pointer(root, 'current');
-  const evidenceAfter = await treeEvidence(release);
-  const targetProcessAfter = await processId(context.deployment.restart);
-  const protectedAfter = await assertProtectedUnchanged(context, protectedBefore);
-  assert(currentAfter === currentBefore, 'CURRENT_BASELINE_MOVED_POINTER', { before: currentBefore, after: currentAfter });
-  assert(targetProcessAfter === targetProcessBefore, 'CURRENT_BASELINE_CHANGED_PROCESS', { before: targetProcessBefore, after: targetProcessAfter });
-  assert(evidenceAfter.treeDigest === evidenceBefore.treeDigest, 'CURRENT_BASELINE_CHANGED_RELEASE', { before: evidenceBefore.treeDigest, after: evidenceAfter.treeDigest });
-  return {
-    schema: 'ai.delivery.current-baseline-registration.v1',
-    status: existing ? 'already-registered' : 'registered',
-    sourceSha,
-    artifactSha256: `sha256:${artifactSha256}`,
-    release,
-    current: { before: currentBefore, after: currentAfter, unchanged: true },
-    treeDigest: evidenceAfter.treeDigest,
-    baselinePath: path,
-    readiness,
-    process: { before: targetProcessBefore, after: targetProcessAfter, unchanged: true },
-    protectedProcesses: { before: protectedBefore, after: protectedAfter },
-    controlPlane: context.controlPlane,
-  };
-}
-
-async function sealValidatedCandidate(context, options) {
-  const identity = artifactIdentity(context, options);
-  const found = await lookup(context, options);
-  assert(found.exists, 'CANDIDATE_SEAL_RELEASE_MISSING');
-  const candidate = await pointer(context.deployment.pointerRoot, 'candidate');
-  const current = await pointer(context.deployment.pointerRoot, 'current');
-  const expectedCurrent = options.expectedCurrent === 'none' ? null : required(options.expectedCurrent, 'CANDIDATE_SEAL_EXPECTED_CURRENT_REQUIRED');
-  const expectedCurrentSourceSha = options.expectedCurrentSourceSha === 'none' ? null : required(options.expectedCurrentSourceSha, 'CANDIDATE_SEAL_EXPECTED_CURRENT_SOURCE_REQUIRED');
-  assert(candidate === found.release, 'CANDIDATE_SEAL_POINTER_MISMATCH', { expected: found.release, actual: candidate });
-  assert(current === expectedCurrent, 'CANDIDATE_SEAL_CURRENT_MISMATCH', {
-    expected: expectedCurrent,
-    actual: current,
-  });
-  const currentSourceSha = await releaseSourceSha(context, current);
-  assert(currentSourceSha === expectedCurrentSourceSha, 'CANDIDATE_SEAL_CURRENT_SOURCE_MISMATCH', { expected: expectedCurrentSourceSha, actual: currentSourceSha });
-  await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: candidate, currentDir: current ?? '', ...contextSummary(context) });
-  const unsigned = {
-    schema: 'ai.delivery.candidate-seal.v1',
-    project: context.project,
-    node: context.node,
-    target: context.target,
-    sourceSha: identity.sourceSha,
-    artifactSha256: `sha256:${identity.archiveSha256}`,
-    treeDigest: identity.treeDigest,
-    manifestDigest: identity.manifestDigest,
-    candidate,
-    expectedCurrent,
-    expectedCurrentSourceSha,
-    controlPlane: context.controlPlane,
-    validatedAt: new Date().toISOString(),
-  };
-  const value = { ...unsigned, sealDigest: digest(unsigned) };
-  await writeAtomicJson(candidateSealPath(context, identity), value);
-  // Keep this latest-seal view for operators. Deployments read the immutable,
-  // identity-scoped receipt above, so a later candidate cannot replace another
-  // source version's deployment authority.
-  await writeAtomicJson(join(context.deployment.pointerRoot, 'candidate-seal.json'), value);
-  return value;
-}
-
-async function deploySealedCandidate(context, options) {
-  const started = Date.now();
-  const identity = artifactIdentity(context, options);
-  const sealPath = candidateSealPath(context, identity);
-  const seal = await readJson(sealPath) ?? await readJson(join(context.deployment.pointerRoot, 'candidate-seal.json'));
-  assert(seal, 'CANDIDATE_SEAL_MISSING', { sealPath });
-  const claimedDigest = seal.sealDigest;
-  const unsigned = { ...seal };
-  delete unsigned.sealDigest;
-  assert(claimedDigest === digest(unsigned), 'CANDIDATE_SEAL_DIGEST_MISMATCH');
-  assert(
-    seal.schema === 'ai.delivery.candidate-seal.v1' && seal.project === context.project && seal.node === context.node && seal.target === context.target,
-    'CANDIDATE_SEAL_SCOPE_MISMATCH'
-  );
-  assert(
-    seal.sourceSha === identity.sourceSha &&
-      seal.artifactSha256 === `sha256:${identity.archiveSha256}` &&
-      seal.treeDigest === identity.treeDigest &&
-      seal.manifestDigest === identity.manifestDigest,
-    'CANDIDATE_SEAL_IDENTITY_MISMATCH'
-  );
-  assert(
-    seal.controlPlane?.remoteAgentSha256 === context.controlPlane?.remoteAgentSha256 &&
-      seal.controlPlane?.remotePolicySha256 === context.controlPlane?.remotePolicySha256,
-    'CANDIDATE_SEAL_CONTROL_PLANE_CHANGED'
-  );
-  const found = await lookup(context, options);
-  assert(found.exists && found.release === seal.candidate, 'CANDIDATE_SEAL_RELEASE_MISSING', { expected: seal.candidate, actual: found.release });
-  const current = found.current;
-  assert(current === seal.expectedCurrent || current === seal.candidate, 'CANDIDATE_SEAL_CURRENT_CHANGED', {
-    expected: seal.expectedCurrent,
-    actual: current,
-  });
-  const candidateBefore = found.candidate;
-  await atomicPointer(join(context.deployment.pointerRoot, 'candidate'), found.release);
-  const activation = await activate(context, {
-    ...options,
-    approval: `${context.project}:${identity.sourceSha}`,
-    expectedCurrent: current ?? 'none',
-  });
-  return {
-    schema: 'ai.delivery.oss-sealed-deploy.v1',
-    sourceSha: identity.sourceSha,
-    artifactSha256: `sha256:${identity.archiveSha256}`,
-    controlPlane: context.controlPlane,
-    cacheStatus: 'sealed_candidate',
-    downloadedBytes: 0,
-    reusedBytes: found.artifactBytes,
-    seal: {
-      sealDigest: seal.sealDigest,
-      expectedCurrent: seal.expectedCurrent,
-      validatedAt: seal.validatedAt,
-      restoredCandidate: candidateBefore !== found.release,
-    },
-    activation: { ...activation, direct: true, mode: activation.alreadyCurrent ? 'sealed-verify-only' : 'sealed-activated' },
-    timings: { artifactLookup: found.artifactLookupMs, download: 0, candidate: activation.timings?.candidate ?? 0, total: Date.now() - started },
-  };
-}
-
-function candidateSealPath(context, identity) {
-  return join(
-    context.deployment.pointerRoot,
-    'candidate-seals',
-    `${identity.sourceSha}-${identity.archiveSha256}-${identity.manifestDigest}.json`
-  );
-}
-
 async function prepareOssCandidate(context, options, direct) {
   const started = Date.now();
   const identity = artifactIdentity(context, options);
@@ -660,14 +452,11 @@ async function verifyBaselineEvidence(context, release, baseline) {
   assert(baseline.release === release, 'CURRENT_BASELINE_RELEASE_MISMATCH', { expected: release, actual: baseline.release });
   assert(/^[a-f0-9]{40}$/.test(baseline.sourceSha ?? '') && /^sha256:[a-f0-9]{64}$/.test(baseline.artifactSha256 ?? ''), 'CURRENT_BASELINE_IDENTITY_INVALID', { release });
   const evidence = await treeEvidence(release);
-  assert(
-    baseline.treeDigest === evidence.treeDigest &&
-      baseline.fileCount === evidence.fileCount &&
-      baseline.entryCount === evidence.entryCount &&
-      baseline.totalBytes === evidence.totalBytes,
-    'CURRENT_BASELINE_TREE_MISMATCH',
-    { release, expected: baseline.treeDigest, actual: evidence.treeDigest }
-  );
+  assert(baseline.treeDigest === evidence.treeDigest && baseline.fileCount === evidence.fileCount && baseline.entryCount === evidence.entryCount && baseline.totalBytes === evidence.totalBytes, 'CURRENT_BASELINE_TREE_MISMATCH', {
+    release,
+    expected: baseline.treeDigest,
+    actual: evidence.treeDigest,
+  });
   return baseline;
 }
 
@@ -908,7 +697,19 @@ async function activate(context, options) {
     timings.isolation = Date.now() - isolationStarted;
     const caddyAfter = await caddySemanticEvidence(context.policy);
     assert(caddyAfter?.digest === caddyBefore?.digest, 'CADDY_SEMANTIC_CHANGED', { before: caddyBefore?.digest, after: caddyAfter?.digest });
+    const currentAfterHealth = await pointer(root, 'current');
+    assert(currentAfterHealth === candidate, 'CUTOVER_SUPERSEDED', { candidate, current: currentAfterHealth, previousCurrent });
   } catch (candidateError) {
+    const currentAtFailure = await pointer(root, 'current');
+    if (currentAtFailure !== candidate && currentAtFailure !== previousCurrent) {
+      throw failure('CUTOVER_SUPERSEDED', {
+        candidate,
+        current: currentAtFailure,
+        previousCurrent,
+        candidateFailure: errorEvidence(candidateError),
+        recovery: 'not-performed-because-a-newer-cutover-owns-current',
+      });
+    }
     if (databaseMigration) {
       let pointerRecovery = { status: 'restored', error: null };
       try {
@@ -1239,15 +1040,12 @@ async function rollback(context) {
 
 async function status(context) {
   const root = context.deployment.pointerRoot;
-  const lockRoot = context.policy.lockRoot ?? '/run/lock/ai-delivery';
-  const projectLockRoot = join(lockRoot, 'projects', safeName(context.project));
   const candidate = await statusPointer(root, 'candidate');
   const current = await statusPointer(root, 'current');
   const previous = await statusPointer(root, 'previous');
   return {
     pointerRoot: root,
     candidate,
-    candidateSeal: await readJson(join(root, 'candidate-seal.json')),
     candidateArtifact: await artifactForStatus(candidate),
     current,
     currentArtifact: await artifactForStatus(current),
@@ -1256,10 +1054,6 @@ async function status(context) {
     runtime: await statusPointer(root, 'runtime'),
     previousRuntime: await statusPointer(root, 'previous-runtime'),
     restart: context.deployment.restart,
-    locks: {
-      node: await readLock(join(projectLockRoot, 'nodes', `${safeName(context.node)}.lock`)),
-      target: await readLock(join(projectLockRoot, 'targets', safeName(context.node), `${safeName(context.target)}.lock`)),
-    },
   };
 }
 
@@ -1369,19 +1163,6 @@ async function dependencyLayerPath(context, layer) {
   return path;
 }
 
-async function withLocks(context, _production, work, details = {}) {
-  const lockRoot = context.policy.lockRoot ?? '/run/lock/ai-delivery';
-  const projectLockRoot = join(lockRoot, 'projects', safeName(context.project));
-  const paths = [join(projectLockRoot, 'nodes', `${safeName(context.node)}.lock`), join(projectLockRoot, 'targets', safeName(context.node), `${safeName(context.target)}.lock`)];
-  const releases = [];
-  try {
-    for (const path of paths) releases.push(await acquireDirectoryLock(path, context, context.policy.staleLockSeconds ?? 3600, details));
-    return await work();
-  } finally {
-    for (const release of releases.reverse()) await release();
-  }
-}
-
 async function pointerSnapshot(root) {
   return Object.fromEntries(await Promise.all(['candidate', 'current', 'previous', 'rollback', 'runtime', 'previous-runtime'].map(async (name) => [name, await pointer(root, name)])));
 }
@@ -1456,42 +1237,6 @@ async function lifecycleEvidence(policy) {
     states.push({ unit, active: active.stdout.trim() });
   }
   return { mode: 'existing-lifecycle', status: states.every((item) => item.active === 'active') ? 'armed' : 'degraded', units: states };
-}
-
-async function acquireDirectoryLock(path, context, staleSeconds, details) {
-  await mkdir(dirname(path), { recursive: true });
-  try {
-    await mkdir(path);
-  } catch (error) {
-    if (error?.code !== 'EEXIST') throw error;
-    const owner = await readJson(join(path, 'owner.json'));
-    const age = owner?.startedAt ? (Date.now() - Date.parse(owner.startedAt)) / 1000 : 0;
-    if (owner?.host === hostname() && age > staleSeconds && !isAlive(owner.pid)) {
-      await rm(path, { recursive: true, force: true });
-      await mkdir(path);
-    } else {
-      throw failure('DELIVERY_LOCKED', { path, owner });
-    }
-  }
-  await writeFile(
-    join(path, 'owner.json'),
-    `${JSON.stringify(
-      {
-        schema: 'ai.delivery.lock.v1',
-        pid: process.pid,
-        host: hostname(),
-        publisher: process.env.AI_DELIVERY_ACTOR ?? process.env.SUDO_USER ?? process.env.USER ?? 'unknown',
-        startedAt: new Date().toISOString(),
-        service: context.deployment.restart?.name ?? 'none',
-        ...contextSummary(context),
-        ...details,
-      },
-      null,
-      2
-    )}\n`,
-    { flag: 'wx', mode: 0o600 }
-  );
-  return () => rm(path, { recursive: true, force: true });
 }
 
 async function protectedProcessSnapshot(context) {
@@ -1826,11 +1571,7 @@ function assertCurrentTreeMatchesManifest(evidence, manifest, release) {
     assertTreeMatchesManifest(evidence, manifest);
     return;
   }
-  assert(
-    manifest.targetKind === 'frontend' && legacyReadableModesMatch(evidence, manifest),
-    'CURRENT_RELEASE_TREE_MISMATCH',
-    { release }
-  );
+  assert(manifest.targetKind === 'frontend' && legacyReadableModesMatch(evidence, manifest), 'CURRENT_RELEASE_TREE_MISMATCH', { release });
 }
 
 function legacyReadableModesMatch(evidence, manifest) {
@@ -2124,11 +1865,6 @@ async function readJson(path) {
   }
 }
 
-async function readLock(path) {
-  if (!(await exists(path))) return null;
-  return { path, owner: await readJson(join(path, 'owner.json')) };
-}
-
 async function exists(path) {
   try {
     await lstat(path);
@@ -2145,16 +1881,6 @@ async function lstatOrNull(path) {
   } catch (error) {
     if (error?.code === 'ENOENT') return null;
     throw error;
-  }
-}
-
-function isAlive(pid) {
-  if (!Number.isInteger(pid)) return false;
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
   }
 }
 
