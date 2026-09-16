@@ -145,6 +145,20 @@ jobs:
           ref: ${{ github.sha }}
           path: .runner-1-6/control-release
           fetch-depth: 1
+      - uses: actions/checkout@v6
+        if: ${{ inputs.operation == 'status' && needs.route.outputs.runner_class == 'aliyun' }}
+        with:
+          ref: ${{ github.sha }}
+          path: .runner-1-6/control-release
+          fetch-depth: 1
+      - name: Report isolated release checkout
+        if: ${{ inputs.operation == 'status' && needs.route.outputs.runner_class == 'aliyun' }}
+        shell: bash
+        run: |
+          release_root="$GITHUB_WORKSPACE/.runner-1-6/control-release"
+          printf 'isolated_release_head=%s\n' "$(git -C "$release_root" rev-parse HEAD)"
+          if [ -f "$release_root/package-lock.json" ]; then printf 'isolated_release_lockfile=present\n'; else printf 'isolated_release_lockfile=missing\n'; fi
+          printf 'isolated_release_sparse=%s\n' "$(git -C "$release_root" config --get core.sparseCheckout 2>/dev/null || printf unset)"
       - name: Run shared release core
         id: release
         if: ${{ inputs.operation != 'status' }}
