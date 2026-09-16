@@ -34,18 +34,26 @@ try {
   loadedPolicy = policy;
   validatePolicy(policy, project);
   const nodeKey = safeName(required(options.node, 'NODE_REQUIRED'));
-  const targetId = safeName(required(options.target, 'TARGET_REQUIRED'));
   const nodePolicy = policy.nodes?.[nodeKey];
-  const deployment = nodePolicy?.deployments?.[targetId];
-  assert(deployment, 'DEPLOYMENT_NOT_ALLOWED');
+  assert(nodePolicy, 'NODE_NOT_ALLOWED');
   const preparedActions = new Set(['deploy-oss-direct', 'validate-oss-candidate', 'deploy-oss-direct-v2', 'validate-oss-candidate-v2', 'validate-oss-candidate-v3']);
   const controlPlane = preparedActions.has(action) ? await preparedControlPlane(options, policyBody) : null;
-  const context = { project, node: nodeKey, target: targetId, deployment, nodePolicy, policy, controlPlane };
+  const makeContext = (targetId) => {
+    const deployment = nodePolicy.deployments?.[targetId];
+    assert(deployment, 'DEPLOYMENT_NOT_ALLOWED', { node: nodeKey, target: targetId });
+    return { project, node: nodeKey, target: targetId, deployment, nodePolicy, policy, controlPlane };
+  };
+  const targetId = action === 'observe' ? null : safeName(required(options.target, 'TARGET_REQUIRED'));
+  const context = targetId ? makeContext(targetId) : null;
   loadedContext = context;
   if (preparedActions.has(action) && (action.endsWith('-v2') || action.endsWith('-v3'))) assertExpectedPreparedControlPlane(controlPlane, options);
 
   let result;
-  if (action === 'lookup') result = await lookup(context, options);
+  if (action === 'observe') {
+    const targetIds = required(options.targets, 'TARGETS_REQUIRED').split(',').map((target) => safeName(target));
+    assert(targetIds.length > 0 && new Set(targetIds).size === targetIds.length, 'TARGETS_INVALID');
+    result = await observeMany(targetIds.map(makeContext));
+  } else if (action === 'lookup') result = await lookup(context, options);
   else if (action === 'layer-lookup') result = await dependencyLayerLookup(context, options);
   else if (action === 'stage-layer') result = await stageDependencyLayer(context, options);
   else if (action === 'reuse') result = await reuse(context, options);
@@ -64,10 +72,10 @@ try {
   else if (action === 'status') result = await status(context);
   else throw failure('ACTION_UNKNOWN', { action });
 
-  if (action !== 'status') await audit(policy, { action, ...contextSummary(context), result, completedAt: new Date().toISOString() });
+  if (action !== 'status' && action !== 'observe') await audit(policy, { action, ...contextSummary(context), result, completedAt: new Date().toISOString() });
   process.stdout.write(`${JSON.stringify({ ok: true, action, result }, null, 2)}\n`);
 } catch (error) {
-  if (actionName !== 'status' && loadedPolicy && loadedContext) {
+  if (actionName !== 'status' && actionName !== 'observe' && loadedPolicy && loadedContext) {
     try {
       await audit(loadedPolicy, {
         action: actionName,
@@ -1055,6 +1063,20 @@ async function status(context) {
     previousRuntime: await statusPointer(root, 'previous-runtime'),
     restart: context.deployment.restart,
   };
+}
+
+async function observeMany(contexts) {
+  const targets = await Promise.all(contexts.map(async (context) => {
+    let targetStatus;
+    try {
+      targetStatus = await status(context);
+      const verification = await verifyCurrent(context);
+      return { target: context.target, status: targetStatus, verification };
+    } catch (error) {
+      return { target: context.target, status: targetStatus ?? null, verification: null, error: errorEvidence(error) };
+    }
+  }));
+  return { targets };
 }
 
 async function artifactForStatus(release) {
