@@ -75,7 +75,7 @@
         {"name":"auth-typecheck","argv":["npm","run","lint","--workspace","@smart-wing/auth-web"],"timeoutMs":300000}
       ],
       "build": [
-        {"name":"auth-production-build","argv":["npm","run","build:auth"],"timeoutMs":300000}
+        {"name":"auth-production-build","argv":["npm","run","build:auth"],"environment":{"VITE_CLIENT_VERSION":"0.0.0-g{{sourceSha}}"},"timeoutMs":300000}
       ],
       "artifactInputs": [
         {"source":"01_core_hexin/apps/auth-web/dist","destination":"static"}

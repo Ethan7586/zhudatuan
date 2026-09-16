@@ -7,6 +7,9 @@ import { DeliveryError } from './errors.mjs';
 export async function runCommand(spec, context) {
   const argv = expandArgv(spec.argv, context);
   const cwd = expandText(spec.cwd ?? context.projectRoot, context);
+  const environment = Object.fromEntries(
+    Object.entries(spec.environment ?? {}).map(([name, value]) => [name, expandText(value, context)])
+  );
   const timeoutMs = spec.timeoutMs ?? 10 * 60_000;
   const started = performance.now();
   const startedAt = new Date().toISOString();
@@ -15,7 +18,7 @@ export async function runCommand(spec, context) {
   const result = await new Promise((resolve, reject) => {
     const child = spawn(argv[0], argv.slice(1), {
       cwd,
-      env: { ...process.env, ...context.environment, ...(spec.environment ?? {}) },
+      env: { ...process.env, ...context.environment, ...environment },
       shell: false,
       stdio: [spec.input === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe'],
     });

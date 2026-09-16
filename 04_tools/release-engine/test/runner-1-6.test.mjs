@@ -6,6 +6,7 @@ import { parse } from 'yaml';
 
 import { sourceFromIdentifier } from '../runner-1-6.mjs';
 import { DeliveryError } from '../src/errors.mjs';
+import { runCommand } from '../src/runner.mjs';
 import { selectExecutionRunner } from '../src/runner-selection-1-6.mjs';
 import { inspectSimpleArtifact, SIMPLE_RELEASE_SCHEMA, simpleReleaseObject } from '../src/simple-artifact-store.mjs';
 import { digest, prettyStableJson, sha256 } from '../src/stable.mjs';
@@ -122,4 +123,16 @@ test('workspace isolation checks the selected source workspace', async () => {
   const isolation = await readFile(join(root, '04_tools/release-engine/adapters/zdt-next/assert-workspace-isolation.mjs'), 'utf8');
   assert.match(isolation, /resolve\(process\.cwd\(\)\)/);
   assert.doesNotMatch(isolation, /fileURLToPath\(import\.meta\.url\)/);
+});
+
+test('build command environment expands the exact source SHA', async () => {
+  const result = await runCommand(
+    {
+      name: 'templated-environment',
+      argv: [process.execPath, '-e', 'process.stdout.write(process.env.VITE_CLIENT_VERSION)'],
+      environment: { VITE_CLIENT_VERSION: '0.0.0-g{{sourceSha}}' },
+    },
+    { projectRoot: root, environment: {}, changedFiles: [], sourceSha: sha }
+  );
+  assert.equal(result.output, `0.0.0-g${sha}`);
 });
