@@ -113,10 +113,11 @@ test('normal path uses direct artifact deployment and does not depend on old aut
 
 test('release installs dependencies before dynamic impact planning', async () => {
   const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
-  const install = core.indexOf("name: 'install-release-dependencies'");
+  const install = core.indexOf("name: 'install-control-dependencies'");
+  const sourceInstall = core.indexOf("name: 'install-source-dependencies'");
   const plan = core.indexOf('const plan = await createReleasePlan');
-  assert.ok(install > 0 && install < plan);
-  assert.equal(core.match(/name: 'install-release-dependencies'/g)?.length, 1);
+  assert.ok(install > 0 && sourceInstall > install && sourceInstall < plan);
+  assert.match(core, /resolve\(controlRoot\) !== resolve\(adapter\.projectRoot\)/);
 });
 
 test('workspace isolation checks the selected source workspace', async () => {
