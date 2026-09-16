@@ -1,51 +1,37 @@
 #!/usr/bin/env bash
-# System-level zdt-next delivery dispatcher. Business source and release control
-# remain separate: every operation runs through the latest origin/zdt-next.
+# Control-side Runner 1.6 entry. It only loads the latest control plane and dispatches GitHub Actions.
 set -euo pipefail
 
-if { [ "$#" -eq 2 ] && [ "$1" = "deploy-source" ]; }; then
-  OPERATION="$1"
-  SOURCE_SHA="$2"
-elif { [ "$#" -eq 4 ] || { [ "$#" -eq 5 ] && [ "$1" = status ] && [ "$5" = --json ]; }; } \
-  && { [ "$1" = "status" ] || [ "$1" = "prepare" ] || [ "$1" = "deploy" ]; }; then
-  OPERATION="$1"
-  TARGET="$2"
-  SOURCE_SHA="$3"
-  PHYSICAL_NODE="$4"
-  STATUS_FORMAT="${5:-}"
-else
-  echo "Usage: zdt-delivery deploy-source <full-source-sha>" >&2
-  echo "   or: zdt-delivery <status|prepare|deploy> <target> <full-source-sha> <physical-node> [--json for status]" >&2
-  exit 64
-fi
-REPOSITORY_ROOT="${ZDT_GIT_ANCHOR:-/Users/Ethan/Desktop/zdt-next}"
+operation="${1:-}"
+case "$operation" in
+  release|status|retry)
+    [ "$#" -eq 2 ] || { echo "Usage: zdt-delivery $operation <full-source-sha-or-release-id>" >&2; exit 64; }
+    ;;
+  rollback)
+    [ "$#" -eq 3 ] || { echo 'Usage: zdt-delivery rollback <target> <physical-node>' >&2; exit 64; }
+    ;;
+  *)
+    echo 'Usage: zdt-delivery release <full-source-sha>' >&2
+    echo '       zdt-delivery status <full-source-sha-or-release-id>' >&2
+    echo '       zdt-delivery retry <release-id>' >&2
+    echo '       zdt-delivery rollback <target> <physical-node>' >&2
+    exit 64
+    ;;
+esac
 
-if ! git -C "$REPOSITORY_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
-  echo "Delivery stopped: Git anchor is unavailable at $REPOSITORY_ROOT." >&2
-  exit 1
-fi
-
-CONTROL_PARENT="$(mktemp -d /private/tmp/zdt-delivery-control.XXXXXX)"
-CONTROL_ROOT="$CONTROL_PARENT/zdt-next"
-WORKTREE_ADDED=false
+repository_root="${ZDT_GIT_ANCHOR:-/Users/Ethan/Desktop/zdt-next}"
+git -C "$repository_root" rev-parse --git-dir >/dev/null 2>&1 || { echo "Git anchor unavailable: $repository_root" >&2; exit 1; }
+control_parent="$(mktemp -d /private/tmp/zdt-delivery-control.XXXXXX)"
+control_root="$control_parent/zdt-next"
+added=false
 cleanup() {
-  if [ "$WORKTREE_ADDED" = true ]; then
-    git -C "$REPOSITORY_ROOT" worktree remove --force "$CONTROL_ROOT" >/dev/null 2>&1 || true
-  fi
-  rmdir "$CONTROL_PARENT" >/dev/null 2>&1 || true
+  if [ "$added" = true ]; then git -C "$repository_root" worktree remove --force "$control_root" >/dev/null 2>&1 || true; fi
+  rmdir "$control_parent" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
-
-git -C "$REPOSITORY_ROOT" fetch origin zdt-next --quiet
-CONTROL_SHA="$(git -C "$REPOSITORY_ROOT" rev-parse origin/zdt-next)"
-git -C "$REPOSITORY_ROOT" worktree add --detach "$CONTROL_ROOT" "$CONTROL_SHA" --quiet
-WORKTREE_ADDED=true
-
-printf 'Delivery control: %s\n' "$CONTROL_SHA"
-cd "$CONTROL_ROOT"
-case "$OPERATION" in
-  status) bash scripts/release-status.sh "$TARGET" "$SOURCE_SHA" "$PHYSICAL_NODE" ${STATUS_FORMAT:+"$STATUS_FORMAT"} ;;
-  prepare) bash scripts/delivery-dispatch.sh prepare "$TARGET" "$SOURCE_SHA" "$PHYSICAL_NODE" ;;
-  deploy) bash scripts/delivery-dispatch.sh deploy "$TARGET" "$SOURCE_SHA" "$PHYSICAL_NODE" ;;
-  deploy-source) bash scripts/delivery-dispatch.sh deploy-source "$SOURCE_SHA" ;;
-esac
+git -C "$repository_root" fetch origin zdt-next --quiet
+control_sha="$(git -C "$repository_root" rev-parse origin/zdt-next)"
+git -C "$repository_root" worktree add --detach "$control_root" "$control_sha" --quiet
+added=true
+printf 'Delivery control: %s\n' "$control_sha"
+exec bash "$control_root/scripts/delivery-dispatch.sh" "$@"

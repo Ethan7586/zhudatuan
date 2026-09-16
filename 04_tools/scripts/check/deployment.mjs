@@ -54,8 +54,7 @@ function validateDeploymentOwnership(adapter, policy) {
       pointers.add(deployment.pointerRoot);
       if (deployment.restart?.kind === 'systemd') {
         assert(deployment.restart.jobMode === 'ignore-dependencies', 'DEPLOY_RESTART_SCOPE_INVALID', `${nodeKey}/${target}`);
-        assert((Array.isArray(deployment.seedInputs) && deployment.seedInputs.length > 0) || deployment.baselineStrategy === 'register-current',
-          'DEPLOY_ROLLBACK_BASELINE_MISSING', `${nodeKey}/${target}`);
+        assert((Array.isArray(deployment.seedInputs) && deployment.seedInputs.length > 0) || deployment.baselineStrategy === 'register-current', 'DEPLOY_ROLLBACK_BASELINE_MISSING', `${nodeKey}/${target}`);
         assert(deployment.allowFirstActivation !== true, 'DEPLOY_FIRST_ACTIVATION_FORBIDDEN', `${nodeKey}/${target}`);
         assert(Array.isArray(deployment.candidateChecks) && deployment.candidateChecks.length > 0, 'DEPLOY_CANDIDATE_CHECKS_MISSING', `${nodeKey}/${target}`);
         assert(Array.isArray(deployment.healthChecks) && deployment.healthChecks.length > 0, 'DEPLOY_HEALTH_CHECKS_MISSING', `${nodeKey}/${target}`);
@@ -67,40 +66,27 @@ function validateDeploymentOwnership(adapter, policy) {
 }
 
 function validateDeployWorkflow(adapter, workflow) {
-  const reusable = workflow?.on?.workflow_call;
-  const inputs = reusable?.inputs;
-  assert(inputs?.head_sha?.required === true && inputs.head_sha.type === 'string', 'DEPLOY_WORKFLOW_SHA_INPUT_INVALID');
-  assert(inputs?.release_target?.required === true && inputs.release_target.type === 'string', 'DEPLOY_WORKFLOW_TARGET_INPUT_INVALID');
-  assert(inputs?.release_node?.required === true && inputs.release_node.type === 'string', 'DEPLOY_WORKFLOW_NODE_INPUT_INVALID');
-  assert(inputs?.operation?.required === true && inputs.operation.type === 'string', 'DEPLOY_WORKFLOW_OPERATION_INPUT_INVALID');
+  const inputs = workflow?.on?.workflow_dispatch?.inputs;
+  assert(inputs?.operation?.required === true && inputs.operation.type === 'choice', 'DEPLOY_WORKFLOW_OPERATION_INPUT_INVALID');
+  assert(sameValues(inputs.operation.options, ['release', 'status', 'retry', 'rollback']), 'DEPLOY_WORKFLOW_OPERATION_OPTIONS_INVALID');
+  assert(inputs?.identifier?.type === 'string', 'DEPLOY_WORKFLOW_IDENTIFIER_INPUT_INVALID');
+  assert(inputs?.release_target?.type === 'string', 'DEPLOY_WORKFLOW_TARGET_INPUT_INVALID');
+  assert(inputs?.physical_node?.type === 'string', 'DEPLOY_WORKFLOW_NODE_INPUT_INVALID');
   assert(workflow.permissions?.contents === 'read', 'DEPLOY_WORKFLOW_PERMISSIONS_INVALID');
-  const expectedLock = `${adapter.project}-prepared-` + '${{ inputs.release_node }}-${{ inputs.release_target }}';
-  assert(workflow.concurrency?.group === expectedLock, 'DEPLOY_WORKFLOW_LOCK_SCOPE_INVALID');
-  assert(workflow.concurrency?.['cancel-in-progress'] === false, 'DEPLOY_WORKFLOW_CANCELLATION_INVALID');
-  assert(workflow.env?.RELEASE_SHA === '${{ inputs.head_sha }}', 'DEPLOY_WORKFLOW_SHA_BINDING_INVALID');
-  assert(workflow.env?.RELEASE_NODE === '${{ inputs.release_node }}', 'DEPLOY_WORKFLOW_NODE_BINDING_INVALID');
-  assert(workflow.env?.RELEASE_TARGET === '${{ inputs.release_target }}', 'DEPLOY_WORKFLOW_TARGET_BINDING_INVALID');
-  assert(workflow.env?.RELEASE_OPERATION === '${{ inputs.operation }}', 'DEPLOY_WORKFLOW_OPERATION_BINDING_INVALID');
-  assert(workflow.env?.CONTROL_SHA === '${{ github.sha }}', 'DEPLOY_WORKFLOW_CONTROL_SHA_BINDING_INVALID');
-  assert(workflow.env?.CONTROL_REF === '${{ github.ref }}', 'DEPLOY_WORKFLOW_CONTROL_REF_BINDING_INVALID');
-
-  const job = workflow.jobs?.prepared;
-  const steps = job?.steps;
-  assert(Array.isArray(steps), 'DEPLOY_WORKFLOW_STEPS_MISSING');
-  const checkout = steps.find((step) => typeof step.uses === 'string' && step.uses.startsWith('actions/checkout@'));
-  assert(checkout?.with?.ref === '${{ github.sha }}', 'DEPLOY_WORKFLOW_CONTROL_CHECKOUT_NOT_EXACT');
-
-  const shell = executableShell(steps);
-  assert(shell.includes('[ "$CONTROL_REF" != "refs/heads/zdt-next" ]'), 'DEPLOY_WORKFLOW_DEFAULT_BRANCH_GUARD_MISSING');
-  assert(shell.includes('compare/${RELEASE_SHA}...${CONTROL_SHA}'), 'DEPLOY_WORKFLOW_LINEAGE_GUARD_MISSING');
-  assert(shell.includes('d.hostedBy&&d.hostedBy!==process.env.RELEASE_NODE'), 'DEPLOY_WORKFLOW_PHYSICAL_OWNER_GUARD_MISSING');
-  assert(shell.includes('command=validate-prepared') && shell.includes('command=deploy-prepared'), 'DEPLOY_WORKFLOW_PREPARED_COMMANDS_MISSING');
-  assert(shell.includes('npm run --silent release -- "$command"'), 'DEPLOY_WORKFLOW_PREPARED_COMMAND_BINDING_MISSING');
-  assert(shell.includes('--source-sha "$RELEASE_SHA"'), 'DEPLOY_WORKFLOW_SOURCE_ARGUMENT_MISSING');
-  assert(shell.includes('--node "$RELEASE_NODE"') && shell.includes('--target "$RELEASE_TARGET"'), 'DEPLOY_WORKFLOW_TARGET_ARGUMENT_MISSING');
-  assert(!/npm ci|release -- (?:build|package|publish)|ssh-keyscan/.test(shell), 'DEPLOY_WORKFLOW_IMPURE');
-
-  return { commands: 2 };
+  const route = workflow.jobs?.route;
+  const execute = workflow.jobs?.execute;
+  const fallback = workflow.jobs?.['hosted-startup-fallback'];
+  assert(route?.['runs-on'] === 'ubuntu-24.04', 'DEPLOY_WORKFLOW_ROUTE_INVALID');
+  assert(execute?.['runs-on'] === '${{ fromJSON(needs.route.outputs.runs_on) }}', 'DEPLOY_WORKFLOW_DYNAMIC_RUNNER_MISSING');
+  assert(fallback?.['runs-on'] === 'ubuntu-24.04', 'DEPLOY_WORKFLOW_HOSTED_FALLBACK_MISSING');
+  assert(String(fallback?.if).includes("core_started != 'true'"), 'DEPLOY_WORKFLOW_FALLBACK_SCOPE_INVALID');
+  const executeCore = execute?.steps?.find((step) => step.uses === './.github/actions/runner-1-6');
+  const fallbackCore = fallback?.steps?.find((step) => step.uses === './.github/actions/runner-1-6');
+  assert(executeCore && fallbackCore, 'DEPLOY_WORKFLOW_SHARED_CORE_MISSING');
+  assert(executeCore.with.operation === '${{ inputs.operation }}' && fallbackCore.with.operation === '${{ inputs.operation }}', 'DEPLOY_WORKFLOW_OPERATION_BINDING_INVALID');
+  const source = JSON.stringify(workflow);
+  assert(!/final.?seal|closure|runner.?lease|writer.?lease|slot.?claim|readiness.?doctor/i.test(source), 'DEPLOY_WORKFLOW_RETIRED_AUTHORITY_PRESENT');
+  return { commands: 1 };
 }
 
 function releaseCommands(steps) {
@@ -168,6 +154,10 @@ function assertSameSet(actual, expected, code) {
   assert(actualSet.size === actual.length && actualSet.size === expectedSet.size && [...expectedSet].every((value) => actualSet.has(value)), code);
 }
 
+function sameValues(actual, expected) {
+  return Array.isArray(actual) && actual.length === expected.length && actual.every((value, index) => value === expected[index]);
+}
+
 function assert(condition, code, detail) {
   if (!condition) throw new Error(detail === undefined ? code : `${code}:${detail}`);
 }
@@ -176,7 +166,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const summary = validateDeploymentContract({
     adapter: JSON.parse(readFileSync(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8')),
     policy: JSON.parse(readFileSync(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8')),
-    workflow: parse(readFileSync(resolve(root, '.github/workflows/deploy-prepared-aliyun.yml'), 'utf8')),
+    workflow: parse(readFileSync(resolve(root, '.github/workflows/delivery-1-6.yml'), 'utf8')),
   });
   console.log(`deployment contract: project=${summary.project} targets=${summary.targets} channels=${summary.channels} nodes=${summary.nodes} physical=${summary.physicalDeployments} commands=${summary.workflowCommands}`);
 }

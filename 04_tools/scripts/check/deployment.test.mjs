@@ -11,7 +11,7 @@ const root = resolve(import.meta.dirname, '../../..');
 const current = Object.freeze({
   adapter: JSON.parse(await readFile(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8')),
   policy: JSON.parse(await readFile(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8')),
-  workflow: parse(await readFile(resolve(root, '.github/workflows/deploy-prepared-aliyun.yml'), 'utf8')),
+  workflow: parse(await readFile(resolve(root, '.github/workflows/delivery-1-6.yml'), 'utf8')),
 });
 
 test('accepts the current registered deployment chain', () => {
@@ -21,32 +21,22 @@ test('accepts the current registered deployment chain', () => {
   assert.equal(summary.nodes, Object.keys(current.adapter.nodes).length);
 });
 
-test('rejects a missing reusable target input even when unrelated text retains its name', () => {
+test('rejects a missing rollback target input', () => {
   const workflow = structuredClone(current.workflow);
-  delete workflow.on.workflow_call.inputs.release_target;
-  workflow.documentation = 'console';
+  delete workflow.on.workflow_dispatch.inputs.release_target;
   assert.throws(() => validateDeploymentContract({ ...current, workflow }), /DEPLOY_WORKFLOW_TARGET_INPUT_INVALID/);
 });
 
-test('rejects a prepared deployment whose deploy command is only a comment', () => {
+test('rejects a workflow that does not share the same execution core', () => {
   const workflow = structuredClone(current.workflow);
-  const step = workflow.jobs.prepared.steps.find((entry) => entry.run?.includes('command=deploy-prepared'));
-  step.run = step.run.replace('command=deploy-prepared', '# command=deploy-prepared');
-  workflow.documentation = 'command=deploy-prepared';
-  assert.throws(() => validateDeploymentContract({ ...current, workflow }), /DEPLOY_WORKFLOW_PREPARED_COMMANDS_MISSING/);
+  workflow.jobs.execute.steps.at(-1).uses = './different-core';
+  assert.throws(() => validateDeploymentContract({ ...current, workflow }), /DEPLOY_WORKFLOW_SHARED_CORE_MISSING/);
 });
 
-test('rejects checkout that is not bound to the exact default-branch control plane', () => {
+test('rejects automatic runner switching after the core started', () => {
   const workflow = structuredClone(current.workflow);
-  const checkout = workflow.jobs.prepared.steps.find((entry) => entry.uses?.startsWith('actions/checkout@'));
-  checkout.with.ref = 'zdt-next';
-  assert.throws(() => validateDeploymentContract({ ...current, workflow }), /DEPLOY_WORKFLOW_CONTROL_CHECKOUT_NOT_EXACT/);
-});
-
-test('rejects build-during-deploy behavior', () => {
-  const impure = structuredClone(current.workflow);
-  impure.jobs.prepared.steps.push({ run: 'npm ci' });
-  assert.throws(() => validateDeploymentContract({ ...current, workflow: impure }), /DEPLOY_WORKFLOW_IMPURE/);
+  workflow.jobs['hosted-startup-fallback'].if = '${{ always() && needs.execute.result == "failure" }}';
+  assert.throws(() => validateDeploymentContract({ ...current, workflow }), /DEPLOY_WORKFLOW_FALLBACK_SCOPE_INVALID/);
 });
 
 test('rejects a manifest and remote pointer disagreement', () => {

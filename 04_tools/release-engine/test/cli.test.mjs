@@ -1,68 +1,7 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 import { assertLegacyDeploymentEvidence, assertPreparedControlPlane, assertPreparedSourceLineage, deployPreparedCommand, validatePreparedCommand } from '../src/engine.mjs';
-
-const releaseEngineRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-
-test('external baseline is an explicit boolean CLI option', () => {
-  const result = spawnSync(process.execPath, ['cli.mjs', 'deploy', '--external-baseline', '--help'], {
-    cwd: releaseEngineRoot,
-    encoding: 'utf8',
-  });
-
-  assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /统一 AI 发布引擎/);
-});
-
-test('direct deployment is an explicit boolean CLI option', () => {
-  const result = spawnSync(process.execPath, ['cli.mjs', 'deploy', '--direct', '--help'], {
-    cwd: releaseEngineRoot,
-    encoding: 'utf8',
-  });
-
-  assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /统一 AI 发布引擎/);
-});
-
-test('artifact preparation is an explicit boolean CLI option with separate publish and deploy commands', () => {
-  const result = spawnSync(process.execPath, ['cli.mjs', 'plan', '--prepare', '--help'], {
-    cwd: releaseEngineRoot,
-    encoding: 'utf8',
-  });
-
-  assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /publish\|verify-reproducibility\|validate-prepared\|deploy-prepared/);
-  assert.match(result.stdout, /--prepare/);
-  assert.match(result.stdout, /verify-reproducibility/);
-  assert.match(result.stdout, /--state-directory/);
-});
-
-test('workflow evidence receives its exact --file argument', () => {
-  const missingEvidence = 'missing-workflow-evidence.json';
-  const result = spawnSync(process.execPath, [
-    'cli.mjs', 'publish-evidence',
-    '--adapter', join(releaseEngineRoot, '../../02_platform_pingtai/infrastructure/release/zdt-next.release.json'),
-    '--file', missingEvidence,
-    '--kind', 'prepare',
-    '--source-sha', 'a'.repeat(40),
-    '--target', 'storefront',
-    '--github-run-id', '10',
-    '--github-run-attempt', '1',
-  ], { cwd: releaseEngineRoot, encoding: 'utf8' });
-
-  assert.equal(result.status, 1);
-  assert.doesNotMatch(result.stderr, /EVIDENCE_FILE_REQUIRED/);
-  assert.match(result.stderr, /ENOENT/);
-  const failure = JSON.parse(result.stderr).error;
-  assert.equal(failure.stage, 'publish-evidence');
-  assert.equal(failure.retryable, false);
-  assert.equal(failure.attempts, 1);
-  assert.equal(failure.nextSafeAction, 'stop-and-review-evidence');
-});
 
 test('prepared commands require exact control provenance and expected remote digests', async () => {
   const adapter = {
