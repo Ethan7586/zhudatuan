@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 import { lstat, realpath, readdir } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join, resolve } from 'node:path';
 
-const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
+const projectRoot = resolve(process.cwd());
 const dependencyRoot = join(projectRoot, 'node_modules');
 const dependencyStats = await lstat(dependencyRoot);
 if (!dependencyStats.isDirectory()) throw new Error('AI_DELIVERY_NODE_MODULES_DIRECTORY_REQUIRED');
