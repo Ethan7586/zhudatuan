@@ -245,6 +245,8 @@ test('live observation distinguishes current, previous and unrelated source with
   assert.equal(observedTarget(sha, 'identity-api', 'hbbtzn-l1', null).state, 'UNKNOWN');
   const unreadable = { ...observation(sha, 'b'.repeat(40)), error: { code: 'SERVICE_UNREADABLE' } };
   assert.equal(observedTarget(sha, 'identity-api', 'hbbtzn-l1', unreadable).state, 'FAILED');
+  const uninitialized = { status: { currentArtifact: null, previousArtifact: null }, error: { code: 'CURRENT_POINTER_MISSING' } };
+  assert.equal(observedTarget(sha, 'catalog-media', 'hbbtzn-l1', uninitialized).state, 'EMPTY');
 });
 
 test('isolated legacy recovery has no concurrency lock', async () => {

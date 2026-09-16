@@ -317,6 +317,7 @@ export function observedTarget(sourceSha, target, node, observation) {
   const currentSha = observation.status?.currentArtifact?.sourceSha ?? null;
   const previousSha = observation.status?.previousArtifact?.sourceSha ?? null;
   const health = observation.verification?.readiness ?? null;
+  if (observation.error?.code === 'CURRENT_POINTER_MISSING' && !currentSha) return { target, node, state: 'EMPTY', currentSourceSha: null, previousSourceSha: previousSha, health, diagnostic: observation.error };
   if (observation.error) return { target, node, state: 'FAILED', currentSourceSha: currentSha, previousSourceSha: previousSha, health, diagnostic: observation.error };
   if (currentSha !== sourceSha) {
     return { target, node, state: previousSha === sourceSha ? 'PREVIOUS' : currentSha ? 'OTHER' : 'EMPTY', currentSourceSha: currentSha, previousSourceSha: previousSha, health };
