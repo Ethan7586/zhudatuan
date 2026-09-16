@@ -156,6 +156,24 @@ test('Prepare Artifact forces one exact target while retaining its validation an
   assert.deepEqual(plan.actions.deployments, []);
 });
 
+test('single-node identity artifact preparation does not expand a workspace change to L0 or other targets', async () => {
+  const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const { stdout: currentSha } = await execFileAsync('git', ['rev-parse', 'HEAD']);
+  const plan = await createPlan(real, {
+    from: 'HEAD^',
+    to: currentSha.trim(),
+    target: 'identity-api',
+    prepare: true,
+    files: ['package.json', 'L-kernel/src/member/MemberProfileRules.ts', '01_core_hexin/services/commerce/src/modules/member/03_application_yingyong/MemberCustomProfileOperations.ts'],
+  });
+  assert.deepEqual(plan.targets, ['identity-api']);
+  assert.deepEqual(plan.deploymentOrder, ['identity-api']);
+  assert.deepEqual(plan.actions.deployments, []);
+  assert.equal(plan.actions.tests.length, 1);
+  assert.equal(plan.actions.typecheck.length, 1);
+  assert.equal(plan.actions.build.length, 1);
+});
+
 test('Prepare Artifact rejects an omitted target, abbreviated SHA, or dependency expansion', async () => {
   const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
   const { stdout: currentSha } = await execFileAsync('git', ['rev-parse', 'HEAD']);

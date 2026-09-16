@@ -79,19 +79,7 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
   const needsBuild = cache.some((item) => !item.exists);
   let cacheStatus = 'reused';
   if (needsBuild) {
-    context.stage = 'dependencies';
-    progress('dependencies', { sourceSha });
-    await installDependencies(adapter, controlRoot);
-    context.stage = 'build';
-    progress('build', { sourceSha, targets: plan.deploymentOrder });
-    const built = await buildRelease(adapter, plan.planPath);
-    progress('build-complete', { sourceSha, timings: built.timings });
-    context.stage = 'package';
-    progress('package', { sourceSha, targets: plan.deploymentOrder });
-    const packaged = await packageRelease(adapter, built.buildPath);
-    context.stage = 'upload';
-    progress('upload', { sourceSha, targets: plan.deploymentOrder });
-    await publishSimpleArtifacts(adapter, packaged.packagePath, client);
+    await buildAndPublish(adapter, controlRoot, plan, client, { sourceSha, targets: plan.deploymentOrder });
     cacheStatus = 'built';
   }
 
@@ -124,6 +112,22 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
   };
 }
 
+async function buildAndPublish(adapter, controlRoot, plan, client, details) {
+  context.stage = 'dependencies';
+  progress('dependencies', details);
+  await installDependencies(adapter, controlRoot);
+  context.stage = 'build';
+  progress('build', details);
+  const built = await buildRelease(adapter, plan.planPath);
+  progress('build-complete', { ...details, timings: built.timings });
+  context.stage = 'package';
+  progress('package', details);
+  const packaged = await packageRelease(adapter, built.buildPath);
+  context.stage = 'upload';
+  progress('upload', details);
+  await publishSimpleArtifacts(adapter, packaged.packagePath, client);
+}
+
 async function installDependencies(adapter, controlRoot) {
   const lockfile = await stat(join(controlRoot, 'package-lock.json')).then((value) => ({ present: true, bytes: value.size })).catch((error) => ({ present: false, error: error.code ?? error.message }));
   process.stdout.write(`RUNNER_1_6_DIAGNOSTIC=${JSON.stringify({ stage: 'dependencies', controlRoot, controlSha: process.env.CONTROL_SHA ?? null, controlLockfile: lockfile })}\n`);
@@ -142,21 +146,19 @@ async function deployExact(adapter, controlRoot, sourceSha, target, node) {
   context.target = target;
   context.node = node;
   resolveDeployment(adapter, node, target);
-  const productionStarted = performance.now();
   const client = simpleOssClientFromEnvironment();
   progress('artifact-lookup', { sourceSha, target, node });
   const cached = await inspectSimpleArtifact(adapter, { target, sourceSha }, client);
+  let cacheStatus = 'reused';
   if (!cached.exists) {
-    throw new DeliveryError('ARTIFACT_NOT_READY', `Immutable artifact is not ready for ${target} at ${sourceSha}`, {
-      sourceSha,
-      target,
-      node,
-      cache: cached,
-      retryable: false,
-      nextSafeAction: 'prepare the immutable artifact outside the production cutover and rerun the same exact deployment',
-    });
+    context.stage = 'plan';
+    progress('plan', { sourceSha, target, node, cacheReason: cached.reason });
+    const plan = await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha, target, prepare: true });
+    await buildAndPublish(adapter, controlRoot, plan, client, { sourceSha, target, node });
+    cacheStatus = 'built';
   }
   context.stage = 'deploy';
+  const productionStarted = performance.now();
   progress('deploy', { sourceSha, target, node, completed: 0, total: 1 });
   const deployed = await deployTarget(adapter, controlRoot, client, { target, node, sourceSha });
   const productionDurationMs = Math.round(performance.now() - productionStarted);
@@ -167,7 +169,7 @@ async function deployExact(adapter, controlRoot, sourceSha, target, node) {
     sourceSha,
     controlSha: process.env.CONTROL_SHA,
     executor: executor(),
-    cacheStatus: 'reused',
+    cacheStatus,
     exactScope: true,
     productionDurationMs,
     productionSlo: productionDurationMs <= 60_000 ? 'met' : 'missed',
