@@ -61,6 +61,8 @@ async function main() {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();
 
 async function release(adapter, controlRoot, sourceSha) {
+  context.stage = 'dependencies';
+  await runCommand({ name: 'install-release-dependencies', argv: ['npm', 'ci', '--ignore-scripts', '--no-audit', '--no-fund'], timeoutMs: 20 * 60_000 }, commandContext(adapter));
   context.stage = 'plan';
   const plan = await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha });
   const releaseId = `r16-${sourceSha}`;
@@ -71,8 +73,6 @@ async function release(adapter, controlRoot, sourceSha) {
   const needsBuild = cache.some((item) => !item.exists);
   let cacheStatus = 'reused';
   if (needsBuild) {
-    context.stage = 'dependencies';
-    await runCommand({ name: 'install-release-dependencies', argv: ['npm', 'ci', '--ignore-scripts', '--no-audit', '--no-fund'], timeoutMs: 20 * 60_000 }, commandContext(adapter));
     context.stage = 'build';
     const built = await buildRelease(adapter, plan.planPath);
     context.stage = 'package';
