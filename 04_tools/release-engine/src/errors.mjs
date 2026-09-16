@@ -46,7 +46,7 @@ export function deliveryErrorContract(error, context = {}) {
     evidence: context.evidence ?? evidenceSummary(value.code, status, diagnosis),
     nextSafeAction,
     resumeAllowed: context.resumeAllowed ?? false,
-    redactedDetails: redactDeliveryDetails({ status: status || undefined, diagnosis, ...context.details }, context.secretValues),
+    redactedDetails: redactDeliveryDetails({ status: status || undefined, diagnosis, ...value.details, ...context.details }, context.secretValues),
   });
 }
 

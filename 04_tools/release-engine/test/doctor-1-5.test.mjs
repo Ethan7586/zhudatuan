@@ -102,6 +102,18 @@ test('secrets are absent from structured errors, logs and snapshots', () => {
   assert.match(serialized, /REDACTED/);
 });
 
+test('structured command failures retain redacted actionable evidence', () => {
+  const secret = 'obviously-fake-secret-value';
+  const failure = new DeliveryError('COMMAND_FAILED', 'deploy failed', {
+    exitCode: 1,
+    outputTail: `remote health failed url?Signature=${secret}`,
+  });
+  const contract = deliveryErrorContract(failure, { stage: 'deploy', secretValues: [secret] });
+  assert.equal(contract.redactedDetails.exitCode, 1);
+  assert.match(contract.redactedDetails.outputTail, /remote health failed/);
+  assert.doesNotMatch(contract.redactedDetails.outputTail, new RegExp(secret));
+});
+
 test('Doctor failure cannot trigger Prepare, Seal, Deploy or a write lease', async () => {
   let reads = 0;
   const result = await doctorCommand(adapter, options, deps({ ossClient: { async headObject() { reads += 1; throw ossDenied('ExplicitDeny'); } } }));
