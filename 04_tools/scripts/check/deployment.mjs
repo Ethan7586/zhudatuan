@@ -69,7 +69,7 @@ function validateDeploymentOwnership(adapter, policy) {
 function validateDeployWorkflow(adapter, workflow, action) {
   const inputs = workflow?.on?.workflow_dispatch?.inputs;
   assert(inputs?.operation?.required === true && inputs.operation.type === 'choice', 'DEPLOY_WORKFLOW_OPERATION_INPUT_INVALID');
-  assert(sameValues(inputs.operation.options, ['release', 'status', 'retry', 'rollback']), 'DEPLOY_WORKFLOW_OPERATION_OPTIONS_INVALID');
+  assert(sameValues(inputs.operation.options, ['release', 'status', 'retry', 'rollback', 'control-update']), 'DEPLOY_WORKFLOW_OPERATION_OPTIONS_INVALID');
   assert(inputs?.identifier?.type === 'string', 'DEPLOY_WORKFLOW_IDENTIFIER_INPUT_INVALID');
   assert(inputs?.release_target?.type === 'string', 'DEPLOY_WORKFLOW_TARGET_INPUT_INVALID');
   assert(inputs?.physical_node?.type === 'string', 'DEPLOY_WORKFLOW_NODE_INPUT_INVALID');

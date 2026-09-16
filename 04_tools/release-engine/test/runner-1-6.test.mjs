@@ -102,7 +102,7 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
   const workflowSource = await readFile(join(root, '.github/workflows/delivery-1-6.yml'), 'utf8');
   const workflow = parse(workflowSource);
   const action = parse(await readFile(join(root, '.github/actions/runner-1-6/action.yml'), 'utf8'));
-  assert.deepEqual(workflow.on.workflow_dispatch.inputs.operation.options, ['release', 'status', 'retry', 'rollback']);
+  assert.deepEqual(workflow.on.workflow_dispatch.inputs.operation.options, ['release', 'status', 'retry', 'rollback', 'control-update']);
   assert.match(workflowSource, /runs-on: \$\{\{ fromJSON\(needs\.route\.outputs\.runs_on\) \}\}/);
   assert.equal(workflow.jobs.execute.steps.at(-1).uses, './.github/actions/runner-1-6');
   assert.equal(workflow.jobs['hosted-startup-fallback'].steps.at(-1).uses, './.github/actions/runner-1-6');
@@ -179,6 +179,16 @@ test('exact production cutover skips dependencies and build and reports the one-
   assert.match(exactSource, /ARTIFACT_NOT_READY/);
   assert.match(exactSource, /productionSloMs: 60_000/);
   assert.match(exactSource, /productionDurationMs <= 60_000/);
+});
+
+test('control update uses the shared core and changes no business pointer or service', async () => {
+  const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
+  const updateStart = core.indexOf('async function updateRemoteControl');
+  const updateEnd = core.indexOf('async function status');
+  const update = core.slice(updateStart, updateEnd);
+  assert.match(update, /remoteControlUpdateScript/);
+  assert.match(update, /node --check/);
+  assert.doesNotMatch(update, /\b(?:current|previous|restart|systemctl|lock|lease|seal)\b/i);
 });
 
 test('remote policy contains no lock or unlock authority', async () => {

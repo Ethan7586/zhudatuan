@@ -8,7 +8,7 @@ on:
         description: One Runner 1.6 operation
         required: true
         type: choice
-        options: [release, status, retry, rollback]
+        options: [release, status, retry, rollback, control-update]
       identifier:
         description: Full Source SHA or r16 release id; empty for rollback
         required: false
@@ -69,6 +69,9 @@ jobs:
               ;;
             rollback)
               [ -n "$RELEASE_TARGET" ] && [ -n "$PHYSICAL_NODE" ] || { echo 'rollback requires target and physical node' >&2; exit 64; }
+              source_sha=''
+              ;;
+            control-update)
               source_sha=''
               ;;
           esac
