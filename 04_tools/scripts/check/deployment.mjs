@@ -85,10 +85,12 @@ function validateDeployWorkflow(adapter, workflow, action) {
   const startedStep = action?.runs?.steps?.findIndex((step) => step.id === 'started');
   const coreStep = action?.runs?.steps?.findIndex((step) => String(step.run ?? '').includes('scripts/runner-1-6.sh'));
   assert(startedStep >= 0 && coreStep > startedStep, 'DEPLOY_ACTION_STARTED_BOUNDARY_INVALID');
-  const executeCore = execute?.steps?.find((step) => step.uses === './.github/actions/runner-1-6');
-  const fallbackCore = fallback?.steps?.find((step) => step.uses === './.github/actions/runner-1-6');
-  assert(executeCore && fallbackCore, 'DEPLOY_WORKFLOW_SHARED_CORE_MISSING');
-  assert(executeCore.with.operation === '${{ inputs.operation }}' && fallbackCore.with.operation === '${{ inputs.operation }}', 'DEPLOY_WORKFLOW_OPERATION_BINDING_INVALID');
+  for (const job of [execute, fallback]) {
+    const releaseCore = job?.steps?.find((step) => step.uses === './.runner-1-6/control-release/.github/actions/runner-1-6');
+    const statusCore = job?.steps?.find((step) => step.uses === './.runner-1-6/status-control/.github/actions/runner-1-6');
+    assert(releaseCore && statusCore, 'DEPLOY_WORKFLOW_SHARED_CORE_MISSING');
+    assert(releaseCore.with.operation === '${{ inputs.operation }}' && statusCore.with.operation === 'status', 'DEPLOY_WORKFLOW_OPERATION_BINDING_INVALID');
+  }
   const source = JSON.stringify(workflow);
   assert(!/final.?seal|closure|runner.?lease|writer.?lease|slot.?claim|readiness.?doctor/i.test(source), 'DEPLOY_WORKFLOW_RETIRED_AUTHORITY_PRESENT');
   return { commands: 1 };
