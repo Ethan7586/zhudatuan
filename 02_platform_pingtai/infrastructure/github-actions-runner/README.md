@@ -6,10 +6,14 @@ Normal commands:
 
 ```text
 zdt-delivery release <full-source-sha>
+zdt-delivery deploy <full-source-sha>
+zdt-delivery deploy <target> <full-source-sha> <physical-node>
 zdt-delivery status <full-source-sha-or-r16-release-id>
 zdt-delivery retry <r16-release-id>
 zdt-delivery rollback <target> <physical-node>
 ```
+
+`deploy` and `release` are interchangeable names for the same release path. `deploy` with an explicit target uses the historical target-first argument order; the wrapper forwards it to `release` with Source SHA first. Neither command has priority over the other.
 
 Aliyun Build runners are selected first when one is online and idle. Missing, offline, busy, or unreadable Aliyun state selects GitHub Hosted immediately. A failure before the shared core starts also uses GitHub Hosted. Both locations invoke `.github/actions/runner-1-6/action.yml` and `scripts/runner-1-6.sh`; there is no second release implementation.
 
