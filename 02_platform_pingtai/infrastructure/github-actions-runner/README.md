@@ -15,6 +15,8 @@ Aliyun Build runners are selected first when one is online and idle. Missing, of
 
 The control-side machine never installs release dependencies, builds, packages, uploads, deploys, or rolls back. Historical recovery remains separate under `RECOVERY.md`.
 
+On a cache miss, the shared core installs the isolated control and source dependencies concurrently, then runs independent tests and typechecks concurrently before building. The release result already contains the target node's `current`, `previous`, and health returned after deployment. For an immediate completion answer, use that target result; a later question about current production state uses a fresh read-only `status`.
+
 ## GitHub sing-box line
 
 `install-github-transport.sh` turns the sing-box installation on the Aliyun Runner host into a GitHub-only line. The Runner processes use a loopback HTTP proxy. sing-box sends `github.com`, `githubusercontent.com`, `githubassets.com`, and `ghcr.io` through the configured Shadowsocks endpoint; OSS, Aliyun metadata, production SSH, and every other destination remain direct.
