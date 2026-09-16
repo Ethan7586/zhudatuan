@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import { access, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
+import { promisify } from 'node:util';
 import test from 'node:test';
 import { parse } from 'yaml';
 
@@ -13,6 +15,7 @@ import { digest, prettyStableJson, sha256 } from '../src/stable.mjs';
 
 const root = resolve(new URL('../../..', import.meta.url).pathname);
 const sha = 'a'.repeat(40);
+const execFileAsync = promisify(execFile);
 
 test('Aliyun is selected only when a matching runner is online and idle', () => {
   const selected = selectExecutionRunner({
@@ -252,4 +255,35 @@ test('production frontend builds receive their existing required environment', a
     VITE_AUTH_BASE_URL: 'https://accounts.hbbtzn.com',
     VITE_CLIENT_VERSION: '0.0.0-g{{sourceSha}}',
   });
+});
+
+test('Aliyun runners use a GitHub-only sing-box line without delivery locks', async () => {
+  const directory = join(root, '02_platform_pingtai/infrastructure/github-actions-runner');
+  const renderer = join(directory, 'render-github-singbox-config.mjs');
+  const { stdout } = await execFileAsync(process.execPath, [renderer], {
+    env: {
+      ...process.env,
+      ZDT_GITHUB_LINE_SERVER: 'line.example.test',
+      ZDT_GITHUB_LINE_SERVER_PORT: '31001',
+      ZDT_GITHUB_LINE_METHOD: 'aes-128-gcm',
+      ZDT_GITHUB_LINE_PASSWORD: 'fixture-password',
+    },
+  });
+  const config = JSON.parse(stdout);
+  assert.deepEqual(config.inbounds[0], {
+    type: 'mixed',
+    tag: 'github-local',
+    listen: '127.0.0.1',
+    listen_port: 7890,
+  });
+  assert.equal(config.outbounds[0].tag, 'github-line');
+  assert.equal(config.outbounds[1].tag, 'direct');
+  assert.deepEqual(config.route.rules[0].domain_suffix, ['github.com', 'githubusercontent.com', 'githubassets.com', 'ghcr.io']);
+  assert.equal(config.route.rules[0].action, 'route');
+  assert.equal(config.route.final, 'direct');
+
+  const installer = await readFile(join(directory, 'install-github-transport.sh'), 'utf8');
+  assert.match(installer, /aliyun-staging-zdt-build-2\.service/);
+  assert.match(installer, /pending-next-restart/);
+  assert.doesNotMatch(installer, /exit 75|retry after it finishes|flock|lockRoot|\blease\b|\bclaim\b|\bseal\b/i);
 });
