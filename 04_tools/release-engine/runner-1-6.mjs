@@ -68,11 +68,7 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
   if (exactScope) return deployExact(adapter, controlRoot, sourceSha, target, node);
   context.stage = 'dependencies';
   progress('dependencies', { sourceSha });
-  const install = { argv: ['npm', 'ci', '--ignore-scripts', '--no-audit', '--no-fund'], timeoutMs: 20 * 60_000 };
-  await runCommand({ ...install, name: 'install-control-dependencies' }, { ...commandContext(adapter), projectRoot: controlRoot });
-  if (resolve(controlRoot) !== resolve(adapter.projectRoot)) {
-    await runCommand({ ...install, name: 'install-source-dependencies' }, commandContext(adapter));
-  }
+  await installDependencies(adapter, controlRoot);
   context.stage = 'plan';
   progress('plan', { sourceSha });
   const plan = await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha });
@@ -124,6 +120,14 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
     productionSlo: productionDurationMs <= 60_000 ? 'met' : 'missed',
     targets: deployments,
   };
+}
+
+async function installDependencies(adapter, controlRoot) {
+  const install = { argv: ['npm', 'ci', '--ignore-scripts', '--no-audit', '--no-fund'], timeoutMs: 20 * 60_000 };
+  await runCommand({ ...install, name: 'install-control-dependencies' }, { ...commandContext(adapter), projectRoot: controlRoot });
+  if (resolve(controlRoot) !== resolve(adapter.projectRoot)) {
+    await runCommand({ ...install, name: 'install-source-dependencies' }, commandContext(adapter));
+  }
 }
 
 async function deployExact(adapter, controlRoot, sourceSha, target, node) {
@@ -290,6 +294,9 @@ printf 'CONTROL_UPDATED agent=sha256:${agentSha256} policy=sha256:${policySha256
 }
 
 async function status(adapter, controlRoot, sourceSha) {
+  context.stage = 'dependencies';
+  progress('dependencies', { sourceSha, operation: 'status' });
+  await installDependencies(adapter, controlRoot);
   context.stage = 'plan';
   const plan = await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha });
   const targets = [];

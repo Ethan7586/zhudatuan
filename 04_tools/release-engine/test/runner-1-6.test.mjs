@@ -199,11 +199,22 @@ test('remote policy contains no lock or unlock authority', async () => {
 
 test('release installs dependencies before dynamic impact planning', async () => {
   const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
-  const install = core.indexOf("name: 'install-control-dependencies'");
-  const sourceInstall = core.indexOf("name: 'install-source-dependencies'");
-  const plan = core.indexOf('const plan = await createReleasePlan');
-  assert.ok(install > 0 && sourceInstall > install && sourceInstall < plan);
+  const release = core.slice(core.indexOf('async function release'), core.indexOf('async function installDependencies'));
+  assert.ok(release.indexOf('await installDependencies') < release.indexOf('const plan = await createReleasePlan'));
+  assert.match(core, /name: 'install-control-dependencies'/);
+  assert.match(core, /name: 'install-source-dependencies'/);
   assert.match(core, /resolve\(controlRoot\) !== resolve\(adapter\.projectRoot\)/);
+});
+
+test('status installs the dynamic impact dependencies instead of failing before observation', async () => {
+  const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
+  const status = core.slice(core.indexOf('async function status'), core.indexOf('async function rollback'));
+  assert.ok(status.indexOf('await installDependencies') < status.indexOf('const plan = await createReleasePlan'));
+});
+
+test('isolated legacy recovery has no concurrency lock', async () => {
+  const recovery = await readFile(join(root, '.github/workflows/legacy-oss-recovery-aliyun.yml'), 'utf8');
+  assert.doesNotMatch(recovery, /^concurrency:|cancel-in-progress:|^\s+group:/m);
 });
 
 test('workspace isolation checks the selected source workspace', async () => {

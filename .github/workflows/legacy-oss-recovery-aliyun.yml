@@ -27,10 +27,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: zdt-next-wuhan-oss-${{ inputs.release_target }}
-  cancel-in-progress: false
-
 env:
   NODE_VERSION: 22.22.0
   RELEASE_TARGET: ${{ inputs.release_target }}
