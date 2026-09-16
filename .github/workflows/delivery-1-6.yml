@@ -1,0 +1,147 @@
+name: Delivery Control 1.6
+run-name: Runner 1.6 ${{ inputs.operation }} ${{ inputs.identifier }} ${{ inputs.release_target }} ${{ inputs.physical_node }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: One Runner 1.6 operation
+        required: true
+        type: choice
+        options: [release, status, retry, rollback]
+      identifier:
+        description: Full Source SHA or r16 release id; empty for rollback
+        required: false
+        type: string
+      release_target:
+        description: Required only for rollback
+        required: false
+        type: string
+      physical_node:
+        description: Required only for rollback
+        required: false
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  route:
+    name: Choose execution location
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    outputs:
+      runs_on: ${{ steps.route.outputs.runs_on }}
+      runner_class: ${{ steps.route.outputs.runner_class }}
+      route_reason: ${{ steps.route.outputs.route_reason }}
+      source_sha: ${{ steps.identity.outputs.source_sha }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - name: Resolve release identity
+        id: identity
+        env:
+          OPERATION: ${{ inputs.operation }}
+          IDENTIFIER: ${{ inputs.identifier }}
+          RELEASE_TARGET: ${{ inputs.release_target }}
+          PHYSICAL_NODE: ${{ inputs.physical_node }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$OPERATION" in
+            release|status)
+              if [[ "$IDENTIFIER" =~ ^[0-9a-f]{40}$ ]]; then source_sha="$IDENTIFIER"
+              elif [[ "$IDENTIFIER" =~ ^r16-([0-9a-f]{40})$ ]]; then source_sha="${BASH_REMATCH[1]}"
+              else echo 'release/status requires a full Source SHA or r16 release id' >&2; exit 64; fi
+              ;;
+            retry)
+              [[ "$IDENTIFIER" =~ ^r16-([0-9a-f]{40})$ ]] || { echo 'retry requires an r16 release id' >&2; exit 64; }
+              source_sha="${BASH_REMATCH[1]}"
+              ;;
+            rollback)
+              [ -n "$RELEASE_TARGET" ] && [ -n "$PHYSICAL_NODE" ] || { echo 'rollback requires target and physical node' >&2; exit 64; }
+              source_sha=''
+              ;;
+          esac
+          echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
+      - name: Observe Aliyun runners
+        id: observe
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
+        shell: bash
+        run: gh api "repos/${GITHUB_REPOSITORY}/actions/runners" > "$RUNNER_TEMP/runners.json"
+      - name: Select Aliyun first or GitHub Hosted fallback
+        id: route
+        shell: bash
+        run: |
+          if [ "${{ steps.observe.outcome }}" != success ]; then printf '{"error":"runner-status-unavailable"}\n' > "$RUNNER_TEMP/runners.json"; fi
+          route="$(node 04_tools/release-engine/select-runner-1-6.mjs "$RUNNER_TEMP/runners.json")"
+          echo "runs_on=$(node -e 'const r=JSON.parse(process.argv[1]);process.stdout.write(JSON.stringify(r.runsOn))' "$route")" >> "$GITHUB_OUTPUT"
+          echo "runner_class=$(node -e 'const r=JSON.parse(process.argv[1]);process.stdout.write(r.runnerClass)' "$route")" >> "$GITHUB_OUTPUT"
+          echo "route_reason=$(node -e 'const r=JSON.parse(process.argv[1]);process.stdout.write(r.reason)' "$route")" >> "$GITHUB_OUTPUT"
+
+  execute:
+    name: Execute on ${{ needs.route.outputs.runner_class }}
+    needs: route
+    runs-on: ${{ fromJSON(needs.route.outputs.runs_on) }}
+    timeout-minutes: 40
+    outputs:
+      core_started: ${{ steps.release.outputs.started }}
+    env:
+      ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+      ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+      ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+      ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+      ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+      ALIYUN_OSS_INTERNAL_ENDPOINT: ${{ secrets.ALIYUN_OSS_INTERNAL_ENDPOINT }}
+      ZDT_RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
+      CONTROL_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - name: Run shared release core
+        id: release
+        uses: ./.github/actions/runner-1-6
+        with:
+          operation: ${{ inputs.operation }}
+          identifier: ${{ inputs.identifier }}
+          source-sha: ${{ needs.route.outputs.source_sha }}
+          target: ${{ inputs.release_target }}
+          physical-node: ${{ inputs.physical_node }}
+          runner-class: ${{ needs.route.outputs.runner_class }}
+
+  hosted-startup-fallback:
+    name: Retry pre-core startup on GitHub Hosted
+    needs: [route, execute]
+    if: ${{ always() && needs.route.outputs.runner_class == 'aliyun' && needs.execute.result == 'failure' && needs.execute.outputs.core_started != 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+      ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+      ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+      ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+      ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+      ALIYUN_OSS_INTERNAL_ENDPOINT: ${{ secrets.ALIYUN_OSS_INTERNAL_ENDPOINT }}
+      ZDT_RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
+      CONTROL_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - name: Run the same release core after Aliyun startup failure
+        uses: ./.github/actions/runner-1-6
+        with:
+          operation: ${{ inputs.operation }}
+          identifier: ${{ inputs.identifier }}
+          source-sha: ${{ needs.route.outputs.source_sha }}
+          target: ${{ inputs.release_target }}
+          physical-node: ${{ inputs.physical_node }}
+          runner-class: github-hosted

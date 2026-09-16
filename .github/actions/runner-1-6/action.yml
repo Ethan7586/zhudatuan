@@ -1,0 +1,46 @@
+name: Runner 1.6 shared release core
+description: Runs the same release implementation on Aliyun or GitHub Hosted runners
+inputs:
+  operation:
+    required: true
+  identifier:
+    required: false
+    default: ''
+  source-sha:
+    required: false
+    default: ''
+  target:
+    required: false
+    default: ''
+  physical-node:
+    required: false
+    default: ''
+  runner-class:
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Load exact source
+      if: inputs.source-sha != ''
+      uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.source-sha }}
+        path: .runner-1-6/source
+        fetch-depth: 2
+    - name: Use Node 22
+      uses: actions/setup-node@v6
+      with:
+        node-version: 22.22.0
+    - name: Start shared release core
+      id: core
+      shell: bash
+      env:
+        CONTROL_ROOT: ${{ github.workspace }}
+        SOURCE_ROOT: ${{ inputs.source-sha != '' && format('{0}/.runner-1-6/source', github.workspace) || '' }}
+        RELEASE_IDENTIFIER: ${{ inputs.identifier }}
+        RELEASE_TARGET: ${{ inputs.target }}
+        PHYSICAL_NODE: ${{ inputs.physical-node }}
+        RUNNER_CLASS: ${{ inputs.runner-class }}
+      run: |
+        echo 'started=true' >> "$GITHUB_OUTPUT"
+        bash scripts/runner-1-6.sh "${{ inputs.operation }}"
