@@ -1,0 +1,8 @@
+"test_id","area","method","result"
+"TC-AU-027-001","正式测试","npm test -- --reporter=dot","阻塞/127，vitest缺失"
+"TC-AU-027-002","类型检查","npm run typecheck","阻塞/127，tsc缺失"
+"TC-AU-027-003","多scope健康反事实","scopes数组与mealProbe参数/调用静态推演","只有scopes[0]被调用，响应未映射"
+"TC-AU-027-004","价格放大矩阵","500-key keys入口与scope菜单调用静态推导","同scope超过500商品时每批重拉全菜单"
+"TC-AU-027-005","依赖闭合","源码裸包导入与package dependencies对照","@shop/vendorcore未声明"
+"TC-AU-027-006","能力边界","manifest×factory×index","只发布Catalog/Price；Order/Webhook禁用"
+"TC-AU-027-007","构建","npm run build","未执行；等同typecheck"

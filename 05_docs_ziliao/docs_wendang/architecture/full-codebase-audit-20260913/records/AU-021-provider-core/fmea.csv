@@ -1,0 +1,8 @@
+"编号","失败模式","触发","传播","当前控制","等级/结论"
+"FM-AU-021-001","签名请求改写event ID重放","5分钟内取得合法timestamp/body/signature","验签成功→新external ID→新inbox/job/outbox","时间窗；下游同reference状态覆盖","P1候选/F-0094"
+"FM-AU-021-002","无效签名Webhook","错误HMAC/时间窗/header","verify=false→route拒绝，不持久化","timingSafeEqual、timestamp格式/窗口","受控"
+"FM-AU-021-003","重复原event ID","provider正常重试","DB unique冲突→返回既有inbox replayed","connection+external ID唯一键","受控"
+"FM-AU-021-004","测试绿但生产验签缺陷","只执行Provider.test","非生产Webhook通过，PortFactory未执行","无生产反事实","P3/F-0095"
+"FM-AU-021-005","provider健康失败","启动或canary health=false","register停止并拒绝；stage返回degraded供调用者discard","Manifest验签、health gate","受控"
+"FM-AU-021-006","声明capability无port","错误factory/manifest组合","Registry require时拒绝","assertInstallation + capability/port双检查；非启动时闭合","待具体Provider AU核对"
+

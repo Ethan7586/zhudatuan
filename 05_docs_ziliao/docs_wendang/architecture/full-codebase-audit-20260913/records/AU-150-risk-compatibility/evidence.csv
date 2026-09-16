@@ -1,0 +1,4 @@
+id,file,location,kind,observation
+E-AU-150-001,application/**;domain/**;infrastructure/**;interface/**,1,compatibility export,Each legacy path is a one-way re-export to a reviewed canonical Risk layer and contains no independent branch.
+E-AU-150-002,src/app/jobs.ts;interface/job/RiskReplayJob.ts,39;1,live consumer,Main jobs catalog imports the legacy job path and instantiates RiskReplayJobProcessor for riskscan.
+E-AU-150-003,index.ts;RiskModule.ts;module.manifest.ts,1-28,public/module surface,Public entry and module wiring use canonical exports while legacy paths preserve compatibility only.

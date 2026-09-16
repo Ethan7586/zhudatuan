@@ -1,0 +1,3 @@
+file,coverage,execution
+src/bootstrap/PaymentJobsRuntime.test.ts,manifest callback queue kind and partial compatibility paths,not run: audit worktree has no Vitest dependencies
+src/bootstrap/PaymentJobsRuntime.test.ts,contract false omitted,F-0231; not run: audit worktree has no Vitest dependencies

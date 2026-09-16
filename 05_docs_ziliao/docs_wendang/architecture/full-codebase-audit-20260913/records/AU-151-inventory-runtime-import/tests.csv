@@ -1,0 +1,4 @@
+verification,scope,result,reason
+Source-level runtime trace,Inventory port operations import persistence workers and jobs catalog,Completed,Canonical implementation and caller registrations reviewed.
+Existing test review,InventoryPort and manifest tests,Completed,Direct reservation/sync facts covered; import/API coverage gap documented as F-0181.
+Targeted formal test,Inventory suite,Not run,Audit worktree dependency baseline lacks vitest; no dependency changes made.

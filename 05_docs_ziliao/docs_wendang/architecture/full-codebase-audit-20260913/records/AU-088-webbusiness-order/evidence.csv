@@ -1,0 +1,4 @@
+"编号","位置","证据","结论"
+"E-AU-088-001","WebOrderOperations.ts:11-123","owner/supplier/store/closure scope、filter enums、keyset和所有子投影在同一 read query。","订单主记录范围有显式授权条件。"
+"E-AU-088-002","migration 20260828173000:230-251,359-368；202609111535:3-4；payment/finance create migrations RLS enable","web role 对 order 三表有 RLS policy；payment/finance 后续只有 select grant，未见该 role policy。","F-0161：payment/finance facts 缺少适用 RLS 可见性。"
+"E-AU-088-003","WebOrderOperations.test.ts:10-45","测试验证 query shape/filters，但 pool mock 不模拟 database role/RLS/任何返回 row。","当前测试不能证明四流事实实际可读。"

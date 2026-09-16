@@ -1,0 +1,55 @@
+符号编号,文件编号/路径,1 符号名称,2 声明位置,3 直接消费者,4 间接消费者,5 重新导出,6 动态访问,7 仅测试使用,8 公共契约,9 运行时副作用,10 可见范围,11 兼容导出,12 删除或改名影响
+SYM-AU-009-001,Clock.ts,Clock,Clock.ts:1,AccessPipeline类型、SystemClock、TestClock,Commerce/bootstrap tests,@shop/kernel root,未发现,否,是，时间端口,类型擦除,workspace公开,当前,实现与消费者编译失败
+SYM-AU-009-002,Aggregate.ts,Aggregate,Aggregate.ts:4,Commerce foundation re-export、Reservation,Inventory领域,@shop/kernel root,未发现,否,是，聚合基类,实例事件数组,workspace公开,当前,Reservation/外部子类编译失败
+SYM-AU-009-003,Bulkhead.ts,Bulkhead,Bulkhead.ts:3,Commerce Executor、Kernel test,外部HTTP adapters,@shop/kernel root,未发现,否,是，可靠性原语,调用时维护running/queue,workspace公开,当前,Executor并发限制失效
+SYM-AU-009-004,CircuitBreaker.ts,CircuitState,CircuitBreaker.ts:1,Vendor CircuitPolicy返回类型、tests,Vendor health/Executor,@shop/kernel root,未发现,否,是,类型擦除,workspace公开,当前,消费者类型契约失败
+SYM-AU-009-005,CircuitBreaker.ts,CircuitBreaker,CircuitBreaker.ts:3,Commerce Executor、Vendor CircuitPolicy、Kernel tests,外部HTTP/provider调用,@shop/kernel root,未发现,否,是，可靠性原语,维护failure/open/probe状态,workspace公开,当前,依赖隔离链首先失败；F-0047
+SYM-AU-009-006,Currency.ts,CURRENCIES,Currency.ts:1,Currency、Money,Finance/Payment间接,@shop/kernel root,未发现,否,是，币种目录,导出数组运行时可变；E-AU-009-018/F-0032,workspace公开,当前,币种校验/类型编译失败
+SYM-AU-009-007,Currency.ts,CurrencyCode,Currency.ts:2,Currency、Money及调用者类型,Finance/Payment,@shop/kernel root,未发现,否,是,类型擦除,workspace公开,当前,金额类型编译失败
+SYM-AU-009-008,Currency.ts,Currency,Currency.ts:4,Money,Finance/Payment,@shop/kernel root,未发现,否,是，币种值对象,构造实例未冻结，公开code可运行时改写；E-AU-009-018,workspace公开,当前,Money默认/比较链失败
+SYM-AU-009-009,Cursor.ts,Cursor,Cursor.ts:3,Commerce CursorCodec,API分页,@shop/kernel root,未发现,否,是，cursor值对象,parse返回冻结实例,workspace公开,当前,分页cursor编解码失败
+SYM-AU-009-010,deadline/index.ts,Deadline,deadline/index.ts:5,Commerce Executor、SDK ApiClient、Vendor Client、jobs,HTTP/provider/job超时链,root + @shop/kernel/deadline,未发现,否,是，超时契约,构造timer/listener；dispose清理,workspace公开subpath,当前,大量调用超时/取消失败；F-0051
+SYM-AU-009-011,DomainEvent.ts,DomainEvent,DomainEvent.ts:1,Commerce foundation re-export、OutboxStore/producers,event/outbox链,@shop/kernel root,未发现,否,是，事件envelope,类型擦除,workspace公开,当前,事件生产/持久化编译失败
+SYM-AU-009-012,DomainEvent.ts,domainEvent,DomainEvent.ts:12,Purchase/Checkout/Order等producer,OutboxStore,@shop/kernel root,未发现,否,是,校验并冻结envelope,workspace公开,当前,事件创建入口失败
+SYM-AU-009-013,Email.ts,Email,Email.ts:3,无仓内生产caller,潜在identity/member,@shop/kernel root,未发现,否；零caller,疑似公共值契约,parse返回冻结实例,workspace公开,疑似兼容残留G1,外部编译/验证语义未知；DC-0011
+SYM-AU-009-014,Entity.ts,Entity,Entity.ts:1,Aggregate、Commerce foundation re-export、Order,Order/Inventory领域,@shop/kernel root,未发现,否,是，实体基类,构造只校验falsy id；实例不冻结,workspace公开,当前,Order/Aggregate子类编译失败
+SYM-AU-009-015,ErrorCause.ts,errorCause,ErrorCause.ts:1,Retry、Deadline及其它Kernel原语,Commerce/SDK/Vendor错误传播,@shop/kernel root,未发现,否,是，错误规范化,无共享状态,workspace公开,当前,错误cause/code传播改变
+SYM-AU-009-016,Hash.ts,Hash,Hash.ts:3,无仓内生产caller,潜在对象/制品hash,@shop/kernel root,未发现,否；零caller,疑似公共值契约,sha256返回冻结实例,workspace公开,疑似兼容残留G1,外部hash校验未知；DC-0011
+SYM-AU-009-017,Id.ts,Id,Id.ts:3,TestIdGenerator、testing index,测试fixture/潜在领域,@shop/kernel root,未发现,否,是，ID格式,parse返回冻结实例,workspace公开,当前,测试生成与外部ID解析失败
+SYM-AU-009-018,IdGenerator.ts,IdGenerator,IdGenerator.ts:3,TestIdGenerator,测试/潜在生产生成器,@shop/kernel root,未发现,否,是，生成端口,类型擦除,workspace公开,当前,实现端口编译失败
+SYM-AU-009-019,Mobile.ts,Mobile,Mobile.ts:3,无该class仓内生产caller,潜在identity/member,@shop/kernel root,未发现,否；同词UI命中已排除,疑似公共值契约,parse返回冻结实例,workspace公开,疑似兼容残留G1,外部手机号解析未知；DC-0011
+SYM-AU-009-020,Money.ts,Money,Money.ts:3,Finance/Payment策略与tests,订单/结算金额,@shop/kernel root,未发现,否,是，金额值对象,冻结实例；无I/O,workspace公开,当前,金额计算链编译/运行失败
+SYM-AU-009-021,Page.ts,Page,Page.ts:1,无该类型仓内生产caller,潜在API分页,@shop/kernel root,未发现,否；普通Page同词已排除,疑似公共结果契约,类型擦除,workspace公开,疑似兼容残留G1,外部分页类型未知；DC-0011
+SYM-AU-009-022,Page.ts,page,Page.ts:7,无该函数仓内生产caller,潜在API分页,@shop/kernel root,未发现,否；普通变量同词已排除,疑似公共helper,冻结items和结果,workspace公开,疑似兼容残留G1,外部分页构造未知；DC-0011
+SYM-AU-009-023,Policy.ts,Policy,Policy.ts:1,AssignmentPolicy implements,Support领域,@shop/kernel root,未发现,否,是，决策端口,类型擦除,workspace公开,当前,策略实现编译失败
+SYM-AU-009-024,RateLimiter.ts,RateLimiter,RateLimiter.ts:4,Commerce Executor、Vendor wrapper/tests,外部HTTP/provider调用,@shop/kernel root,未发现,否,是，可靠性原语,维护token/refill/serial promise,workspace公开,当前,流量控制链失败
+SYM-AU-009-025,Result.ts,Result,Result.ts:1,无该Kernel类型生产caller,潜在应用错误模型,@shop/kernel root,未发现,否；其它包同名已排除,疑似公共union,类型擦除,workspace公开,疑似兼容残留G1,外部类型编译未知；DC-0011
+SYM-AU-009-026,Result.ts,success,Result.ts:3,无该Kernel函数生产caller,潜在应用层,@shop/kernel root,未发现,否,疑似公共helper,冻结结果,workspace公开,疑似兼容残留G1,外部结果构造未知；DC-0011
+SYM-AU-009-027,Result.ts,failure,Result.ts:7,无该Kernel函数生产caller,潜在应用层,@shop/kernel root,未发现,否,疑似公共helper,冻结结果,workspace公开,疑似兼容残留G1,外部结果构造未知；DC-0011
+SYM-AU-009-028,Retry.ts,RetryMode,Retry.ts:4,Commerce Executor/HttpClient、Vendor Client,provider调用,@shop/kernel root,未发现,否,是，重试模式,类型擦除,workspace公开,当前,执行模式类型失败；F-0048
+SYM-AU-009-029,Retry.ts,RetryPolicy,Retry.ts:6,retry callers,Executor/Vendor,@shop/kernel root,未发现,否,是，重试契约,类型擦除,workspace公开,当前,调用者编译失败
+SYM-AU-009-030,Retry.ts,retry,Retry.ts:16,Commerce Executor、Vendor Client、Kernel test,HttpClient/provider链,@shop/kernel root,未发现,否,是，可靠性原语,attempt/delay timer；无持久状态,workspace公开,当前,重试与deadline链失败；F-0048
+SYM-AU-009-031,Retry.ts,retryDelay,Retry.ts:35,retry内部；公共外部caller未发现,重试退避,@shop/kernel root,未发现,否,是，退避helper,读取random,workspace公开,当前/潜在外部,重试间隔改变
+SYM-AU-009-032,Semaphore.ts,Semaphore,Semaphore.ts:10,Bulkhead、RateLimiter及测试,Executor/provider链,@shop/kernel root,未发现,否,是，并发原语,维护permits/waiters,workspace公开,当前,队列与限流失败
+SYM-AU-009-033,Specification.ts,Specification,Specification.ts:1,Commerce foundation兼容re-export；无后续生产caller,潜在领域过滤,@shop/kernel root,未发现,否；仅转发,疑似公共领域契约,类型擦除,workspace公开,兼容残留G1,外部策略编译未知；DC-0011
+SYM-AU-009-034,Specification.ts,AndSpecification,Specification.ts:5,仅Commerce foundation re-export,潜在领域过滤,@shop/kernel root,未发现,否；零调用,疑似公共组合器,调用两个specification,workspace公开,兼容残留G1,外部组合逻辑未知；DC-0011
+SYM-AU-009-035,Specification.ts,OrSpecification,Specification.ts:15,仅Commerce foundation re-export,潜在领域过滤,@shop/kernel root,未发现,否；零调用,疑似公共组合器,调用两个specification,workspace公开,兼容残留G1,外部组合逻辑未知；DC-0011
+SYM-AU-009-036,SystemClock.ts,SystemClock,SystemClock.ts:3,7 Commerce bootstraps/AccessPipeline/performance test,服务请求时间,@shop/kernel root,未发现,否,是，默认时钟,调用Date.now,workspace公开,当前,启动/授权时间端口失败
+SYM-AU-009-037,ValueObject.ts,ValueObject,ValueObject.ts:1,Commerce foundation re-export、PaymentReference,Payment领域,@shop/kernel root,未发现,否,是，值对象基类,浅冻结value；equals序列化,workspace公开,当前,子类编译/相等语义变化；F-0050
+SYM-AU-009-038,Version.ts,Version,Version.ts:1,无该class仓内生产caller,潜在契约版本,@shop/kernel root,未发现,否；普通Version同词已排除,疑似公共值契约,of返回冻结实例,workspace公开,兼容残留G1,外部版本解析未知；DC-0011
+SYM-AU-009-039,GateContext.ts,GateContext,GateContext.ts:1,Commerce GateEngine/plugins,HttpApp operation gate,gate barrel→root,未发现,否,是，观察上下文,类型擦除,workspace公开,当前,Gate插件编译失败
+SYM-AU-009-040,GateDecision.ts,GateDecisionKind,GateDecision.ts:1,GateDecision/GateEngine,观察记录,gate barrel→root,未发现,否,是,类型擦除,workspace公开,当前,决策类型编译失败
+SYM-AU-009-041,GateDecision.ts,GateDecision,GateDecision.ts:3,GatePlugin/GateEngine/tests,观察记录,gate barrel→root,未发现,否,是,类型擦除,workspace公开,当前,插件结果编译失败
+SYM-AU-009-042,GateDeclaration.ts,GateMode,GateDeclaration.ts:1,GateDeclaration/GateEngine,Operation gate转换,gate barrel→root,未发现,否,是，disabled/observe,类型擦除,workspace公开,当前,门禁mode契约改变
+SYM-AU-009-043,GateDeclaration.ts,GateDeclaration,GateDeclaration.ts:3,GateEngine/tests,HttpApp operation gate,gate barrel→root,未发现,否,是,类型擦除,workspace公开,当前,Gate注册/观察编译失败
+SYM-AU-009-044,GatePlugin.ts,GatePlugin,GatePlugin.ts:4,GateRegistry/GateEngine/tests,HttpApp gate执行,gate barrel→root,未发现,否,是，插件端口,类型擦除,workspace公开,当前,观察插件编译失败
+SYM-AU-009-045,ModuleManifest.ts,ModuleId,ModuleManifest.ts:1,ModuleManifest/Catalog,35 manifests间接,module barrel→root,未发现,否,是,类型擦除,workspace公开,当前,模块契约编译失败
+SYM-AU-009-046,ModuleManifest.ts,CapabilityId,ModuleManifest.ts:2,ModuleManifest/Catalog,35 manifests间接,module barrel→root,未发现,否,是,类型擦除,workspace公开,当前,capability契约编译失败
+SYM-AU-009-047,ModuleManifest.ts,ModuleKind,ModuleManifest.ts:4,35 manifests,模块说明/未来composition,module barrel→root,未发现,否,是,类型擦除,workspace公开,当前,manifest编译失败
+SYM-AU-009-048,ModuleManifest.ts,ModuleLayer,ModuleManifest.ts:5,35 manifests,模块说明,module barrel→root,未发现,否,是,类型擦除,workspace公开,当前,manifest编译失败
+SYM-AU-009-049,ModuleManifest.ts,ModuleEntrypoints,ModuleManifest.ts:7,ModuleManifest/35 manifests,模块说明,module barrel→root,未发现,否,是,类型擦除,workspace公开,当前,entrypoint描述编译失败
+SYM-AU-009-050,ModuleManifest.ts,ModuleManifest,ModuleManifest.ts:17,35 manifests、ModuleCatalog/tests,模块说明/潜在startup,module barrel→root,未发现,否,是,类型擦除但对象运行时可变,workspace公开,当前,manifest生态编译失败；F-0049
+SYM-AU-009-051,ModuleManifest.ts,defineModuleManifest,ModuleManifest.ts:32,35 Commerce manifests、Kernel tests,module barrel和模块index,module barrel→root,未发现,否,是，类型保持helper,返回原对象,workspace公开,当前,35 manifest模块加载失败
+SYM-AU-009-052,ModuleCatalog.ts,ModuleSelection,ModuleCatalog.ts:3,ModuleCatalog.resolve/tests,潜在startup,module barrel→root,未发现,是：仅测试/声明,是,类型擦除,workspace公开,疑似未接线G1,外部composition编译未知；DC-0010
+SYM-AU-009-053,ModuleCatalog.ts,ResolvedModulePlan,ModuleCatalog.ts:8,ModuleCatalog.resolve/tests,潜在startup,module barrel→root,未发现,是：仅测试/声明,是,类型擦除,workspace公开,疑似未接线G1,外部composition编译未知；DC-0010
+SYM-AU-009-054,ModuleCatalog.ts,ModuleCatalog,ModuleCatalog.ts:19,自身4个tests；无生产构造者,潜在startup,module barrel→root,未发现,是：仓内仅测试,是，capability resolver,构造索引；resolve局部状态,workspace公开,疑似未接线G1,测试/外部composition首先失败；F-0049/DC-0010

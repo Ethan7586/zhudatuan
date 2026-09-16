@@ -1,0 +1,4 @@
+id,file,location,kind,observation
+E-AU-137-001,06_tests_ceshi/CatalogOperations.test.ts,1-284,operation tests,Asserts mall-scoped import/listing/publication command and progress behavior.
+E-AU-137-002,06_tests_ceshi/CatalogPackage.test.ts,1-65,package tests,Asserts fixture parsing exact-scope facts and stable row validation errors.
+E-AU-137-003,06_tests_ceshi/PgCatalogImport.test.ts,1-89,persistence tests,Asserts staging writes no facts, running writes facts, and invalid rows remain isolated.

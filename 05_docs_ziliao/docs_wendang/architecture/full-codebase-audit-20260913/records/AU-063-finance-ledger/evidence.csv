@@ -1,0 +1,6 @@
+"编号","位置","证据","结论"
+"E-AU-063-001","PostJournal.ts:14-50;PostJournal.test.ts:8-67","消费 runtime.inbox 与同 event outbox，锁 inbox；已处理回放 no-op，成功处理后才标记 processed","事件到 journal 的事务和消费幂等边界存在"
+"E-AU-063-002","PostJournal.ts:52-202;FinancePort.ts:31-55;20260821042000_benefit_lifecycle.sql:24-56","订单/支付/退款均重查 scope、金额、币种、tender 或 capture/refund 事实；finance.post 以 scope/reference 唯一且冲突时核对两条 entry","外部 tender 与 provider 资金事实不会仅信任事件负载"
+"E-AU-063-003","ReverseCancelledOrder.ts:25-78;ReverseCancelledOrder.test.ts","取消订单只反转既有 external tender order.placed journal；内部 tender 无 journal 时为证据化 no-op，缺失/不匹配 accrual fail closed","取消与计提的反转边界存在"
+"E-AU-063-004","FinancePort.ts:62-167;SupplierLegFinance.test.ts;20260821042000_benefit_lifecycle.sql:41-51","供应商 sale/cost 和 aftersale reversal 固定 reference 与 occurredAt；重复调用由 finance.post 返回同一 journal，supplier fact/reversal 再用 unique conflict no-op","供应商会计重放具有数据库幂等事实链"
+"E-AU-063-005","PostJournal.test.ts;ReverseCancelledOrder.test.ts;SupplierLegFinance.test.ts","覆盖 mixed tender/replay、金额不符、late capture、scope mismatch、取消反转、售后相同会计时间；但未接真实 PostgreSQL/RLS/job runner","核心 mock oracle 存在；运行验证未执行"

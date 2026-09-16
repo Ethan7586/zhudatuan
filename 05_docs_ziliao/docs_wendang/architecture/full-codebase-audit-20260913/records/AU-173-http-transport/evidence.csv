@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-173-001,src/api/http.ts,8-38,response contract,Every JSON response is no-store and carries content/type/frame/referrer/corp/permissions headers; error and method helpers retain request id and Allow.
+E-AU-173-002,src/api/errorResponse.ts,3-79,error boundary,Known domain marker table determines status/code/message; unknown exception is generic 500 without exposing its message.
+E-AU-173-003,src/api/routerSupport.ts,9-52,input/scope boundary,JSON parser checks declared and encoded actual 32KB length; resource scope is loaded only through selected security-definer RPC and database-row parser.
+E-AU-173-004,src/api/router.ts;src/api/**/*.ts,51;repository search,call graph,Top-level full router is known-error mapper caller; 29 compatibility handlers call common JSON reader.

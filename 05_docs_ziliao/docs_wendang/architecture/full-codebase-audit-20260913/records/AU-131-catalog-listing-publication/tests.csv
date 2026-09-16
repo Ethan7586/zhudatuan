@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Source-level test evidence,CatalogOperations.test.ts,Observed,Existing unit tests cover selected publication/query behavior; detailed test-file review remains a separate coverage unit.
+Targeted Vitest,Catalog listing/publication,Not run,No conclusion required execution evidence in this audit checkpoint.

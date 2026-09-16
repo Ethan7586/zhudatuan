@@ -1,0 +1,2 @@
+finding,scope,required_recheck,status
+F-0243,Finance and Invoice action proof issuance-to-command transaction chain,Re-trace every high-risk API/operation to its transaction and target DB routine; prove consume_action_proof plus assert_expected_version are invoked once before mutation; inspect grants/RLS/ledger and service-role callers,pending

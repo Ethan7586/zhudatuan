@@ -1,0 +1,3 @@
+id,files,location,kind,observation
+E-AU-125-001,application/command/{DisableExtension;EnableExtension;InstallExtension}.ts;application/port/ExtensionLoader.ts;domain/model/{Extension;HealthRecord;Installation;Manifest}.ts;domain/policy/ContractPolicy.ts;infrastructure/persistence/PgExtensionRepository.ts;interface/job/ExtensionHealthJob.ts,1,compatibility,Each file only re-exports its corresponding audited Chinese-layer implementation.
+E-AU-125-002,src/modules/extension,all files,coverage,All 35 Extension files now have a file-level coverage classification.

@@ -1,0 +1,3 @@
+"模块","测试","文件","状态","结果","与结论","差距"
+"private provider","Provider manifest contract","01_core_hexin/extensions/providers/private/tests/Provider.test.ts","已运行(静态阅读)","通过基本签名/注册断言","未覆盖端口/能力映射和 registry 调用闭环","缺少履约调用/能力矩阵反例测试"
+"fulfillment tracking","fulfillment jobs require 路径","01_core_hexin/services/commerce/src/modules/fulfillment/05_interface_jieru/jobs_renwu/FulfillmentJobs.ts","未运行","未在现有测试中触发 logistics capability mismatch反例","未进行线上或集成反例复现","可在后续治理中补充 provider capability mismatch 场景测试"

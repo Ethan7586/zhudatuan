@@ -1,0 +1,5 @@
+"编号","位置","证据","结论"
+"E-AU-083-001","WebBusinessApiMain.ts:19-39；WebBusinessModules.ts:27-45；WebBusinessOperationIds.ts:19-21","独立 API 启动 selected modules；Pricing 只保留 offers.read。","WebBusiness 是定向只读运行单元，不承接 Pricing 管理或交易写入。"
+"E-AU-083-002","WebBusinessScopeResolver.ts:13-44；WebBusinessApiRuntime.ts:99-149；WebBusinessScopeResolver.test.ts:34-48","storefront pricing offers 必经 web_storefront_scope(membership,session) 并要求 mall kind。","读范围由会话绑定 mall 决定。"
+"E-AU-083-003","WebPricingOperations.ts:7-29；pricing/PricingOperations.ts:8-45","两个运行单元的 offers SQL、sku 限制和输出逐句一致，均只读有效 raw price。","当前显示/完整 API 语义一致；无新差异。"
+"E-AU-083-004","WebBusinessApiEntrypoint.test.ts:18-86；module.manifest.test.ts:8-28","测试断言 exact operation allowlist、路由无 checkout/payment 写入口与 composition identity。","入口白名单有静态 oracle；不覆盖真实 DB/RLS 或价格规则效果。"

@@ -1,0 +1,4 @@
+"编号","位置","证据","结论"
+"E-AU-067-001","RequestInvoice.ts:13-64","create/cancel/decide/red 均 requireAccess；组织/状态/version/红冲资格由 invoice.* 受管过程决定，approved 使用稳定 invoice job id","发票命令和后台签发交接边界存在"
+"E-AU-067-002","GetInvoices.ts:7-33","member profile read 以 membership，operator profile/request read 以 scope/profile owner，request 返回 document hash/object 与 line snapshot","发票读取有按调用方身份分流的范围条件"
+"E-AU-067-003","RequestInvoice.test.ts:9-67；未见 cancel/decide/red/GetInvoices 对应 test","仅 mock create 成功与数据库拒绝；没有审批/红冲/读取或数据库过程真实行为 oracle","F-0154/P2"

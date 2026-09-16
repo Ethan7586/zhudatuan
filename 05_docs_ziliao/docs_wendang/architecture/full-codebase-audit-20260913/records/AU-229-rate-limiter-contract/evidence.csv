@@ -1,0 +1,3 @@
+id,files,location,kind,observation
+E-AU-229-001,src/foundation/performance/RateLimiter.ts,1,compatibility adapter,Commerce re-exports RateLimiter from @shop/kernel.
+E-AU-229-002,src/foundation/performance/Executor.ts,21-27,runtime consumer,Executor constructs the limiter with external requestsPerSecond and acquires before bulkhead circuit and retry.

@@ -1,0 +1,4 @@
+"编号","入口","工具","范围","状态","结论"
+"CONS-AU-014-001","Commerce Repository.test","DatabaseHarness","真实PostgreSQL契约测试","条件执行","唯一包外源码消费者"
+"CONS-AU-014-002","testing Browser.test","browser subpath内部模块","jsdom/MSW/axe","包内自测","不证明包外使用"
+"CONS-AU-014-003","tests.mjs","package名称字符串","生产源码扫描","正式质量检查","禁止生产import，边界清晰"

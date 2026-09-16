@@ -1,0 +1,7 @@
+"编号","位置","职责","关键分支/状态","失败传播","调用者","测试","结论"
+"FN-AU-013-001","Adapter.ts:createTelemetry","构造统一Telemetry","safe writer先redact；outer freeze","writer Promise拒绝未处理","node/browser/miniapp","间接","F-0067"
+"FN-AU-013-002","Redactor.ts:redact","递归键/值脱敏","敏感key全替换；string只跑3类模式","循环对象RangeError；遗漏credential labels","所有sink与Operation audit","1例","F-0065"
+"FN-AU-013-003","ClientErrors.ts:record","fingerprint聚合","新建/重复、prune、trim、writer","invalid clock抛错；writer拒绝丢弃","clientErrorOperations","3例","F-0065/F-0067"
+"FN-AU-013-004","ClientErrors.ts:list/contains","按Scope逆序读取","platform无条件；tenant/ancestor/id分支","异常scope扩大可见集","operator read","局部","补强F-0055"
+"FN-AU-013-005","InteractionTimeline.ts:begin/record/finish/cancel","维护active interaction Map","duration clamp zero；finish后delete","callback抛错会中断状态转换","三个前端","2例","P3测试缺口"
+"FN-AU-013-006","browser.ts:browserTelemetry","Beacon writer","只接受https；忽略sendBeacon false","序列化/Beacon异常同步传播","当前仓内零生产caller","无","DC-0017"

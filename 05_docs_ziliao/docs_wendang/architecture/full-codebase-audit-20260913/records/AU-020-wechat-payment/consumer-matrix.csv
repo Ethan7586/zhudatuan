@@ -1,0 +1,7 @@
+"消费者","入口","使用能力","进程/发布单元","数据所有权","失败传播"
+"Purchase API","PurchaseApiRuntime→WechatGateway.prepay","应用解析、scoped callback、JSAPI预支付和小程序参数","Commerce Purchase API","支付意图/订单由payment模块与数据库拥有","ProtocolError进入Operation错误映射；正文流原始异常见F-0092"
+"Payment Webhook API","PaymentWebhookApiRuntime→PaymentWebhook→WechatGateway.verifyNotification","通知分类、验签、解密、证据最小化","Commerce Payment Webhook API","provider event、intent/refund状态由数据库contract拥有","签名/协议错误映射为provider webhook拒绝"
+"Payment Jobs","PaymentJobsRuntime→PaymentJobProcessor→WechatGateway","查询、关闭、退款申请、退款查询","Commerce Payment Jobs","runtime.job/outbox及支付状态由数据库拥有","读重试；写不确定转查询；原始流错误不重试见F-0092"
+"Commerce aggregate runtime","CommerceRuntime→WechatGateway","兼容聚合装配","非正式专用运行图的聚合入口","不由适配器拥有数据","同Gateway"
+"测试","四个*.test.ts→TestKeys","合成RSA/AES、mock provider response/notification","开发测试单元","无生产数据","当前工作树缺vitest未执行"
+

@@ -1,0 +1,4 @@
+"测试","范围","结论","执行"
+"module.manifest.test.ts","operation 与 HTTP entrypoint inventory","模块登记 oracle 存在","未执行：vitest command not found"
+"MarketingPort / PostgreSQL integration","预算条件预留、同订单重试、并发预算边界、commit/release 和 RLS","未见模块专用行为测试","未验证"
+"PlaceOrder/Payment settlement integration","reserve→commit；expiry/closed/late-payment→release","消费者有真实调用，但未见覆盖完整活动生命周期的定向测试","未验证"

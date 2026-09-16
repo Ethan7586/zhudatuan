@@ -1,0 +1,8 @@
+"编号","类型","位置","观察","可证明","不可证明"
+"E-AU-014-001","范围","testing tree","20文件403行","固定审计范围","仓外副本"
+"E-AU-014-002","逐文件人工审阅","全部20文件","403/403行逐函数/测试读完","实现和测试边界","仓外运行"
+"E-AU-014-003","消费者枚举","全仓import/package/checker","仅Repository.test import root；browser无包外import；production checker禁止生产import","当前仓库使用边界","仓外消费者"
+"E-AU-014-004","失败探针","DatabaseHarness/ProviderHarness","test与reset同时失败最终只见RESET_FAIL；matcher可同步throw","F-0068","现有Repository reset会抛"
+"E-AU-014-005","并发变更探针","HttpHarness","captured保留old URL/header且冻结；async responder读到mutated new值","F-0069","正常caller会变更request"
+"E-AU-014-006","既有ID反事实复核","TestIdGenerator/Kernel Id","第18个普通base32含I并抛ID_INVALID；无直接测试/caller","补强F-0052","仓外调用量"
+"E-AU-014-007","正式命令","package scripts","test/typecheck退出127，缺vitest/tsc，源码未加载","环境阻塞","实现通过/失败"

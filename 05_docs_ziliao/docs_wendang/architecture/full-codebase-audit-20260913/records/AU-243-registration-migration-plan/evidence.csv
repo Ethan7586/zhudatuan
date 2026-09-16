@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-243-001,src/foundation/infrastructure/RegistrationMigrationPlan.ts,85-118,execution classification,Known owner fixtures are omitted known assertion blocks are transformed and originals retain source with profile metadata when post-history.
+E-AU-243-002,src/foundation/infrastructure/RegistrationMigrationPlan.ts,134-159,ledger compatibility,Only exact reconciled records named ledgers or allowlisted immutable empty ledgers are accepted.
+E-AU-243-003,src/foundation/infrastructure/RegistrationMigrationPlan.ts,121-132,target integrity,Latest migration target requires exactly one matching runtime.schemaversion version/checksum marker.
+E-AU-243-004,src/foundation/infrastructure/RegistrationMigrationRunner.ts,70-175,runtime consumer,Runner locks validates independent database/history/ledger applies classified SQL and verifies final target.
+E-AU-243-005,src/foundation/infrastructure/RegistrationMigrationPlan.test.ts,12-168,test evidence,Fixtures enumerate omitted transformed drift original legacy reconciled and target-marker cases.

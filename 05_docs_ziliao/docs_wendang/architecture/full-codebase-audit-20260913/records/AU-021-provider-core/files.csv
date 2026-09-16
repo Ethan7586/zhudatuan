@@ -1,0 +1,13 @@
+"编号","路径","行数","类型","入口","状态/结论"
+"FILE-AU-021-001","01_core_hexin/extensions/providers/core/package.json","16","包配置","npm workspace/Provider packages/Commerce","已深入审阅；私有共享包、正式脚本"
+"FILE-AU-021-002","01_core_hexin/extensions/providers/core/src/ErrorMap.ts","12","TypeScript源码","Provider ErrorMap wrappers","已深入审阅；VendorFailure最小映射"
+"FILE-AU-021-003","01_core_hexin/extensions/providers/core/src/Factory.ts","54","TypeScript源码","11个Provider factory/RuntimeExtensionLoader","已深入审阅；installation闭合比较"
+"FILE-AU-021-004","01_core_hexin/extensions/providers/core/src/Limits.ts","12","TypeScript源码","Provider manifests/tests","已深入审阅；通用限额常量"
+"FILE-AU-021-005","01_core_hexin/extensions/providers/core/src/Mapper.ts","35","TypeScript源码","7个通用Provider mapper","已深入审阅；canonical source最小shape"
+"FILE-AU-021-006","01_core_hexin/extensions/providers/core/src/PortFactory.ts","98","TypeScript源码","7个远程Provider factory","已深入审阅；通用ports/HMAC webhook；F-0094"
+"FILE-AU-021-007","01_core_hexin/extensions/providers/core/src/Provider.test.ts","51","测试源码","vitest","已深入审阅；3例；测试非生产Webhook，F-0095"
+"FILE-AU-021-008","01_core_hexin/extensions/providers/core/src/Provider.ts","41","TypeScript源码","全部Provider factory/ExtensionRegistry","已深入审阅；生命周期、health、port require"
+"FILE-AU-021-009","01_core_hexin/extensions/providers/core/src/Webhook.ts","24","TypeScript源码","单测与Provider包转发导出","已深入审阅；无生产caller；F-0095/DC-0026"
+"FILE-AU-021-010","01_core_hexin/extensions/providers/core/src/index.ts","7","公共入口","全部Provider packages/Commerce","已深入审阅；barrel导出核对"
+"FILE-AU-021-011","01_core_hexin/extensions/providers/core/tsconfig.json","4","TypeScript配置","typecheck","已深入审阅；继承根配置"
+

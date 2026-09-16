@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-198-001,src/api/routerWechatBoundaries.test.ts,13-20,retired auth boundary,Real routeApi calls prove retired WeChat auth paths return 404 before session handling.
+E-AU-198-002,src/api/routerWechatBoundaries.test.ts,22-28,public callback,Payment notification reaches public router and rejects non-POST methods.
+E-AU-198-003,src/api/routerWechatBoundaries.test.ts,30-35,authenticated prepay,Anonymous prepay receives authentication-required response before payment handler.

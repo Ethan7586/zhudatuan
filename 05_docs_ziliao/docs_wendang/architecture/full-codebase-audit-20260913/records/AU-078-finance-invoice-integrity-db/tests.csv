@@ -1,0 +1,2 @@
+"测试","范围","结论","执行"
+"InvoiceIssueIntegrity.test.ts","migration、受控 API transitions、claim race/orphan、权限/税约束、worker lifecycle","部分 PGlite 数据库 oracle 已执行定义；核心 job cases 被 skip；F-0158","未执行：固定审计 worktree 无 vitest 可执行文件"

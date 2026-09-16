@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-207-001,src/foundation/application/QueryBus.ts,1-23,bus invariants,Query bus maps one handler per query type and fails on duplicate missing and frozen registration conditions.
+E-AU-207-002,src/bootstrap/{ApiBootstrap,JobsBootstrap}.ts,bootstrap consumers,API and Jobs create populate and freeze QueryBus before serving workload.
+E-AU-207-003,src/foundation/application,tests,No direct QueryBus test or invariant assertion was found.

@@ -1,0 +1,6 @@
+"编号","位置","证据","结论"
+"E-AU-069-001","CloseSettlement.ts:14-55","operation 注册 decide；scope、requester/actor separation、version/draft 行锁、审批前 verifySnapshot、post、split paid、outbox event","结算批准的入口、四眼、版本与记账边界闭合"
+"E-AU-069-002","CloseSettlement.ts:58-158","request/approve/reject adjustment；pending 排他、申请/决定分离、settlement 版本锁、adjustment facts、snapshot version/hash、event","调整只可在 draft 结算上受控进入下一个冻结版本"
+"E-AU-069-003","SettlementSnapshot.ts:7-60;117-232","snapshot append 不能覆盖同版本；批准时重新派生；来源、规则、冻结行、分账、调整、hash 和 active snapshot 全量核验","结算终态依赖可重算且版本化的权威快照"
+"E-AU-069-004","SettlementSnapshot.ts:117-198","仅 matched、eligible 的 payment.succeeded/refunded 可结算；late diagnostic 单独 hash 且不得形成结算行；金额/分账/调整一致性校验","晚到支付诊断与实际应结算来源边界明确"
+"E-AU-069-005","CloseSettlement.test.ts:21-103","PGlite 覆盖 versioned snapshot、行不可变、规则/来源/行/快照篡改拒绝、late diagnostic 拒绝、最终 payable/journal/Asia-Shanghai cutoff","关键状态转换有真实数据库行为 oracle"

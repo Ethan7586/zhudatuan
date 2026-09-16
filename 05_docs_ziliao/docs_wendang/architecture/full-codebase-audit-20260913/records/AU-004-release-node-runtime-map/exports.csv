@@ -1,0 +1,7 @@
+"符号编号","文件编号","1 符号名称","2 声明位置","3 直接消费者","4 间接消费者","5 重新导出","6 动态访问","7 仅测试使用","8 公共契约","9 运行时副作用","10 可见范围","11 兼容导出","12 删除或改名影响"
+"SYM-AU-004-001","FILE-AU-004-010","createPlan","planner.mjs:8-56","cli/engine/tests","三个 workflow 经 CLI","无","CLI 命令分派","否","release plan schema","读取 Git 差异并物化计划","仓库工具","否","全部 affected/显式发布规划失效"
+"SYM-AU-004-002","FILE-AU-004-009","loadAdapter","adapter.mjs:7-103","CLI/tests/直接验证","release engine 全流程","无","配置路径参数","否","adapter 内部契约","读取并冻结 release JSON","仓库工具","否","target/node/rule 事实源无法加载"
+"SYM-AU-004-003","FILE-AU-004-044","AutoNode CLI","autonode.mjs:1-23","package check/人工命令","AutoNode engine/provider","无","命令行","否","运维 CLI","显式执行才有副作用","运维入口","否","主权节点升级入口消失"
+"SYM-AU-004-004","FILE-AU-004-045","activation CLI","autonode-activate.mjs:1-76","人工 plan/status/apply/rollback/restore","activation engine/provider","无","命令行 action","否","运维 CLI","apply/rollback 可改外部状态","运维入口","否","AutoNode 执行与恢复入口消失"
+"SYM-AU-004-005","FILE-AU-004-046","sovereign upgrade plan","autonode-sovereign-upgrade.mjs:1-85","AutoNode engine/tests","11 步 activation plan","无","显式 capability","否","activation plan schema","仅构造计划","运维内部","否","AutoNode 不再产生显式升级计划"
+"SYM-AU-004-006","FILE-AU-004-047","Cloudflare adapter helpers","autonode-cloudflare.mjs:1-133","production provider/tests","tunnel/DNS steps","无","provider 动态调用","否","外部 API 适配","调用时访问 Cloudflare API","运维内部","否","tunnel/DNS 创建恢复失效"

@@ -1,0 +1,2 @@
+"复核编号","对象","触发原因","必须重新检查","当前状态","不得采用的捷径","完成判据"
+"RV-0008","F-0036：Storefront member config/custom manage绑定member.read","既有P1候选；AU-008只确认生成Controller/SDK会原样传播Operation元数据","角色permission来源、operation entitlement、数据库发布绑定、Controller/AccessPipeline、Console可达性、两handler事务和线上只读证据","待第二位独立审计者；本AU未关闭","不得只看generated壳、Operation名称或第一次报告；不得在复核中改权限/数据","第二审计者在固定基线独立重建端到端链；确认/反驳影响主体与边界并保留分歧"

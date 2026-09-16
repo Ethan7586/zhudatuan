@@ -1,0 +1,2 @@
+"对象编号","对象","仓内生产静态消费者","动态/注册/构建检查","公共/测试/兼容责任","分类","不能升级G3的原因","再次复核入口"
+"DC-0012","@shop/authz decide + Decision/DecisionContext完整判定façade","decide为0；生产AccessPipeline分别调用precheck/checkScope/checkAssurance","无动态/路由/worker注册；根barrel和package export公开；两组测试调用","保存包内唯一一次性纯判定API、稳定Decision reason/evidence和完整顺序契约；仓外消费者未知","G1","仍有公共API、测试唯一契约、仓外/历史兼容未排除、无正式等价替代与第二复核","重查仓外源码/制品、package消费和迁移计划；不得以smart-wing-authz同名函数直接认定等价"

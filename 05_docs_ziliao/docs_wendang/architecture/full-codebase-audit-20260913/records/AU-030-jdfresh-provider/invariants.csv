@@ -1,0 +1,6 @@
+"id","invariant","status","finding"
+"INV-AU-030-001","库存caller可达","不成立","F-0122"
+"INV-AU-030-002","订单后物流caller可达","不成立","F-0122"
+"INV-AU-030-003","capability与port唯一配对","不成立","F-0123"
+"INV-AU-030-004","Catalog关键字段受mapper约束","成立","JdfreshMapper"
+"INV-AU-030-005","业务ports有行为测试","不成立","F-0124"

@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Source trace,Support assignment/SLA/ticket transitions,Completed,Domain policy, SQL locking/version predicates, side-effect order and job registration reviewed.
+Formal targeted test,Support transition tests,Not run,No direct test exists and audit worktree dependency baseline lacks Vitest.

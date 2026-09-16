@@ -1,0 +1,4 @@
+"编号","位置","证据","结论"
+"E-AU-079-001","GetFinanceAudit.ts:4-22","audit record scope closure、finance/invoice action/resource filter、recorded_at/id keyset","审计账读取范围与分页边界明确"
+"E-AU-079-002","FinanceLifecycleOperations.ts:52-59","hold join account，access.scope_allowed+closure、created_at/id keyset","冻结资金读取遵循 scope and closure 边界"
+"E-AU-079-003","FinanceAuthorityOperations.test.ts:9-20","只 mock 基础 query relation 与 200 response","路由 smoke，不是 audit/hold 行为或隔离 oracle"

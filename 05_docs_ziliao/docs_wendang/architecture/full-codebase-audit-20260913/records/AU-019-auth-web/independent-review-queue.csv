@@ -1,0 +1,2 @@
+"复核编号","对象","触发原因","必须重新检查","当前状态","不得采用的捷径","完成判据"
+"RV-0012","F-0083 Auth runtime凭据目的地未绑定Manifest","P1候选且runtime可选择接收账号/密码/OTP的API","runtime生产/激活链、gateway同源文件、IdentityNodeRegistry parser、Auth install/currentIdentityNode、浏览器CORS与请求正文；若获只读授权再核live JSON","待第二位独立审计者","不得把HTTPS、同源runtime文件或当前声明正确等同于目的地绑定；不得打印凭据","独立构造当前accounts host+外域API的合法runtime并确认接纳/请求目的地；核对producer完整性和live值后确认或下调"

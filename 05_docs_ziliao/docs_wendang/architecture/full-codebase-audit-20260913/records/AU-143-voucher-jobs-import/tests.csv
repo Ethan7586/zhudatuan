@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Source-level behavior review,VoucherPort/PgVoucherImport/VoucherImportProcessor/VoucherJobProcessor/VoucherDeadletter and jobs catalog,Completed,Runtime registration and full source-level transaction/state/event behavior reviewed.
+Targeted Vitest,Voucher worker and persistence paths,Not run,No direct test files exist and the audit worktree lacks vitest; no dependencies were installed.

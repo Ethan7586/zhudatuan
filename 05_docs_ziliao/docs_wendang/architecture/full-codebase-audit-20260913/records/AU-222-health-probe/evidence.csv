@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-222-001,src/foundation/http/HealthProbe.ts,3-13,http smoke,Probe sends release verification header JSON accept and redirect error through read-mode HttpClient.
+E-AU-222-002,src/foundation/http/HealthProbe.ts,14-16,acceptance defect,Status validation accepts live started or ready for every requested probe rather than binding expected status to probe.
+E-AU-222-003,src/entry/SmokeMain.ts,4-9,production consumer,Release smoke invokes HealthProbe sequentially for live startup and ready then reports success.
+E-AU-222-004,src/foundation/http/HealthProbe.ts,1-16,test gap,No direct fixture or SMOKE_PROBE error assertion found.

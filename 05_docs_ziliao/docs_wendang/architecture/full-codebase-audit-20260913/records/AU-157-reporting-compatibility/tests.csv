@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Static caller trace,Reporting compatibility and root exports,Completed,Entry/jobs/consumer imports and zero-caller legacy paths separated.
+Formal test,None,Not run,No implementation changed; audit worktree dependencies remain unavailable.

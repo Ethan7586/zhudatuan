@@ -1,0 +1,4 @@
+"测试","范围","结论","执行"
+"SettlementJob.test.ts","冻结 basis、退款、late payment 排除、时区、immutable line、replay","PGlite 覆盖结算主状态机","未执行：vitest command not found"
+"SettlementJob.referral.test.ts / FinanceGateway.test.ts","referral withdrawal journal/outbox；HTTP idempotency key","定向 mock oracle","未执行：vitest command not found"
+"ReconcileStatement / InvoiceJob / FinanceDeadletter","对象 hash/CSV 匹配、invoice KMS+issuer+object、deadletter 状态","未见模块专用行为测试","未验证"

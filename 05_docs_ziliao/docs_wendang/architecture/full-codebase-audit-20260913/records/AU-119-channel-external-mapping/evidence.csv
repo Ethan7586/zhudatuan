@@ -1,0 +1,4 @@
+"证据编号","文件","位置","结论"
+"E-AU-119-001","01_core_hexin/services/commerce/src/modules/channel/02_domain_yewu/model/ExternalMapping.ts","1-10","外部映射输入不变量与 identity composition。"
+"E-AU-119-002","01_core_hexin/services/commerce/src/modules/channel/05_interface_jieru/job/ChannelSyncJob.ts","97-127","price/stock 同步调用模型；SKU 映射由 CatalogSourcePort 获取。"
+"E-AU-119-003","01_core_hexin/services/commerce/src/modules/channel/domain/model/ExternalMapping.ts","1","旧路径的 type/value compatibility re-export。"

@@ -1,0 +1,3 @@
+file,coverage,execution
+src/foundation/application/BatchImport.ts,no direct BatchImportProcessor fixture found,not run: audit worktree has no Vitest dependencies
+src/modules/member/06_tests_ceshi/module.manifest.test.ts;src/modules/inventory/06_tests_ceshi/module.manifest.test.ts;src/modules/voucher/06_tests_ceshi/module.manifest.test.ts,job-name declaration only; does not exercise processor state machine,not run: audit worktree has no Vitest dependencies

@@ -1,0 +1,7 @@
+"编号","位置","证据","结论"
+"E-AU-054-001","services/commerce/src/app/modules.ts;modules/experience/05_interface_jieru/ExperienceModule.ts;module.manifest.ts","Commerce 注册主模块，manifest 列出 9 个 operations、experience.published 和 experiencepublish","HTTP、事件与 job 所有者均有真实注册入口"
+"E-AU-054-002","modules/experience/03_application_yingyong/ExperienceOperations.ts:18-199","application/version 以访问 scope、行锁/expectedVersion、V2 document parser、outbox 写入组织；publish 仅创建 scheduled release","发布命令不直接把未验证版本暴露给公开读者"
+"E-AU-054-003","modules/experience/05_interface_jieru/job/ExperienceJobs.ts:21-101;src/app/jobs.ts:80,136","experiencepublish 已注册并消费 inbox；事务内锁 inbox 与 application advisory key，激活后才标记 inbox processed","异步消费者、并发序列化与完成状态成对存在"
+"E-AU-054-004","modules/experience/04_adapters_shixian/adapter/CdnPublisher.ts:7-40;20260821033000_complete_experience_publication.sql:3-42","对象路径、canonical bytes、hash、scan 与 inspect 逐项校验；publication 仅 active 才可由 read_published 返回","对象存储与公开投影有内容完整性及状态边界"
+"E-AU-054-005","20260821018000_create_inventory_experience.sql:106-145;20260821078000_complete_experience_application.sql:1-107;20260831150000_identity_experience_application_commands.sql:1-95","表约束、RLS、主身份字段、catalog binding 与 identity API 限定写入权限已核对","Experience 是 application/version/release/publication 的数据所有者；Identity 路径是受限适配面"
+"E-AU-054-006","modules/experience/06_tests_ceshi/{adapter/CdnPublisher,application/ExperienceOperatorOperations,module.manifest}.test.ts","现有局部 oracle 覆盖 CDN 不可变复用、identity application update、manifest inventory","主 Commerce publish、worker inbox/锁/激活事务没有对应模块专用行为测试"

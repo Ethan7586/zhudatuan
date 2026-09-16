@@ -1,0 +1,5 @@
+"测试","范围","结论","执行"
+"CdnPublisher.test.ts","canonical bytes、hash mismatch、内容寻址复用","对象写入完整性局部 oracle 存在","未执行：vitest command not found"
+"ExperienceOperatorOperations.test.ts","identity 受限 application 的 expectedVersion 与 disable 行为","只覆盖 Identity selected-module 变体，不覆盖 Commerce 主模块 publish 链","未执行：vitest command not found"
+"module.manifest.test.ts","operation/event/job inventory","注册清单 oracle 存在","未执行：vitest command not found"
+"ExperienceOperations / ExperienceJobProcessor integration","save/validate/publish、outbox→inbox、对象失败/重试、激活/缓存","未见模块专用行为测试","未验证"

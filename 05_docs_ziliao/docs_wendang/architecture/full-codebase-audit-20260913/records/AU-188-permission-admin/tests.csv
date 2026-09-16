@@ -1,0 +1,2 @@
+file,coverage,execution
+src/api/permissionAdminRoutes.test.ts,read and PII access grant self step-up hierarchy and status denial paths,no direct active/suspended/offboarded success RPC fixture; not run: audit worktree has no Vitest dependencies

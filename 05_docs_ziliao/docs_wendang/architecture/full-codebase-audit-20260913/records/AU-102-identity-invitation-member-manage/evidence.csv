@@ -1,0 +1,5 @@
+"证据编号","文件","位置","结论"
+"E-AU-102-001","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/MembershipInvitationOperations.ts","30-53","hashed invite 与 storefront registration terms/organization 只读投影。"
+"E-AU-102-002","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/MembershipInvitationOperations.ts","54-178,296-335","operator invitation target/scope/governance/role/policy/phone 与 revoke version 约束。"
+"E-AU-102-003","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/MembershipInvitationOperations.ts","179-291","employee member create/update/status/permission/session lifecycle；F-0164 见 username hash。"
+"E-AU-102-004","01_core_hexin/services/commerce/src/modules/identity/06_tests_ceshi/IdentityInvitation.test.ts","全部","operator invitation governance/scope/duplicate/revoke static behavior oracle。"

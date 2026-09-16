@@ -1,0 +1,6 @@
+"通信编号","上游","下游","方式","契约","同步/异步","失败传播","运行地位","证据"
+"COM-AU-012-001","permissions.ts/index.ts","Smart Wing Authz/Commerce API","ESM import","86 permissions+Membership/Authz types","同步模块加载","import/build失败","源码活跃；protected compat发布退役","E-AU-012-003"
+"COM-AU-012-002","commerce.ts","wechatPaymentRoutes","函数调用","toPaymentStatus","同步","纯函数默认not_started","兼容Commerce源码活跃","E-AU-012-003/011"
+"COM-AU-012-003","memberCode.ts","memberCodeRoutes","常量import","protocol+45秒","同步","不匹配返回输入错误","兼容Commerce源码活跃","E-AU-012-003"
+"COM-AU-012-004","catalog-taxonomy.json","Storefront taxonomy.ts","JSON package subpath import","分类树/leaves/mobileBrowse","同步构建/模块加载","缺字段无runtime schema","正式Storefront源码消费","E-AU-012-003/008"
+"COM-AU-012-005","delivery-matrix.json","无仓内代码消费者","无","五项多端状态","无","不会触发闸门失败","孤立资料","E-AU-012-005/006/007"

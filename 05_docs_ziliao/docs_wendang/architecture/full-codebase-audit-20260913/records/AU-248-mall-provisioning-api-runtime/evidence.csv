@@ -1,0 +1,7 @@
+id,files,location,kind,observation
+E-AU-248-001,src/bootstrap/MallProvisioningApiRuntime.ts,62-111,startup assembly,Reads dedicated connection secret creates API pool validates compatibility then composes access risk decision audit extensions and telemetry.
+E-AU-248-002,src/bootstrap/MallProvisioningApiRuntime.ts,74-79,failure cleanup,Compatibility failure invokes pool.end before rethrowing.
+E-AU-248-003,src/bootstrap/MallProvisioningApiRuntime.ts,101-111,container boundary,Configure binds node registry operation handlers authorizer pool risk decision sink and audit sink.
+E-AU-248-004,src/bootstrap/MallProvisioningApiRuntime.ts,121-181,compatibility query,Query separately derives schema contract provisioning relation/function selected-write and forbidden-privilege facts for provisioning role.
+E-AU-248-005,src/bootstrap/MallProvisioningApiRuntime.ts,185-189,missing predicate,Final failure predicate checks schema/provisioning but omits state.contract despite selecting it in the query.
+E-AU-248-006,src/bootstrap/MallProvisioningApiRuntime.test.ts,10-47,test evidence,Fixture asserts contract marker text but never calls assertion with contract false and never invokes runtime factory.

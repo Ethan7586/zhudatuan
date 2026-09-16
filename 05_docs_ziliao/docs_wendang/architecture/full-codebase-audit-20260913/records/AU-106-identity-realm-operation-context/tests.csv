@@ -1,0 +1,2 @@
+"验证项","正式入口","执行状态","结果","备注"
+"Identity context helper tests","services/commerce package Vitest","未执行","未验证","无独立测试文件；调用方测试已在 AU-103 至 AU-105 人工审阅。"

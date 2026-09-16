@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-237-001,src/foundation/interface/HttpApp.gates.test.ts,11-36,declared gate,Catalog listings declared gate executes exactly once and leaves response snapshot unchanged.
+E-AU-237-002,src/foundation/interface/HttpApp.gates.test.ts,38-79,non-blocking paths,Undeclared operation bypasses engine; no plugin and plugin error record observation while preserving HTTP result.
+E-AU-237-003,src/foundation/interface/HttpApp.gates.test.ts,27-28,catalog closure,Fixture checks OperationCatalog has only catalog.listings.read with gates declaration.

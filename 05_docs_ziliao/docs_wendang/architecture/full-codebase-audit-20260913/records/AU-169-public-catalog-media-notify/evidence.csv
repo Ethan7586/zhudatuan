@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-169-001,src/api/publicCatalogRoutes.ts,47-234,catalog projection,Production mall config, bounded cursor/page fetch, cache tiers, mirror metadata and conditional response are implemented.
+E-AU-169-002,src/api/publicCatalogImages.ts,1-143,media boundary,Only canonical CDN or signed HTTPS allowlisted source is returned/proxied; proxy verifies HMAC MIME and 5MB limit.
+E-AU-169-003,src/api/wechatPaymentNotificationRoute.ts,1-47,provider callback,POST only, 64KB declaration bound, signed/decrypted notification RPC application.
+E-AU-169-004,src/api/publicCatalogRoutes.test.ts,1-252,tests,Fixtures cover configuration cache ETag/mirror taxonomy and media proxy/CDN/failure behavior.

@@ -1,0 +1,4 @@
+file,coverage,execution
+src/bootstrap/MallProvisioningApiRuntime.test.ts,role/session safety and selected required/forbidden privilege sample failures plus SQL marker literals,not run: audit worktree has no Vitest dependencies
+src/bootstrap/MallProvisioningApiRuntime.test.ts,contract false and other compatibility state failures are not supplied to the final predicate,F-0227; not run: audit worktree has no Vitest dependencies
+src/bootstrap/MallProvisioningApiRuntime.ts,factory success cleanup configure and close behavior has no direct fixture,F-0228; not run: audit worktree has no Vitest dependencies

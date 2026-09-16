@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Independent source trace,HTTP contract through response body,Confirmed,Distinct caller/contract/entry review reproduced authorization mismatch.
+Formal test,None,Not run,No code changed; independent review is source-level evidence.

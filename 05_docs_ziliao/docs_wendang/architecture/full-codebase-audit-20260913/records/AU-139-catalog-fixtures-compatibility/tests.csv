@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Source-level fixture and export review,Two JSON fixtures and eight compatibility entrypoints,Completed,All files and direct in-repository fixture/import consumers were reviewed.
+Targeted execution,Catalog fixture consumers,Not run,No new behavior was introduced; AU-138 already recorded that the formal Vitest command cannot execute in this dependency-free audit worktree.

@@ -1,0 +1,6 @@
+"证据编号","文件","位置","结论"
+"E-AU-103-001","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/RegistrationOperations.ts","21-98","registration challenge 仅接受注册/login/reset/WeChat bind 目的；手机号、registration hash、realm/account 与 notification outbox 关联。"
+"E-AU-103-002","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/RegistrationOperations.ts","100-325","registration 以 realm/subject advisory lock 串行化，验证 challenge、invite/storefront、条款、target，创建或复用统一身份与 membership。"
+"E-AU-103-003","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/RegistrationOperations.ts","326-442","hosted node 注册先于新 identity 行；realm/account/member/membership binding 和 optional WeChat bind 位于 atomic mutation。"
+"E-AU-103-004","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/RegistrationOperations.ts","443-501","storefront authenticated registration 以 realm membership、assurance、session、login intent 与 auth ticket 收口。"
+"E-AU-103-005","01_core_hexin/services/commerce/src/modules/identity/06_tests_ceshi/IdentityRegistration.test.ts","1-1464","人工审阅 registration realm、registration hash、duplicate、WeChat rollback、hosted node、checkout 延迟验证和 operator invitation 行为 oracle。"

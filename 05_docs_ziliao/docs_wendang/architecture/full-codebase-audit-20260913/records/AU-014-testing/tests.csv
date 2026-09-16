@@ -1,0 +1,5 @@
+"编号","文件","用例数","真实实现","覆盖","缺口","结果"
+"TC-AU-014-001","HttpHarness.test.ts","3","是","freeze headers、pre-abort、ErrorContract","request mutation、during-abort、sync responder throw","vitest缺失127"
+"TC-AU-014-002","TestContainer.test.ts","2","是","bind/get/has/missing/duplicate","token mutation不可行；足够主干","vitest缺失127"
+"TC-AU-014-003","Browser.test.tsx","2","是","route/query/user/axe与MSW","cleanup/lifecycle失败、Query默认值","vitest缺失127"
+"TC-AU-014-004","未覆盖公共工具","0","不适用","无","Database/Event/Provider/Clock/IdGenerator独立行为","缺口"

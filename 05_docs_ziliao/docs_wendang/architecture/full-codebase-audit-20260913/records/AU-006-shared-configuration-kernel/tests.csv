@@ -1,0 +1,7 @@
+"测试编号","正式入口或验证","范围","执行结果","反事实可信度","证明","不证明","证据"
+"T-AU-006-001","npm test --workspace @shop/config","包正式测试入口","环境阻塞：vitest command not found，退出127，测试代码未加载","未触达反事实","正式命令已识别且worktree缺依赖未安装","不能判定任何测试通过或失败","E-AU-006-004/011"
+"T-AU-006-002","npm run check:environment","正式环境所有权门禁","环境阻塞：source.mjs导入typescript时报ERR_MODULE_NOT_FOUND，检查循环未执行","未触达规则","正式门禁入口及依赖前置","不能用该退出码证明85条业务规则结果","E-AU-006-003/011"
+"T-AU-006-003","environment.mjs算法只读静态复算","同一productionSources选择、正则、唯一化","完成：85 unique violations / 23 files","高；逐条输出可复核，但不是正式脚本执行","固定源码越过依赖加载后的确定扫描结果","不证明规则设计正确或线上运行失败","E-AU-006-003；environment-gate-replica.csv"
+"T-AU-006-004","Node22 strip-types隔离共享配置可变性探针","SFL registry与Runtime Catalog外壳、数组/对象、resolver/limit","完成：两者嵌套未冻结；host修改改变resolver，deadline从15000改为1","高；直接观察运行对象","readonly只在类型层，当前共享配置导出可被进程内改写","不证明已有生产代码正在改写","E-AU-006-006"
+"T-AU-006-005","正式test脚本与tracked测试集静态对账","8个config测试文件","完成：正式脚本列4个并遗漏4个专用Environment测试","高；入口文本与文件集合确定","根test:unit不会执行遗漏四文件","不证明四文件当前断言成败","E-AU-006-004"
+"T-AU-006-006","人工分支反事实审阅","Console URL、Miniapp trim、origin重复、local endpoint","完成源码级路径穷举；未执行测试","中高；控制流确定，运行环境未加载","缺失校验或不可达分支的位置","不证明线上输入、CORS或外部配置状态","E-AU-006-005/008"

@@ -1,0 +1,4 @@
+verification,scope,result,reason
+Source-level behavior review,15 unreviewed Purchase files and direct runtime/migration consumers,Completed,All listed files and relevant call/contract paths were reviewed.
+Existing behavior tests,Payment/policy/benefit/disabled gateways,Completed by source review,Assertions cover their stated local behavior; execution remains unverified in audit worktree.
+Targeted Vitest,Purchase module tests,Not rerun,AU-138 established the same worktree lacks vitest; no dependency installation is allowed on the audit branch.

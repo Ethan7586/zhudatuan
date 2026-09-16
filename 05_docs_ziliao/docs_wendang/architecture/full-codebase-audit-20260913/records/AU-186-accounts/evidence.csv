@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-186-001,src/api/accountRoutes.ts,28-71,bootstrap,Requires catalog.read and concurrently resolves scoped mall metadata member assurance and member profile; absent profile returns 403.
+E-AU-186-002,src/api/accountRoutes.ts,73-94,accounts,Accounts and ledgers require order.read and use current membership/user authorization scope.
+E-AU-186-003,src/api/homeRoutes.ts,12-24,composition,Home snapshot concurrently calls existing handlers and returns the first failed response.
+E-AU-186-004,src/api/routes/storefrontRouter.ts,16-34,runtime registration,The storefront router registers bootstrap home accounts and account-ledgers paths for storefront memberships.
+E-AU-186-005,src/api/accountRoutes.test.ts,1-78,tests,Only handleBootstrap profile selection and absent-profile denial are directly exercised.

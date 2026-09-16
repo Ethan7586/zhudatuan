@@ -1,0 +1,4 @@
+"检查","证据","结论"
+"调用端测试","payment_zhifu/06_tests_ceshi/PaymentJobs.test.ts","mock SQL 返回正常行；未构造 request hash 冲突零行。"
+"Channel 端口测试","modules/channel/06_tests_ceshi/","无 ChannelOperationPort 行为测试。"
+"定向测试","未运行","工作区未安装 Vitest；审计纪律禁止安装或修复。"

@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-265-001,src/bootstrap/DefinedModule.ts,9-24,module registration,Contract-catalog module operations require factory and reject duplicate handler before route registration.
+E-AU-265-002,src/bootstrap/DefinedModule.ts,26-43,selected boundary,Selected operation list is deduplicated and ownership-checked before runtime registration.
+E-AU-265-003,src/entry/ConsoleSupportMain.ts;src/bootstrap/PaymentWebhookApiRuntime.ts,25;38,consumers,Console uses full module definition; webhook uses explicit payment operation allowlist.

@@ -1,0 +1,3 @@
+id,files,location,kind,observation
+E-AU-227-001,src/foundation/performance/CircuitBreaker.ts,1,compatibility adapter,CircuitBreaker and CircuitState are direct @shop/kernel exports.
+E-AU-227-002,src/foundation/performance/Executor.ts,1-39,runtime consumer,Executor constructs one circuit from runtime thresholds and wraps rate/bulkhead/retry external execution.

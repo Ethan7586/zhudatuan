@@ -1,0 +1,6 @@
+"证据编号","文件","位置","结论"
+"E-AU-113-001","01_core_hexin/services/commerce/src/modules/channel/03_application_yingyong/command/ApplyWebhook.ts;03_application_yingyong/port/WebhookResolver.ts;04_adapters_shixian/adapter/ExtensionWebhookResolver.ts","9-63;1-5;1-9","connection context、provider Webhook port、验签、规范化、KMS/audit transaction。"
+"E-AU-113-002","02_platform_pingtai/database/supabase/migrations/20260821044000_channel_lifecycle.sql","6-69","webhookinbox、connection scope function、accept function、dedupe/job 原子写入和 RLS/grant。"
+"E-AU-113-003","01_core_hexin/services/commerce/src/modules/channel/05_interface_jieru/job/ChannelWebhookJob.ts;02_domain_yewu/model/WebhookInbox.ts","5-63;1-9","row claim、provider operation/tracking/outbox、applied/ignored 和领域约束。"
+"E-AU-113-004","01_core_hexin/services/commerce/src/modules/channel/05_interface_jieru/http/ChannelWebhook.ts;ChannelRoutes.ts;01_core_hexin/services/commerce/src/app/jobs.ts","1-10;146-148;55-85,138","HTTP 与 runtime processor 实际装配。"
+"E-AU-113-005","01_core_hexin/extensions/providers/core/src/PortFactory.ts;02_platform_pingtai/database/supabase/migrations/20260821044000_channel_lifecycle.sql","AU-021 已记录；38-59","F-0094 的签名身份与数据库 event ID 去重边界重走；结论保持 P1 候选。"

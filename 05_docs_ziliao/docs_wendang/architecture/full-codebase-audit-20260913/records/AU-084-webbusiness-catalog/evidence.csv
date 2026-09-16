@@ -1,0 +1,4 @@
+"编号","位置","证据","结论"
+"E-AU-084-001","WebCatalogOperations.ts:20-132","supplier、direct listing、filtered listing、storefront published filter、keyset 和 console summary 依据 access scope 分流。","授权目录读取按身份/范围区分，不是公共接口。"
+"E-AU-084-002","PublicCatalogHttpHandler.ts:37-117；WebBusinessApiMain.ts:35-39","固定 GET path、origin/host/application 绑定、public DB projection 和 `purchasable=false` response。","公开面不直通 canonical route，且不允许购买。"
+"E-AU-084-003","WebCatalogOperations.test.ts:8-80；PublicCatalogHttpHandler.test.ts:6-82","测试覆盖 query shape/summary、public host binding、跨 node拒绝和购买锁定。","存在主要静态/adapter oracle；真实数据库函数/RLS 未在本批运行。"

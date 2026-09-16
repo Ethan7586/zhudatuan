@@ -1,0 +1,7 @@
+"编号","位置","证据","结论"
+"E-AU-059-001","OrderModule.ts;PurchaseModules.ts;PurchaseOperations.ts:76-99;PlaceOrder.ts:66-159","完整与 Purchase selected runtime 共用 PlaceOrder，Purchase 用 session-scoped quote store/disabled voucher","订单创建入口和 runtime 边界已闭合"
+"E-AU-059-002","PlaceOrder.ts:82-159,297-361;ModuleOperations.ts:136-166,234-240","报价锁/验签/重算、四类 reserve、order/line/suborder/payment/session/cart/job/outbox 均在幂等命令事务内，订单创建加 mall inventory serialization key","核心写入、资源预留和事件具备同一事务边界"
+"E-AU-059-003","OrderJobs.ts:10-57;app/jobs.ts:83,139","orderexpiry 注册为 transaction queue worker，过期订单取消并释放 holds；微信尝试转 paymentquery","超时恢复有运行入口"
+"E-AU-059-004","ConfirmOrderReceipt.ts:24-80;OrderReceivedEvent.ts:11-25;ConfirmOrderReceipt.test.ts","收货锁定会员订单、要求每一 fulfillment shipped、CAS 版本更新、稳定 event id 和重复 no-op","收货状态与事件幂等边界存在"
+"E-AU-059-005","OrderOperations.ts:79-98;20260821019000_create_cart_checkout_order.sql:96-112;PaymentJobs.ts:221-246;RefundPlanner.ts:45-112;FulfillmentPort.ts:32-46","line 仅单列 FK，申请 SQL 未要求 line.order_id=order；line 申请 amount 缺省为 NULL，退款用整笔余款，供应商额度再按 linePayableMinor 约束","跨订单 line 或多行订单缺 amount 会在退款/供应履约链形成不一致或失败，F-0148"
+"E-AU-059-006","OrderOperations.test.ts;ConfirmOrderReceipt.test.ts;module.manifest.test.ts","仅覆盖 approve 入队/退款状态、收货和 manifest；无 PlaceOrder、line ownership、amount default、expiry 行为测试","关键链路存在测试缺口"

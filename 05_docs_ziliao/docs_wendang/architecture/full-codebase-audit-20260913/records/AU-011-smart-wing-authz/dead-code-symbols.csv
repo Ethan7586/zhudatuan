@@ -1,0 +1,2 @@
+"候选编号","对象","零/弱入口证据","保留证据","排除项","等级","结论","复核"
+"DC-0013","@smart-wing/authz包及can等公共面","当前正式release不加载受保护兼容router；can包外静态0","decide有2源码caller；手工compat build；13唯一测试；public.*数据库契约；private package export","仓外/历史进程、退役迁移、回滚、api-contract消费者未排除","G1","禁止删除；不是@shop/authz等价副本","升级G2/G3前重新核验运行主机和迁移计划"

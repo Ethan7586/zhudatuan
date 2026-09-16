@@ -1,0 +1,2 @@
+file,coverage,execution
+src/api/adminRoutes.test.ts,catalog overview and coarse status authorization paths,no direct product status resource idempotency input or success RPC fixture; not run: audit worktree has no Vitest dependencies

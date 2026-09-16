@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-239-001,src/foundation/interface/OperationController.finance.test.ts,9-39,scope boundary,Both finance.policies.preview and finance.policies.manage authorizer calls receive undefined resource for a new policy ID.
+E-AU-239-002,src/foundation/interface/OperationController.finance.test.ts,10-29,route harness,Fixture registers all finance operation handlers then interrupts at authorizer to capture its exact arguments.
+E-AU-239-003,src/foundation/interface/OperationController.ts,346-350,generated source contract,Generated operationResource has the matching finance policy exception.

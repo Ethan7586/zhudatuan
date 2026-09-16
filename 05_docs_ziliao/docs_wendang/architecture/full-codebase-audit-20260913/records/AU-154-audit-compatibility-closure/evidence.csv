@@ -1,0 +1,4 @@
+id,file,location,kind,observation
+E-AU-154-001,application/**;domain/**;infrastructure/**;interface/**,1,compatibility export,Each legacy Audit path is a one-way re-export to a reviewed canonical implementation.
+E-AU-154-002,AuditModule.ts;index.ts;module.manifest.ts;06_tests_ceshi/module.manifest.test.ts,1-33,stable surface,Root module/public/manifest isolate implementation while declaring audit.records.read and auditarchive.
+E-AU-154-003,src/app/modules.ts;src/app/jobs.ts,5;47-48,live consumers,Commerce main registers canonical AuditModule and jobs catalog creates AuditArchiveJobProcessor with PgAuditRepository.

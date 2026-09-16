@@ -1,0 +1,5 @@
+"证据编号","文件","位置","结论"
+"E-AU-116-001","01_core_hexin/services/commerce/src/modules/extension/05_interface_jieru/job/ExtensionHealthJob.ts","11-63","scan/stage/health evidence/transition/schedule/activate-discard 完整链。"
+"E-AU-116-002","01_core_hexin/services/commerce/src/modules/channel/04_adapters_shixian/persistence/PgExtensionStateSink.ts;modules/extension/01_public_gongkai/ExtensionLoader.ts","4-9;32-52","ExtensionStateSink contract 与 connection degraded SQL。"
+"E-AU-116-003","01_core_hexin/services/commerce/src/modules/extension/02_domain_yewu/model/{Installation,HealthRecord}.ts;05_docs_ziliao/docs_wendang/operations/extensionhealth.md","1-15;1-10;1-27","状态机、health 不变量和显式恢复运行手册。"
+"E-AU-116-004","01_core_hexin/services/commerce/src/app/jobs.ts","109,165-166","health worker catalog 与 processor 实际注册。"

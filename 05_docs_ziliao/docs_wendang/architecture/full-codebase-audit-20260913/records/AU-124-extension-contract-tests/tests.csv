@@ -1,0 +1,2 @@
+verification,scope,result,reason
+Targeted Vitest,Extension contract/model tests,Not run,Audit policy records source-level evidence and does not run a test without a finding-specific need.

@@ -1,0 +1,7 @@
+"编号","位置","证据","结论"
+"E-AU-060-001","PaymentPort.ts:11-37;PlaceOrder.ts:336-339","订单事务写 payment.intent 和 tender plan；payment plan 使用订单 idempotency 与 30 分钟到期","支付意图由订单事实链拥有"
+"E-AU-060-002","ExternalPaymentIntentOperations.ts:36-178;PaymentOperationSupport.ts:12-67","外部预下单先锁定/幂等，再在 provider 调用后保存 prepay；未知结果转 attempt unknown + recovery queue，明确失败仅 failed","外部副作用与本地持久化失败有明确恢复分支"
+"E-AU-060-003","PaymentSettlementCore.ts:49-137;PaymentSettlement.ts:28-110;PaymentAllocation.ts:1-17","capture 锁 intent/payment，校验 tender sum，提交 benefit/voucher/inventory/marketing，写 payment/capture/allocation、订单、fulfillment/outbox","捕获事务和资源所有权闭合"
+"E-AU-060-004","WechatGateway.ts:16-138;PaymentGateway.ts:53-83;SettlementProviderTime.test.ts","应用 hash 与 scene 绑定；provider 成功时间严格校验，混合支付以 provider 时刻写 financial event，内部支付禁止 provider time","支付渠道上下文和会计时间边界存在"
+"E-AU-060-005","ReadPaymentIntent.ts:24-86;PgPaymentIntentReader.ts:20-55;ReadPaymentIntent.test.ts","读取按 membership/mall 过滤，unknown 不伪装成失败，terminal 取消 action/retry","客户端读取语义与恢复状态一致"
+"E-AU-060-006","ExternalPaymentIntentOperations.test.ts;PaymentLifecycle.test.ts;PaymentMallIdentity.test.ts;PaymentAllocation.test.ts;PaymentGateway.test.ts;module.manifest.test.ts","针对外部失败、Mall 隔离、状态机、分摊和 timestamp 有 mock oracle","测试覆盖核心边界；正式命令未执行（vitest command not found）"

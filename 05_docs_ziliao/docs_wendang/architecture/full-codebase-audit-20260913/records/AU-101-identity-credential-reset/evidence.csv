@@ -1,0 +1,5 @@
+"证据编号","文件","位置","结论"
+"E-AU-101-001","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/CredentialOperations.ts","21-143","exact owner/version/scope/reauth 重置，锁定 subject，撤销会话/凭据/权限并历史保留。"
+"E-AU-101-002","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/CredentialOperations.ts","144-178","current password 验证、password assurance、owner rotation 或 credential/session rotation。"
+"E-AU-101-003","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/CredentialOperations.ts","179-230","session-bound password verify 与 realm-bound OTP reset/savepoint。"
+"E-AU-101-004","01_core_hexin/services/commerce/src/modules/identity/06_tests_ceshi/IdentityReset.test.ts","全部","root reset 释放 identity/history 保留和 owner protection 的静态操作 oracle。"

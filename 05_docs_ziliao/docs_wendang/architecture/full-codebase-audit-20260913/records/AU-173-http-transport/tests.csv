@@ -1,0 +1,4 @@
+file,coverage,execution
+src/api/http.test.ts,JSON defensive headers stable API error and method allow behavior,not run: audit worktree has no Vitest dependencies
+src/api/errorResponse.ts,error mapping table and unknown-error fallback,no direct test found
+src/api/routerSupport.ts,JSON size/parser and resource scope RPC helper,no direct test found

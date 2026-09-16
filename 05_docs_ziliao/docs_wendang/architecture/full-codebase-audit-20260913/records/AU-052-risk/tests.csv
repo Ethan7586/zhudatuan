@@ -1,0 +1,4 @@
+"测试","范围","结论","执行"
+"RiskEngine.test.ts","硬阈值、bucket、未知字段、reviewer separation","局部规则与状态迁移 oracle 存在","未执行：vitest command not found"
+"EvaluateRisk.test.ts","无策略 allow、最大金额 deny、persisted decision","核心选择逻辑的基础 oracle 存在","未执行：vitest command not found"
+"真实 PostgreSQL/job","policy candidate/replay/activate、case lock、catalog deny","无模块专用集成测试证据","未验证"

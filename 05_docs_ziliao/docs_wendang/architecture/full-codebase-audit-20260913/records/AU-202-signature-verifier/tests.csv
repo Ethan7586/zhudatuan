@@ -1,0 +1,2 @@
+file,coverage,execution
+src/bootstrap/SignatureVerifier.ts,no direct valid/tampered/wrong-key/invalid-base64 crypto fixture,not run: audit worktree has no Vitest dependencies

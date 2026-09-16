@@ -1,0 +1,4 @@
+id,file,location,kind,observation
+E-AU-136-001,06_tests_ceshi/AliyunOssCatalogMediaStorage.test.ts,1-202,adapter tests,Asserts upload/head/missing/error handling and separate target credentials.
+E-AU-136-002,06_tests_ceshi/CatalogMediaReplication.test.ts,1-175,replication tests,Asserts content-address identity, target failure semantics, verification and retry.
+E-AU-136-003,06_tests_ceshi/CatalogProductMediaRegistration.test.ts,1-291,PGlite persistence tests,Asserts media object/replica/binding lifecycle recovery and migration ledger.

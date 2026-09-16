@@ -1,0 +1,2 @@
+"编号","对象","无入口证据","保留/未知","等级","结论"
+"DC-0023","除Environment外7个Miniapp生成输出：CachePolicy、RuntimeLimits、experience、deeplink、tokens.wxss、brandmark、wingcode","9文件片段内零require/import/WXML/WXSS入口；无app.json/pages/app.wxss/API/actions","四条生成链、candidate复制、机器清单/契约职责、外部完整工程与线上版本UNKNOWN","G1","疑似未接入片段；不得删除，需先确认唯一小程序所有者和制品拓扑"

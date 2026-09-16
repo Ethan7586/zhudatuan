@@ -1,0 +1,5 @@
+id,file,location,kind,observation
+E-AU-156-001,03_application_yingyong/command/ProjectEvent.ts;05_interface_jieru/job/ProjectionJob.ts,1-141;1-43,projection,Projection claims inbox in a transaction, maps allowed v1 events, completes offsets and invalidates only prior-version cache keys.
+E-AU-156-002,05_interface_jieru/job/ExportJobRunner.ts,1-89,export worker,Worker pages 1000 rows, creates CSV/XLSX, verifies clean object integrity then completes or aborts/fails by attempts.
+E-AU-156-003,06_tests_ceshi/command/ProjectEvent.test.ts,1-57,test,In-memory test checks paid hierarchy/partner metrics and unmapped event failure but not processor runtime behavior.
+E-AU-156-004,src/app/jobs.ts,37-38;98-99,live registration,Jobs catalog registers projection and export consumers with distinct queues/concurrency/lease policy.

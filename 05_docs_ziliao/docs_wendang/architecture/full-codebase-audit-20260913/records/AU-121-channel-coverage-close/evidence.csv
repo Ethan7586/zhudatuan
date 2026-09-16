@@ -1,0 +1,4 @@
+"证据编号","文件","位置","结论"
+"E-AU-121-001","01_core_hexin/services/commerce/src/modules/channel/{application,domain,infrastructure,interface}/**/*.ts","1","23 个文件均为到已深审中文分层实现的 export-star compatibility re-export。"
+"E-AU-121-002","01_core_hexin/services/commerce/src/modules/channel/01_public_gongkai/ChannelCapabilities.ts","1-6","read/manage capability 常量与导出类型。"
+"E-AU-121-003","10-coverage-manifest.csv","Channel 条目","64 个 Channel 文件均已有深审或既定覆盖状态。"

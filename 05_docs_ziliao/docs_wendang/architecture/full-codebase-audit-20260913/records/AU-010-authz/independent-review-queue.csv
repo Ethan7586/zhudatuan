@@ -1,0 +1,3 @@
+"复核编号","对象","触发原因","必须重新检查","当前状态","不得采用的捷径","完成判据"
+"RV-0009","F-0053 custom role权限铸造/转授","P1候选强制第二轮独立复核","从Console可选集、HTTP Operation、actor permission、role写入、assignment约束、resolve membership、capability和线上角色/审计数据重追","待第二位独立审计者；本AU同一主审抽检不计","不得复述旧handoff P0标签；不得只看role名或UI；不得把未查线上写成已利用","独立复现受限role manager正反矩阵，核对当前角色数据和可回滚范围，再决定P1/P2/无缺陷"
+"RV-0008","F-0036 storefront member写Operation绑定member.read","既有P1候选强制第二轮；AU-010只补内核证据","从角色/entitlement、Operation、AccessPipeline到两条数据库写重新检查","继续待审；未因AU-010关闭","不得把同一主审的第二次阅读算独立；不得只按permission名称判断","第二审计者用仅read/写permission/deny/无capability/跨scope矩阵完成"

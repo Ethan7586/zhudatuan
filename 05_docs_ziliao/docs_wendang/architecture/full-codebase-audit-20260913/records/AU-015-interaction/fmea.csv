@@ -1,0 +1,5 @@
+"编号","链路","故障模式","影响","等级","关联"
+"FM-AU-015-001","cart write→onCommitted","观察callback抛错改判失败","服务端成功、客户端走错误链","P3","F-0070"
+"FM-AU-015-002","duplicate action start","不同Result类型共享首个Promise","类型正确但运行值错误","P3","F-0071"
+"FM-AU-015-003","feedback publish→external mutation","无notify改变snapshot内容","UI不同步/调试困难","P3","F-0072"
+"FM-AU-015-004","cache dispose→read storage","已释放对象重新持有memory","生命周期泄漏/陈旧读取","P3","F-0073"

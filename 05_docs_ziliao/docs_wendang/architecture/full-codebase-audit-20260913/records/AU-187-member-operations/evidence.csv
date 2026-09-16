@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-187-001,src/api/memberOperationsRoutes.ts,12-23,read scope,Member center requires member.read and independently gates PII history and import errors in the scoped RPC request.
+E-AU-187-002,src/api/memberOperationsRoutes.ts,25-126,write authorization,Invite disable create update and import require their capability fresh step-up and server scope with actor evidence.
+E-AU-187-003,src/api/memberOperationsRoutes.ts,140-161;230-235,credential privacy,Create hashes passwords before RPC and import error serialization removes password fields.
+E-AU-187-004,src/api/routes/adminRouter.ts,32-42;66-70,runtime registration,The compatibility admin router registers member operation collection and item routes.
+E-AU-187-005,src/api/memberOperationsRoutes.test.ts,1-105,tests,Tests cover selected denial and privacy paths but not several successful or mutation branches.

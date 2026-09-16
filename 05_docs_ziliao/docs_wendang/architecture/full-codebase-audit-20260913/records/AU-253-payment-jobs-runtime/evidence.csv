@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-253-001,src/bootstrap/PaymentJobsRuntime.ts,38-79,startup,Manifest secrets callback configuration and database compatibility precede queue registration.
+E-AU-253-002,src/bootstrap/PaymentJobsRuntime.ts,81-95,queue boundary,Only paymentquery and paymentrefund QueueJobs are created.
+E-AU-253-003,src/bootstrap/PaymentJobsRuntime.ts,97-160,contract gate,Query projects contract but final assertion omits it.
+E-AU-253-004,src/bootstrap/PaymentJobsRuntime.test.ts,48-66,test gap,Fixture supplies contract true only.

@@ -1,0 +1,3 @@
+"编号","对象","弱入口","保留证据","等级","结论"
+"DC-0018","除DatabaseHarness外的root testing工具","固定仓库无包外源码import","private package公共API、唯一fixture实现、仓外测试未知","G1","不得删除"
+"DC-0019","testing/browser全部工具","只有包内Browser.test消费，无包外import","公开browser subpath、直接行为测试、未来共享测试职责","G1","不得删除"

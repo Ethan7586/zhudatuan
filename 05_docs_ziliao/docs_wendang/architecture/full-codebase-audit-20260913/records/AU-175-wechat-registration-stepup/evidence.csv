@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-175-001,src/api/wechatAuthRoutes.ts,36-211,WeChat identity,Provider code exchange stays server-side and returns only openid/unionid; resolve/enroll and runtime resolution precede storefront-only miniapp token issue.
+E-AU-175-002,src/api/wechatAuthRoutes.ts,74-159,bind/register,Binding requires UUID challenge and local credential; registration hashes password/invite and registers/binds before session creation.
+E-AU-175-003,src/api/registrationRoutes.ts,13-129,registration,OTP challenge stores phone/code hashes and expiry; mobile and username registration validate invite/password and use private RPC.
+E-AU-175-004,src/api/stepUpRoutes.ts,11-52,step-up,Current-password verification is rate-limited audited then revokes/reissues session with verified timestamp.
+E-AU-175-005,src/api/router.ts;src/api/routes/publicRouter.ts,14-25;9-22,runtime route,Current full router rejects auth namespace and actual Storefront public router does not register these handlers.

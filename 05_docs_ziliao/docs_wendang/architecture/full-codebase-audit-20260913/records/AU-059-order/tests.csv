@@ -1,0 +1,5 @@
+"测试","范围","结论","执行"
+"OrderOperations.test.ts","售后批准入队、退款状态、重试 state","未覆盖申请 line 归属或 amount default","未执行：vitest command not found"
+"ConfirmOrderReceipt.test.ts","发货门槛、版本冲突、重复事件","有 handler-level mock oracle","未执行：vitest command not found"
+"module.manifest.test.ts","operation inventory","最小契约 oracle","未执行：vitest command not found"
+"Order integration","PlaceOrder 预留/回滚/重放、line ownership、partial line refund、expiry","未见模块专用完整行为测试；F-0148","未验证"

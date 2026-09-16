@@ -1,0 +1,3 @@
+id,files,location,kind,observation
+E-AU-254-001,src/entry/PaymentJobsMain.ts,5-22,entry,Runtime creation directly precedes QueueJob execution with no contract gate.
+E-AU-254-002,src/bootstrap/PaymentJobsRuntime.ts,97-160,gate,Query exposes contract while predicate omits it.

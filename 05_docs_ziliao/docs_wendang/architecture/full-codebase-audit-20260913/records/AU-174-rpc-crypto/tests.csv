@@ -1,0 +1,4 @@
+file,coverage,execution
+src/api/orderRoutes.test.ts;registrationRoutes.test.ts,indirect encrypted write path before mocked RPC,no direct crypto assertion; not run
+src/api/crypto.ts,AES-GCM round-trip IV randomization tamper wrong-key invalid-envelope,no direct test found
+src/api/supabase.ts,service role headers 204 non-OK bounded upstream error,no direct test found

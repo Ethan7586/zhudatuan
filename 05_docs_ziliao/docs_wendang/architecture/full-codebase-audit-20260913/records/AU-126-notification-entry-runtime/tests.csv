@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Source review,Module/job/runtime and three local test files,Completed,Tests are inspected as behavioral specifications; no finding-specific command required.
+Targeted Vitest,Notification entry/runtime tests,Not run,Audit policy does not run a test absent a conclusion requiring execution evidence.

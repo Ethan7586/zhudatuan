@@ -1,0 +1,5 @@
+"编号","入口","结果","证明","不证明"
+"TC-AU-016-001","workspace test","Missing script","无包级test入口","资产正确"
+"TC-AU-016-002","workspace typecheck","Missing script","无包级typecheck入口","JSON/SVG/CSS有效"
+"TC-AU-016-003","canonical build-web-tokens --check","通过","canonical tokens.css/Token.ts current","旧包CSS current"
+"TC-AU-016-004","JSON/XML parse","通过","2 JSON与4 SVG结构合法","视觉/语义正确"

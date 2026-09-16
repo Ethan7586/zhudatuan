@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-129-001,root/application/domain/infrastructure/interface compatibility paths,1,compatibility,27 legacy paths each only re-export their already audited Chinese-layer target.
+E-AU-129-002,index.ts,1-24,public boundary,Exports public/domain contracts and notification manifest only.
+E-AU-129-003,src/modules/notification,all files,coverage,All 63 Notification files now have a file-level coverage classification.

@@ -1,0 +1,8 @@
+"状态编号","对象","当前状态","条件","下一状态/结果","写入","失败恢复","证据"
+"STATE-AU-011-001","decide","start","membership active且未到期","permission deny检查","无","修正Membership后重试","index.ts:21"
+"STATE-AU-011-002","decide","deny检查","permission不在deny","allow grant检查","无","撤销deny后重试","index.ts:22"
+"STATE-AU-011-003","decide","grant检查","permission存在","tenant/scope候选","无","角色更新后重试","index.ts:23"
+"STATE-AU-011-004","decide","tenant/scope候选","同tenant或匹配global hierarchy","step-up","无","合法Scope后重试","index.ts:24-28"
+"STATE-AU-011-005","decide","step-up","非critical或fresh","binding存在检查","无","完成step-up","index.ts:29-31"
+"STATE-AU-011-006","decide","binding检查","binding存在","ALLOWED evidence","无","Scope修正后重试","index.ts:32-38"
+"STATE-AU-011-007","兼容运行","source present","手工compat build/test","非正式制品或测试","可能生成dist但本AU未执行","当前release禁止旧制品","E-AU-011-004"

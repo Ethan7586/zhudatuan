@@ -1,0 +1,5 @@
+"探针编号","输入差异","预期","实际","证据结论","线上结论","关联"
+"PROBE-AU-012-001","31个leaf逐项检查L1/L2父链","全部闭合","digital_mobile_accessory→digital_mobile唯一失败","F-0064成立","线上数量UNKNOWN","E-AU-012-004/008"
+"PROBE-AU-012-002","7条delivery evidence逐路径检查","implemented证据存在","4条wechat路径缺失","F-0063成立","仓外消费UNKNOWN","E-AU-012-005"
+"PROBE-AU-012-003","permission/platform导出赋值和push","权威目录拒绝改写","四类修改均成功","F-0032扩展成立","无生产mutation caller","E-AU-012-009"
+"PROBE-AU-012-004","11 order状态×8 attempt状态","按控制流稳定映射","refunded/paid履约态优先，其余attempt/default","现行函数矩阵已存档","产品期望UNKNOWN","E-AU-012-011"

@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-195-001,src/api/validation.ts,43-96,order validation,Order parser requires bounded unique SKUs quantities recipient fields and Chinese mobile format.
+E-AU-195-002,src/api/validation.ts,98-133,payment/refund validation,Internal payment and refunds only accept positive safe-integer monetary values.
+E-AU-195-003,src/api/validation.ts,135-171,simulation validation,Simulation paths restrict mock channels safe amounts and voucher ownership linkage.
+E-AU-195-004,src/api/validation.test.ts,1-127,tests,Every exported parser has direct valid and invalid input coverage.
+E-AU-195-005,src/api/{orderRoutes,paymentSimulationRoutes}.ts,imports,Order and payment simulation routes are the production consumers of validation helpers.

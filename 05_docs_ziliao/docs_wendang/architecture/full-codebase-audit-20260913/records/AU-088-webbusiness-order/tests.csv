@@ -1,0 +1,3 @@
+"测试/验证","范围","结论","执行"
+"WebOrderOperations.test.ts","aggregate query/filter 值","验证静态 SQL 片段与参数；不验证 zhudatuanwebapi RLS 行可见性。","未执行：固定审计 worktree 无 vitest 可执行文件；未安装依赖。"
+"RLS migration chronology","payment/finance grant 与 policy","只读检索确认 grant，无同角色 policy 命中；数据库实例重放未执行。","已执行静态迁移复核；运行结论标注待角色集成验证。"

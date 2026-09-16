@@ -1,0 +1,4 @@
+"编号","位置","证据","结论"
+"E-AU-080-001","InvoiceIssuer.ts:3-23;InvoiceGateway.ts:6-29;InvoiceJob.ts:42-45","typed invoice input/receipt token；gateway/job producer-consumer","外部签发端口的调用方向和 PDF receipt 契约明确"
+"E-AU-080-002","FinanceModule.ts:1-4;app/modules.ts:14,40","完整 Commerce business module 依赖 reporting 并绑定 FinanceRoutes","完整 Finance 运行单元有真实注册"
+"E-AU-080-003","IdentityOperatorFinanceModule.ts:1-6;IdentityRegistrationApiMain.ts:24,68","Identity API 仅装配 Finance operator read allowlist","selected module 是受限运行入口，不是闲置副本"

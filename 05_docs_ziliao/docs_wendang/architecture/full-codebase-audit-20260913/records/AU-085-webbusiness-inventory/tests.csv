@@ -1,0 +1,3 @@
+"测试/验证","范围","结论","执行"
+"WebInventory 专用测试","handler 的 SKU/closure/available/keyset/RLS 行为","未找到专用测试。","未执行：无对应测试文件；固定审计 worktree 不安装依赖。"
+"WebBusinessScopeResolver.test.ts","storefront inventory scope resolver","只验证 mock resolver 调用 web_storefront_scope，不比较 complete/web query 语义。","已在 AU-083 深审；未执行 Vitest。"

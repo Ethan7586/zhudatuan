@@ -1,0 +1,6 @@
+"编号","位置","证据","结论"
+"E-AU-076-001","InvoiceGateway.ts:6-29","HTTPS/provider/bearer 校验、idempotency-key、PDF response/magic header","外部适配器有基本契约和文档格式边界"
+"E-AU-076-002","InvoiceJob.ts:18-73","直接 update invoice.request、insert invoice.document/statusevent、直接 outbox transaction","当前 worker 实现未使用迁移定义的 claim/register/finalize 受控函数"
+"E-AU-076-003","CommerceRuntime.ts:70-81;app/jobs.ts:152","jobs pool workload='jobs'、expectedRole=shopjob、invoice processor 注册","实际 invoice worker 的数据库角色与调用入口已确认"
+"E-AU-076-004","20260828094000_finance_invoice_issue_integrity.sql:990-1043","revoke shopjob direct invoice request/document/line/requestline/requestprofile/statusevent write；grant claim/register/finalize/fail functions","E-AU-076-002 的直接写操作在 canonical job role 下无权限；F-0158/P1"
+"E-AU-076-005","InvoiceIssueIntegrity.test.ts:52-237","完整 issue/snapshot/red/outbox 行为明确标为 skip/未实现","现有测试保存了预期契约，但并未验证当前实现"

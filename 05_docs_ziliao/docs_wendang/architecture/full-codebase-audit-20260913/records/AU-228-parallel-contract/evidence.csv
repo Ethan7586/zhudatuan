@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-228-001,src/foundation/performance/Parallel.ts,1-13,implementation,Validates positive safe-integer concurrency; workers advance one shared cursor and write each result at its source index.
+E-AU-228-002,src/modules/voucher/05_interface_jieru/job/VoucherJobs.ts;src/modules/voucher/04_adapters_shixian/persistence/PgVoucherImport.ts,54-55;29-30,production consumers,Voucher issue and import both map KMS encrypt work with concurrency 16.
+E-AU-228-003,src/foundation/performance/Parallel.ts,1-13,failure contract,Operation receives only value and first rejection rejects mapParallel while already-started operations have no cancellation channel.

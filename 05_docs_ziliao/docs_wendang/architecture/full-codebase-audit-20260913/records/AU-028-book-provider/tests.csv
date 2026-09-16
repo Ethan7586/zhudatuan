@@ -1,0 +1,7 @@
+"test_id","area","method","result"
+"TC-AU-028-001","正式测试","npm test -- --reporter=dot","阻塞/127，vitest缺失"
+"TC-AU-028-002","类型检查","npm run typecheck","阻塞/127，tsc缺失"
+"TC-AU-028-003","履约链反事实","Book manifest/factory×FulfillmentJobs×Registry","Order可达；tracking以EXTENSION_CAPABILITY_MISSING:book:Logistics失败"
+"TC-AU-028-004","capability-port矩阵","manifest十能力×factory九ports×Registry","Return/Refund都可与refund配对；Shipment与当前Logistics caller不匹配"
+"TC-AU-028-005","业务ports","Catalog/Price/Stock/Order/Cancel/Tracking/Refund/Statement/Webhook","未执行；无包级用例"
+"TC-AU-028-006","构建","npm run build","未执行；等同typecheck"

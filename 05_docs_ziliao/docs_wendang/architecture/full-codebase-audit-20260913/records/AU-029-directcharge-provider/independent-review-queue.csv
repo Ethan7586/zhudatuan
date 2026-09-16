@@ -1,0 +1,2 @@
+"review_id","target","status","reason"
+"RV-0022","F-0119","P1候选","已复核；manifest发布Issue/DirectCharge/Query/Refund/Verify/Webhook与provider jobs消费Order/Logistics不一致，Fulfillment需Order/Logistics能力但缺对应入口对齐证据，保留为高风险修复项"

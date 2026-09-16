@@ -1,0 +1,4 @@
+"测试","范围","结论","执行"
+"FulfillmentMallIdentity.test.ts","fulfillment 创建 mall/member、tracking load mall、无 OrderRecord/hierarchy join、payment job scope、received publisher","记录型 mock/源码断言；不执行 provider receipt、tracking 或 return 状态机","未执行：vitest command not found"
+"module.manifest.test.ts","manifest capability、操作和 job entrypoint","仅 manifest 形状断言","未执行：vitest command not found"
+"Fulfillment transaction integration","provider submit receipt、失败重试、tracking milestone/完成、shipment、return receive/inspect、order/outbox","未在固定审计 worktree 验证","未验证"

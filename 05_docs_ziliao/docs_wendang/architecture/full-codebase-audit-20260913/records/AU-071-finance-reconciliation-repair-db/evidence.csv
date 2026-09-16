@@ -1,0 +1,6 @@
+"编号","位置","证据","结论"
+"E-AU-071-001","20260828100000_finance_reconciliation_repair_workflow.sql:1-135","repair/line/effect/authorization 表、状态约束、双人约束、immutable trigger","修复事实、两条平衡分录和状态迁移由数据库封存"
+"E-AU-071-002","migration:136-342;343-530;900-1178","decide/preview/submit/reverse 重算 source/target snapshot、校验版本/hash/plan/proof、四眼、journal/entry 与 exact reverse","修复会计效果不能由客户端金额或账户直接决定"
+"E-AU-071-003","migration:620-900;1180-1317","payment/refund provider effect 与 accounting time 完整性；RLS/revoke、仅 wrapper execute、operation/capability/entitlement/assert","来源事实、权限和运行注册有数据库级边界"
+"E-AU-071-004","FinanceReconciliationRepair.test.ts:25-227","PGlite 重放迁移；完整执行/冲销、idempotency、版本/hash/proof/四眼/scope/账期、RLS、refund evidence、downstream lock","真实数据库集成测试覆盖关键成功和拒绝状态"
+"E-AU-071-005","FinanceReconciliationRepair.test.ts:330-609","fixture 同时构造 session/assurance/permission、payment/refund/provider evidence 和按迁移顺序 replay","测试不是只 mock 函数返回，能检验迁移与过程交界"

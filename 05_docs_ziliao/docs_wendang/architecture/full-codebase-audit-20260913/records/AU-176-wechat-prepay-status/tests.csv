@@ -1,0 +1,2 @@
+file,coverage,execution
+src/api/wechatPaymentRoutes.test.ts,status vocabulary order-by-number and payment-status route,no direct prepay test; not run: audit worktree has no Vitest dependencies

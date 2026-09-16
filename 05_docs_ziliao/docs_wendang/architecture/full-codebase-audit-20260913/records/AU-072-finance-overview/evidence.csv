@@ -1,0 +1,3 @@
+"编号","位置","证据","结论"
+"E-AU-072-001","GetFinanceOverview.ts:4-34","operation 注册；posted journal CTE；account scope 使用 organization.unitclosure；会计方向和 watermark 聚合","财务概览以组织范围内已过账分录为唯一来源"
+"E-AU-072-002","GetFinanceOverview.test.ts:10-56","PGlite 构造 posted/draft/reversed journal；断言只有 posted=100，bigint 文本与 watermark","读取投影的状态过滤和 wire amount 有真实数据库行为 oracle"

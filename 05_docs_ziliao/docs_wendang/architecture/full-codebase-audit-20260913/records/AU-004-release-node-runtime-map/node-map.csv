@@ -1,0 +1,3 @@
+"逻辑节点","node/realm","物理入口","本地运行 target","hostedBy 关系","Edge","当前证据边界"
+"zhudatuan-l0","node:zhudatuan:l0 / realm:l0","root@123.57.232.253","15 个 manifest deployment；14 个非迁移 target + migration","无","主机 Caddy 直接终止 TLS；fufu 站点","固定 manifest + 2026-09-13 只读实例核验"
+"hbbtzn-l1","node:hbbtzn:l1 / realm:l1","与 L0 同一 SSH 主机","原生 Storefront/Auth/Console/Identity/Identity Jobs；Mall 只存制品","Support/Purchase/Web/Catalog/Payment/Migration hostedBy L0","Cloudflared → https://127.0.0.1:4430 → L1 gateway Caddy","固定 manifest；账户侧 tunnel/DNS 未审"

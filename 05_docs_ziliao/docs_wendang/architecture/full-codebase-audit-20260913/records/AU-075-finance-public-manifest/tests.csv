@@ -1,0 +1,2 @@
+"测试","范围","结论","执行"
+"module.manifest.test.ts","capability、依赖、entrypoint、jobs/events、operation catalog","直接 manifest oracle","未执行：固定审计 worktree 无 vitest 可执行文件"

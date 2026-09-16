@@ -1,0 +1,2 @@
+"复核编号","对象","触发原因","必须重新检查","当前状态","不得采用的捷径","完成判据"
+"RV-0008","F-0036：Storefront member config/custom manage绑定member.read","既有P1候选；AU-009的Gate只证明observe边界，不改变权限结论","角色permission来源、operation entitlement、数据库发布绑定、Controller/AccessPipeline、Console可达性、两handler事务和线上只读证据","待第二位独立审计者；本AU未关闭；本AU无新增P0/P1/G3/GX复核对象","不得以Gate observe结果替代授权链，也不得只复述第一次报告","第二审计者在固定基线独立重建端到端链；保留分歧"

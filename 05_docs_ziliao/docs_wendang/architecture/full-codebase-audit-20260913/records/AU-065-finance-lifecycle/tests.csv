@@ -1,0 +1,3 @@
+"测试","范围","结论","执行"
+"module.manifest.test.ts","Finance module operation 列表与 HTTP/job entrypoint","仅 manifest 形状，不覆盖 lifecycle SQL 行为","未执行：vitest command not found"
+"finance lifecycle integration","period request/approve/reject、hash 变化、statement 缺失、backfill 签核、并发/事务/outbox","未见模块专用测试","未验证"

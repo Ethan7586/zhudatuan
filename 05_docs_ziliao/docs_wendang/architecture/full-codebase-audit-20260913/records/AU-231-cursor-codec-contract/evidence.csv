@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-231-001,src/foundation/interface/CursorCodec.ts,8-31,codec contract,Encode emits version 1 base64url JSON; decode pre-validates through kernel parses schema validates fields and requires exact canonical re-encode.
+E-AU-231-002,src/foundation/interface/Validation.ts,4;63-78,public bridge,Validation owns one CursorCodec and exposes its decode encode and keyset pagination result.
+E-AU-231-003,src/modules/risk/03_application_yingyong/query/GetRiskCenter.ts;src/modules/reporting/03_application_yingyong/query/GetDashboard.ts;src/modules/support/03_application_yingyong/query/GetConversations.ts;src/modules/audit/03_application_yingyong/query/GetAuditRecords.ts,12;62;42;13,production consumers,Four query domains generate CursorCodec nextCursor values.
+E-AU-231-004,src/foundation/interface/CursorCodec.test.ts,13-18,test evidence,Test name claims non-canonical rejection but body asserts only plain malformed and version 2 inputs.

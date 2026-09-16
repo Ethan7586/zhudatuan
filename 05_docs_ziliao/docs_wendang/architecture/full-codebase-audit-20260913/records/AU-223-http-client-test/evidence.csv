@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-223-001,src/foundation/http/HttpClient.test.ts,4-17,direct retry fixture,Read-mode transport throw is retried once and subsequent JSON response succeeds.
+E-AU-223-002,src/foundation/http/HttpClient.test.ts,19-32,direct write fixture,None write is not retried and businesskeywrite preserves a 204 empty response.
+E-AU-223-003,src/foundation/http/HttpClient.ts,18-44,uncovered failure branches,Implementation owns connection/response timers deadline abort propagation and redirect default error behavior.
+E-AU-223-004,src/foundation/http/HttpClient.test.ts,1-32,test gap,No timeout external abort redirect or error-code fixture found.

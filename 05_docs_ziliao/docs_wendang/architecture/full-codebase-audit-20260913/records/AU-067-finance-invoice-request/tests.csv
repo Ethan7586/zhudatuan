@@ -1,0 +1,3 @@
+"测试","范围","结论","执行"
+"RequestInvoice.test.ts","create 输入传递、数据库过程拒绝","仅创建两条 mock 分支","未执行：vitest command not found"
+"invoice command/read integration","create/cancel/approve/reject/red、组织/profile/settlement、version、stable job、member/operator read 与 cursor","未见模块专用测试","未验证"

@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-235-001,src/foundation/interface/NodeServer.ts,23-108,ingress/egress,Server converts Node requests applies 2MiB body limit cancellation and maps body/node/general failures before writing Fetch Response headers cookies and body.
+E-AU-235-002,src/foundation/interface/NodeServer.ts,72-91;src/entry/ApiMain.ts;src/entry/ConsoleSupportMain.ts;src/entry/MallProvisioningApiMain.ts,72-91;13;30;28,boundary/production,Peer address trusts x-real-ip only from loopback and production API mains use loopback listen.
+E-AU-235-003,src/foundation/interface/NodeServer.test.ts,11-145,test evidence,Fixtures cover one node resolution unknown host health neutrality and trusted peer formats only.

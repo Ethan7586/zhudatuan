@@ -1,0 +1,4 @@
+"证据编号","文件","位置","结论"
+"E-AU-106-001","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/RealmOperationContext.ts","15-34","DI runtime、hash/HMAC、ticket signer 与 notification scope。"
+"E-AU-106-002","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/RealmOperationContext.ts","36-64","invite/storefront validation/error translation 与二选一 registration reference。"
+"E-AU-106-003","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/RealmOperationContext.ts","67-73","mobile/invitation masking。"

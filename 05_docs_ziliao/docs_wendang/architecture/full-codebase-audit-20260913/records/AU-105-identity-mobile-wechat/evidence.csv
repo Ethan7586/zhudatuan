@@ -1,0 +1,5 @@
+"证据编号","文件","位置","结论"
+"E-AU-105-001","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/MobileWechatOperations.ts","24-120","phone-change challenge 与手机变更的 account/realm/session/proof/rotation/owner boundary。"
+"E-AU-105-002","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/MobileWechatOperations.ts","122-154","Step-Up 仅向已验证 account mobile 签发并绑定 session/realm/account。"
+"E-AU-105-003","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/MobileWechatOperations.ts","155-235","step-up consume、assurance、session promotion、WeChat completion 和 financial proof issuance。"
+"E-AU-105-004","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/MobileWechatOperations.ts","239-293","financial action operation/resource/idempotency/version/request hash 的 canonical validation。"

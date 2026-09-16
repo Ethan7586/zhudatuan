@@ -1,0 +1,2 @@
+file,coverage,execution
+src/foundation/interface/OperationController.wechat.test.ts,authenticated and anonymous session operation authorization modes,not run: audit worktree has no Vitest dependencies

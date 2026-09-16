@@ -1,0 +1,2 @@
+"验证项","正式入口","执行状态","结果","备注"
+"Channel manifest Vitest","services/commerce package Vitest","未执行","未验证","审计工作树未安装 Vitest；不存在本单元 HTTP 管理行为测试。"

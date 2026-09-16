@@ -1,0 +1,2 @@
+file,coverage,execution
+src/api/qualificationGovernanceRoutes.test.ts,governance redaction reviewer step-up server actor employee tags and simulation scope,not run: audit worktree has no Vitest dependencies

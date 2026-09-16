@@ -1,0 +1,4 @@
+"编号","位置","证据","结论"
+"E-AU-073-001","GetBills.ts:6-29;FinanceRoutes.ts:22-38","完整 Finance module 注册 entries/statement read/export；entries=posted journal，statement state in draft/final","完整 Commerce Finance 运行单元的读取入口已确认"
+"E-AU-073-002","FinanceReadOperations.ts:8-58;174-177;IdentityOperatorFinanceModule.ts:1-6","Identity selected module 对相同 operation id 提供独立 actions；statement 限 calculation_version=2/balanced 且携带 accounts","相同 statement operation 在另一运行单元有更严格且不同 shape 的实现"
+"E-AU-073-003","FinanceRoutes.test.ts:20-43;FinanceReadOperations.ts:19-42;GetBills.ts:18-24","测试只比 operation catalog；没有跨模块 projection/draft/final/cursor 行为测试","F-0157/P2"

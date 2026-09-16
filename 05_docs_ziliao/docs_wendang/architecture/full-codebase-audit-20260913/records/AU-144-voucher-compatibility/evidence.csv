@@ -1,0 +1,5 @@
+id,file,location,kind,observation
+E-AU-144-001,VoucherPort.ts,1-20,compatibility wrapper,Legacy default FinancePort construction preserves direct caller behavior while delegating to the reviewed layered VoucherPort.
+E-AU-144-002,IdentityOperatorVoucherModule.ts;VoucherDeadletter.ts;VoucherJobs.ts;VoucherModule.ts;VoucherOperations.ts;VoucherQueries.ts;VoucherReadOperations.ts;application/**;domain/**;infrastructure/**;interface/**,1,re-exports,Each is a one-way compatibility export to an already reviewed canonical layered implementation.
+E-AU-144-003,checkout/order/payment/verification callers and QuoteReader.mall.test,imports,consumers,Legacy wrapper/public VoucherPort remains consumed by real checkout/order/payment/verification paths and a test fixture.
+E-AU-144-004,index.ts,1-18,public entry,Public package exposes capability/contracts/policy/adapter/manifest while intentionally excluding HTTP modules, workers and persistence.

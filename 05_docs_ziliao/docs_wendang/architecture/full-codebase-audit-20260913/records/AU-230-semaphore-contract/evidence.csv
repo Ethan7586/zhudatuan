@@ -1,0 +1,3 @@
+id,files,location,kind,observation
+E-AU-230-001,src/foundation/performance/Semaphore.ts,1,compatibility adapter,Commerce re-exports Semaphore from @shop/kernel.
+E-AU-230-002,src/foundation/application/JobRunner.ts;src/foundation/infrastructure/OutboxRelay.ts;src/foundation/infrastructure/MigrationRunner.ts;src/foundation/infrastructure/RegistrationMigrationRunner.ts,40-65;12-25;114-120;244,runtime consumers,Workers outbox relay and migration secret staging create semaphores and execute bounded concurrent work.

@@ -1,0 +1,2 @@
+verification,scope,result,reason
+Targeted behavior test,Compatibility re-exports and public index,Not applicable,No independent runtime behavior exists beyond audited targets.

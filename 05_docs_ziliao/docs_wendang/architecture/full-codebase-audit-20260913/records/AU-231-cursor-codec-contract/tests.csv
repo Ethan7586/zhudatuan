@@ -1,0 +1,3 @@
+file,coverage,execution
+src/foundation/interface/CursorCodec.test.ts,canonical round trip malformed input and unsupported version,not run: audit worktree has no Vitest dependencies
+src/foundation/interface/Pagination.test.ts,indirect cursor decode of generated page cursor,not run: audit worktree has no Vitest dependencies

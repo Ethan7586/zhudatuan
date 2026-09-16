@@ -1,0 +1,7 @@
+"编号","文件","用例","覆盖","缺口","结果"
+"TC-AU-015-001","FeedbackStore.test.ts","3","replace/append/timer dispose","mutable message/listener throw","vitest缺失127"
+"TC-AU-015-002","KeyedActionCoordinator.test.ts","4","dedupe/cross-key/cancel/dispose","cross Result type/revision growth","vitest缺失127"
+"TC-AU-015-003","KeyedMutationQueue.test.ts","6","collapse/cross-key/failure/reentrant/cancel","onCommitted/onError throw/invalid delay","vitest缺失127"
+"TC-AU-015-004","PreloadRegistry.test.ts","4","dedupe/retry/scheduler/dispose","clear inflight/loader mutation","vitest缺失127"
+"TC-AU-015-005","ResourceCache.test.ts","4","memory/storage/revalidate/dispose abort","read-after-dispose/sync loader throw","vitest缺失127"
+"TC-AU-015-006","react.ts","0","无直接测试","StrictMode/lazy missing export","未执行"

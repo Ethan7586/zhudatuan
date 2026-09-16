@@ -1,0 +1,4 @@
+verification,scope,result,reason
+Source-level port/worker/composition review,MemberPort open-upgrade-invite paths plus import command-worker-runtime registrations,Completed,Implementation and direct consumers were traced; duplicate-action composition is deterministic from object spread order.
+Existing unit-test review,MemberPort.test and module/entry tests,Completed,Fakes assert port request/context but do not execute PostgreSQL functions HTTP actions ObjectStore projection or import worker lifecycle.
+Targeted formal test,Member Port/import suite,Not run,AU-147 formally confirmed vitest is absent in this audit worktree (exit 127); dependency state was not changed or retried.

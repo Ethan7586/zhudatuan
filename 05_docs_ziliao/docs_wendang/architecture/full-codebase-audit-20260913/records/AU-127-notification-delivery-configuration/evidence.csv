@@ -1,0 +1,6 @@
+id,file,location,kind,observation
+E-AU-127-001,01_public_gongkai/DeliveryChannel.ts;03_application_yingyong/DeliveryRegistry.ts,1-20,public boundary,Delivery request/receipt is provider-neutral and registry rejects duplicate/missing channel ids.
+E-AU-127-002,04_adapters_shixian/adapter/{AliyunSmsChannel;EmailChannel;WechatChannel;InappChannel}.ts,1-70,adapter behavior,Each adapter implements an isolated provider call or in-app receipt and returns normalized delivery receipts.
+E-AU-127-003,04_adapters_shixian/adapter/{DeliveryConfiguration;IdentityNotificationConfiguration}.ts,1-58,configuration boundary,Commerce accepts exactly three provider config objects; identity accepts strictly validated SMS-only configuration.
+E-AU-127-004,06_tests_ceshi/{DeliveryChannel;IdentityNotificationConfiguration}.test.ts,1-31,test specification,Tests provider idempotency/credential isolation/token cache and strict identity SMS config rejection paths.
+E-AU-127-005,bootstrap/CommerceRuntime.ts;bootstrap/IdentityNotificationJobsRuntime.ts,105-107;61,runtime composition,Commerce registers all adapters only with full configuration; identity registers only SMS.

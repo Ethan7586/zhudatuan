@@ -1,0 +1,6 @@
+"编号","独立取证位置","事实","判定"
+"RV-AU-050-001","database/supabase/migrations/20260821012000_create_runtime_control.sql:167-191","runtime.claim_job 仅选择 state='queued'，不接管 expired running","generic job 的持久化租约不会自动恢复"
+"RV-AU-050-002","database/supabase/migrations/*（notification.dispatch 精确更新检索）","除生命周期字段回填/参照外，无把 notification.dispatch sending 改回 queued/failed 的 SQL","dispatch 状态没有数据库恢复器"
+"RV-AU-050-003","foundation/application/JobRunner.ts:82-103,109-133","processor throw 时 runtime.job 退避 queued；正常 return 时 runtime.job completed","空 dispatch claim 能把重试 job 终止"
+"RV-AU-050-004","modules/notification/05_interface_jieru/job/IdentityNotificationBacklogMonitor.ts:25-72","监测器只筛 identitynotification/identity，不读取 notification.dispatch","identity 专用告警不覆盖 generic notification"
+"RV-AU-050-005","modules/notification/06_tests_ceshi/{DispatchNotification,NotificationJob,IdentityNotificationBacklogMonitor}.test.ts","现有 mock 用例没有 generic dispatch 的 claim 后 KMS/template 异常再领场景","缺少会捕获 F-0143 的自动回归测试"

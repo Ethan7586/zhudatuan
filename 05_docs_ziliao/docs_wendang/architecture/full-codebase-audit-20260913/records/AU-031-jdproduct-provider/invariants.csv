@@ -1,0 +1,5 @@
+"id","invariant","status","finding"
+"INV-AU-031-001","核心caller与provider capability/ports可达映射（Inventory/Logistics）","成立","Channel/Fulfillment 与catalog/stock/tracking固定请求一致"
+"INV-AU-031-002","每个manifest capability都可映射到明确port","不成立","F-0125：Return无port"
+"INV-AU-031-003","required测试应覆盖business ports最小契约","不成立","F-0126"
+"INV-AU-031-004","零调用导出需有外部兼容证据后才纳入DC","不成立","DC-0039"

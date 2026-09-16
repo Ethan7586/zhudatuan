@@ -1,0 +1,6 @@
+"编号","消费者","调用","运行单元","数据/权限","风险"
+"CONS-AU-013-001","Commerce foundation/runtime","nodeTelemetry/logger/metrics/Redactor","多个专用API/Jobs进程","stdout与Operation audit","F-0065/F-0067"
+"CONS-AU-013-002","Auth Web","createInteractionTimeline","Auth前端","CustomEvent/metrics callback","回调异常缺口"
+"CONS-AU-013-003","Console","createInteractionTimeline","Console前端","descriptor map+CustomEvent","耦合但活跃"
+"CONS-AU-013-004","Storefront","createInteractionTimeline","Storefront Worker/browser bundle","cart interaction","活跃"
+"CONS-AU-013-005","ObservabilityModule","ClientErrorBuffer","当前正式发布无对应target","server-derived scope；进程内Map","F-0055/F-0066"

@@ -1,0 +1,4 @@
+"测试入口","结果","原因"
+"01_core_hexin/apps/console package.json:test","未执行","缺 package-local vitest；未安装依赖"
+"01_core_hexin/services/commerce package.json:test","未执行","缺 package-local vitest；未安装依赖"
+"modules/reporting/06_tests_ceshi/*","未执行（人工阅读）","存在投影/导出/读取测试文件，但未能运行"

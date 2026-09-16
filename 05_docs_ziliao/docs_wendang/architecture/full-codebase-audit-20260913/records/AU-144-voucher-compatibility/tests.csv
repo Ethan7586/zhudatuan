@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Source-level export review,14 legacy/root/public Voucher files and direct consumers,Completed,All exports, wrapper construction and in-repository import consumers reviewed.
+Targeted execution,Compatibility exports,Not run,No new behavior exists beyond already reviewed canonical targets.

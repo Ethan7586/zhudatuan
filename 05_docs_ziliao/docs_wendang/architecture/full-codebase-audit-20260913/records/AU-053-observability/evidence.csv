@@ -1,0 +1,6 @@
+"编号","位置","证据","结论"
+"E-AU-053-001","modules/observability/{module.manifest,ObservabilityModule}.ts;app/modules.ts","平台模块声明并由 Commerce 注册","真实 HTTP 入口存在"
+"E-AU-053-002","foundation/telemetry/ClientErrorOperations.ts:10-31","create 使用 membership 组织 scope；read 使用 access scope；surface/文本长度校验","访问与输入边界已核对"
+"E-AU-053-003","foundation/application/ModuleOperations.ts:166-182","observability 写入审计体固定 redacted","client stack 不进入 audit facts"
+"E-AU-053-004","packages/telemetry/src/{Adapter,ClientErrors}.ts","Redactor、buffer dedupe/capacity/retention 与 hierarchy list 由 telemetry 承担","模块依赖为进程内可替换 adapter"
+"E-AU-053-005","contract/definitions/operations.yml:3121-3150","create=member，read=operator，操作契约存在","前后端契约边界一致"

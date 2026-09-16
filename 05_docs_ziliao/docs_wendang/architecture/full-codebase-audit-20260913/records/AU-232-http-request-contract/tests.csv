@@ -1,0 +1,3 @@
+file,coverage,execution
+src/foundation/interface/HttpRequest.ts,type-only contract with no independent executable branch,not executable standalone
+src/foundation/interface/HttpApp.ts;src/foundation/interface/OperationController.ts,runtime tests audited in their respective units,not run: audit worktree has no Vitest dependencies

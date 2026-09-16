@@ -1,0 +1,7 @@
+"编号","位置","职责","状态/失败","消费者","结论"
+"FN-AU-015-001","FeedbackStore publish/remove/dispose","channel替换、timer、订阅","message引用未冻结；listener异常中断notify","useToasts","F-0072"
+"FN-AU-015-002","KeyedActionCoordinator start/cancel","同key共享、revision/abort","Result泛型不绑定key","Auth","F-0071"
+"FN-AU-015-003","KeyedMutationQueue commit/flush","按key写、confirmed/rollback","onCommitted异常被当write失败","cart sync","F-0070"
+"FN-AU-015-004","preloadOnce/registry","Promise去重、失败重试、schedule","dispose后不接受新work","Console/Storefront","值得保留"
+"FN-AU-015-005","ResourceCache read/write/revalidate/dispose","memory/storage/inflight","dispose后read可重填；loader sync throw未标准化","Auth","F-0073"
+"FN-AU-015-006","lazyNamed/use hooks","React lazy和延迟dispose","依赖export存在和effect时序","Auth/Storefront","无独立问题"

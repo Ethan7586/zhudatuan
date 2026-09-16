@@ -1,0 +1,7 @@
+"编号","位置","证据","结论"
+"E-AU-055-001","app/modules.ts:18,38;modules/marketing/{MarketingModule,module.manifest}.ts;contract/definitions/operations.yml:1213-1225","Marketing 已注册，公开契约只声明 campaigns.read","HTTP 管理面只读，预算写入是订单内部 Port"
+"E-AU-055-002","modules/marketing/05_interface_jieru/MarketingPort.ts:12-36;order_dingdan/.../PlaceOrder.ts:173-178","reserve 以条件 update 抢占预算并插入 redemption；下单逐活动调用该 port","预算预留与订单创建在同一调用事务边界"
+"E-AU-055-003","payment_zhifu/.../PaymentSettlement.ts:35-83;order_dingdan/.../OrderJobs.ts:20-54","支付成功 commit；到期/关闭/晚到支付调用 releaseOrderHolds→marketing.release","提交和释放调用链已闭合，release 对非 reserved 行幂等"
+"E-AU-055-004","20260821018000_create_inventory_experience.sql:147-178;20260821030000_revoke_public_access.sql:45-67;20260828180000_zhudatuan_purchase_access.sql:583-586,771-785","campaign/redemption 约束、shopjob jobscope、purchase API 列权限及状态 RLS 已审","工作者与 Purchase API 的数据库写入边界存在"
+"E-AU-055-005","checkout_jiesuan/.../QuoteReader.ts:217-220,256-281;experience/.../ExperienceOperations.ts:250","有效预算 campaign 是 checkout 与 Experience 的共同只读依赖","营销规则的数据所有权留在 marketing，消费者只读有效活动"
+"E-AU-055-006","modules/marketing/06_tests_ceshi/module.manifest.test.ts","只覆盖 operation/entrypoint inventory","预算状态机没有模块专用行为 oracle"

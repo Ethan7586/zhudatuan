@@ -1,0 +1,9 @@
+"编号","验证","入口/命令","结果","结论"
+"TC-AU-020-001","正式包测试","npm test -- --reporter=dot","BLOCKED exit 127；vitest not found","未验证；未安装依赖"
+"TC-AU-020-002","正式类型检查","npm run typecheck","BLOCKED exit 127；tsc not found","未验证；未安装依赖"
+"TC-AU-020-003","畸形PKCS8预检反事实","Node WebCrypto合成AAAA PEM","regex=true；importKey=DataError","F-0091已由运行探针复现"
+"TC-AU-020-004","畸形SPKI预检反事实","Node WebCrypto合成AAAA PEM","regex=true；importKey=DataError","F-0091平台公钥路径同样成立"
+"TC-AU-020-005","响应正文超时反事实","本地环回HTTP；headers后延迟body；AbortSignal.timeout","首块读取成功，第二块抛TimeoutError","F-0092底层运行行为复现"
+"TC-AU-020-006","生产callback来源追踪","全仓import/call/manifest assertion检索","唯一生产Gateway均传resolveWechatPayNotifyUrl结果","F-0093当前生产路径有缓解"
+"TC-AU-020-007","构建","npm run build","未执行","会写dist；本阶段禁止生成制品"
+

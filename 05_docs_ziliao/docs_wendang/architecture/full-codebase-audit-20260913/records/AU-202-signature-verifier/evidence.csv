@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-202-001,src/bootstrap/SignatureVerifier.ts,1-10,token and construction,ManifestVerifier token formalizes injection into the runtime container.
+E-AU-202-002,src/bootstrap/SignatureVerifier.ts,12-22,verification,Verifier uses Node crypto public key verification over canonical manifest payload and decoded signature.
+E-AU-202-003,src/bootstrap/CommerceRuntime.ts,20;110,runtime construction,CommerceRuntime constructs SignatureVerifier from the configured manifest key.
+E-AU-202-004,src/modules/{extension,channel},consumers,Extension install and Channel route import the verifier token/type.
+E-AU-202-005,src/bootstrap,tests,No direct SignatureVerifier crypto test was found.

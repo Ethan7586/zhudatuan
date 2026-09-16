@@ -1,0 +1,6 @@
+id,file,location,kind,observation
+E-AU-151-001,01_public_gongkai/InventoryPort.ts;02_domain_yewu/model/Reservation.ts,1-139;1-25,stock fact,Reserve locks ordered stock rows then inserts reservation/movement; commit/release and restock use scoped unique movement facts.
+E-AU-151-002,03_application_yingyong/InventoryOperations.ts;InventoryImportOperations.ts;StockImport.ts,1-53,HTTP/import,Availability is mall-scoped keyset read; import validates object then creates job and projects completed report through ObjectStore authorization.
+E-AU-151-003,04_adapters_shixian/persistence/PgInventoryImport.ts;05_interface_jieru/job/**;src/app/jobs.ts,1-160,worker,Staging/process use worker context savepoints and continuation; jobs catalog registers inventoryimport and sync return processor.
+E-AU-151-004,06_tests_ceshi/**;module.manifest.ts,1-121,test scope,Existing tests cover port lock/idempotency/return and manifest only; no direct import/API behavior fixture.
+E-AU-151-005,05_interface_jieru/InventoryModule.ts,1-4,module registration,Commerce main uses canonical InventoryModule with catalog dependency.

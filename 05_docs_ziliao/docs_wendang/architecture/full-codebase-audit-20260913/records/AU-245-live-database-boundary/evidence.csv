@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-245-001,src/bootstrap/LiveDatabaseBoundary.ts,28-65,strict boundary,General assertion requires exact role/registration database single owner migration/boundary/runtime roles retired memberships and owners.
+E-AU-245-002,src/bootstrap/LiveDatabaseBoundary.ts,35-43,identity exception,Identity assertion uses requirements with businessRoles and retiredRoles false while retaining all other checks.
+E-AU-245-003,src/bootstrap/RuntimeCompatibility.ts;src/bootstrap/IdentityRegistrationApiRuntime.ts;src/bootstrap/IdentityNotificationJobsRuntime.ts,78;41;25,runtime consumers,Jobs/general and identity runtimes call their respective assertions.
+E-AU-245-004,src/bootstrap/LiveDatabaseBoundary.test.ts,20-49,test evidence,Fixture exercises only strict assertLiveDatabaseBoundary and no identity-specific branch.

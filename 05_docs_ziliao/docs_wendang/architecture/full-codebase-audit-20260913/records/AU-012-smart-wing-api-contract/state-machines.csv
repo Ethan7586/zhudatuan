@@ -1,0 +1,5 @@
+"状态编号","对象","当前状态","条件","下一状态/结果","写入","失败恢复","证据"
+"STATE-AU-012-001","payment projection","任意attempt/order","order refunded","refunded","无","下一请求重算","commerce.ts:31"
+"STATE-AU-012-002","payment projection","任意attempt","order paid/processing/shipping/completed","paid","无","下一请求重算","commerce.ts:32-41"
+"STATE-AU-012-003","payment projection","非上述order","attempt状态","paid/closed/failed/pending/not_started","无","下一请求重算","commerce.ts:42-56"
+"STATE-AU-012-004","delivery capability","declared status","无执行器","只保留静态JSON值","无","人工改文档","F-0063"

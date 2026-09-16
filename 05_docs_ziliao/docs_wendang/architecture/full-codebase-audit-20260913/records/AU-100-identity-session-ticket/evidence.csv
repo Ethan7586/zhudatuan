@@ -1,0 +1,6 @@
+"证据编号","文件","位置","结论"
+"E-AU-100-001","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/IdentitySecurity.ts","4-57","Secure cookie、target enum 与 challenge 条件消费；失败计数 expiry 差异见 F-0163。"
+"E-AU-100-002","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/SessionTicketOperations.ts","36-210","password/SMS 账号、realm membership、session/assurance、intent 和 AuthTicket 签发。"
+"E-AU-100-003","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/SessionTicketOperations.ts","262-375","current cookie ticket exchange、active account 会话读/登出/list/revoke。"
+"E-AU-100-004","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/SessionTicketOperations.ts","212-260","认证 source node 的跨节点 login intent 和数据库受控 target host。"
+"E-AU-100-005","01_core_hexin/services/commerce/src/modules/identity/06_tests_ceshi/{IdentitySecurity.test.ts,LoginIntentOperations.test.ts}","全部","challenge realm 和 login-intent cross-node/authentication static oracle。"

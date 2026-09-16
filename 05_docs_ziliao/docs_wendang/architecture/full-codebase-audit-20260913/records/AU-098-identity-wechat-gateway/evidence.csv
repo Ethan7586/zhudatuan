@@ -1,0 +1,6 @@
+"证据编号","文件","位置","结论"
+"E-AU-098-001","01_core_hexin/services/commerce/src/modules/identity/04_adapters_shixian/providers_waibu/ReturnTargetSigner.ts","1-20","HTTPS return target 结构验证和一分钟 HMAC proof。"
+"E-AU-098-002","01_core_hexin/services/commerce/src/modules/identity/04_adapters_shixian/providers_waibu/WechatIdentityGateway.ts","31-78","两场景配置、OAuth state 与 provider code exchange/response 约束。"
+"E-AU-098-003","01_core_hexin/services/commerce/src/modules/identity/04_adapters_shixian/providers_waibu/WechatIdentityGateway.ts","80-156","JSSDK page URL 签名、token/ticket cache 与并发合并。"
+"E-AU-098-004","01_core_hexin/services/commerce/src/modules/identity/04_adapters_shixian/providers_waibu/WechatIdentityGateway.ts","158-185","callback public HTTPS/fixed path/private-host 拒绝及 configuration exact-shape。"
+"E-AU-098-005","01_core_hexin/services/commerce/src/modules/identity/06_tests_ceshi/WechatIdentityGateway.test.ts","全部","场景端点、cache/签名和 callback 反事实为静态行为 oracle。"

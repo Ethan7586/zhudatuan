@@ -1,0 +1,5 @@
+id,file,location,kind,observation
+E-AU-153-001,03_application_yingyong/PartnerOperations.ts,1-87,partner/store API,Read/write use scope and expected-version predicates; Store address is encrypted with KMS before partner.store write.
+E-AU-153-002,01_public_gongkai/SupplierRelationshipPort.ts;checkout/order callers,1-53;imports,versioned relationship,Previous active relationship/contract is superseded and new record references predecessor; Checkout and Order query supplierrelationship.
+E-AU-153-003,05_interface_jieru/PartnerModule.ts;module.manifest.ts;06_tests_ceshi/module.manifest.test.ts,1-20,module/test,Commerce main registers canonical module and only manifest behavior is tested.
+E-AU-153-004,index.ts;PartnerCapabilities.ts,1-6,public surface,Public entry exposes capability manifest and relationship port without HTTP implementation.

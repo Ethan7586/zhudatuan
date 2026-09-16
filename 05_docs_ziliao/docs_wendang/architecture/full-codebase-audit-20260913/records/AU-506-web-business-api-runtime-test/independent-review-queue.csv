@@ -1,0 +1,2 @@
+finding,scope,required_recheck,status
+F-0249,Web Business API compatibility failure-to-listen startup chain,Independently trace createWebBusinessApiRuntime and WebBusinessApiMain; with isolated database faults prove whether any external supervisor/health gate prevents listen after the warning catch; inspect emitted warning visibility and all incompatible state classes,pending

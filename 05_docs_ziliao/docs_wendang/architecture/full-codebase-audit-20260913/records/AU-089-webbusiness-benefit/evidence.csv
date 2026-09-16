@@ -1,0 +1,4 @@
+"编号","位置","证据","结论"
+"E-AU-089-001","WebBenefitOperations.ts:11-35","account/ledger调用分别走 benefit.web_account_balance/web_ledger，带 membership+session 与 keyset。","Web operation 无直接 Finance table 查询。"
+"E-AU-089-002","migration 20260828173000:176-225；20260828180000:173-202","账户与账本 SECURITY DEFINER function 都校验 live session、principal/profile/member/scope 后才读 finance。","余额与账本投影有角色和会话边界。"
+"E-AU-089-003","migration 20260828173000:226-257；20260828180000:530-536","函数被撤销 public/常规应用角色，仅给 web role execute。","最小权限与调用实现一致。"

@@ -1,0 +1,2 @@
+file,coverage,execution
+src/bootstrap/CatalogOperatorApiRuntime.test.ts,manifest origin node-context and role mismatch,no runtime creation dependency-failure or close fixture; not run: audit worktree has no Vitest dependencies

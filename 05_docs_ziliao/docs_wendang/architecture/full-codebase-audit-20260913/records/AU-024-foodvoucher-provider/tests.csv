@@ -1,0 +1,8 @@
+"test_id","area","method","result","meaning"
+"TC-AU-024-001","正式测试","npm test -- --reporter=dot","阻塞/127","vitest不存在，源码未加载"
+"TC-AU-024-002","类型检查","npm run typecheck","阻塞/127","tsc不存在，源码未加载"
+"TC-AU-024-003","provider静态注册","ProviderFactories import/数组追踪","确认","Foodvoucher factory进入Commerce"
+"TC-AU-024-004","能力-port矩阵","manifest×createPorts×Registry×全部静态require caller","冲突","Catalog/Statement/Webhook可到；Order caller被Issue词汇挡住；多项能力无caller/对应port"
+"TC-AU-024-005","Catalog响应契约","Cakeuncle Client envelope×PortFactory records×历史mapper","冲突","当前通用mapper不保存已知code/msg/data适配"
+"TC-AU-024-006","测试失效反事实","包测与root provider contract源码检查","确认","删除业务mapper/增加额外ports不会使现有断言失败"
+"TC-AU-024-007","构建","npm run build","未执行","等同typecheck且当前缺tsc"

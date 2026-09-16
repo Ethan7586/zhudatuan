@@ -1,0 +1,7 @@
+"fmea_id","failure","trigger","local_effect","propagation","rating"
+"FM-AU-024-001","Catalog返回code/msg/data","Channel catalog sync","通用port读取records失败","required provider目录同步失败","P1候选/F-0103"
+"FM-AU-024-002","Price sync请求","provider=foodvoucher","manifest无Price且无price port","价格无法导入","P1候选/F-0103"
+"FM-AU-024-003","Fulfillment提交","provider=foodvoucher","caller要求Order但manifest只有Issue","Registry capability missing","履约任务失败/重试","P1候选/F-0100"
+"FM-AU-024-004","Statement run","配置voucher.statement.pull","generic request/response契约未经证明","对账任务失败或错误","P1候选/F-0100"
+"FM-AU-024-005","Cakeuncle合法callback","供应商无generic header-HMAC","Webhook verifier拒绝","状态通知停滞","P1候选/F-0100"
+"FM-AU-024-006","测试保持绿色","只校验ID/signature/has","业务不执行且额外ports不检查","错误能力进入制品","P3/F-0104"

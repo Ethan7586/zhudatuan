@@ -1,0 +1,7 @@
+"consumer","requested_capability","port","reachable_by_manifest","contract_status"
+"Channel catalog sync","Catalog","catalog","是","F-0103：mapper与已知供应商响应不闭合"
+"Channel price sync","Price","price","否","manifest无Price且Provider无price"
+"Fulfillment submit","Order","order","否","Provider有order但manifest只有Issue"
+"Channel statement sync","Statement","statement","是","generic协议/响应未证明"
+"Channel webhook route","Webhook","webhook","是","generic header-HMAC与已知Cakeuncle callback冲突"
+"无固定静态caller","Issue/Bind/Verify/Void/Extend/Refund","order/cancel/refund/verification或无","可由调用者任意组合","能力-port映射未编码"

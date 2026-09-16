@@ -1,0 +1,8 @@
+"抽检编号","入口","首次结论","第二次重追路径","结果","独立性","后续"
+"RS-AU-003-001","MallProvisioningApiMain","CreateMall 属于生产入口但发布分类为零 target","Main → MallProvisioningModule → ProvisioningOperations → CreateMall；反向从 deploy affected mode → rule → classifyChanges","一致；形成 F-0011","同一审计者逆向重追 + 可执行反事实；非第二审计者","P2 不强制独立复核"
+"RS-AU-003-002","生产 Identity Jobs unit","专用 worker 通过 ExecStartPre 后轮询 QueueJob","systemd show/journal → ReadyMain → runtime.job → QueueJob → JobRunner.delay","一致；并发现 F-0012","运行入口与源码反向交叉","Jobs 专项复核 processor"
+"RS-AU-003-003","database-migration target","当前 release executor 调通用 MigrationRunner","target after/inputs → build executor → remote execution dir → executor → runner → SQL/ledger → receipt/recovery","一致；形成 F-0013","发布到数据库双向重追","迁移专项做真实事务故障测试"
+"RS-AU-003-004","Catalog API unit","Ready 不请求 Main HTTP","remote health is-active → systemd ExecStartPost → ReadyMain 独立 runtime；再从 Main → NodeServer → runtime health route 反查","一致；形成 F-0014","配置与源码两向交叉","后续只读 HTTP 验收可补现实状态"
+"RS-AU-003-005","Payment Webhook Ready","负向业务探针无写入","Ready POST → HttpApp route → payment operation；反向从入口测试缺签名 before DB → probe expected code","一致","实现与反事实测试交叉","合法签名链留支付专项"
+"RS-AU-003-006","Full Jobs","聚合入口非当前 production target","JobsEntrypoint/JobsMain/FullJobsMain → build name discovery → service target 白名单 → staging disabled unit → production unit inventory","一致；保留 UNKNOWN，不作死代码判断","构建、配置、生产三类证据","未来若分级 G* 必须另做外部消费者复核"
+"RS-AU-003-007","Identity Jobs 失败恢复","Ready 失败阻止 Main 且自动重试","生产 NRestarts/journal → systemd ExecStartPre/Restart → ReadyMain runtime create/close","一致","时点运行证据 + 基线结构；版本差异明确标注","不把生产现象归因到固定基线语义"

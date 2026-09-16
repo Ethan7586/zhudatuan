@@ -1,0 +1,6 @@
+id,file,location,kind,observation
+E-AU-149-001,03_application_yingyong/command/EvaluateRisk.ts;04_adapters_shixian/RiskCheckAdapter.ts,1-38;1-26,evaluation,Adapter applies scoped DB context and hierarchy then evaluator selects highest outcome and persists evidence-bearing decision.
+E-AU-149-002,03_application_yingyong/command/ManageRiskPolicy.ts;ReviewRiskCase.ts;02_domain_yewu/**,1-101,policy/case,Candidate policy is replayed before activation and RiskCase enforces independent reviewer plus legal state transitions.
+E-AU-149-003,04_adapters_shixian/persistence/PgRiskRepository.ts;05_interface_jieru/job/RiskReplayJob.ts;src/app/jobs.ts,1-202;1-73,persistence/worker,Repository writes decisions cases outbox and jobs; riskscan replays sample or applies catalog deny action in transactions.
+E-AU-149-004,05_interface_jieru/RiskModule.ts;http/RiskRoutes.ts;module.manifest.ts;06_tests_ceshi/**,1-43,API/test,Commerce main registers three Risk operations and riskscan; tests omit direct persistence route adapter and worker behavior.
+E-AU-149-005,index.ts;RiskModule.ts,1-15,public surface,Public entry exposes risk gate/domain contracts but not interface/worker/persistence implementation.

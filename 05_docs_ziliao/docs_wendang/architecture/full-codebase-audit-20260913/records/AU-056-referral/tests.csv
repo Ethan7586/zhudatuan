@@ -1,0 +1,6 @@
+"测试","范围","结论","执行"
+"ReferralCommissionPolicy.test.ts","受益人、优惠分摊、触发时机、部分/全额反冲","核心金额规则 oracle 存在","未执行：vitest command not found"
+"ProcessReferralEvent.test.ts","权威事件、重放、绑定、trigger、取消/退款和会计冲销","事件处理主要状态分支有 mock-SQL oracle","未执行：vitest command not found"
+"SettleReferralCommissions.test.ts","skip-locked 结算、Finance post、recovery offset、失败回滚","结算顺序与状态条件有局部 oracle","未执行：vitest command not found"
+"ReferralOperations.test.ts","设置版本、成员状态、提现分配/锁/反冲阻断","同步 API 主状态机有局部 oracle","未执行：vitest command not found"
+"真实 PostgreSQL/RLS/Finance","RLS、first-touch、claim attach、journal 与并发 transaction","未验证","未执行"

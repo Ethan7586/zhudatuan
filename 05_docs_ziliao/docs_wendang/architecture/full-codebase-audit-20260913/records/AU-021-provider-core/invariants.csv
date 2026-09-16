@@ -1,0 +1,9 @@
+"编号","不变量","入口/实现","结果","关联"
+"INV-AU-021-001","安装manifest必须与代码factory definition一致","assertInstallation","成立；signature另由Registry verifier验证","高质量设计"
+"INV-AU-021-002","扩展必须验签并健康后进入启动registry","ExtensionRegistry.register","成立；stage/enable链另行检查health","高质量设计"
+"INV-AU-021-003","调用必须同时满足manifest capability与实际port","ExtensionRegistry.require→Provider.require","成立","高质量设计"
+"INV-AU-021-004","Webhook验签必须覆盖持久化去重身份","PortFactory webhook→ApplyWebhook external ID→DB unique key","不成立","F-0094"
+"INV-AU-021-005","签名失败不得写inbox","ApplyWebhook verify before KMS/transaction","成立","高质量设计"
+"INV-AU-021-006","原始Webhook必须加密且保存hash后异步处理","ApplyWebhook→KMS→accept_webhook→job","成立","高质量设计"
+"INV-AU-021-007","测试必须命中生产Webhook实现","Provider.test/Webhook vs PortFactory","不成立","F-0095"
+

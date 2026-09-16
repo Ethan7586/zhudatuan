@@ -1,0 +1,3 @@
+file,coverage,execution
+src/foundation/application/OwnerActionCredentialPersistence.test.ts,ownership transfer preview proof audit/replay redaction and single execution,not run: audit worktree has no Vitest dependencies
+src/foundation/application/ModuleOperations.ts,identity.stepup.complete actionProof one-time replay direct fixture missing; F-0212,not run: audit worktree has no Vitest dependencies

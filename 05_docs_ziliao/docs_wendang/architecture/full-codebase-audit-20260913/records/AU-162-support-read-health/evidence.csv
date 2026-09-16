@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-162-001,03_application_yingyong/query/GetConversations.ts;GetTickets.ts,14-60;6-32,authorized reads,Case/message/history queries use conversation member or organization closure access predicates before returning records.
+E-AU-162-002,03_application_yingyong/query/GetConversations.ts,29-31,authorization mismatch,Attachment query joins ticket by request case id and filters clean state only; it receives neither member nor access scope parameter.
+E-AU-162-003,05_interface_jieru/ConsoleSupportHealth.ts;06_tests_ceshi/query/GetConversations.test.ts,7-28;1-63,health test,Health verifies console role/schema/operations; test proves authorized pagination/decryption only.

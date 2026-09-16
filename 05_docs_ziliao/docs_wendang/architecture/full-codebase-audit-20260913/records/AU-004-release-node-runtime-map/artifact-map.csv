@@ -1,0 +1,6 @@
+"发布路径","来源","制品完整性","激活写入","验收","锁/并发","结论"
+"Deploy Direct","checkout 指定 SHA；affected 为 HEAD^..HEAD 或显式 target","archive SHA、tree、critical files、source SHA","remote agent activate-direct 改 current/runtime 并 restart","无 candidate/readiness/public baseline；restart 错误可见","agent 项目/节点/target flock；GitHub node+target/affected concurrency","正式主路径；F-0015/F-0020"
+"Quality and Candidate","手工 checkout/ref","build/package 同 release engine","可选 stage candidate；不 activate production","验证可 continue-on-error，随后清空 validation/tests/typecheck","独立 workflow concurrency","不是 Direct 前置门禁"
+"Wuhan OSS Console","Console dist → immutable tar/manifest → OSS signed URL","上传/下载 SHA256、source SHA、release version","脚本原子改 hbbtzn-l1 console current","公网 release-version 一致，否则恢复 previous","只有自身 GitHub concurrency，无 agent shared lock","第二 writer；F-0016"
+"Control-plane install","checkout tree → install-ai-delivery-agent.sh","source/approval/clean worktree/instance checks","agent/policy 或显式 runtime units","特殊 gateway transition 有语义/PID/health检查","bootstrap flock","workflow 只调用 agent 模式；普通配置交付缺口 F-0017"
+"AutoNode sovereign upgrade","显式 candidate + exact plan digest","plan ledger/输入冲突检查","Cloudflare/DNS/TLS/systemd/process 分步 apply","local/public/unknown-host health","activation lock + ownership ledger","手工独立入口；无正式 workflow 消费者"

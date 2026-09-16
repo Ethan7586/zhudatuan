@@ -1,0 +1,2 @@
+"复核编号","关联问题","级别","复核范围","必须重做的证据","禁止捷径","状态"
+"RV-0013","F-0094","P1候选","Provider Core通用Webhook→ApplyWebhook→channel.accept_webhook→ChannelWebhookJob→下游outbox consumer","独立重算签名材料；核对event ID来源/网关；用不同ID重放反事实；核对真实启用provider协议和下游幂等","不得只复述首审或仅看单测；不得访问/改变线上状态，除非Ethan另行授权","已复核：签名仅含timestamp+body可复现重放；重复事件会产生新inbox/job/outbox，非P0但应留存P1候选"

@@ -1,0 +1,2 @@
+"测试","范围","结论","执行"
+"WebReportingOperations.test.ts","dashboard cache/lifecycle/cursor","覆盖 hit/miss、query参数、TTL put、Date cursor、本地缓存；不验证真实 Redis/Pg/RLS。","未执行：固定审计 worktree 无 vitest 可执行文件；未安装依赖。"

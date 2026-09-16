@@ -1,0 +1,6 @@
+"编号","不变量","当前状态","破坏证据","关联"
+"INV-AU-013-001","遥测与审计不得输出已识别credential/PII字符串","破坏","四类合成字符串原样输出","F-0065"
+"INV-AU-013-002","runtime契约Operation必须存在正式发布入口","破坏","两个clienterrors操作只有被禁止的完整ApiMain装载","F-0066"
+"INV-AU-013-003","允许Promise的writer拒绝必须被观察或传播","破坏","三个unhandledRejection","F-0067"
+"INV-AU-013-004","Scope containment必须fail closed","异常输入破坏","wrong platform/missing tenant/cross kind均命中","F-0055"
+"INV-AU-013-005","interaction状态转换不应被观察回调撕裂","部分破坏","begin回调抛出后active仍存在","测试缺口"

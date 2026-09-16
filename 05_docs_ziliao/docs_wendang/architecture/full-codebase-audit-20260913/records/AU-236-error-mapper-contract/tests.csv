@@ -1,0 +1,3 @@
+file,coverage,execution
+src/foundation/interface/ErrorMapper.test.ts,409 representative errors and unknown 500 only,not run: audit worktree has no Vitest dependencies
+src/foundation/interface/ErrorMapper.ts,DomainError detail colon non-Error registered-500 and other status families lack direct fixture,not run: audit worktree has no Vitest dependencies

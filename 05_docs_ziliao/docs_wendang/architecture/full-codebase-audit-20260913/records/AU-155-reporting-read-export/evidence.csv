@@ -1,0 +1,5 @@
+id,file,location,kind,observation
+E-AU-155-001,03_application_yingyong/ReportingReadOperations.ts;query/GetDashboard.ts;GetSalesReport.ts,1-123,metric read,Read paths bind scope/filter/cursor; dashboard cache key includes projection version and stale TTL.
+E-AU-155-002,command/CreateExport.ts;query/GetExport.ts;04_adapters_shixian/CreateReportingExport.ts,1-36,export HTTP,Filters are bounded; repository creates scoped queued job; completed clean object alone receives 300-second authorized download.
+E-AU-155-003,05_interface_jieru/**;module.manifest.ts;06_tests_ceshi/**,1-78,module/test,Full and selected modules separate operations; tests cover cursor and real document/SQL facts.
+E-AU-155-004,01_public_gongkai/**;02_domain_yewu/**;PgReportingRepository.ts,1-260,contract/repository,Public port and export/metric contracts map repository reads/writes without public implementation exposure.

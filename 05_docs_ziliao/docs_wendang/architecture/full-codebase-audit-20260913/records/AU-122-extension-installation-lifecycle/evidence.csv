@@ -1,0 +1,6 @@
+"证据编号","文件","位置","结论"
+"E-AU-122-001","modules/extension/02_domain_yewu/model/{Manifest,Extension}.ts;policy/ContractPolicy.ts","1-53;1-10;1-8","manifest parse/hash、identity 与 host contract exact comparison。"
+"E-AU-122-002","modules/extension/03_application_yingyong/command/InstallExtension.ts","20-71","registered manifest/signature/config/secret install 与 disabled reconfigure。"
+"E-AU-122-003","modules/extension/03_application_yingyong/command/{EnableExtension,DisableExtension}.ts","8-35;6-15","health candidate/atomic replacement、commit-finalize loader actions。"
+"E-AU-122-004","modules/extension/04_adapters_shixian/persistence/PgExtensionRepository.ts","1-134","lock/activation/transition/history/outbox/health queue persistence。"
+"E-AU-122-005","modules/extension/06_tests_ceshi/{policy/ContractPolicy.test.ts,module.manifest.test.ts}","1-14;1-35","policy/manifest-only test evidence。"

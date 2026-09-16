@@ -1,0 +1,5 @@
+"证据编号","文件","位置","结论"
+"E-AU-096-001","01_core_hexin/services/commerce/src/modules/identity/03_application_yingyong/services_fuwu/RealmAccount.ts","18-130","entry host/realm target、active membership、current account 都由 active registry/binding 查询并拒绝歧义。"
+"E-AU-096-002","01_core_hexin/services/commerce/src/modules/identity/03_application_yingyong/services_fuwu/SmsLogin.ts","14-88","mobile/password lookup 受 realm containment、active account 和 membership client/organization 限制；多账号拒绝。"
+"E-AU-096-003","01_core_hexin/services/commerce/src/modules/identity/03_application_yingyong/services_fuwu/SmsLogin.ts","90-127","SMS verify/attempt/consume 以 challenge 状态、目的地、realm 和 code 条件限定。"
+"E-AU-096-004","01_core_hexin/services/commerce/src/modules/identity/06_tests_ceshi/{RealmAccount.test.ts,SmsLogin.test.ts}","全部","realm/host、手机号歧义、credential membership 和 SMS challenge 条件消费为静态行为 oracle。"

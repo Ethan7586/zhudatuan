@@ -1,0 +1,2 @@
+"验证项","正式入口","执行状态","结果","备注"
+"Identity invitation/member manage Vitest","services/commerce package Vitest","未执行","未验证","审计工作树未安装 Vitest；邀请测试已人工审阅，未覆盖 F-0164 member-create/login 反事实。"

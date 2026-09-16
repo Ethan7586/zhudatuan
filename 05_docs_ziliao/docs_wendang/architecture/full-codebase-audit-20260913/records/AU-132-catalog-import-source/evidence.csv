@@ -1,0 +1,5 @@
+id,file,location,kind,observation
+E-AU-132-001,03_application_yingyong/CatalogImportOperations.ts,29-157,operation lifecycle,Uploads deduplicate by scope/hash and confirmation locks ready import state before queueing.
+E-AU-132-002,03_application_yingyong/CatalogPackage.ts,1-126,package boundary,Verifies clean object metadata/hash and validates bounded package schema and rows.
+E-AU-132-003,03_application_yingyong/CatalogProductImport.ts;04_adapters_shixian/persistence/PgCatalogImport.ts,1-220;1-136,import persistence,Validates rows and processes them under worker transactions/savepoints with continuation and report lifecycle.
+E-AU-132-004,03_application_yingyong/CatalogSourceProjection.ts,1-184,provider projection,Cake source data is normalized into catalog pricing inventory source mapping and media replication work.

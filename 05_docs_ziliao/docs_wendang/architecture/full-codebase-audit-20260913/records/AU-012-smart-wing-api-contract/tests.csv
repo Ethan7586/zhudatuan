@@ -1,0 +1,8 @@
+"测试编号","位置","用例","行为","真实实现","数据库","Mock","损坏实现会失败","缺口","正式入口","执行结果","结论"
+"TC-AU-012-001","permissions.test.ts:4-10","目录闭合/唯一/元数据","86 code相等且元数据非空","是","否","无","大部分会","不检查父链/immutability/all risk policy","Storefront Vitest间接入口","本次未执行（依赖未安装）","直接oracle"
+"TC-AU-012-002","permissions.test.ts:12-18","四个critical样本","四code必须critical","是","否","无","样本变更会","只抽4/25","Storefront Vitest间接入口","本次未执行（依赖未安装）","局部oracle"
+"TC-AU-012-003","platform.test.ts:4-7","required平台顺序","web+wechat","是","否","无","会","不查delivery matrix","Storefront Vitest间接入口","本次未执行（依赖未安装）","直接oracle"
+"TC-AU-012-004","platform.test.ts:9-11","reserved平台顺序","harmony/ios/android","是","否","无","会","不查adapter/type消费者","Storefront Vitest间接入口","本次未执行（依赖未安装）","直接oracle"
+"TC-AU-012-005","package.json","本包test入口","应独立运行4用例","否","否","无","否","script不存在","npm test --workspace","Missing script","F-0060"
+"TC-AU-012-006","package.json/tsconfig","本包typecheck入口","应检查src","否","否","无","否","script不存在","npm typecheck --workspace","Missing script","F-0060"
+"TC-AU-012-007","storefront-web/vitest.config.ts","根unit聚合入口","显式include两个测试文件","否","否","无","否","执行归属耦合Storefront","npm run test:unit→Storefront vitest","静态拓扑成立；依赖未安装未执行","F-0060"

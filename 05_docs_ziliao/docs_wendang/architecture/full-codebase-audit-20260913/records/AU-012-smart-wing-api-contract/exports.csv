@@ -1,0 +1,8 @@
+"符号编号","文件","符号","种类","可见性","直接生产调用者","测试调用者","输入","输出","状态/副作用","失败","兼容职责","删除等级","结论"
+"SYM-AU-012-001","permissions.ts/index.ts","PERMISSIONS+PERMISSION_CATALOG","运行常量","package root","Commerce API/Smart Authz/Console相关兼容源码","两包测试","无","86 code+definitions","公开可变","import失败","兼容权限真值","G0","活跃；F-0032"
+"SYM-AU-012-002","commerce.ts/index.ts","PAYMENT_STATUS+toPaymentStatus","常量/函数","package root","wechatPaymentRoutes","route tests","attempt/order unknown","统一支付状态","无写","不抛；未知默认","兼容支付响应","G0","活跃"
+"SYM-AU-012-003","memberCode.ts/index.ts","MEMBER_CODE_PROTOCOL+VALID_SECONDS","常量","package root","memberCodeRoutes","route tests","无","协议前缀/45","无","无","兼容会员码","G0","活跃"
+"SYM-AU-012-004","platform.ts/index.ts","CLIENT_PLATFORM/required/reserved","常量","package root","无仓内源caller","本包2 tests","无","平台集合","公开可变","无","多端契约","G1","未来契约；F-0032"
+"SYM-AU-012-005","platform.ts/index.ts","15个platform adapter/async类型","类型","package root","无仓内源caller","无","编译期","类型","无运行","编译失败","未来客户端契约","G1","DC-0015"
+"SYM-AU-012-006","index.ts","Membership/Scope/Authz类型组","类型","package root","Commerce API/Smart Authz","多项route tests","编译期","类型","无运行","编译失败","兼容授权","G0","活跃"
+"SYM-AU-012-007","catalog-taxonomy.json","catalog-taxonomy JSON subpath","JSON数据","package subpath","Storefront taxonomy.ts","无直接测试","无","树/leaves/mobileBrowse","import对象可变","解析/构建失败","商城分类","G0","活跃；F-0064"

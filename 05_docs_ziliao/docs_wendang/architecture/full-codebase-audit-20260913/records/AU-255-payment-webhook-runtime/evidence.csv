@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-255-001,src/bootstrap/PaymentWebhookApiRuntime.ts,59-131,startup,Manifest secrets callback configuration and least-privilege pool precede webhook registration.
+E-AU-255-002,src/bootstrap/PaymentWebhookApiRuntime.ts,133-190,contract,Query projects contract but predicate omits it.
+E-AU-255-003,src/bootstrap/PaymentWebhookApiRuntime.ts,233-254,error mapping,WeChat signature errors map to provider protocol errors.

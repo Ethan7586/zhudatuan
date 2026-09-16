@@ -1,0 +1,4 @@
+"检查","证据","结论"
+"模块内行为测试","modules/channel/06_tests_ceshi/ 仅有 module.manifest.test.ts","Webhook ingress/transaction/Worker 无行为测试，已扩展记入 F-0167/P2。"
+"历史 P1 候选","AU-021 的 F-0094 与 RV-0013","本审计重走 Webhook ingress/DB/job 下半链，维持既有候选，不重复编号。"
+"定向测试","未运行","工作区未安装 Vitest；审计纪律禁止安装或修复。"

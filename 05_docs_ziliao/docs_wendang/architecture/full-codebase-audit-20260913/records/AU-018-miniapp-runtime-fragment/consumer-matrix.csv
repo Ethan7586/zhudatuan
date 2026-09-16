@@ -1,0 +1,8 @@
+"编号","对象","来源","运行消费者","发布/检查消费者","结论"
+"CONS-AU-018-001","app.js","人工入口","微信App入口","tests/candidate/navigation间接","唯一启动片段；F-0006"
+"CONS-AU-018-002","Environment.js","MiniappEnvironment","app.js","generated check/verify-p0","唯一被运行引用生成物；F-0033"
+"CONS-AU-018-003","experience.js/deeplink.js","Contract","零","generated check/candidate/runtimegraph期待","F-0082/F-0043/DC-0023"
+"CONS-AU-018-004","CachePolicy.js/RuntimeLimits.js","platform YAML","零","generated check/candidate","F-0032/DC-0023"
+"CONS-AU-018-005","tokens.wxss","design tokens","零；无app.wxss/pages","theme check/candidate","DC-0023/F-0081"
+"CONS-AU-018-006","brandmark.svg/wingcode.svg","canonical SVG","零；无WXML","theme/frontend existence check/candidate","DC-0023/F-0080"
+"CONS-AU-018-007","外部完整工程","UNKNOWN","未验证","未验证","阻止下线/G2/G3结论"

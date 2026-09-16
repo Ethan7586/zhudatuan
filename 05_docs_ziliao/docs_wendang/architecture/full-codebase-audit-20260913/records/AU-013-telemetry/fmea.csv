@@ -1,0 +1,5 @@
+"编号","链路","故障模式","首个影响","后续影响","检测","等级","关联"
+"FM-AU-013-001","业务输入→Redactor→stdout/audit","凭据或PII字符串未脱敏","日志/审计保留原值","可被有日志/审计读取权者看到","合成值探针+二次重追","P1候选","F-0065"
+"FM-AU-013-002","SDK→clienterrors Operation","正式runtime无handler","请求无法进入模块","契约与可用性不一致","发布入口集合复算","P2","F-0066"
+"FM-AU-013-003","sink→async writer","Promise拒绝无人处理","unhandledRejection","宿主告警或进程策略触发","拒绝writer探针","P3","F-0067"
+"FM-AU-013-004","operator scope→buffer list","异常scope过宽","跨scope记录返回","潜在越权错误详情读取","Scope矩阵探针","P2","F-0055"

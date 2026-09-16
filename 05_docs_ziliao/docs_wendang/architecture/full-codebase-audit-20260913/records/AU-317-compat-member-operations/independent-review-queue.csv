@@ -1,0 +1,2 @@
+"复核编号","对象","本AU新增证据","当前状态","必须重新检查","不得采用捷径","完成判据"
+"RV-0237","F-0237 成员资料跨商城范围写入","API 授权使用contextResourceScope；目标未加载范围；RPC目标查询未限定mall_id","仍待第二位独立审阅者；同一主审对照不计","memberOperationsRoutes、api_update_member_profile、会员范围投影与实际目标membership资源范围","不得仅以当前操作者商城上下文或目标ID不可见作结论","独立构造同租户同企业不同商城的mall-scoped管理员与目标membership，验证更新被拒绝或明确记录仅授权范围可写"

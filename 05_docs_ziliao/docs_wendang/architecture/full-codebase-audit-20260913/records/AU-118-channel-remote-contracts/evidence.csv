@@ -1,0 +1,4 @@
+"证据编号","文件","位置","结论"
+"E-AU-118-001","01_core_hexin/services/commerce/src/modules/channel/{01_public_gongkai,application/port}/{RemoteOrderSubmitter,RemoteRefundProvider}.ts","1","四个文件均为 @shop/contract type-only re-export。"
+"E-AU-118-002","01_core_hexin/packages/contract/src/provider/Ports.ts;extensions/providers/core/src/PortFactory.ts","48-66;72-91","contract 定义与 provider core order/refund port factory。"
+"E-AU-118-003","modules/channel/{index.ts,05_interface_jieru/ChannelModule.ts}","9-10;9-10","Channel public API 继续传出这些类型。"

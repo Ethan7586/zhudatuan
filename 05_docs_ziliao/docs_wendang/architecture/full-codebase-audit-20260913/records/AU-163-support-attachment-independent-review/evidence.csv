@@ -1,0 +1,4 @@
+id,source,location,review,observation
+E-AU-163-001,packages/sdk/src/operations/support.ts,124-129,contract/SDK,Operator-audience GET binds support.messages.read to the case messages path.
+E-AU-163-002,apps/console/src/feature/support/SupportQuery.ts;entry/ConsoleSupportMain.ts,14;10-26,caller/entry,Console feature calls the operation and dedicated support process registers it.
+E-AU-163-003,modules/support/05_interface_jieru/http/SupportRoutes.ts;03_application_yingyong/query/GetConversations.ts,15-22;26-53,route/response,Route exposes query and response always includes attachments; attachment SQL remains scope/member independent.

@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-161-001,03_application_yingyong/command/OpenConversation.ts,13-68,case create,Validates member/order/benefit, chooses SLA/assignment, persists conversation/ticket/assignment/outbox/jobs/history and optional encrypted initial message.
+E-AU-161-002,03_application_yingyong/command/SendMessage.ts,10-59,message send,Requires expected version, locks writable ticket, appends encrypted message, transitions ticket and records history.
+E-AU-161-003,05_interface_jieru/http/SupportRoutes.ts;entry/ConsoleSupportMain.ts,1-22;1-40,runtime registration,Route wires concrete KMS/repository/order adapter; dedicated entry exposes only case/message read-write operations.
+E-AU-161-004,02_domain_yewu/model/{Conversation,Message,Ticket}.ts;01_public_gongkai/SupportPort.ts;06_tests_ceshi/command/SendMessage.test.ts,1-18;1-24;1-42,domain port test,DTOs validate invariants; Port contains cross-layer contract; test only reaches precondition/conflict paths.

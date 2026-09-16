@@ -1,0 +1,9 @@
+"编号","失败模式","触发","传播","当前控制","等级/结论"
+"FM-AU-020-001","商户私钥DER畸形","secret具有正确PEM外壳但不可导入","runtime启动成功→首次prepay/refund/close签名DataError","仅外壳regex","P2/F-0091"
+"FM-AU-020-002","平台公钥DER畸形","轮换配置具有正确PEM外壳但不可导入","runtime启动成功→首次响应或通知验签DataError","KeyID与外壳regex","P2/F-0091"
+"FM-AU-020-003","响应正文流超时/断流","headers已到达后body停顿或网络错误","reader.read原始异常→Executor判不可重试/不熔断","fetch取得headers前有错误映射","P2/F-0092"
+"FM-AU-020-004","调用者覆盖任意callback","直接调用Client传notifyUrl","地址写入微信请求→回调发往非节点地址","当前WechatGateway强制resolve；runtime config绑定","P3/F-0093"
+"FM-AU-020-005","签名通知重放","旧通知再次投递","时间窗检查→数据库event consumer去重","300秒窗口、event_id/consumer锁","受控"
+"FM-AU-020-006","退款申请响应不确定","provider受理但响应丢失","不重试写→按稳定退款号查询","稳定outRefundNo与query fallback","受控"
+"FM-AU-020-007","provider金额/身份不匹配","签名响应或解密通知内容错误","parser→Gateway/Webhook本地证据比较→拒绝","多层金额、merchant、app、payer/reference检查","受控"
+

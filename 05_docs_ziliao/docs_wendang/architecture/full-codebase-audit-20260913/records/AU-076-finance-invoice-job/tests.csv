@@ -1,0 +1,3 @@
+"测试","范围","结论","执行"
+"InvoiceIssueIntegrity.test.ts","claim/artifact/finalize、snapshot、red、outbox","关键 end-to-end cases 为 it.skip，不能证明当前 job 合规；F-0158","未执行：固定审计 worktree 无 vitest 可执行文件"
+"InvoiceGateway","provider HTTP/response/document 验证","未找到模块专用测试","未执行"

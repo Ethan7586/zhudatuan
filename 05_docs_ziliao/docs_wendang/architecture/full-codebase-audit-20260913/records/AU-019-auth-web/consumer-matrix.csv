@@ -1,0 +1,7 @@
+"上游","入口","下游","同步/异步","失败/恢复","证据"
+"Browser HTML","main.tsx","build registry+runtime JSON+App","异步bootstrap","404/text-html回退；其他错误替换root","E-AU-019-002/003"
+"App","resolveIdentityEntry","Consumer/Operator/invalid","同步","不匹配fail closed","E-AU-019-002"
+"Consumer page","canonical identity/registration","consumerApiOrigin identity API","同步HTTP","错误显示；ticket exchange后redirect","E-AU-019-004"
+"Operator page","canonical identity/registration","apiOrigin identity API","同步HTTP","membership选择/错误显示/redirect","E-AU-019-004"
+"Canonical client","currentIdentityNode","runtime或build registry origins","同步解析","origin回跳校验；API目的地未绑定Manifest","E-AU-019-005/006"
+"Legacy LoginPage","auth.ts compatibility endpoints","storefront BFF/top-level form","当前无App入口","owner-approved仍锁定","E-AU-019-008"

@@ -1,0 +1,5 @@
+"编号","位置","证据","结论"
+"E-AU-065-001","FinanceRoutes.ts:18-66;FinanceLifecycleOperations.ts:6-150","FinanceRoutes 通过 ModuleOperations 注册 lifecycle 与专项目录；lifecycle 读取按 scope closure/access.scope_allowed 查询","Finance lifecycle API 入口和读取 scope 有明确边界"
+"E-AU-065-002","FinanceLifecycleOperations.ts:75-126","period request 固定 source hash、要求 draft statement/open period；approve/reject 要求不同请求/批准人且 hash 未变，批准 final statement 与 outbox，拒绝重开 period","周期关闭具备四眼、事实快照与事件边界"
+"E-AU-065-003","FinanceLifecycleOperations.ts:128-147","backfill read 按 scope，decide 要求 pending、prepared_by<>signer 且 source hash/count/minor 等于 target","backfill 决策具备签核与完整性条件"
+"E-AU-065-004","module.manifest.test.ts:4-57；未见 FinanceLifecycleOperations 专用测试","现有测试只断言操作名/entrypoint；无 period request/approve/reject、backfill approve/reject、hash 变化、并发或 outbox 行为测试","F-0152/P2"

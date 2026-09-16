@@ -1,0 +1,7 @@
+id,file,location,kind,observation
+E-AU-140-001,PurchaseSessionResolver.ts;PurchaseModules.ts;PurchaseOperations.ts,1-136,runtime entry,Purchase API resolves only storefront actors and registers checkout/order/payment selected modules.
+E-AU-140-002,PurchaseCheckoutContext.ts;PurchaseOrderQuoteStore.ts;PurchasePaymentIntentContext.ts;PurchasePaymentRecoveryQueue.ts,1-18,DB boundary,All scoped reads and payment-query enqueue use named access.purchase_* functions rather than direct authority-table access.
+E-AU-140-003,PurchaseBenefitGateway.ts;DisabledPurchaseVoucherGateway.ts;DisabledExternalPaymentGateway.ts,1-54,tender boundary,Benefit calls require membership/session and payment intent; voucher and disabled-provider calls fail closed.
+E-AU-140-004,PurchasePolicy.ts;PurchaseOperations.ts:134-216,payment correctness,Checks tender arithmetic/internal intent then locks member-mall-owned payable intent, writes risk decision, and captures internal settlement.
+E-AU-140-005,PurchaseOperations.test.ts;PurchasePolicy.test.ts;PurchaseBenefitGateway.test.ts;Disabled*.test.ts,1-227,behavior tests,Tests internal capture/idempotency/risk rejection, policy arithmetic, benefit function use and disabled boundaries.
+E-AU-140-006,PurchaseApiEntrypoint.test.ts:23-60,route test,Only proves quote/order routes and operation names; does not invoke purchaseCheckoutOperations or purchaseOrderOperations.

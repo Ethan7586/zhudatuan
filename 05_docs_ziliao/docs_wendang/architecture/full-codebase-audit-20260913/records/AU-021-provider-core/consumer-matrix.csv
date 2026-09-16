@@ -1,0 +1,8 @@
+"消费者","入口","使用能力","进程/发布单元","数据所有权","失败传播"
+"RuntimeExtensionLoader","DB enabled_installations→providerFactory.create","installation/secret/connection装配","Commerce runtime","extension installation由DB拥有","任一启动provider不健康可阻断load"
+"ExtensionRegistry","register/stage/activate/require","Manifest验签、health、scope registry","Commerce runtime内存","仅进程内实例状态","缺失/能力/port显式错误"
+"Catalog/Channel jobs","Registry.require→catalog/price/stock/statement ports","供应商同步和对账","Commerce jobs","catalog/channel/runtime DB","VendorFailure经job retry策略传播"
+"Fulfillment/verification flows","Registry.require→order/cancel/tracking/refund/verification","外部写与状态查询","Commerce API/jobs","fulfillment/channel DB","业务幂等键控制VendorClient写重试"
+"Channel Webhook API","ApplyWebhook→ProviderWebhookVerifier","验签、normalize、加密入箱","Commerce API + channelwebhook job","channel.webhookinbox/runtime.job/outbox","F-0094可绕过event ID去重"
+"Provider packages","barrel imports/createPorts/Provider/Mapper/ErrorMap","11个具体provider实现","随Commerce OCI","不拥有核心业务数据","具体协议差异待后续逐Provider审阅"
+

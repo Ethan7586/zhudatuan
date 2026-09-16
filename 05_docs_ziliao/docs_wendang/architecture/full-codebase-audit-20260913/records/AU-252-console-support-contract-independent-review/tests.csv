@@ -1,0 +1,3 @@
+file,coverage,execution
+src/bootstrap/ConsoleSupportRuntime.test.ts,independent static check confirms contract false is absent,not run: audit worktree has no Vitest dependencies
+src/entry/ConsoleSupportMain.ts,independent static entry check confirms no replacement contract gate,not run: audit worktree has no Vitest dependencies

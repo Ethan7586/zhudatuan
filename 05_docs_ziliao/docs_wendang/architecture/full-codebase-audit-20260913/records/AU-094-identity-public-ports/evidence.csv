@@ -1,0 +1,6 @@
+"证据编号","文件","位置","结论"
+"E-AU-094-001","01_core_hexin/services/commerce/src/modules/identity/01_public_gongkai/IdentityCapabilities.ts","1-6","Identity 只公开 read/manage 两项 capability。"
+"E-AU-094-002","01_core_hexin/services/commerce/src/modules/identity/01_public_gongkai/ports_jiekou/IdentityNotificationPort.ts","15-74","有效 challenge 读取、sending→ambiguous fencing、终态更新与 deadletter 记录。"
+"E-AU-094-003","01_core_hexin/services/commerce/src/modules/identity/01_public_gongkai/ports_jiekou/{IdentityPrincipal.ts,IdentityRetentionPort.ts}","全部","member import 使用 ensurePending；RuntimeJobs 调用受控 purge。"
+"E-AU-094-004","01_core_hexin/services/commerce/src/modules/identity/01_public_gongkai/ports_jiekou/WechatIdentity.ts","1-24","Wechat 应用/授权/交换/JSSDK 契约由容器 token 暴露。"
+"E-AU-094-005","01_core_hexin/services/commerce/src/modules/identity/06_tests_ceshi/{IdentityNotificationPort.test.ts,IdentityWorkerBoundary.test.ts}","全部","状态限制和 worker 窄函数调用为静态测试 oracle。"

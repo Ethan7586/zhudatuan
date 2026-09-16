@@ -1,0 +1,2 @@
+file,coverage,execution
+src/api/accountRoutes.test.ts,bootstrap current-profile response and unavailable-profile denial,no direct accounts ledgers or home composition fixture; not run: audit worktree has no Vitest dependencies

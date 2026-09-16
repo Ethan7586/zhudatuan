@@ -1,0 +1,7 @@
+id,file,location,kind,observation
+E-AU-142-001,01_public_gongkai/VoucherCapabilities.ts;VoucherPort.ts,1-54,public contract,Exports only voucher capability names and checkout/order/payment-facing voucher interfaces.
+E-AU-142-002,02_domain_yewu/policy/VoucherPolicy.ts;06_tests_ceshi/policy/VoucherPolicy.test.ts,1-23,state policy,Defines terminal and reversible voucher transitions; exhaustive representative valid/invalid transition cases are asserted.
+E-AU-142-003,03_application_yingyong/VoucherImportOperations.ts;VoucherOperations.ts,1-259,write operations,Creates card library/import jobs, applies scope/lock/version/separation/allocation checks, then queues issue/status work.
+E-AU-142-004,03_application_yingyong/VoucherQueries.ts;VoucherReadOperations.ts,1-84,read operations,Uses access scope predicates and keyset pagination; selected identity module exposes only five read actions.
+E-AU-142-005,05_interface_jieru/*.ts;module.manifest.ts;06_tests_ceshi/module.manifest.test.ts,1-63,registration,Full module requires member/finance; identity selected module requires identity; manifest owns 19 operations, five events and four jobs.
+E-AU-142-006,06_tests_ceshi/*.test.ts,test inventory,No test directly calls voucherOperations/voucherImportOperations/voucherQueries/voucherOperatorReadOperations or their individual operation ids.

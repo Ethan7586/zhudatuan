@@ -1,0 +1,2 @@
+"测试","范围","结论","执行"
+"FinanceAuthorityOperations.test.ts","finance.audit.read query routing","mock smoke；未覆盖 cursor/scope row isolation","未执行：固定审计 worktree 无 vitest 可执行文件"

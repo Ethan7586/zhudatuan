@@ -1,0 +1,3 @@
+"候选编号","对象","弱入口证据","保留证据","等级","结论","复核"
+"DC-0016","ObservabilityModule与ClientErrorOperations链","正式专用发布入口无注册；完整ApiMain路径被禁止","正式contract/capability/SDK与唯一错误聚合行为仍存在","G1","当前发布弱入口但有外部契约和独特职责；不得删除","发布/产品专项"
+"DC-0017","browserTelemetry/miniappTelemetry及独立Tracer公共面","固定仓库无生产源码调用browser/miniapp adapters，Tracer无独立消费者","private workspace公共barrel、跨平台意图、createTelemetry内部使用Tracer","G1","证据不足；不得按零引用删除","仓外消费者专项"

@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-188-001,src/api/permissionAdminRoutes.ts,16-28,read authorization,Command center needs member.read plus role.read and asks RPC for PII only with memberPiiRead.
+E-AU-188-002,src/api/permissionAdminRoutes.ts,30-50,access mutation,Role and scope grants reject self mutation validate deduplicated input and send server actor evidence.
+E-AU-188-003,src/api/permissionAdminRoutes.ts,52-75,status mutation,Self status mutation is prohibited and offboarding uses a distinct permission before the scoped RPC.
+E-AU-188-004,src/api/routes/adminRouter.ts,26-28;74-76,runtime registration,Compatibility admin routing exposes command center and membership access/status paths.
+E-AU-188-005,src/api/permissionAdminRoutes.test.ts,1-139,tests,Core command/access controls and status denial paths have direct tests; successful status mutation does not.

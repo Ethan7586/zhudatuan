@@ -1,0 +1,6 @@
+"编号","位置","证据","结论"
+"E-AU-064-001","ReconciliationJob.ts:7-22;ReconcileStatement.ts:10-72","reconciliation job 对 eventId 走 PostJournal，否则按 reconciliation 读取对象；文件 hash 验证后分批导入、匹配并写 balanced/difference","对账入口、数据完整性和差异状态存在"
+"E-AU-064-002","SettlementJob.ts:26-164;SettlementPolicy.ts:5-24;SettlementJob.test.ts","结算锁 reconciliation/statement，冻结匹配 basis/policy/line snapshot；PGlite 覆盖 refund、late exclusion、时区、line immutable 和 replay","结算计算、快照与重放边界存在"
+"E-AU-064-003","SettlementJob.ts:166-275;PayoutGateway.ts:13-26;FinanceGateway.test.ts;SettlementJob.referral.test.ts","提现使用 withdrawal id HTTP idempotency key；provider paid 后以 journal+withdrawal+settlement/outbox 同事务闭合，referral 不误更新 settlement","外部提现与内部会计边界存在"
+"E-AU-064-004","InvoiceJob.ts:15-91;FinanceDeadletter.ts:7-27","发票 issuing→KMS→issuer/object upload→document/request/status/outbox；deadletter 使 withdrawal uncertain、reconciliation difference、invoice failed","发票与失败收口有明确状态路径"
+"E-AU-064-005","06_tests_ceshi/job/{SettlementJob,SettlementJob.referral}.test.ts;adapter/FinanceGateway.test.ts；未见 ReconcileStatement/InvoiceJob/FinanceDeadletter 对应 test","结算与 payout 有 PGlite/mock oracle；对账文件、invoice object/KMS/issuer、deadletter 状态转换无行为测试","F-0151/P2"

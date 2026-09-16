@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-201-001,src/bootstrap/ApiBootstrap.test.ts,9-42,node context,Actual bootstrapped HttpApp request resolves the shared verified node registry into request context.
+E-AU-201-002,src/bootstrap/Container.ts,1-29,container invariants,Container provides unique token binding missing-token failure and irreversible freeze.
+E-AU-201-003,src/bootstrap/{CommerceRuntime,PurchaseApiRuntime,WebBusinessApiRuntime}.ts,configure consumers,Runtime configure functions bind node registries and other dependencies before bootstrap freezes the container.
+E-AU-201-004,src/bootstrap,tests,No direct Container test or invariant assertion was found.

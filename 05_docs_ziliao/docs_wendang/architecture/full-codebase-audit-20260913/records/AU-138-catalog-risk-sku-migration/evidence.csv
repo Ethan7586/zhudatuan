@@ -1,0 +1,8 @@
+id,file,location,kind,observation
+E-AU-138-001,03_application_yingyong/command/ApplyRiskDecision.ts,3-13,risk action,Updates only the matching published listing then inserts a risk-unpublished outbox fact keyed by risk decision id.
+E-AU-138-002,modules/risk/05_interface_jieru/job/RiskReplayJob.ts,13-55,caller,riskscan catalogDecision payload opens transaction and calls ApplyRiskDecision with repository-selected deny decision/scope/resource.
+E-AU-138-003,03_application_yingyong/port/CatalogSku.ts;04_adapters_shixian/persistence/PgCatalogSku.ts,3-11,read port,Resolves SKU id/code only when product ownership or source listing proves the requested scope.
+E-AU-138-004,src/app/jobs.ts,14;160,runtime consumer,Main jobs catalog injects the catalog SKU adapter only into InventoryImportProcessor.
+E-AU-138-005,06_tests_ceshi/CatalogReadPerformanceMigration.test.ts,1-35,migration test,Applies the reverse-lookups migration to PGlite and asserts all catalog lookup index names.
+E-AU-138-006,06_tests_ceshi/SupplierNetworkMigration.test.ts,1-128,migration test,Applies supplier-network and analytics migrations to fixture schemas and asserts supplier, pricing, stock, settlement, and reporting facts.
+E-AU-138-007,06_tests_ceshi/module.manifest.test.ts,1-47,manifest test,Asserts catalog operation/job/event declarations.

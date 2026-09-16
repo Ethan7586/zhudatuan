@@ -1,0 +1,3 @@
+file,coverage,execution
+src/foundation/performance/Parallel.ts,no direct fixture found for concurrency cap order empty input invalid concurrency or failure behavior,not run: audit worktree has no Vitest dependencies
+src/modules/voucher/05_interface_jieru/job/VoucherJobs.ts;src/modules/voucher/04_adapters_shixian/persistence/PgVoucherImport.ts,downstream voucher tests do not directly exercise mapParallel contract,not run: audit worktree has no Vitest dependencies

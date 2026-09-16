@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-225-001,src/foundation/performance/Deadline.ts,1,compatibility adapter,Deadline is a direct @shop/kernel re-export.
+E-AU-225-002,src/foundation/http/HttpClient.ts;src/foundation/interface/HttpApp.ts;src/foundation/application/JobRunner.ts;src/foundation/performance/Executor.ts,1-44;1-40;1-90;1-45,direct consumers,HTTP inbound/outbound job and execution retry paths construct and consume Deadline.
+E-AU-225-003,src/foundation/interface/HttpApp.test.ts,183,consumer fixture,HTTP request deadline is externally mapped to DEADLINE_EXCEEDED.

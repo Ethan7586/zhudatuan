@@ -1,0 +1,5 @@
+"编号","位置","用例数","真实实现","覆盖","缺口","正式结果"
+"TC-AU-013-001","ClientErrors.test.ts","3","是","重复聚合、retention、tenant拒绝","platform/缺tenant/cross-kind、writer rejection、invalid clock","vitest缺失，退出127"
+"TC-AU-013-002","InteractionTimeline.test.ts","2","是","begin/record/finish、cancel","callback throw、重复begin、clock异常、资源上限","vitest缺失，退出127"
+"TC-AU-013-003","Redactor.test.ts","1","是","敏感key、Bearer、手机号、email","Cookie/Basic/password label/card/ID/cycle","vitest缺失，退出127"
+"TC-AU-013-004","package typecheck","0","是","独立tsconfig入口存在","依赖未安装","tsc缺失，退出127"

@@ -1,0 +1,6 @@
+"消费者编号","入口","消费方式","直接/间接","调用数量","权限/Scope来源","运行单元","发布状态","失败传播","证据","结论"
+"CONS-AU-012-001","Commerce API 28个引用文件（19非测试、9测试）","root package import","直接","权限/类型/支付/会员码","public.*兼容DB与server-derived scope","兼容Commerce源码","protected runtime正式退役；public路由仍编译部分源码","import/type失败","E-AU-012-003","主要消费者"
+"CONS-AU-012-002","smart-wing-authz 2文件","root package import","直接","目录+Membership/Scope","api-contract","无独立进程","见AU-011","import失败","E-AU-012-003","授权内核消费者"
+"CONS-AU-012-003","Storefront taxonomy.ts","JSON subpath import","直接","1","catalog JSON","Storefront Worker","正式发布","构建或运行映射异常","E-AU-012-003/008","唯一JSON运行消费者"
+"CONS-AU-012-004","Storefront vitest.config","glob include","间接","2测试文件/4用例","无","测试进程","根unit聚合","依赖缺失或配置漂移","E-AU-012-010","测试owner不在包内"
+"CONS-AU-012-005","delivery matrix","无","无","0","无","无","无正式消费","无失败信号","E-AU-012-006/007","DC-0014"

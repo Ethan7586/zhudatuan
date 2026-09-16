@@ -1,0 +1,5 @@
+"编号","位置","证据","结论"
+"E-AU-048-001","SupportRoute.tsx:61-69","前端发送携带 selectedCase.version","当前 Console 调用链可满足服务端要求"
+"E-AU-048-002","SendMessage.ts:13-31","实现要求 expectedVersion 并在 ticket.version 条件下 for update","消息写入有乐观锁语义"
+"E-AU-048-003","packages/sdk/src/operations/support.ts:116-121","契约标记 support.messages.send expectedVersion optional","F-0142 契约/运行时不一致"
+"E-AU-048-004","app/jobs.ts:106-107;SlaJob.ts","supportsla/supportscan 已注册","异步入口存在"

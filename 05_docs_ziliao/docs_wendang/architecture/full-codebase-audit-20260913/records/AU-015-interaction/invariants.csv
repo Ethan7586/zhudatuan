@@ -1,0 +1,6 @@
+"编号","不变量","状态","证据","关联"
+"INV-AU-015-001","远端write成功不得因观察callback失败改判为write失败","破坏","onCommitted throw进入onError","F-0070"
+"INV-AU-015-002","同key共享Promise的Result类型必须一致","类型未保证","number attempt解析string","F-0071"
+"INV-AU-015-003","外部store snapshot变化必须伴随新identity和notify","破坏","原message mutation静默改变值","F-0072"
+"INV-AU-015-004","dispose后资源不得重新持有状态","破坏","read storage重填memory","F-0073"
+"INV-AU-015-005","cancel后的晚响应不得提交callback","保持","generation/revision与测试覆盖","值得保留"

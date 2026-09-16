@@ -1,0 +1,6 @@
+"编号","链路","故障模式","影响","等级","关联"
+"FM-AU-018-001","微信/quality/release→miniapp fragment","最小拓扑定义不一致","不可重建而门禁仍部分通过","P2","F-0006"
+"FM-AU-018-002","ExperienceContract→generator→experience.js","生成parser语义缩水/分叉","跨端接纳不同文档或放大输入","P3","F-0082"
+"FM-AU-018-003","cache.yml→CachePolicy→future consumer","嵌套配置可写","同进程缓存TTL漂移","P2","F-0032"
+"FM-AU-018-004","ext config→Environment→app registration","trim/null错误语义不同","启动失败且错误码不稳定","P3","F-0033"
+"FM-AU-018-005","generator→7无caller输出→candidate","存在即被复制但不运行","制品声明误导/潜在遗留","G1","DC-0023"

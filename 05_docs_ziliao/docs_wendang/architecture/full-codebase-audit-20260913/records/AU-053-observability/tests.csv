@@ -1,0 +1,3 @@
+"测试","范围","结论","执行"
+"observability module.manifest.test.ts","平台模块与 operation inventory","局部 manifest oracle","未执行：vitest command not found"
+"packages/telemetry ClientErrors.test.ts","脱敏、scope filter、retention/capacity","由 AU-013 已深入审阅","未执行：vitest command not found"

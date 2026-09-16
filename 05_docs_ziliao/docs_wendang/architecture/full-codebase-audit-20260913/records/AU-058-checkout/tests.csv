@@ -1,0 +1,6 @@
+"测试","范围","结论","执行"
+"AddressPort.test.ts","默认地址 flag、member advisory lock、乐观版本与切换顺序","有针对性 mock SQL oracle","未执行：vitest command not found"
+"QuoteReader.mall.test.ts","同一会员跨 Mall 购买历史隔离与供应链证据投影","有针对性 mock SQL oracle","未执行：vitest command not found"
+"module.manifest.test.ts + DomainPolicy.test.ts","operation/event 清单和 checkout 版本冲突","最小契约/不变量 oracle","未执行：vitest command not found"
+"PurchaseOperations.test.ts + DisabledPurchaseVoucherGateway.test.ts","Purchase payment/响应投影和 voucher 禁用网关","未覆盖报价 handler","未执行：vitest command not found"
+"Checkout quote creation integration","完整/Purchase 两入口、签名、session/evidence/outbox、重放、expectedVersion/expiry/RLS","未见模块专用行为测试；F-0147","未验证"

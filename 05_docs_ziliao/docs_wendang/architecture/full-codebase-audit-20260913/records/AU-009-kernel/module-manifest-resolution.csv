@@ -1,0 +1,36 @@
+模块,路径,provides数量,provides,requires数量,requires,missing provider数量,missing provider,ModuleCatalog仓内生产构造者,结论
+access,01_core_hexin/services/commerce/src/modules/access/module.manifest.ts,2,access.read;access.manage,2,identity;organization,2,identity;organization,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+audit,01_core_hexin/services/commerce/src/modules/audit/module.manifest.ts,0,"",0,"",0,"",0,[FACT] capability集合静态闭合；仍未证明运行接入
+benefit,01_core_hexin/services/commerce/src/modules/benefit/module.manifest.ts,2,benefit.read;benefit.manage,2,member;finance,2,member;finance,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+capability,01_core_hexin/services/commerce/src/modules/capability/module.manifest.ts,2,capability.read;capability.manage,1,organization,1,organization,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+cart,01_core_hexin/services/commerce/src/modules/cart/module.manifest.ts,2,cart.read;cart.manage,1,catalog,1,catalog,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+catalog,01_core_hexin/services/commerce/src/modules/catalog/module.manifest.ts,2,catalog.read;catalog.manage,1,partner,1,partner,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+channel,01_core_hexin/services/commerce/src/modules/channel/module.manifest.ts,2,channel.read;channel.manage,5,extension;catalog;inventory;fulfillment;finance,5,extension;catalog;inventory;fulfillment;finance,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+checkout,01_core_hexin/services/commerce/src/modules/checkout_jiesuan/module.manifest.ts,2,checkout.read;checkout.manage,7,benefit.manage;cart.manage;inventory.manage;marketing.manage;pricing.manage;qualification.manage;voucher.manage,0,"",0,[FACT] capability集合静态闭合；仍未证明运行接入
+experience,01_core_hexin/services/commerce/src/modules/experience/module.manifest.ts,0,"",1,catalog,1,catalog,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+extension,01_core_hexin/services/commerce/src/modules/extension/module.manifest.ts,0,"",1,capability,1,capability,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+finance,01_core_hexin/services/commerce/src/modules/finance/module.manifest.ts,2,finance.read;finance.manage,1,reporting,1,reporting,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+fulfillment,01_core_hexin/services/commerce/src/modules/fulfillment/module.manifest.ts,2,fulfillment.read;fulfillment.manage,2,order;partner,2,order;partner,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+identity,01_core_hexin/services/commerce/src/modules/identity/module.manifest.ts,2,identity.read;identity.manage,3,access.manage;member.manage;organization.manage,1,organization.manage,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+inventory,01_core_hexin/services/commerce/src/modules/inventory/module.manifest.ts,2,inventory.read;inventory.manage,1,catalog,1,catalog,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+mall,01_core_hexin/services/commerce/src/modules/mall/module.manifest.ts,0,"",0,"",0,"",0,[FACT] capability集合静态闭合；仍未证明运行接入
+marketing,01_core_hexin/services/commerce/src/modules/marketing/module.manifest.ts,2,marketing.read;marketing.manage,1,catalog,1,catalog,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+member,01_core_hexin/services/commerce/src/modules/member/module.manifest.ts,2,member.read;member.manage,1,identity,1,identity,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+notification,01_core_hexin/services/commerce/src/modules/notification/module.manifest.ts,2,notification.read;notification.manage,3,identity;order;support,3,identity;order;support,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+observability,01_core_hexin/services/commerce/src/modules/observability/module.manifest.ts,0,"",0,"",0,"",0,[FACT] capability集合静态闭合；仍未证明运行接入
+order,01_core_hexin/services/commerce/src/modules/order_dingdan/module.manifest.ts,2,order.read;order.manage,8,benefit.manage;cart.manage;checkout.manage;inventory.manage;marketing.manage;payment.manage;reporting.manage;voucher.manage,0,"",0,[FACT] capability集合静态闭合；仍未证明运行接入
+organization,01_core_hexin/services/commerce/src/modules/organization/module.manifest.ts,1,organization.layers.read,0,"",0,"",0,[FACT] capability集合静态闭合；仍未证明运行接入
+partner,01_core_hexin/services/commerce/src/modules/partner/module.manifest.ts,2,partner.read;partner.manage,1,organization,1,organization,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+payment,01_core_hexin/services/commerce/src/modules/payment_zhifu/module.manifest.ts,2,payment.read;payment.manage,8,benefit.manage;channel.manage;finance.manage;fulfillment.manage;inventory.manage;marketing.manage;order.manage;voucher.manage,0,"",0,[FACT] capability集合静态闭合；仍未证明运行接入
+pricing,01_core_hexin/services/commerce/src/modules/pricing/module.manifest.ts,2,pricing.read;pricing.manage,1,catalog,1,catalog,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+provisioning,01_core_hexin/services/commerce/src/modules/provisioning/module.manifest.ts,0,"",3,organization;catalog;experience,3,organization;catalog;experience,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+purchase,01_core_hexin/services/commerce/src/modules/purchase/module.manifest.ts,0,"",10,access.manage;benefit.manage;checkout.manage;fulfillment.manage;inventory.manage;marketing.manage;order.manage;payment.manage;pricing.manage;risk.read,0,"",0,[FACT] capability集合静态闭合；仍未证明运行接入
+qualification,01_core_hexin/services/commerce/src/modules/qualification/module.manifest.ts,2,qualification.read;qualification.manage,1,member.read,0,"",0,[FACT] capability集合静态闭合；仍未证明运行接入
+referral,01_core_hexin/services/commerce/src/modules/referral/module.manifest.ts,2,referral.read;referral.manage,3,member;catalog;finance,3,member;catalog;finance,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+reporting,01_core_hexin/services/commerce/src/modules/reporting/module.manifest.ts,2,reporting.read;reporting.manage,0,"",0,"",0,[FACT] capability集合静态闭合；仍未证明运行接入
+risk,01_core_hexin/services/commerce/src/modules/risk/module.manifest.ts,2,risk.read;risk.manage,1,catalog.manage,0,"",0,[FACT] capability集合静态闭合；仍未证明运行接入
+runtime,01_core_hexin/services/commerce/src/modules/runtime/module.manifest.ts,0,"",3,checkout.manage;identity.manage;pricing.manage,0,"",0,[FACT] capability集合静态闭合；仍未证明运行接入
+support,01_core_hexin/services/commerce/src/modules/support/module.manifest.ts,2,support.read;support.manage,3,order;member;benefit,3,order;member;benefit,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+verification,01_core_hexin/services/commerce/src/modules/verification/module.manifest.ts,2,verification.read;verification.manage,2,member.read;partner.read,0,"",0,[FACT] capability集合静态闭合；仍未证明运行接入
+voucher,01_core_hexin/services/commerce/src/modules/voucher/module.manifest.ts,2,voucher.read;voucher.manage,2,member;finance,2,member;finance,0,[CONFLICT] 按ModuleCatalog capability协议不闭合；当前无生产构造者
+webbusiness,01_core_hexin/services/commerce/src/modules/webbusiness/module.manifest.ts,0,"",13,access.read;benefit.read;cart.manage;catalog.read;checkout.manage;fulfillment.read;inventory.read;member.manage;order.read;organization.layers.read;pricing.read;reporting.read;risk.read,0,"",0,[FACT] capability集合静态闭合；仍未证明运行接入

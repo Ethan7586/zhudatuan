@@ -1,0 +1,4 @@
+"证据编号","文件","位置","结论"
+"E-AU-123-001","modules/extension/03_application_yingyong/query/GetExtensions.ts","1-9","repository list/keyset read action。"
+"E-AU-123-002","modules/extension/05_interface_jieru/{http/ExtensionRoutes,ExtensionModule}.ts","1-11;1-4","HTTP 与 module 装配。"
+"E-AU-123-003","modules/extension/{index.ts,module.manifest.ts,ExtensionModule.ts,interface/http/ExtensionRoutes.ts}","1-22","public/manifest/compatibility boundary。"

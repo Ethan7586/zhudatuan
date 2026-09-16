@@ -1,0 +1,7 @@
+"故障编号","链路/步骤","故障模式","直接原因","首个可观察影响","后续影响","当前检测","严重度","发生可能性","可检测性","恢复/回滚","证据状态"
+"FM-AU001-001","Console release→Caddy","制品写入与静态根分属不同pointer","多套current路径并存","Console根404","运营入口不可用；范围UNKNOWN","publicAcceptance理论检查；当前直连已检出","P1候选","已观察","高可检测但现行状态仍存在","统一权威pointer并保留原配置；未实施","FACT/CONFLICT E-AU-001-017/020/021"
+"FM-AU001-002","test:e2e→webServer","npm无法解析workspace","配置名不在lock workspace图","服务启动前退出1","全部browser specs不可达","npm报No workspaces found","P2","必现于至少首项","高","修正独立测试配置并逐项复验；未实施","FACT E-AU-001-003/004/005"
+"FM-AU001-003","lint→files glob","现行React app不匹配规则块","目录名漂移","无diagnostic而继续","typed/hooks/a11y缺陷可能漏检","当前无匹配总账","P2","当前配置确定","低到中：静默","打印匹配文件并修正独立配置；未实施","FACT E-AU-001-025"
+"FM-AU001-004","ModuleRegistry.load","后序模块register失败","模块实现异常或依赖资源失败","bootstrap reject","前序registry/container可能已部分注册","启动日志/异常；补偿UNKNOWN","未定级","UNKNOWN","中","丢弃bootstrap对象或显式清理需专项证明","UNKNOWN E-AU-001-011"
+"FM-AU001-005","release service impact","changed source未进入任何entry graph","图外文件或resolver限制","选择全部service targets","构建扩大但避免漏选","reason记录unresolved","P3性能候选；非缺陷","按变化而定","高","上界策略本身是恢复路径","FACT E-AU-001-016"
+"FM-AU001-006","线上runtime inventory","活跃unit无受控同名定义","主机本地或外部发布来源","基线无法重建unit","恢复/交接可能漏服务","systemctl与git树差集","P3","已观察2项","中","先确认所有权和保存来源；不删除/不重启","CONFLICT E-AU-001-019/022"

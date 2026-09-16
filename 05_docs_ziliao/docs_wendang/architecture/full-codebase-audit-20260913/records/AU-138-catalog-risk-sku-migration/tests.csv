@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Source-level behavior review,ApplyRiskDecision/CatalogSku/PgCatalogSku and three Catalog tests,Completed,Full source and direct caller/consumer paths reviewed.
+Targeted Vitest,CatalogReadPerformanceMigration/SupplierNetworkMigration/module.manifest,Not verified,Formal npm test entry exited 127 because vitest is absent in the audit worktree.

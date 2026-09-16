@@ -1,0 +1,5 @@
+"测试","范围","静态审阅结论","执行状态"
+"AuditRecord.test.ts","canonical key order、chain hash、access record chain","覆盖基本稳定性与 command/access 链接","未执行：vitest command not found"
+"RedactionPolicy.test.ts","secret/contact 脱敏、深度/集合/文本上限","覆盖已列 key 的正常反事实","未执行：vitest command not found"
+"module.manifest.test.ts","public entry 和 job/http inventory","确认模块入口声明","未执行：vitest command not found"
+"归档端到端","KMS/object/DB/trigger/retry","无本模块专用 test；只以实现/迁移交叉审阅","未验证"

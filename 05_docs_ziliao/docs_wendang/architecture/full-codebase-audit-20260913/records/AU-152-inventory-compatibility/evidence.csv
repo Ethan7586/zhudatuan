@@ -1,0 +1,4 @@
+id,file,location,kind,observation
+E-AU-152-001,InventoryModule.ts;InventoryOperations.ts;InventoryPort.ts;domain/model/Reservation.ts;index.ts;interface/job/**,1-6,compatibility export,Each root or legacy file forwards directly to a reviewed canonical implementation or stable public surface.
+E-AU-152-002,src/app/modules.ts;src/app/jobs.ts,17;28-29,live consumer,Commerce main imports root InventoryModule while jobs catalog imports legacy InventoryImportJob and InventorySyncJob paths.
+E-AU-152-003,module.manifest.ts;index.ts,1-23,public contract,Manifest/public exports retain operation capability and port contract without leaking implementation.

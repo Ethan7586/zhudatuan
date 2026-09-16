@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-166-001,modules/RuntimeModule.ts;app/modules.ts,1-3;2;44,runtime registration,Runtime module is included in COMMERCE_MODULES.
+E-AU-166-002,modules/DomainPolicy.test.ts,1-82,cross-domain specification,High-risk state/authorization/financial/password invariants are direct assertions.
+E-AU-166-003,modules/ModuleCatalog.test.ts,1-22,catalog specification,Test requires 30 business modules, operation ownership, existing dependencies and unique HTTP method/path pairs.

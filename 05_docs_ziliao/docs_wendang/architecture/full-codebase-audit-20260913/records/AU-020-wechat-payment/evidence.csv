@@ -1,0 +1,12 @@
+"编号","类型","位置","观察","证明","不证明"
+"E-AU-020-001","范围","01_core_hexin/extensions/payment/wechat","18文件1873行全部深入审阅","固定范围与文件级覆盖","线上制品"
+"E-AU-020-002","生产入口","Commerce package; PurchaseApiRuntime; PaymentWebhookApiRuntime; PaymentJobsRuntime","私有包由三个专用runtime经WechatGateway消费，无独立进程","真实进程和调用入口","线上版本"
+"E-AU-020-003","节点绑定","三个runtime assert*NodeManifest/assert*Configuration","secret ref绑定payment binding；callback host/scope绑定manifest api host/data scope","生产caller配置边界","secret值正确"
+"E-AU-020-004","出站可信链","Crypto.ts; Transport.ts; Client.ts; Close.ts","请求签名；成功/错误/204响应均验签后解析","provider响应不被无签名信任","微信可用性"
+"E-AU-020-005","入站可信链","Notification.ts; Signature.ts; WechatGateway.ts; PaymentWebhook.ts","原始正文限长、验签、时间窗、KeyID、解密、商户/本地意图核对和事件去重","通知状态转换有多层证据","数据库事务完整性全貌"
+"E-AU-020-006","幂等与重试","WechatGateway.ts:67-80,107-111; Executor","读操作可重试；退款申请不盲重试而以稳定退款号查询","写入不确定性的恢复设计","provider一定已受理"
+"E-AU-020-007","运行探针","Config.ts:45-63,125-130; Crypto.ts:49-63","合成AAAA PEM通过两个regex；WebCrypto PKCS8/SPKI导入均DataError","F-0091可复现","真实secret畸形"
+"E-AU-020-008","运行探针","Transport.ts:68-88,97-131; WechatGateway.ts:107-111","响应头后正文流超时抛原始TimeoutError；读取位于catch外且retry predicate仅认ProtocolError","F-0092错误分类失真","线上已触发"
+"E-AU-020-009","契约反例","Client.ts:6-14,26-33,40-48,68-75,91-126","notifyUrl override不经validateNotifyUrl直接序列化；唯一生产caller传resolve结果","F-0093边界缺口与当前缓解","仓外caller不存在"
+"E-AU-020-010","测试审阅","四个*.test.ts；vitest.config.ts","28例覆盖核心密码学/模型主干；关键异常边界缺反事实；正式命令因依赖缺失未加载源码","测试设计范围和本次阻塞","测试在完整环境中的结果"
+

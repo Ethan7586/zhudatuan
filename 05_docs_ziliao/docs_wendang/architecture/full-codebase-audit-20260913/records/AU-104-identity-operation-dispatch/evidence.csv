@@ -1,0 +1,5 @@
+"证据编号","文件","位置","结论"
+"E-AU-104-001","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/IdentityOperations.ts","12-35,67-86","full operation ownership、五组 actions 合并和 selected action fail-fast。"
+"E-AU-104-002","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/IdentityOperations.ts","37-65","registration core set 和附加 WeChat operation set 分离。"
+"E-AU-104-003","01_core_hexin/services/commerce/src/modules/identity/06_tests_ceshi/IdentityOperationCatalog.test.ts","1-79","HTTP catalog ID/method/path、operation partition 和 registration ownership oracle。"
+"E-AU-104-004","01_core_hexin/services/commerce/src/modules/identity/06_tests_ceshi/IdentityOperations.test.ts","1-517","session realm/account、governance、proof、invitation 和 challenge notification 行为 oracle。"

@@ -1,0 +1,3 @@
+file,coverage,execution
+src/foundation/interface/NodeServer.test.ts,node context ingress health bypass and trusted peer address,not run: audit worktree has no Vitest dependencies
+src/foundation/interface/NodeServer.ts,oversize abort generic error listen error and response writeback lack direct fixture,not run: audit worktree has no Vitest dependencies

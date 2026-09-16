@@ -1,0 +1,4 @@
+"编号","位置","证据","结论"
+"E-AU-085-001","WebInventoryOperations.ts:8-32","Web selected handler 以 closure 查询 stock/reservation、计算 available、使用 keyset 和 SKU input limit。","WebBusiness inventory 是只读，但 scope 可跨 descendant。"
+"E-AU-085-002","inventory/03_application_yingyong/InventoryOperations.ts:12-35","完整 handler 需要 access.mall_id，并以 `stock.scope_id=$1` 查询同一 operation。","F-0160：相同 contract 的结果范围并不等价。"
+"E-AU-085-003","migration 20260828173000:244,329-331；WebBusinessScopeResolver.ts:13-17","web role 只获 select，stock/reservation policy 使用 web scope；storefront inventory operation 由 session mall scope 路由。","Web 实现有数据库 read boundary，但不消除 complete/web 投影差异。"

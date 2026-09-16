@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-183-001,src/api/qualificationAdminRoutes.ts,10-78,center read,Admin target permission and mall scope precede RPC; returned commercial/selector data is capability-redacted server-side.
+E-AU-183-002,src/api/qualificationAdminRoutes.ts,98-128;171-190,config write,Kind-specific permission structured input idempotency and fresh step-up are enforced before config persistence.
+E-AU-183-003,src/api/qualificationAdminRoutes.ts,130-169,approval,Non-draft preview may create approval request rather than direct apply; both paths carry server actor scope request hash and authorization evidence.
+E-AU-183-004,src/api/qualificationAdminRoutes.test.ts,1-206,tests,Direct fixtures cover read redaction permission/scope and draft/publish/high-risk request outcomes.

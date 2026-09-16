@@ -1,0 +1,5 @@
+id,file,location,kind,observation
+E-AU-139-001,06_tests_ceshi/fixtures/catalog-cake-media.mock.json,1-61,test fixture,Simulated cake package with fixture media reference is loaded by CatalogProductMediaRegistration test.
+E-AU-139-002,06_tests_ceshi/fixtures/catalog-package-v1.mock.json,1-79,test fixture,Simulated catalog package is loaded by CatalogPackage and PgCatalogImport tests.
+E-AU-139-003,CatalogModule.ts;CatalogOperations.ts;CatalogProvisioningPort.ts;CatalogReadOperations.ts;CatalogSourcePort.ts;IdentityOperatorCatalogModule.ts;index.ts;interface/job/CatalogImportJob.ts,1-51,compatibility exports,Each file only re-exports already reviewed implementation or public contract; app/jobs imports the legacy CatalogImportJob path.
+E-AU-139-004,src/app/jobs.ts,13,runtime caller,The legacy interface job re-export remains a live startup import path.

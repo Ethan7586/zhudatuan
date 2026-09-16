@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-209-001,src/foundation/application/UnitOfWork.ts,3-25,transaction contract,Transaction and managed context carry query and full lineage/scope/deadline information.
+E-AU-209-002,src/foundation/application/UnitOfWork.ts,27-43,write lifecycle,Write contexts are branded registered in a WeakSet and fail after close.
+E-AU-209-003,src/foundation/application/ExecutionKernel.test.ts,72-88,direct test,Execution test captures active write context and verifies it becomes inactive after completion.
+E-AU-209-004,src/foundation/infrastructure/PgUnitOfWork.ts,1-89,implementation,Database lock retry rollback and context application are delegated to the reviewed infrastructure implementation.

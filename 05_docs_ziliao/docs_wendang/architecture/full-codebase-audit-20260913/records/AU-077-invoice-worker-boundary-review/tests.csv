@@ -1,0 +1,2 @@
+"复核","范围","结论","执行"
+"migration/runtime static retrace","grant/revoke chronology、worker role、processor SQL、controlled function grants","F-0158 双轮独立调用链结论一致，确认为 P1","只读检索；未运行测试"

@@ -1,0 +1,7 @@
+"编号","位置","证据","结论"
+"E-AU-056-001","app/modules.ts:19,38;modules/referral/module.manifest.ts:7-34;app/jobs.ts:94","模块、15 个 HTTP operation、五类消费事件及 referral job 均已注册","API 与异步消费者入口真实存在"
+"E-AU-056-002","ProcessReferralEvent.ts:17-64,67-155","inbox/outbox payload 及未处理状态在一个 transaction 内锁定；订单、setting、binding、line 全从数据库重新读取；commission id deterministic 且 insert conflict no-op","事件重放不信任 payload，避免重复佣金"
+"E-AU-056-003","ProcessReferralEvent.ts;ReferralCommissionPolicy.ts;对应 tests","trigger、refund/cancel reversal、金额分摊和直接/一级推荐人规则均有状态与金额 oracle","佣金规则没有只依赖前端或文档"
+"E-AU-056-004","SettleReferralCommissions.ts;ReferralEventJob.ts","eligible commission 以 for update skip locked 领取，FinancePort post 后以状态/journal 条件更新；job 根据 eventId 或 settleScope 分流","结算的并发和失败回滚边界存在"
+"E-AU-056-005","ReferralOperations.ts:380-510;ReferralOperations.test.ts","提现在 referral.member 行锁下检查反冲/回收、分配已结算佣金、预留 claim 并创建 finance withdrawal","提现与佣金状态责任分离且有主要行为测试"
+"E-AU-056-006","20260829105000_create_referral_foundation.sql:297-342,344-530","claim 外键/唯一索引、first-touch 函数、reversal trigger 与 settlement 索引存在","数据模型与历史反冲责任不构成删除候选"

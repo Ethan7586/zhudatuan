@@ -1,0 +1,4 @@
+"编号","位置","证据","结论"
+"E-AU-068-001","FinancePolicyWorkflow.ts:15-84","strict body、typed rule、mall delegated kind/threshold、preview hash/version/request hash","政策 preview/manage 有输入和受管过程边界"
+"E-AU-068-002","GetFinancePolicies.ts:5-35;ConfigFieldPolicy.ts:11-140","读取 latest revision/current policy；字段/税规则拒绝未知字段、无效日期、重复 options、非法金额","读取和领域规则有确定性边界"
+"E-AU-068-003","FinancePolicyWorkflow.test.ts;ConfigFieldPolicy.test.ts","只覆盖过程调用参数与领域输入；无真实 revision/四眼/mall delegation/read 集成","F-0155/P2"

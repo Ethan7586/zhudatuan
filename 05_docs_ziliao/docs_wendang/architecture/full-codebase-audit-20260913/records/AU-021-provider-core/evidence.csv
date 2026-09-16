@@ -1,0 +1,11 @@
+"编号","类型","位置","观察","证明","不证明"
+"E-AU-021-001","范围","01_core_hexin/extensions/providers/core","11文件354行全部深入审阅","固定范围与覆盖","线上制品"
+"E-AU-021-002","装载入口","ProviderFactories.ts; ProviderLoader.ts; ExtensionRegistry.ts","11个factory由DB installation+secret装载，manifest验签、health后按provider+scope注册","真实装载与生命周期","线上已启用项"
+"E-AU-021-003","调用边界","PortFactory.ts; VendorClient; channel consumers","九类port转VendorClient；Registry先校验capability再require port","同步调用方向与重试入口","各供应商契约正确"
+"E-AU-021-004","Webhook生产链","PortFactory.ts:36-53; ApplyWebhook.ts:13-48; channel lifecycle migration:6-59","生产使用ProviderWebhookVerifier→加密inbox→unique(connection_id,external_id)→job/outbox","真实验签/落库/异步链","线上流量"
+"E-AU-021-005","签名材料","PortFactory.ts:39-47; contract Ports.ts:39-57","HMAC仅timestamp.body；Verifier request无externalId；event ID由route单独读header","F-0094的密码学边界","供应商网关另有签名"
+"E-AU-021-006","去重与影响","ApplyWebhook.ts:18-39; migration:25,46-58; ChannelWebhookJob.ts:25-43","改写event ID生成新inbox/job/outbox；同reference状态更新但outbox ID不同","重放绕过去重及可观察副作用","下游一定重复业务写"
+"E-AU-021-007","测试替身漂移","Provider.test.ts:37-50; Webhook.ts:3-23; PortFactory.ts:36-53","测试的WebhookRequest含externalId且verifier可见；生产Verifier类型/实现不同，createPorts无测试","F-0095与DC-0026","测试在完整环境结果"
+"E-AU-021-008","引用检索","providers/*/Webhook.ts; ProviderFactories/Loader","Webhook类只由单测与转发barrel引用，生产factory不实例化","G1候选证据","仓外consumer不存在"
+"E-AU-021-009","验证阻塞","package scripts","test/typecheck均exit127，工具缺失；未安装依赖","本次运行限制","套件真实通过/失败"
+

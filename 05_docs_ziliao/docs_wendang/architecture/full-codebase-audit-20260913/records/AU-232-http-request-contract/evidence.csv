@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-232-001,src/foundation/interface/HttpRequest.ts,1-11,contract,Route input specifies method path headers parameters query parsed and raw body deadline and cancellation signal.
+E-AU-232-002,src/foundation/interface/HttpApp.ts,60-66,runtime construction,HttpApp freezes headers and after gates constructs exactly one HttpRequest for the matched route handler.
+E-AU-232-003,src/bootstrap/RouteRegistry.ts,4-8;src/foundation/interface/OperationController.ts,315-364,consumers,Route handlers and OperationController consume HttpRequest for contract input resource and authorization mapping.

@@ -1,0 +1,7 @@
+"编号","位置","证据","结论"
+"E-AU-062-001","PaymentSettlement.ts;FulfillmentPort.ts:11-29;app/jobs.ts:86,142","支付成功调用 FulfillmentPort.create，按 suborder/route 写 fulfillment+line；fulfillment/tracking worker 在 runtime catalog 注册","支付到履约的创建与运行入口闭合"
+"E-AU-062-002","FulfillmentJobs.ts:26-103;FulfillmentMallIdentity.test.ts:33-66","submit 加载 pending/failed；tracking 按 mall/id 加载 accepted/processing/ready，里程碑按 kind/external id 去重，完成时调用 OrderPort 并发布 received","provider 提交、追踪、收货事件有明确状态与幂等入口"
+"E-AU-062-003","FulfillmentJobs.ts:51-58,135-138;Ports.ts:29-31","Order.submit 的契约 state 是任意 string；代码无论 receipt.state 都将 fulfillment 置 accepted 并入 tracking，只有 channel operation 以 success(receipt.state) 标 processing","F-0150/P2：失败/未知 provider 回执会伪装为 accepted，submit 重试入口被绕过"
+"E-AU-062-004","FulfillmentJobs.ts:65-67;records/AU-041-private-loader-consistency/summary.md:21-29","tracking caller 固定要求 Logistics+tracking；既有 AU-041 已独立复核 private manifest/port 不闭合","F-0127 保持既有 P1候选/二次复核结论，未重复编号"
+"E-AU-062-005","FulfillmentOperations.ts:13-71;FulfillmentPort.ts:31-45","tracking read 按 mall/member/order；人工 shipment、return receive/inspect 按 mall+state+expectedVersion 更新，accepted inspection 入 inventorysync","前台/运营操作及供应售后回放边界存在"
+"E-AU-062-006","FulfillmentMallIdentity.test.ts;module.manifest.test.ts","测试只验证 SQL 归属、源码字符串和 manifest；无 provider receipt failure、tracking milestone/完成、人工 shipment/return 事务行为测试","测试缺口作为 F-0150 验证范围记录"

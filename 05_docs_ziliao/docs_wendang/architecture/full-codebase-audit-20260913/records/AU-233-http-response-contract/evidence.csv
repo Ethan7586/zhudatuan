@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-233-001,src/foundation/interface/HttpResponse.ts,1-10,contract,HttpResponse provides status optional headers and optional body; json produces JSON response shape.
+E-AU-233-002,src/foundation/interface/HttpResponse.ts,7-10,no-content branch,json returns headers only for 204 and does not preserve supplied body.
+E-AU-233-003,src/foundation/interface/OperationController.ts;src/foundation/interface/ErrorMapper.ts;src/foundation/interface/HttpApp.ts;src/foundation/interface/NodeServer.ts,310;6-23;160-164;100-106,production chain,Controller and mapper produce contract then HttpApp creates Fetch Response and NodeServer writes it.
+E-AU-233-004,src/foundation/interface/HttpApp.test.ts;src/foundation/interface/NodeServer.test.ts,172;66-93,indirect tests,HttpApp asserts a 204 route response and NodeServer writes a 204 Fetch Response.

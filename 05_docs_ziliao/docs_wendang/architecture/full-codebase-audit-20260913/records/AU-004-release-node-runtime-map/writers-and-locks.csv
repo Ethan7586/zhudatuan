@@ -1,0 +1,7 @@
+"状态对象","writer","入口","互斥","校验/回执","冲突"
+"target current/runtime/previous","remote agent","Deploy Direct/guarded","项目+节点+target flock；workflow concurrency","artifact/source SHA；Direct或guarded receipt","单 agent 内有锁"
+"hbbtzn-l1 console current","activate-console-static.sh","Deploy Console via Wuhan OSS","仅 OSS workflow concurrency；无 agent flock","tar SHA、source、release-version、公网版本","与 remote agent 可并发，F-0016"
+"agent/policy/systemd units","install-ai-delivery-agent.sh","engine install 或人工 runtime mode","bootstrap flock","approval/source/clean tree/instance；特殊 gateway transition receipt","workflow只安装agent；普通配置无自动writer"
+"Caddy active config","主机本地/历史人工流程/AutoNode特殊路径","正式普通 writer UNKNOWN","部署规则无统一锁证据","guarded agent只比较/备份语义，不安装普通变更","active config不在仓库历史，F-0017"
+"Cloudflare tunnel/DNS/systemd runtime","AutoNode provider","手工 autonode-activate apply","activation lock + exact plan digest","持久ledger、ownership receipt、step compensation","无正式workflow消费者"
+"release retention删除状态","release-policy service","timer/path/人工service","systemd单元串行语义；脚本内允许根","保留集合和删除日志","不改current，只回收未保护release"

@@ -1,0 +1,6 @@
+id,file,location,kind,observation
+E-AU-128-001,01_public_gongkai/{NotificationCapabilities;NotificationRepository}.ts,1-60,public contract,Defines read/manage capabilities and all persistence/action contracts used by Notification operations.
+E-AU-128-002,03_application_yingyong/command/ChangePreference.ts;02_domain_yewu/model/Preference.ts,1-65,write boundary,Resolves member from membership; encrypted endpoint writes revalidate owner and require WeChat subscription authorization.
+E-AU-128-003,03_application_yingyong/command/{SaveTemplate;SaveAnnouncement}.ts;02_domain_yewu/model/{Announcement;Dispatch}.ts,1-37,write boundary,Validates input then derives conflict/transition outcomes from repository results.
+E-AU-128-004,03_application_yingyong/query/{GetNotifications;GetTemplates;GetAnnouncements}.ts,1-19,read boundary,Each query uses access-derived ownership and keyset pagination.
+E-AU-128-005,modules/notification/06_tests_ceshi;entry/IdentityRegistrationApiEntrypoint.test.ts,test search,test gap,No test invokes the eight Notification HTTP actions; existing hits are manifest strings and selected-route assertions.

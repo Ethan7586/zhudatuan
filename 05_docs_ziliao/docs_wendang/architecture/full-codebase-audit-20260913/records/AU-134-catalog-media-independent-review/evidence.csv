@@ -1,0 +1,4 @@
+id,file,location,kind,observation
+E-AU-134-001,modules/channel/05_interface_jieru/job/ChannelSyncJob.ts,68-91,upstream,Extension pullCatalog payload is passed to CatalogSourceProjection without media URL policy.
+E-AU-134-002,bootstrap/CatalogJobsRuntime.ts,120-139,runtime,Enabled media runtime constructs CatalogMediaReplicationProcessor without a constrained fetcher.
+E-AU-134-003,modules/catalog/06_tests_ceshi/{CatalogMediaReplicationJob;CatalogSourceProjection}.test.ts,1-107;1-88,test evidence,Tests contain HTTPS examples/basic failures and omit hostile URL redirect and size cases.

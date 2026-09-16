@@ -1,0 +1,2 @@
+file,coverage,execution
+src/api/routerTargetRouting.test.ts;src/api/routes/targetGuards.test.ts,top-level and business router target isolation/auth rejection,no downstream handler or RPC semantics covered by these tests; not run: audit worktree has no Vitest dependencies

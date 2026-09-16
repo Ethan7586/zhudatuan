@@ -1,0 +1,3 @@
+file,coverage,execution
+src/foundation/infrastructure/Csv.ts,no direct parseCsv fixture found; normal and malformed input boundary coverage missing; F-0216,not run: audit worktree has no Vitest dependencies
+src/foundation/infrastructure/ImportFile.ts;src/modules/finance/03_application_yingyong/command/ReconcileStatement.ts,consumer behavior does not prove generic CSV parser contract,not run: audit worktree has no Vitest dependencies

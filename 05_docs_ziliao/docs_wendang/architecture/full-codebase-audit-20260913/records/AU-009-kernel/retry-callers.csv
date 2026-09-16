@@ -1,0 +1,7 @@
+"调用者","位置","HTTP/Provider写","业务键来源","Provider可见绑定","重试入口","当前结论"
+"InvoiceGateway","finance/04_adapters_shixian/adapter/InvoiceGateway.ts:15-20","POST /v1/invoices","input.request","idempotency-key header","HttpClient businesskeywrite","[FACT] adapter自带可见业务键"
+"PayoutGateway","finance/04_adapters_shixian/adapter/PayoutGateway.ts:15-21","POST /v1/payouts","input.withdrawal","idempotency-key header","HttpClient businesskeywrite","[FACT] adapter自带可见业务键"
+"AliyunSmsChannel","notification/04_adapters_shixian/adapter/AliyunSmsChannel.ts:36-44","Aliyun sendSms","request.idempotency","outId provider field","Executor businesskeywrite + adapter classifier","[FACT] adapter自带可见业务键"
+"EmailChannel","notification/04_adapters_shixian/adapter/EmailChannel.ts:18-24","POST /v1/messages","request.idempotency","idempotency-key header","HttpClient businesskeywrite","[FACT] adapter自带可见业务键"
+"WechatChannel","notification/04_adapters_shixian/adapter/WechatChannel.ts:27-35","WeChat subscribe POST","request.idempotency存在","未发送到header/body；payload没有业务键","HttpClient businesskeywrite","[CONFLICT] 可重试写缺provider可见键；F-0048"
+"HttpClient.test","foundation/http/HttpClient.test.ts:24-31","合成PUT成功204","无","无","businesskeywrite但首次成功","[FACT] 只证明成功时调用一次，不覆盖lost-response"

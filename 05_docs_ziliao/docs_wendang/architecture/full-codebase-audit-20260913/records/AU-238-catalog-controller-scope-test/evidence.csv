@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-238-001,src/foundation/interface/OperationController.catalog.test.ts,32-41,publication boundary,latest and task catalogpublication IDs invoke catalog.imports.read authorization with undefined resource.
+E-AU-238-002,src/foundation/interface/OperationController.catalog.test.ts,43-50,normal import,Concrete catalogimport ID remains authorization resource.
+E-AU-238-003,src/foundation/interface/OperationController.ts,346-353,generated source contract,Generated operationResource contains matching catalogpublication prefix exception.

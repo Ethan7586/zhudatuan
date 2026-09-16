@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-158-001,03_application_yingyong/OwnerActionProof.ts;03_application_yingyong/AccessOperations.ts;01_public_gongkai/AccessPort.ts,1-78;125-178;268-308,owner transfer,Proof HMAC binds action/session/snapshot/expiry; issued nonce is registered before Port create accept or cancel.
+E-AU-158-002,03_application_yingyong/AdministratorSegmentOperations.ts,15-99,administrator segment,Every action resolves administrator context; scope change requires expected version and typed kernel payload; member note has idempotency.
+E-AU-158-003,06_tests_ceshi/AdministratorSegmentOperations.test.ts;06_tests_ceshi/OwnerActionProof.test.ts,1-118;1-45,tests,Direct tests cover command shape/operator boundary and proof integrity/expiry.
+E-AU-158-004,module.manifest.ts;index.ts,1-40;1-12,contract,Manifest declares access operations/events and public entry exposes capabilities and Port.

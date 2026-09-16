@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-214-001,src/foundation/application/ExecutionKernel.ts,39-67,transactional execution,Transactional path claims idempotency then opens a branded write context runs action/audit and completes checkpoint in the provided transaction.
+E-AU-214-002,src/foundation/application/ExecutionKernel.ts,75-130,idempotency and outbox,Claim locks scope/actor/key/hash and completion writes deterministic operation outbox plus completed response checkpoint.
+E-AU-214-003,src/foundation/application/ExecutionKernel.ts,68-72;134-186,write context and enforcement,Current write context is request-bound and closed in finally; enforced result marker protects non-none write operations.
+E-AU-214-004,src/foundation/application/ExecutionKernel.test.ts,15-85,direct tests,Memory transaction fixture proves concurrent replay rollback retry key/transition validation normalized output and context invalidation.
+E-AU-214-005,src/modules/payment_zhifu/03_application_yingyong/services_fuwu/PaymentOperationSupport.ts;src/modules/identity/04_adapters_shixian/persistence_cunchu/IdentityPersistence.ts,1-24;72-78,special consumers,Payment and identity paths directly reuse claim/complete helpers outside ModuleOperations.

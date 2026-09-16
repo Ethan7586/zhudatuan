@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-157-001,IdentityOperatorReportingModule.ts;ReportingReadOperations.ts;index.ts;interface/job/ExportJobRunner.ts;interface/job/ProjectionJob.ts,1;1;1-15;1;1,runtime consumer,Identity registration imports the first two; finance/order import root index; jobs catalog imports both legacy job paths.
+E-AU-157-002,application/*;domain/*;infrastructure/persistence/PgReportingRepository.ts;interface/http/ReportingRoutes.ts,1,compatibility export,Ten paths only re-export canonical files and have no in-repository static import.
+E-AU-157-003,src/app/jobs.ts;src/entry/IdentityRegistrationApiMain.ts;finance/order operations,37-38;34-35;3-16,caller trace,Callers establish live responsibilities for five compatibility/root entry paths.
