@@ -266,7 +266,7 @@ async function updateRemoteControl(adapter, controlRoot) {
 function remoteControlUpdateScript({ agent, policy, agentSha256, policySha256 }) {
   return `set -euo pipefail
 install -d -m 0755 /usr/local/lib/ai-delivery /etc/ai-delivery/projects
-agent_tmp="$(mktemp /usr/local/lib/ai-delivery/.agent.XXXXXX)"
+agent_tmp="$(mktemp --suffix=.mjs /usr/local/lib/ai-delivery/.agent.XXXXXX)"
 policy_tmp="$(mktemp /etc/ai-delivery/projects/.zdt-next.XXXXXX)"
 cleanup() { rm -f -- "$agent_tmp" "$policy_tmp"; }
 trap cleanup EXIT
