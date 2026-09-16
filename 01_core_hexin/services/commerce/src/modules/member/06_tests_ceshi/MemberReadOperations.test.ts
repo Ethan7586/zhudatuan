@@ -326,6 +326,14 @@ describe('storefront member directory boundary', () => {
         parent: { kind: 'member', display_name: '邀请人丙', identity_level: 'L6' },
         inviter: { display_name: '邀请人丙', mobile_masked: '155****5544', relationship_status: 'active' },
       });
+      await expect(detailAction(
+        storefrontProfileRequest('member.storefront.detail.read', 'mall:two', 'membership:storefront:one'),
+        database as unknown as OperationDatabase,
+      )).rejects.toThrow('RESOURCE_NOT_FOUND');
+      await expect(detailAction(
+        storefrontProfileRequest('member.storefront.detail.read', 'mall:one', 'membership:operator:same-principal'),
+        database as unknown as OperationDatabase,
+      )).rejects.toThrow('RESOURCE_NOT_FOUND');
 
       const invitees = StorefrontMemberInviteePageSchema.parse((await inviteesAction(
         storefrontProfileRequest('member.storefront.invitees.read', 'mall:one', 'membership:storefront:one'),

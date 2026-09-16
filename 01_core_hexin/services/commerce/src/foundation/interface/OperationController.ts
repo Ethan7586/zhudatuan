@@ -350,6 +350,9 @@ function operationResource(operation: string, request: HttpRequest): string | un
     && !Array.isArray(request.body) && Reflect.get(request.body, 'action') === 'offboard') return undefined;
   // A new policy id is not resolvable before its first approved revision. The selected Scope is the authorization resource; the path id remains bound by ExpectedVersion and the canonical request hash.
   if (operation === 'finance.policies.manage' || operation === 'finance.policies.preview') return undefined;
+  // Member targets remain path IDs; authorization resolves the selected mall.
+  if (['member.storefront.detail.read', 'member.storefront.invitees.read', 'member.storefront.orders.read',
+    'member.storefront.custom.read', 'member.storefront.custom.manage'].includes(operation)) return undefined;
   const pathResource = Object.values(request.parameters)[0];
   if (operation === 'catalog.imports.read' && pathResource?.startsWith('catalogpublication:')) return undefined;
   if (pathResource !== undefined) return pathResource;

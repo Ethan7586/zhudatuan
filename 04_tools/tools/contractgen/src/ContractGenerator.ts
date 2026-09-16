@@ -469,6 +469,10 @@ function operationInput(operation: string, request: HttpRequest, resource: strin
     .replace(
       /\nfunction contractOperationInput[\s\S]*?\n}\n\n(?=function operationResource)/,
       "\nfunction contractOperationInput(operation: OperationId, input: OperationInput): OperationInput {\n  void operation;\n  return Object.freeze({ ...input });\n}\n\n"
+    )
+    .replace(
+      "if (operation === 'finance.policies.manage' || operation === 'finance.policies.preview') return undefined;\n  const pathResource",
+      "if (operation === 'finance.policies.manage' || operation === 'finance.policies.preview') return undefined;\n  // Member targets remain path IDs; authorization resolves the selected mall.\n  if (['member.storefront.detail.read', 'member.storefront.invitees.read', 'member.storefront.orders.read',\n    'member.storefront.custom.read', 'member.storefront.custom.manage'].includes(operation)) return undefined;\n  const pathResource"
     );
 }
 
