@@ -55,7 +55,7 @@ test('stages, activates, rolls back and reports status with immutable releases',
   const status = await invoke(fixture, 'status', second);
   assert.equal(status.result.current, firstCurrent);
   assert.equal(status.result.runtime, null);
-  assert.equal('production' in status.result.locks, false);
+  assert.equal('locks' in status.result, false);
   const verified = await invoke(fixture, 'verify', second);
   assert.equal(verified.result.current, firstCurrent);
   assert.equal(verified.result.checks.length, 1);
@@ -164,7 +164,7 @@ test('direct v2 actions reject Agent or policy drift before download and cutover
   );
 });
 
-test('direct v2 deploy verifies and activates in one locked action without a candidate seal', async () => {
+test('direct v2 deploy verifies and activates without lock or seal state', async () => {
   const fixture = await createFixture();
   const artifact = await createArtifact(fixture, 'atomic-prepared', '2'.repeat(40));
   const deployed = await invokeOss(fixture, artifact, await artifactPayload(artifact), true, 'deploy-oss-direct-v2');
@@ -219,11 +219,9 @@ test('prepared validation accepts only the legacy readable-mode widening of a fr
   assert.equal(rejected.code, 'CURRENT_RELEASE_TREE_MISMATCH');
 });
 
-test('server locks are scoped by project, node and target without a production-wide lock', async () => {
+test('remote execution has no lock authority or unlock state', async () => {
   const source = await readFile(agent, 'utf8');
-  assert.doesNotMatch(source, /production\.lock/);
-  assert.match(source, /join\(lockRoot, 'projects', safeName\(context\.project\)\)/);
-  assert.match(source, /join\(projectLockRoot, 'targets', safeName\(context\.node\), `\$\{safeName\(context\.target\)\}\.lock`\)/);
+  assert.doesNotMatch(source, /withLocks|acquireDirectoryLock|DELIVERY_LOCKED|lockRoot|staleLockSeconds|owner\.json/);
 });
 
 test('repairs DynamicUser traversal modes for stage, activation and rollback without widening artifact files', async () => {
@@ -282,6 +280,29 @@ test('stops safely when current changes after artifact lookup', async () => {
     }
   );
   await assert.rejects(() => readlink(join(fixture.pointerRoot, 'current')), { code: 'ENOENT' });
+});
+
+test('a superseded lock-free cutover never rolls current back over the newer release', async () => {
+  const fixture = await createFixture();
+  const first = await createArtifact(fixture, 'slow-first', '1'.repeat(40));
+  const second = await createArtifact(fixture, 'fast-second', '2'.repeat(40));
+  fixture.policy.readiness = { timeoutMs: 2_000, intervalMs: 20, attemptTimeoutMs: 1_500, hardFailureGraceMs: 50 };
+  fixture.policy.nodes.local.deployments.app.healthChecks = [
+    {
+      argv: [process.execPath, '-e', `setTimeout(()=>process.exit(0),process.argv[1].includes('${first.sourceSha}')?800:0)`, '{{currentDir}}'],
+    },
+  ];
+  await writePolicy(fixture);
+  await invoke(fixture, 'stage', first);
+  const firstActivation = invoke(fixture, 'activate', first);
+  await waitForCurrent(fixture.pointerRoot, first.sourceSha);
+  await invoke(fixture, 'stage', second);
+  const secondActivation = await invoke(fixture, 'activate', second);
+  assert.equal(secondActivation.result.current.includes(second.sourceSha), true);
+  const superseded = await captureAgentFailure(() => firstActivation);
+  assert.equal(superseded.code, 'CUTOVER_SUPERSEDED');
+  assert.equal(superseded.details.recovery, 'not-performed-because-a-newer-cutover-owns-current');
+  assert.match(await readlink(join(fixture.pointerRoot, 'current')), new RegExp(second.sourceSha));
 });
 
 test('an exact current artifact switches to verify-only without restart or pointer movement', async () => {
@@ -992,7 +1013,6 @@ async function createFixture() {
       project: 'fixture',
       allowedRoots: [root],
       incomingRoot: root,
-      lockRoot: join(root, 'locks'),
       auditRoot: join(root, 'audit'),
       minimumFreeBytes: 1,
       readiness: { timeoutMs: 1_000, intervalMs: 20, attemptTimeoutMs: 250, hardFailureGraceMs: 50 },
@@ -1128,6 +1148,18 @@ async function captureAgentFailure(action) {
     return JSON.parse(error.stderr).error;
   }
   assert.fail('Expected remote agent action to fail');
+}
+
+async function waitForCurrent(pointerRoot, sourceSha) {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    try {
+      if ((await readlink(join(pointerRoot, 'current'))).includes(sourceSha)) return;
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+    }
+    await new Promise((resolvePromise) => setTimeout(resolvePromise, 10));
+  }
+  assert.fail(`current did not move to ${sourceSha}`);
 }
 
 async function invoke(fixture, action, artifact, approval = null, node = 'local', expectedCurrent = undefined) {

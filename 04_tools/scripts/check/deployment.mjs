@@ -13,9 +13,10 @@ export function validateDeploymentContract({ adapter, policy, workflow, action }
   validateAdapter(adapter);
   assert(policy?.schema === 'ai.delivery.remote-policy.v1', 'DEPLOY_POLICY_SCHEMA_INVALID');
   assert(policy.project === adapter.project, 'DEPLOY_POLICY_PROJECT_MISMATCH');
-  for (const field of ['incomingRoot', 'lockRoot', 'rollbackRoot', 'auditRoot']) {
+  for (const field of ['incomingRoot', 'rollbackRoot', 'auditRoot']) {
     assert(typeof policy[field] === 'string' && policy[field].startsWith('/'), `DEPLOY_POLICY_${field.toUpperCase()}_INVALID`);
   }
+  assert(!('lockRoot' in policy) && !('staleLockSeconds' in policy), 'DEPLOY_POLICY_LOCK_AUTHORITY_FORBIDDEN');
 
   const physicalDeployments = validateDeploymentOwnership(adapter, policy);
   const workflowSummary = validateDeployWorkflow(adapter, workflow, action);

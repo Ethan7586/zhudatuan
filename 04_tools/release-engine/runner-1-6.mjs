@@ -29,7 +29,7 @@ async function main() {
     let result;
     if (options.operation === 'release' || options.operation === 'retry') {
       invariant(sourceSha, 'SOURCE_SHA_REQUIRED', 'release and retry require a full Source SHA or r16 release id');
-      result = await release(adapter, controlRoot, sourceSha);
+      result = await release(adapter, controlRoot, sourceSha, options.target, options.node);
     } else if (options.operation === 'status') {
       invariant(sourceSha, 'SOURCE_SHA_REQUIRED', 'status requires a full Source SHA or r16 release id');
       result = await status(adapter, controlRoot, sourceSha);
@@ -60,43 +60,106 @@ async function main() {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();
 
-async function release(adapter, controlRoot, sourceSha) {
+async function release(adapter, controlRoot, sourceSha, target, node) {
+  const exactScope = Boolean(target || node);
+  invariant(!exactScope || (target && node), 'EXACT_SCOPE_INCOMPLETE', 'Fast production deployment requires both target and physical node');
+  if (exactScope) return deployExact(adapter, controlRoot, sourceSha, target, node);
   context.stage = 'dependencies';
+  progress('dependencies', { sourceSha });
   const install = { argv: ['npm', 'ci', '--ignore-scripts', '--no-audit', '--no-fund'], timeoutMs: 20 * 60_000 };
   await runCommand({ ...install, name: 'install-control-dependencies' }, { ...commandContext(adapter), projectRoot: controlRoot });
   if (resolve(controlRoot) !== resolve(adapter.projectRoot)) {
     await runCommand({ ...install, name: 'install-source-dependencies' }, commandContext(adapter));
   }
   context.stage = 'plan';
+  progress('plan', { sourceSha });
   const plan = await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha });
   const releaseId = `r16-${sourceSha}`;
   if (!plan.deployRequired) return { state: 'HEALTHY', releaseId, sourceSha, executor: executor(), targets: [], message: 'No runtime target changed.' };
   const client = simpleOssClientFromEnvironment();
   const cache = [];
+  progress('artifact-lookup', { sourceSha, targets: plan.deploymentOrder });
   for (const target of plan.deploymentOrder) cache.push(await inspectSimpleArtifact(adapter, { target, sourceSha }, client));
   const needsBuild = cache.some((item) => !item.exists);
   let cacheStatus = 'reused';
   if (needsBuild) {
     context.stage = 'build';
+    progress('build', { sourceSha, targets: plan.deploymentOrder });
     const built = await buildRelease(adapter, plan.planPath);
     context.stage = 'package';
+    progress('package', { sourceSha, targets: plan.deploymentOrder });
     const packaged = await packageRelease(adapter, built.buildPath);
     context.stage = 'upload';
+    progress('upload', { sourceSha, targets: plan.deploymentOrder });
     await publishSimpleArtifacts(adapter, packaged.packagePath, client);
     cacheStatus = 'built';
   }
 
   const deployments = [];
-  for (const target of plan.deploymentOrder) {
-    for (const node of physicalPlacements(adapter, target)) {
+  const totalPlacements = plan.deploymentOrder.reduce((count, deploymentTarget) => count + physicalPlacements(adapter, deploymentTarget).length, 0);
+  const productionStarted = performance.now();
+  for (const deploymentTarget of plan.deploymentOrder) {
+    for (const physicalNode of physicalPlacements(adapter, deploymentTarget)) {
       context.stage = 'deploy';
-      context.target = target;
-      context.node = node;
-      const deployed = await deployTarget(adapter, controlRoot, client, { target, node, sourceSha });
+      context.target = deploymentTarget;
+      context.node = physicalNode;
+      progress('deploy', { sourceSha, target: deploymentTarget, node: physicalNode, completed: deployments.length, total: totalPlacements });
+      const deployed = await deployTarget(adapter, controlRoot, client, { target: deploymentTarget, node: physicalNode, sourceSha });
       deployments.push(deployed);
     }
   }
-  return { state: 'HEALTHY', releaseId, sourceSha, controlSha: process.env.CONTROL_SHA, executor: executor(), cacheStatus, targets: deployments };
+  const productionDurationMs = Math.round(performance.now() - productionStarted);
+  progress('complete', { sourceSha, productionDurationMs, productionSloMs: 60_000 });
+  return {
+    state: 'HEALTHY',
+    releaseId,
+    sourceSha,
+    controlSha: process.env.CONTROL_SHA,
+    executor: executor(),
+    cacheStatus,
+    exactScope: false,
+    productionDurationMs,
+    productionSlo: productionDurationMs <= 60_000 ? 'met' : 'missed',
+    targets: deployments,
+  };
+}
+
+async function deployExact(adapter, controlRoot, sourceSha, target, node) {
+  context.stage = 'artifact-lookup';
+  context.target = target;
+  context.node = node;
+  resolveDeployment(adapter, node, target);
+  const productionStarted = performance.now();
+  const client = simpleOssClientFromEnvironment();
+  progress('artifact-lookup', { sourceSha, target, node });
+  const cached = await inspectSimpleArtifact(adapter, { target, sourceSha }, client);
+  if (!cached.exists) {
+    throw new DeliveryError('ARTIFACT_NOT_READY', `Immutable artifact is not ready for ${target} at ${sourceSha}`, {
+      sourceSha,
+      target,
+      node,
+      cache: cached,
+      retryable: false,
+      nextSafeAction: 'prepare the immutable artifact outside the production cutover and rerun the same exact deployment',
+    });
+  }
+  context.stage = 'deploy';
+  progress('deploy', { sourceSha, target, node, completed: 0, total: 1 });
+  const deployed = await deployTarget(adapter, controlRoot, client, { target, node, sourceSha });
+  const productionDurationMs = Math.round(performance.now() - productionStarted);
+  progress('complete', { sourceSha, target, node, productionDurationMs, productionSloMs: 60_000 });
+  return {
+    state: 'HEALTHY',
+    releaseId: `r16-${sourceSha}`,
+    sourceSha,
+    controlSha: process.env.CONTROL_SHA,
+    executor: executor(),
+    cacheStatus: 'reused',
+    exactScope: true,
+    productionDurationMs,
+    productionSlo: productionDurationMs <= 60_000 ? 'met' : 'missed',
+    targets: [deployed],
+  };
 }
 
 async function deployTarget(adapter, controlRoot, publicClient, { target, node, sourceSha }) {
@@ -330,6 +393,9 @@ function bindControlPlaneModules(adapter, controlRoot) {
 
 function executor() {
   return { class: process.env.RUNNER_CLASS ?? 'unknown', name: process.env.RUNNER_NAME ?? 'unknown' };
+}
+function progress(stage, details = {}) {
+  process.stdout.write(`RUNNER_1_6_PROGRESS=${JSON.stringify({ stage, at: new Date().toISOString(), ...details })}\n`);
 }
 function requiredEnv(name) {
   invariant(process.env[name], 'ENVIRONMENT_VALUE_REQUIRED', `${name} is required`);

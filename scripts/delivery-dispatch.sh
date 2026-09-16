@@ -9,16 +9,22 @@ target=''
 physical_node=''
 case "$operation" in
   release|status)
-    [ "$#" -eq 2 ] || { echo "Usage: delivery-dispatch.sh $operation <source-sha-or-release-id>" >&2; exit 64; }
+    if [ "$operation" = release ]; then
+      { [ "$#" -eq 2 ] || [ "$#" -eq 4 ]; } || { echo 'Usage: delivery-dispatch.sh release <source-sha-or-release-id> [target physical-node]' >&2; exit 64; }
+    else
+      [ "$#" -eq 2 ] || { echo 'Usage: delivery-dispatch.sh status <source-sha-or-release-id>' >&2; exit 64; }
+    fi
     identifier="$2"
     [[ "$identifier" =~ ^[0-9a-f]{40}$ || "$identifier" =~ ^r16-[0-9a-f]{40}$ ]] \
       || { echo "$operation requires a full lowercase Source SHA or r16 release id" >&2; exit 64; }
+    if [ "$#" -eq 4 ]; then target="$3"; physical_node="$4"; fi
     ;;
   retry)
-    [ "$#" -eq 2 ] || { echo 'Usage: delivery-dispatch.sh retry <r16-release-id>' >&2; exit 64; }
+    { [ "$#" -eq 2 ] || [ "$#" -eq 4 ]; } || { echo 'Usage: delivery-dispatch.sh retry <r16-release-id> [target physical-node]' >&2; exit 64; }
     identifier="$2"
     [[ "$identifier" =~ ^r16-[0-9a-f]{40}$ ]] \
       || { echo 'retry requires an r16 release id' >&2; exit 64; }
+    if [ "$#" -eq 4 ]; then target="$3"; physical_node="$4"; fi
     ;;
   rollback)
     [ "$#" -eq 3 ] || { echo 'Usage: delivery-dispatch.sh rollback <target> <physical-node>' >&2; exit 64; }

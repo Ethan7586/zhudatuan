@@ -230,9 +230,7 @@ async function prepareLayout() {
     allowedRoots: [root],
     allowedDependencyRoots: [join(root, 'layers')],
     incomingRoot: join(root, 'incoming'),
-    lockRoot: join(root, 'locks'),
     auditRoot: join(root, 'audit'),
-    staleLockSeconds: 3600,
     readiness: { timeoutMs: 30000, intervalMs: 500, attemptTimeoutMs: 3000, hardFailureGraceMs: 1000 },
     protectedProcesses: [...protectedUnits, ...Object.values(sentinelUnits)].map((name) => ({ kind: 'systemd', name })),
     nodes: {

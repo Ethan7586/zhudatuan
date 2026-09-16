@@ -22,6 +22,12 @@ test('accepts the current registered deployment chain', () => {
   assert.equal(summary.nodes, Object.keys(current.adapter.nodes).length);
 });
 
+test('rejects any remote lock authority', () => {
+  const policy = structuredClone(current.policy);
+  policy.lockRoot = '/run/lock/ai-delivery';
+  assert.throws(() => validateDeploymentContract({ ...current, policy }), /DEPLOY_POLICY_LOCK_AUTHORITY_FORBIDDEN/);
+});
+
 test('rejects a missing rollback target input', () => {
   const workflow = structuredClone(current.workflow);
   delete workflow.on.workflow_dispatch.inputs.release_target;

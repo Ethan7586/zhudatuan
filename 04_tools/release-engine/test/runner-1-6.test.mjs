@@ -110,6 +110,9 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
   assert.equal(action.outputs.started.value, '${{ steps.started.outputs.value }}');
   assert.ok(action.runs.steps.findIndex((step) => step.id === 'started') < action.runs.steps.findIndex((step) => String(step.run ?? '').includes('scripts/runner-1-6.sh')));
   assert.doesNotMatch(workflowSource, /final.?seal|closure|runner.?lease|writer.?lease|slot.?claim|readiness.?doctor|finalizer/i);
+  assert.match(workflow.on.workflow_dispatch.inputs.release_target.description, /fast exact release\/retry/);
+  assert.match(workflowSource, /exact release requires both target and physical node/);
+  assert.match(workflowSource, /exact retry requires both target and physical node/);
 });
 
 test('control-side command only dispatches and queries GitHub', async () => {
@@ -141,6 +144,8 @@ test('normal path uses direct artifact deployment and does not depend on old aut
   assert.doesNotMatch(core, /from '.\/src\/(?:engine|oss)\.mjs'/);
   assert.doesNotMatch(`${core}\n${shell}`, /final.?seal|closure|writer.?lease|runner.?lease|slot.?claim|readiness.?doctor/i);
   assert.doesNotMatch(agent, /seal-validated-candidate|deploy-sealed-candidate|register-current-baseline/);
+  assert.doesNotMatch(agent, /withLocks|acquireDirectoryLock|DELIVERY_LOCKED|lockRoot|staleLockSeconds|owner\.json/);
+  assert.match(agent, /CUTOVER_SUPERSEDED/);
   for (const obsolete of [
     '.github/workflows/delivery-1-4-3.yml',
     '.github/workflows/auto-prepare-artifacts.yml',
@@ -161,6 +166,24 @@ test('normal path uses direct artifact deployment and does not depend on old aut
   ]) {
     await assert.rejects(access(join(root, obsolete)));
   }
+});
+
+test('exact production cutover skips dependencies and build and reports the one-minute objective', async () => {
+  const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
+  const exactBranch = core.indexOf('if (exactScope) return deployExact');
+  const dependencyInstall = core.indexOf("name: 'install-control-dependencies'");
+  const exactFunction = core.indexOf('async function deployExact');
+  assert.ok(exactBranch > 0 && exactBranch < dependencyInstall && exactFunction > dependencyInstall);
+  const exactSource = core.slice(exactFunction, core.indexOf('async function deployTarget'));
+  assert.doesNotMatch(exactSource, /npm|buildRelease|packageRelease|createReleasePlan/);
+  assert.match(exactSource, /ARTIFACT_NOT_READY/);
+  assert.match(exactSource, /productionSloMs: 60_000/);
+  assert.match(exactSource, /productionDurationMs <= 60_000/);
+});
+
+test('remote policy contains no lock or unlock authority', async () => {
+  const policy = await readFile(join(root, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8');
+  assert.doesNotMatch(policy, /lockRoot|staleLockSeconds|owner\.json/i);
 });
 
 test('release installs dependencies before dynamic impact planning', async () => {

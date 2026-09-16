@@ -2,7 +2,6 @@
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { appendFile, chmod, copyFile, cp, link, lstat, mkdir, readFile, readlink, readdir, realpath, rename, rm, statfs, symlink, writeFile } from 'node:fs/promises';
-import { hostname } from 'node:os';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { spawn } from 'node:child_process';
 import { performance } from 'node:perf_hooks';
@@ -48,21 +47,20 @@ try {
   let result;
   if (action === 'lookup') result = await lookup(context, options);
   else if (action === 'layer-lookup') result = await dependencyLayerLookup(context, options);
-  else if (action === 'stage-layer') result = await withLocks(context, false, () => stageDependencyLayer(context, options), { version: options.digest, operation: 'stage-dependency-layer' });
-  else if (action === 'reuse') result = await withLocks(context, false, () => reuse(context, options), { version: options.treeDigest, operation: 'reuse-artifact' });
-  else if (action === 'reuse-direct') result = await withLocks(context, false, () => reuse(context, options, true), { version: options.treeDigest, operation: 'reuse-artifact-direct' });
-  else if (action === 'stage') result = await withLocks(context, false, () => stage(context, options), { version: options.treeDigest });
-  else if (action === 'stage-direct') result = await withLocks(context, false, () => stage(context, options, true), { version: options.treeDigest, operation: 'stage-direct' });
-  else if (action === 'validate-oss-candidate' || action === 'validate-oss-candidate-v2' || action === 'validate-oss-candidate-v3')
-    result = await withLocks(context, false, () => validateOssCandidate(context, options), { version: options.sourceSha, operation: 'validate-oss-candidate' });
-  else if (action === 'deploy-oss-direct' || action === 'deploy-oss-direct-v2') result = await withLocks(context, true, () => deployOssDirect(context, options), { version: options.sourceSha, operation: 'deploy-oss-direct' });
+  else if (action === 'stage-layer') result = await stageDependencyLayer(context, options);
+  else if (action === 'reuse') result = await reuse(context, options);
+  else if (action === 'reuse-direct') result = await reuse(context, options, true);
+  else if (action === 'stage') result = await stage(context, options);
+  else if (action === 'stage-direct') result = await stage(context, options, true);
+  else if (action === 'validate-oss-candidate' || action === 'validate-oss-candidate-v2' || action === 'validate-oss-candidate-v3') result = await validateOssCandidate(context, options);
+  else if (action === 'deploy-oss-direct' || action === 'deploy-oss-direct-v2') result = await deployOssDirect(context, options);
   else if (action === 'preflight') result = await preflight(context);
-  else if (action === 'baseline') result = await withLocks(context, true, () => importBaseline(context, options), { version: options.sourceSha, operation: 'import-baseline' });
-  else if (action === 'seed') result = await withLocks(context, true, () => seed(context, options), { version: options.sourceSha, operation: 'seed-layout' });
-  else if (action === 'activate') result = await withLocks(context, true, () => activate(context, options), { version: options.approval?.split(':').at(-1) });
-  else if (action === 'activate-direct') result = await withLocks(context, true, () => activateDirect(context, options), { version: options.sourceSha, operation: 'activate-direct' });
-  else if (action === 'rollback') result = await withLocks(context, true, () => rollback(context), { operation: 'rollback' });
-  else if (action === 'verify') result = await withLocks(context, false, () => verifyCurrent(context), { operation: 'verify' });
+  else if (action === 'baseline') result = await importBaseline(context, options);
+  else if (action === 'seed') result = await seed(context, options);
+  else if (action === 'activate') result = await activate(context, options);
+  else if (action === 'activate-direct') result = await activateDirect(context, options);
+  else if (action === 'rollback') result = await rollback(context);
+  else if (action === 'verify') result = await verifyCurrent(context);
   else if (action === 'status') result = await status(context);
   else throw failure('ACTION_UNKNOWN', { action });
 
@@ -699,7 +697,19 @@ async function activate(context, options) {
     timings.isolation = Date.now() - isolationStarted;
     const caddyAfter = await caddySemanticEvidence(context.policy);
     assert(caddyAfter?.digest === caddyBefore?.digest, 'CADDY_SEMANTIC_CHANGED', { before: caddyBefore?.digest, after: caddyAfter?.digest });
+    const currentAfterHealth = await pointer(root, 'current');
+    assert(currentAfterHealth === candidate, 'CUTOVER_SUPERSEDED', { candidate, current: currentAfterHealth, previousCurrent });
   } catch (candidateError) {
+    const currentAtFailure = await pointer(root, 'current');
+    if (currentAtFailure !== candidate && currentAtFailure !== previousCurrent) {
+      throw failure('CUTOVER_SUPERSEDED', {
+        candidate,
+        current: currentAtFailure,
+        previousCurrent,
+        candidateFailure: errorEvidence(candidateError),
+        recovery: 'not-performed-because-a-newer-cutover-owns-current',
+      });
+    }
     if (databaseMigration) {
       let pointerRecovery = { status: 'restored', error: null };
       try {
@@ -1030,8 +1040,6 @@ async function rollback(context) {
 
 async function status(context) {
   const root = context.deployment.pointerRoot;
-  const lockRoot = context.policy.lockRoot ?? '/run/lock/ai-delivery';
-  const projectLockRoot = join(lockRoot, 'projects', safeName(context.project));
   const candidate = await statusPointer(root, 'candidate');
   const current = await statusPointer(root, 'current');
   const previous = await statusPointer(root, 'previous');
@@ -1046,10 +1054,6 @@ async function status(context) {
     runtime: await statusPointer(root, 'runtime'),
     previousRuntime: await statusPointer(root, 'previous-runtime'),
     restart: context.deployment.restart,
-    locks: {
-      node: await readLock(join(projectLockRoot, 'nodes', `${safeName(context.node)}.lock`)),
-      target: await readLock(join(projectLockRoot, 'targets', safeName(context.node), `${safeName(context.target)}.lock`)),
-    },
   };
 }
 
@@ -1159,19 +1163,6 @@ async function dependencyLayerPath(context, layer) {
   return path;
 }
 
-async function withLocks(context, _production, work, details = {}) {
-  const lockRoot = context.policy.lockRoot ?? '/run/lock/ai-delivery';
-  const projectLockRoot = join(lockRoot, 'projects', safeName(context.project));
-  const paths = [join(projectLockRoot, 'nodes', `${safeName(context.node)}.lock`), join(projectLockRoot, 'targets', safeName(context.node), `${safeName(context.target)}.lock`)];
-  const releases = [];
-  try {
-    for (const path of paths) releases.push(await acquireDirectoryLock(path, context, context.policy.staleLockSeconds ?? 3600, details));
-    return await work();
-  } finally {
-    for (const release of releases.reverse()) await release();
-  }
-}
-
 async function pointerSnapshot(root) {
   return Object.fromEntries(await Promise.all(['candidate', 'current', 'previous', 'rollback', 'runtime', 'previous-runtime'].map(async (name) => [name, await pointer(root, name)])));
 }
@@ -1246,42 +1237,6 @@ async function lifecycleEvidence(policy) {
     states.push({ unit, active: active.stdout.trim() });
   }
   return { mode: 'existing-lifecycle', status: states.every((item) => item.active === 'active') ? 'armed' : 'degraded', units: states };
-}
-
-async function acquireDirectoryLock(path, context, staleSeconds, details) {
-  await mkdir(dirname(path), { recursive: true });
-  try {
-    await mkdir(path);
-  } catch (error) {
-    if (error?.code !== 'EEXIST') throw error;
-    const owner = await readJson(join(path, 'owner.json'));
-    const age = owner?.startedAt ? (Date.now() - Date.parse(owner.startedAt)) / 1000 : 0;
-    if (owner?.host === hostname() && age > staleSeconds && !isAlive(owner.pid)) {
-      await rm(path, { recursive: true, force: true });
-      await mkdir(path);
-    } else {
-      throw failure('DELIVERY_LOCKED', { path, owner });
-    }
-  }
-  await writeFile(
-    join(path, 'owner.json'),
-    `${JSON.stringify(
-      {
-        schema: 'ai.delivery.lock.v1',
-        pid: process.pid,
-        host: hostname(),
-        publisher: process.env.AI_DELIVERY_ACTOR ?? process.env.SUDO_USER ?? process.env.USER ?? 'unknown',
-        startedAt: new Date().toISOString(),
-        service: context.deployment.restart?.name ?? 'none',
-        ...contextSummary(context),
-        ...details,
-      },
-      null,
-      2
-    )}\n`,
-    { flag: 'wx', mode: 0o600 }
-  );
-  return () => rm(path, { recursive: true, force: true });
 }
 
 async function protectedProcessSnapshot(context) {
@@ -1910,11 +1865,6 @@ async function readJson(path) {
   }
 }
 
-async function readLock(path) {
-  if (!(await exists(path))) return null;
-  return { path, owner: await readJson(join(path, 'owner.json')) };
-}
-
 async function exists(path) {
   try {
     await lstat(path);
@@ -1931,16 +1881,6 @@ async function lstatOrNull(path) {
   } catch (error) {
     if (error?.code === 'ENOENT') return null;
     throw error;
-  }
-}
-
-function isAlive(pid) {
-  if (!Number.isInteger(pid)) return false;
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
   }
 }
 
