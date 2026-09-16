@@ -35,6 +35,8 @@ async function main() {
       result = await status(adapter, controlRoot, sourceSha);
     } else if (options.operation === 'rollback') {
       result = await rollback(adapter, controlRoot, options.target, options.node);
+    } else if (options.operation === 'control-update') {
+      result = await updateRemoteControl(adapter, controlRoot);
     } else throw new DeliveryError('OPERATION_UNKNOWN', `Unknown Runner 1.6 operation: ${options.operation}`);
     process.stdout.write(`RUNNER_1_6_RESULT=${JSON.stringify(result)}\n`);
   } catch (unknown) {
@@ -220,6 +222,71 @@ async function deployTarget(adapter, controlRoot, publicClient, { target, node, 
     recovery: remote.result?.activation?.rollback ?? null,
     durationMs: result.durationMs,
   };
+}
+
+async function updateRemoteControl(adapter, controlRoot) {
+  context.stage = 'control-update';
+  const transport = adapter.transport;
+  const host = process.env[transport.hostEnv ?? 'AI_DELIVERY_SSH_HOST'] ?? transport.host;
+  invariant(host, 'DEPLOY_SSH_HOST_MISSING', 'SSH host missing for control update');
+  const agentPath = join(controlRoot, '04_tools/release-engine/remote/agent.mjs');
+  const policyPath = join(controlRoot, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json');
+  const [agent, policy] = await Promise.all([readFile(agentPath), readFile(policyPath)]);
+  const agentSha256 = createHash('sha256').update(agent).digest('hex');
+  const policySha256 = createHash('sha256').update(policy).digest('hex');
+  progress('control-update', { controlSha: process.env.CONTROL_SHA, host });
+  const script = remoteControlUpdateScript({
+    agent: agent.toString('base64'),
+    policy: policy.toString('base64'),
+    agentSha256,
+    policySha256,
+  });
+  const result = await runCommand(
+    {
+      name: 'control-update',
+      argv: sshArgv(host, ['bash', '-s']),
+      input: script,
+      timeoutMs: 60_000,
+    },
+    commandContext(adapter)
+  );
+  return {
+    state: 'HEALTHY',
+    operation: 'control-update',
+    controlSha: process.env.CONTROL_SHA,
+    executor: executor(),
+    host,
+    agentSha256: `sha256:${agentSha256}`,
+    policySha256: `sha256:${policySha256}`,
+    output: result.output.trim(),
+    durationMs: result.durationMs,
+  };
+}
+
+function remoteControlUpdateScript({ agent, policy, agentSha256, policySha256 }) {
+  return `set -euo pipefail
+install -d -m 0755 /usr/local/lib/ai-delivery /etc/ai-delivery/projects
+agent_tmp="$(mktemp /usr/local/lib/ai-delivery/.agent.XXXXXX)"
+policy_tmp="$(mktemp /etc/ai-delivery/projects/.zdt-next.XXXXXX)"
+cleanup() { rm -f -- "$agent_tmp" "$policy_tmp"; }
+trap cleanup EXIT
+base64 -d > "$agent_tmp" <<'RUNNER_1_6_AGENT'
+${agent}
+RUNNER_1_6_AGENT
+base64 -d > "$policy_tmp" <<'RUNNER_1_6_POLICY'
+${policy}
+RUNNER_1_6_POLICY
+chmod 0755 "$agent_tmp"
+chmod 0644 "$policy_tmp"
+node --check "$agent_tmp"
+node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync(process.argv[1]));if(p.schema!=="ai.delivery.remote-policy.v1"||p.project!=="zdt-next")process.exit(1)' "$policy_tmp"
+[ "$(sha256sum "$agent_tmp" | cut -d' ' -f1)" = "${agentSha256}" ]
+[ "$(sha256sum "$policy_tmp" | cut -d' ' -f1)" = "${policySha256}" ]
+mv -f "$agent_tmp" /usr/local/lib/ai-delivery/agent.mjs
+mv -f "$policy_tmp" /etc/ai-delivery/projects/zdt-next.json
+trap - EXIT
+printf 'CONTROL_UPDATED agent=sha256:${agentSha256} policy=sha256:${policySha256}\\n'
+`;
 }
 
 async function status(adapter, controlRoot, sourceSha) {

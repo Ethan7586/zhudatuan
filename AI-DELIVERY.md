@@ -11,9 +11,12 @@
 /Users/Ethan/.codex/bin/zdt-delivery retry <r16-release-id>
 /Users/Ethan/.codex/bin/zdt-delivery retry <r16-release-id> <target> <physical-node>
 /Users/Ethan/.codex/bin/zdt-delivery rollback <target> <physical-node>
+/Users/Ethan/.codex/bin/zdt-delivery control-update
 ```
 
 控制端每次读取最新 `origin/zdt-next`，只派发 `delivery-1-6.yml`、查询 GitHub 运行并展示结果。控制端不安装依赖、不构建、不上传制品、不连接生产，也不执行回滚。
+
+`control-update` 只在远端 Agent 或策略版本变化时使用。它通过同一个工作流和 Runner 核心，把已经通过本地语法与策略校验的 Agent、策略原子替换到目标主机；不移动任何业务指针，不重启服务，不改变流量，也不创建锁或解锁状态。
 
 GitHub 工作流先选择可立即执行的阿里云 Build Runner；没有匹配 Runner、Runner offline/busy 或状态不可读时直接使用 `ubuntu-24.04`。两种执行位置都调用 `.github/actions/runner-1-6/action.yml`，后者只调用同一个 `scripts/runner-1-6.sh` 和 `runner-1-6.mjs` 核心。阿里云任务若在核心启动前失败，GitHub Hosted 执行相同核心；核心启动后不自动换路。
 

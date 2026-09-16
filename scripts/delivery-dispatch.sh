@@ -31,7 +31,10 @@ case "$operation" in
     target="$2"
     physical_node="$3"
     ;;
-  *) echo 'Runner 1.6 operations: release, status, retry, rollback' >&2; exit 64 ;;
+  control-update)
+    [ "$#" -eq 1 ] || { echo 'Usage: delivery-dispatch.sh control-update' >&2; exit 64; }
+    ;;
+  *) echo 'Runner 1.6 operations: release, status, retry, rollback, control-update' >&2; exit 64 ;;
 esac
 
 workflow='delivery-1-6.yml'
