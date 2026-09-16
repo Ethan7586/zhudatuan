@@ -1,38 +1,26 @@
-import { createRequire } from 'node:module';
-import { relative, resolve } from 'node:path';
+import { readFile, readdir } from 'node:fs/promises';
+import { dirname, join, relative, resolve } from 'node:path';
 
 import { serviceEntryDirectory, serviceTargets } from './service-targets.mjs';
-import { workspaceResolver } from './workspace-resolver.mjs';
-
 export async function resolveImpact({ adapter, changes }) {
-  const { build } = createRequire(resolve(adapter.projectRoot, 'package.json'))('esbuild');
-  const entryPoints = Object.fromEntries(Object.entries(serviceTargets).flatMap(([target, names]) =>
-    names.map((name) => [`${target}--${name}`, resolve(adapter.projectRoot, serviceEntryDirectory, `${name}.ts`)])));
-  const result = await build({
-    absWorkingDir: adapter.projectRoot,
-    bundle: true,
-    entryPoints,
-    format: 'esm',
-    metafile: true,
-    outdir: '.ai-delivery/impact-analysis',
-    packages: 'external',
-    platform: 'node',
-    plugins: [await workspaceResolver(adapter.projectRoot)],
-    sourcemap: false,
-    write: false,
-  });
+  const workspaces = await workspaceIndex(adapter.projectRoot);
+  const graphs = await Promise.all(
+    Object.entries(serviceTargets).map(async ([target, names]) => [
+      target,
+      await sourceClosure(
+        adapter.projectRoot,
+        names.map((name) => resolve(adapter.projectRoot, serviceEntryDirectory, `${name}.ts`)),
+        workspaces
+      ),
+    ])
+  );
   const changed = new Set(changes
     .flatMap((change) => [change.path, change.sourcePath].filter(Boolean))
     .filter((path) => !isTestFile(path)));
   const impacted = new Set();
   const found = new Set();
-  for (const output of Object.values(result.metafile.outputs)) {
-    if (!output.entryPoint) continue;
-    const entryName = Object.entries(entryPoints).find(([, path]) => relative(adapter.projectRoot, path).replaceAll('\\', '/') === output.entryPoint)?.[0];
-    const target = entryName?.split('--', 1)[0];
-    if (!target) continue;
-    for (const input of Object.keys(output.inputs)) {
-      const normalized = input.replaceAll('\\', '/');
+  for (const [target, inputs] of graphs) {
+    for (const normalized of inputs) {
       if (changed.has(normalized)) {
         found.add(normalized);
         impacted.add(target);
@@ -57,6 +45,96 @@ export async function resolveImpact({ adapter, changes }) {
       ? `dependency graph could not narrow ${unresolved.join(', ')}; selected every reachable commerce runtime target`
       : 'dependency graph could not narrow the runtime consumer; selected every reachable commerce runtime target'],
   };
+}
+
+async function sourceClosure(projectRoot, entries, workspaces) {
+  const pending = [...entries];
+  const visited = new Set();
+  while (pending.length > 0) {
+    const file = pending.pop();
+    if (!file || visited.has(file)) continue;
+    visited.add(file);
+    let source;
+    try {
+      source = await readFile(file, 'utf8');
+    } catch (error) {
+      if (error?.code === 'ENOENT') continue;
+      throw error;
+    }
+    for (const specifier of importSpecifiers(source)) {
+      const resolved = await resolveImport(file, specifier, workspaces);
+      if (resolved) pending.push(resolved);
+    }
+  }
+  return new Set([...visited].map((file) => relative(projectRoot, file).replaceAll('\\', '/')));
+}
+
+function importSpecifiers(source) {
+  const values = new Set();
+  const expression = /(?:\b(?:import|export)\s+(?:[^'";]*?\s+from\s+)?|\b(?:import|require)\s*\()\s*['"]([^'"]+)['"]/g;
+  for (const match of source.matchAll(expression)) values.add(match[1]);
+  return values;
+}
+
+async function resolveImport(importer, specifier, workspaces) {
+  if (specifier.startsWith('.')) return resolveSource(resolve(dirname(importer), specifier));
+  const name = workspaces.names.find((candidate) => specifier === candidate || specifier.startsWith(`${candidate}/`));
+  if (!name) return null;
+  const workspace = workspaces.packages.get(name);
+  const subpath = specifier === name ? '.' : `.${specifier.slice(name.length)}`;
+  const exported = resolveExport(workspace.manifest.exports, subpath);
+  return exported ? resolveSource(resolve(workspace.directory, exported)) : null;
+}
+
+async function resolveSource(base) {
+  for (const candidate of [base, ...['.ts', '.tsx', '.mts', '.mjs', '.js', '.json'].map((extension) => `${base}${extension}`), ...['index.ts', 'index.tsx', 'index.mts', 'index.mjs', 'index.js'].map((name) => join(base, name))]) {
+    try {
+      await readFile(candidate);
+      return candidate;
+    } catch (error) {
+      if (error?.code !== 'ENOENT' && error?.code !== 'EISDIR') throw error;
+    }
+  }
+  return null;
+}
+
+async function workspaceIndex(projectRoot) {
+  const root = JSON.parse(await readFile(join(projectRoot, 'package.json'), 'utf8'));
+  const packages = new Map();
+  for (const pattern of root.workspaces ?? []) {
+    for (const directory of await expandWorkspacePattern(projectRoot, pattern)) {
+      try {
+        const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
+        if (manifest.name) packages.set(manifest.name, { directory, manifest });
+      } catch (error) {
+        if (error?.code !== 'ENOENT') throw error;
+      }
+    }
+  }
+  return { packages, names: [...packages.keys()].sort((left, right) => right.length - left.length) };
+}
+
+async function expandWorkspacePattern(projectRoot, pattern) {
+  const star = pattern.indexOf('*');
+  if (star < 0) return [resolve(projectRoot, pattern)];
+  const parent = resolve(projectRoot, pattern.slice(0, star));
+  const suffix = pattern.slice(star + 1).replace(/^\//, '');
+  const entries = await readdir(parent, { withFileTypes: true });
+  return entries.filter((entry) => entry.isDirectory()).map((entry) => (suffix ? join(parent, entry.name, suffix) : join(parent, entry.name)));
+}
+
+function resolveExport(exports, subpath) {
+  if (typeof exports === 'string') return subpath === '.' ? exports : null;
+  const value = exports?.[subpath] ?? (subpath === '.' && !Object.keys(exports ?? {}).some((key) => key.startsWith('.')) ? exports : null);
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) return value.map((item) => resolveExportValue(item)).find(Boolean) ?? null;
+  return resolveExportValue(value);
+}
+
+function resolveExportValue(value) {
+  if (typeof value === 'string') return value;
+  if (!value || typeof value !== 'object') return null;
+  return resolveExportValue(value.import ?? value.default ?? value.node ?? value.require ?? Object.values(value)[0]);
 }
 
 function isTestFile(path) {

@@ -206,10 +206,13 @@ test('release installs dependencies before dynamic impact planning', async () =>
   assert.match(core, /resolve\(controlRoot\) !== resolve\(adapter\.projectRoot\)/);
 });
 
-test('status installs the dynamic impact dependencies instead of failing before observation', async () => {
+test('status plans without dependency installation and observes placements in parallel', async () => {
   const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
   const status = core.slice(core.indexOf('async function status'), core.indexOf('async function rollback'));
-  assert.ok(status.indexOf('await installDependencies') < status.indexOf('const plan = await createReleasePlan'));
+  assert.doesNotMatch(status, /installDependencies|npm ci/);
+  assert.match(status, /Promise\.all\(placements\.map/);
+  const impact = await readFile(join(root, '04_tools/release-engine/adapters/zdt-next/service-impact.mjs'), 'utf8');
+  assert.doesNotMatch(impact, /(?:from|require\()['"]esbuild['"]/);
 });
 
 test('isolated legacy recovery has no concurrency lock', async () => {
