@@ -8,9 +8,17 @@ identifier=''
 target=''
 physical_node=''
 case "$operation" in
-  release|status|retry)
+  release|status)
     [ "$#" -eq 2 ] || { echo "Usage: delivery-dispatch.sh $operation <source-sha-or-release-id>" >&2; exit 64; }
     identifier="$2"
+    [[ "$identifier" =~ ^[0-9a-f]{40}$ || "$identifier" =~ ^r16-[0-9a-f]{40}$ ]] \
+      || { echo "$operation requires a full lowercase Source SHA or r16 release id" >&2; exit 64; }
+    ;;
+  retry)
+    [ "$#" -eq 2 ] || { echo 'Usage: delivery-dispatch.sh retry <r16-release-id>' >&2; exit 64; }
+    identifier="$2"
+    [[ "$identifier" =~ ^r16-[0-9a-f]{40}$ ]] \
+      || { echo 'retry requires an r16 release id' >&2; exit 64; }
     ;;
   rollback)
     [ "$#" -eq 3 ] || { echo 'Usage: delivery-dispatch.sh rollback <target> <physical-node>' >&2; exit 64; }

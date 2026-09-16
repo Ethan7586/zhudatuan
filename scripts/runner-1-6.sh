@@ -9,13 +9,19 @@ identifier="${RELEASE_IDENTIFIER:-}"
 target="${RELEASE_TARGET:-}"
 node="${PHYSICAL_NODE:-}"
 
-install -d -m 700 "$HOME/.ssh"
-install -m 600 "$control_root/02_platform_pingtai/infrastructure/release/zdt-next.ssh-known-hosts" "$HOME/.ssh/known_hosts"
+ssh_dir="$(mktemp -d "${RUNNER_TEMP:-/tmp}/zdt-runner-1-6-ssh.XXXXXX")"
+cleanup() {
+  rm -f -- "$ssh_dir/zdt_release" "$ssh_dir/known_hosts"
+  rmdir "$ssh_dir" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+install -m 600 "$control_root/02_platform_pingtai/infrastructure/release/zdt-next.ssh-known-hosts" "$ssh_dir/known_hosts"
+export ZDT_RELEASE_KNOWN_HOSTS_PATH="$ssh_dir/known_hosts"
 if [ -n "${ZDT_RELEASE_SSH_KEY:-}" ]; then
-  printf '%s\n' "$ZDT_RELEASE_SSH_KEY" > "$HOME/.ssh/zdt_release"
-  chmod 600 "$HOME/.ssh/zdt_release"
-  printf 'Host *\n  IdentityFile %s\n  IdentitiesOnly yes\n' "$HOME/.ssh/zdt_release" > "$HOME/.ssh/config"
-  chmod 600 "$HOME/.ssh/config"
+  printf '%s\n' "$ZDT_RELEASE_SSH_KEY" > "$ssh_dir/zdt_release"
+  chmod 600 "$ssh_dir/zdt_release"
+  export ZDT_RELEASE_SSH_KEY_PATH="$ssh_dir/zdt_release"
 fi
 
 args=("$operation" --control-root "$control_root")
@@ -23,4 +29,4 @@ if [ -n "$source_root" ]; then args+=(--source-root "$source_root"); fi
 if [ -n "$identifier" ]; then args+=(--identifier "$identifier"); fi
 if [ -n "$target" ]; then args+=(--target "$target"); fi
 if [ -n "$node" ]; then args+=(--node "$node"); fi
-exec node "$control_root/04_tools/release-engine/runner-1-6.mjs" "${args[@]}"
+node "$control_root/04_tools/release-engine/runner-1-6.mjs" "${args[@]}"

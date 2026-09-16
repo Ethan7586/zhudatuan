@@ -113,9 +113,7 @@ async function deployTarget(adapter, controlRoot, publicClient, { target, node, 
   const result = await runCommand(
     {
       name: `deploy:${node}:${target}`,
-      argv: [
-        'ssh',
-        host,
+      argv: sshArgv(host, [
         transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs',
         'deploy-oss-direct-v2',
         '--project',
@@ -142,7 +140,7 @@ async function deployTarget(adapter, controlRoot, publicClient, { target, node, 
         `sha256:${agentHash}`,
         '--expected-remote-policy-sha256',
         `sha256:${policyHash}`,
-      ],
+      ]),
       input: `${JSON.stringify({ artifactUrl: downloadClient.signGet(artifact.object), manifestUrl: downloadClient.signGet(runtimeManifest.object) })}\n`,
       timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
     },
@@ -165,26 +163,39 @@ async function status(adapter, controlRoot, sourceSha) {
   context.stage = 'plan';
   const plan = await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha });
   const targets = [];
-  let rolledBack = false;
-  let failed = false;
   for (const target of plan.deploymentOrder) {
     for (const node of physicalPlacements(adapter, target)) {
       context.stage = 'status';
       context.target = target;
       context.node = node;
-      const remote = await remoteControl(adapter, target, node, 'status');
+      let remote;
+      try {
+        remote = await remoteControl(adapter, target, node, 'status');
+      } catch (error) {
+        targets.push({ target, node, state: 'UNKNOWN', currentSourceSha: null, previousSourceSha: null, health: null, diagnostic: observationDiagnostic(error) });
+        continue;
+      }
       const currentSha = remote.result?.currentArtifact?.sourceSha ?? null;
       const previousSha = remote.result?.previousArtifact?.sourceSha ?? null;
       let health = null;
+      let state;
       if (currentSha === sourceSha) {
         context.stage = 'health';
-        health = (await remoteControl(adapter, target, node, 'verify')).result?.readiness ?? null;
-      } else if (previousSha === sourceSha) rolledBack = true;
-      else failed = true;
-      targets.push({ target, node, currentSourceSha: currentSha, previousSourceSha: previousSha, health });
+        try {
+          health = (await remoteControl(adapter, target, node, 'verify')).result?.readiness ?? null;
+          state = 'HEALTHY';
+        } catch (error) {
+          const diagnostic = observationDiagnostic(error);
+          state = diagnostic.remoteFailure ? 'FAILED' : 'UNKNOWN';
+          targets.push({ target, node, state, currentSourceSha: currentSha, previousSourceSha: previousSha, health, diagnostic });
+          continue;
+        }
+      } else if (previousSha === sourceSha) state = 'ROLLED_BACK';
+      else state = 'FAILED';
+      targets.push({ target, node, state, currentSourceSha: currentSha, previousSourceSha: previousSha, health });
     }
   }
-  const state = failed ? 'FAILED' : rolledBack ? 'ROLLED_BACK' : 'HEALTHY';
+  const state = aggregateStatus(targets.map((target) => target.state));
   return { state, releaseId: `r16-${sourceSha}`, sourceSha, controlSha: process.env.CONTROL_SHA, executor: executor(), targets };
 }
 
@@ -214,7 +225,7 @@ async function remoteControl(adapter, target, node, action) {
   const result = await runCommand(
     {
       name: `${action}:${node}:${target}`,
-      argv: ['ssh', host, transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs', action, '--project', adapter.project, '--node', deployment.executionNode, '--target', target],
+      argv: sshArgv(host, [transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs', action, '--project', adapter.project, '--node', deployment.executionNode, '--target', target]),
       timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
     },
     commandContext(adapter)
@@ -239,6 +250,37 @@ function parseRemote(output) {
   } catch {
     throw new DeliveryError('REMOTE_RESULT_INVALID', 'Remote command did not return JSON', { outputTail: String(output).slice(-4000) });
   }
+}
+
+function sshArgv(host, remoteArguments) {
+  const argv = ['ssh', '-o', 'BatchMode=yes', '-o', `UserKnownHostsFile=${requiredEnv('ZDT_RELEASE_KNOWN_HOSTS_PATH')}`];
+  if (process.env.ZDT_RELEASE_SSH_KEY_PATH) argv.push('-i', process.env.ZDT_RELEASE_SSH_KEY_PATH, '-o', 'IdentitiesOnly=yes');
+  return [...argv, host, ...remoteArguments];
+}
+
+export function aggregateStatus(states) {
+  if (states.includes('FAILED')) return 'FAILED';
+  if (states.includes('UNKNOWN')) return 'UNKNOWN';
+  if (states.includes('ROLLED_BACK')) return 'ROLLED_BACK';
+  return 'HEALTHY';
+}
+
+export function observationDiagnostic(unknown) {
+  const error = asDeliveryError(unknown);
+  const details = error.details ?? {};
+  let remoteFailure = null;
+  try {
+    const parsed = JSON.parse(String(details.outputTail ?? '').trim());
+    if (parsed?.ok === false && parsed.error) remoteFailure = parsed.error;
+  } catch {}
+  return {
+    code: error.code,
+    error: error.message,
+    command: Array.isArray(details.argv) ? details.argv.join(' ') : null,
+    exitCode: details.exitCode ?? null,
+    output: details.outputTail ?? null,
+    remoteFailure,
+  };
 }
 
 function parse(args) {

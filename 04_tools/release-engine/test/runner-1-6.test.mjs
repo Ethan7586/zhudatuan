@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path';
 import test from 'node:test';
 import { parse } from 'yaml';
 
-import { sourceFromIdentifier } from '../runner-1-6.mjs';
+import { aggregateStatus, observationDiagnostic, sourceFromIdentifier } from '../runner-1-6.mjs';
 import { DeliveryError } from '../src/errors.mjs';
 import { runCommand } from '../src/runner.mjs';
 import { selectExecutionRunner } from '../src/runner-selection-1-6.mjs';
@@ -37,6 +37,16 @@ test('release id is deterministic and retry resolves the original Source SHA', (
   assert.equal(sourceFromIdentifier(sha), sha);
   assert.equal(sourceFromIdentifier(`r16-${sha}`), sha);
   assert.equal(sourceFromIdentifier('invalid'), null);
+});
+
+test('status keeps an unreadable observation UNKNOWN without hiding confirmed failure', () => {
+  assert.equal(aggregateStatus(['HEALTHY', 'UNKNOWN']), 'UNKNOWN');
+  assert.equal(aggregateStatus(['UNKNOWN', 'FAILED']), 'FAILED');
+  assert.equal(aggregateStatus(['HEALTHY', 'ROLLED_BACK']), 'ROLLED_BACK');
+  const unreadable = observationDiagnostic(new DeliveryError('COMMAND_FAILED', 'status failed', { exitCode: 255, outputTail: 'ssh unavailable' }));
+  assert.equal(unreadable.remoteFailure, null);
+  const unhealthy = observationDiagnostic(new DeliveryError('COMMAND_FAILED', 'verify failed', { exitCode: 1, outputTail: JSON.stringify({ ok: false, error: { code: 'READINESS_TIMEOUT', message: 'not ready' } }) }));
+  assert.equal(unhealthy.remoteFailure.code, 'READINESS_TIMEOUT');
 });
 
 test('simple OSS cache is reused when complete and rebuilt when missing', async () => {
@@ -82,11 +92,14 @@ test('simple OSS cache is reused when complete and rebuilt when missing', async 
 test('workflow has one entry, stateless routing, one shared core and pre-core hosted fallback', async () => {
   const workflowSource = await readFile(join(root, '.github/workflows/delivery-1-6.yml'), 'utf8');
   const workflow = parse(workflowSource);
+  const action = parse(await readFile(join(root, '.github/actions/runner-1-6/action.yml'), 'utf8'));
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.operation.options, ['release', 'status', 'retry', 'rollback']);
   assert.match(workflowSource, /runs-on: \$\{\{ fromJSON\(needs\.route\.outputs\.runs_on\) \}\}/);
   assert.equal(workflow.jobs.execute.steps.at(-1).uses, './.github/actions/runner-1-6');
   assert.equal(workflow.jobs['hosted-startup-fallback'].steps.at(-1).uses, './.github/actions/runner-1-6');
   assert.match(workflow.jobs['hosted-startup-fallback'].if, /core_started != 'true'/);
+  assert.equal(action.outputs.started.value, '${{ steps.started.outputs.value }}');
+  assert.ok(action.runs.steps.findIndex((step) => step.id === 'started') < action.runs.steps.findIndex((step) => String(step.run ?? '').includes('scripts/runner-1-6.sh')));
   assert.doesNotMatch(workflowSource, /final.?seal|closure|runner.?lease|writer.?lease|slot.?claim|readiness.?doctor|finalizer/i);
 });
 
@@ -95,7 +108,18 @@ test('control-side command only dispatches and queries GitHub', async () => {
   const controller = await readFile(join(root, '02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery'), 'utf8');
   assert.match(dispatcher, /workflow='delivery-1-6\.yml'/);
   assert.match(dispatcher, /gh workflow run/);
+  assert.match(dispatcher, /\^r16-\[0-9a-f\]\{40\}\$/);
   assert.doesNotMatch(`${dispatcher}\n${controller}`, /npm ci|npm run|\bssh\b|\bscp\b|runner-1-6\.mjs/);
+});
+
+test('shared core keeps SSH material isolated to the current runner invocation', async () => {
+  const shell = await readFile(join(root, 'scripts/runner-1-6.sh'), 'utf8');
+  const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
+  assert.match(shell, /mktemp -d/);
+  assert.match(shell, /trap cleanup EXIT/);
+  assert.doesNotMatch(shell, /\$HOME\/\.ssh/);
+  assert.match(core, /UserKnownHostsFile=/);
+  assert.match(core, /IdentitiesOnly=yes/);
 });
 
 test('normal path uses direct artifact deployment and does not depend on old authorities', async () => {
