@@ -115,7 +115,7 @@ jobs:
     runs-on: ${{ fromJSON(needs.route.outputs.runs_on) }}
     timeout-minutes: 40
     outputs:
-      core_started: ${{ steps.release.outputs.started }}
+      core_started: ${{ steps.release.outputs.started || steps.status_release.outputs.started }}
     env:
       ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
       ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
@@ -130,6 +130,7 @@ jobs:
         if: ${{ inputs.operation == 'status' }}
         with:
           ref: ${{ github.sha }}
+          path: .runner-1-6/status-control
           fetch-depth: 1
           filter: blob:none
           sparse-checkout-cone-mode: false
@@ -142,10 +143,12 @@ jobs:
         if: ${{ inputs.operation != 'status' }}
         with:
           ref: ${{ github.sha }}
+          path: .runner-1-6/control-release
           fetch-depth: 1
       - name: Run shared release core
         id: release
-        uses: ./.github/actions/runner-1-6
+        if: ${{ inputs.operation != 'status' }}
+        uses: ./.runner-1-6/control-release/.github/actions/runner-1-6
         with:
           operation: ${{ inputs.operation }}
           identifier: ${{ inputs.identifier }}
@@ -153,6 +156,17 @@ jobs:
           target: ${{ inputs.release_target }}
           physical-node: ${{ inputs.physical_node }}
           runner-class: ${{ needs.route.outputs.runner_class }}
+          control-root: ${{ github.workspace }}/.runner-1-6/control-release
+      - name: Read live status with the same core
+        id: status_release
+        if: ${{ inputs.operation == 'status' }}
+        uses: ./.runner-1-6/status-control/.github/actions/runner-1-6
+        with:
+          operation: status
+          identifier: ${{ inputs.identifier }}
+          source-sha: ${{ needs.route.outputs.source_sha }}
+          runner-class: ${{ needs.route.outputs.runner_class }}
+          control-root: ${{ github.workspace }}/.runner-1-6/status-control
 
   hosted-startup-fallback:
     name: Retry pre-core startup on GitHub Hosted
@@ -174,6 +188,7 @@ jobs:
         if: ${{ inputs.operation == 'status' }}
         with:
           ref: ${{ github.sha }}
+          path: .runner-1-6/status-control
           fetch-depth: 1
           filter: blob:none
           sparse-checkout-cone-mode: false
@@ -186,9 +201,11 @@ jobs:
         if: ${{ inputs.operation != 'status' }}
         with:
           ref: ${{ github.sha }}
+          path: .runner-1-6/control-release
           fetch-depth: 1
       - name: Run the same release core after Aliyun startup failure
-        uses: ./.github/actions/runner-1-6
+        if: ${{ inputs.operation != 'status' }}
+        uses: ./.runner-1-6/control-release/.github/actions/runner-1-6
         with:
           operation: ${{ inputs.operation }}
           identifier: ${{ inputs.identifier }}
@@ -196,3 +213,13 @@ jobs:
           target: ${{ inputs.release_target }}
           physical-node: ${{ inputs.physical_node }}
           runner-class: github-hosted
+          control-root: ${{ github.workspace }}/.runner-1-6/control-release
+      - name: Read live status with the same core after Aliyun startup failure
+        if: ${{ inputs.operation == 'status' }}
+        uses: ./.runner-1-6/status-control/.github/actions/runner-1-6
+        with:
+          operation: status
+          identifier: ${{ inputs.identifier }}
+          source-sha: ${{ needs.route.outputs.source_sha }}
+          runner-class: github-hosted
+          control-root: ${{ github.workspace }}/.runner-1-6/status-control

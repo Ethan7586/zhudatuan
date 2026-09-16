@@ -108,8 +108,14 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.operation.options, ['release', 'status', 'retry', 'rollback', 'control-update']);
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.execution_location.options, ['auto', 'github-hosted']);
   assert.match(workflowSource, /runs-on: \$\{\{ fromJSON\(needs\.route\.outputs\.runs_on\) \}\}/);
-  assert.equal(workflow.jobs.execute.steps.at(-1).uses, './.github/actions/runner-1-6');
-  assert.equal(workflow.jobs['hosted-startup-fallback'].steps.at(-1).uses, './.github/actions/runner-1-6');
+  for (const job of [workflow.jobs.execute, workflow.jobs['hosted-startup-fallback']]) {
+    const cores = job.steps.filter((step) => String(step.uses ?? '').endsWith('/.github/actions/runner-1-6'));
+    assert.equal(cores.length, 2);
+    assert.deepEqual(new Set(cores.map((step) => step.uses)), new Set([
+      './.runner-1-6/control-release/.github/actions/runner-1-6',
+      './.runner-1-6/status-control/.github/actions/runner-1-6',
+    ]));
+  }
   assert.match(workflow.jobs['hosted-startup-fallback'].if, /core_started != 'true'/);
   assert.equal(action.outputs.started.value, '${{ steps.started.outputs.value }}');
   assert.ok(action.runs.steps.findIndex((step) => step.id === 'started') < action.runs.steps.findIndex((step) => String(step.run ?? '').includes('scripts/runner-1-6.sh')));
@@ -233,6 +239,10 @@ test('status observes configured physical nodes without source checkout or a rel
   assert.match(workflow, /inputs\.operation == 'status'/);
   assert.match(workflow, /filter: blob:none/);
   assert.match(workflow, /sparse-checkout:/);
+  assert.match(workflow, /path: \.runner-1-6\/status-control/);
+  assert.match(workflow, /path: \.runner-1-6\/control-release/);
+  assert.match(workflow, /uses: \.\/\.runner-1-6\/status-control\/\.github\/actions\/runner-1-6/);
+  assert.match(workflow, /uses: \.\/\.runner-1-6\/control-release\/\.github\/actions\/runner-1-6/);
   const impact = await readFile(join(root, '04_tools/release-engine/adapters/zdt-next/service-impact.mjs'), 'utf8');
   assert.doesNotMatch(impact, /(?:from|require\()['"]esbuild['"]/);
 });
