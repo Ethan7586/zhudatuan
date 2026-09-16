@@ -188,6 +188,7 @@ test('control update uses the shared core and changes no business pointer or ser
   const update = core.slice(updateStart, updateEnd);
   assert.match(update, /remoteControlUpdateScript/);
   assert.match(update, /node --check/);
+  assert.match(update, /mktemp --suffix=\.mjs/);
   assert.doesNotMatch(update, /\b(?:current|previous|restart|systemctl|lock|lease|seal)\b/i);
 });
 
