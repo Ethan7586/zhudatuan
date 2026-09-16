@@ -117,3 +117,9 @@ test('release installs dependencies before dynamic impact planning', async () =>
   assert.ok(install > 0 && install < plan);
   assert.equal(core.match(/name: 'install-release-dependencies'/g)?.length, 1);
 });
+
+test('workspace isolation checks the selected source workspace', async () => {
+  const isolation = await readFile(join(root, '04_tools/release-engine/adapters/zdt-next/assert-workspace-isolation.mjs'), 'utf8');
+  assert.match(isolation, /resolve\(process\.cwd\(\)\)/);
+  assert.doesNotMatch(isolation, /fileURLToPath\(import\.meta\.url\)/);
+});
