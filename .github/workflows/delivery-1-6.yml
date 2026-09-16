@@ -21,6 +21,12 @@ on:
         description: Optional with release target for fast exact release/retry; required for rollback
         required: false
         type: string
+      execution_location:
+        description: Internal startup fallback override
+        required: false
+        default: auto
+        type: choice
+        options: [auto, github-hosted]
 
 permissions:
   actions: read
@@ -78,6 +84,7 @@ jobs:
           echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
       - name: Observe Aliyun runners
         id: observe
+        if: ${{ inputs.execution_location != 'github-hosted' }}
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
@@ -87,8 +94,12 @@ jobs:
         id: route
         shell: bash
         run: |
-          if [ "${{ steps.observe.outcome }}" != success ]; then printf '{"error":"runner-status-unavailable"}\n' > "$RUNNER_TEMP/runners.json"; fi
-          route="$(node 04_tools/release-engine/select-runner-1-6.mjs "$RUNNER_TEMP/runners.json")"
+          if [ "${{ inputs.execution_location }}" = github-hosted ]; then
+            route='{"runsOn":["ubuntu-24.04"],"runnerClass":"github-hosted","reason":"pre-core-startup-fallback"}'
+          else
+            if [ "${{ steps.observe.outcome }}" != success ]; then printf '{"error":"runner-status-unavailable"}\n' > "$RUNNER_TEMP/runners.json"; fi
+            route="$(node 04_tools/release-engine/select-runner-1-6.mjs "$RUNNER_TEMP/runners.json")"
+          fi
           echo "runs_on=$(node -e 'const r=JSON.parse(process.argv[1]);process.stdout.write(JSON.stringify(r.runsOn))' "$route")" >> "$GITHUB_OUTPUT"
           echo "runner_class=$(node -e 'const r=JSON.parse(process.argv[1]);process.stdout.write(r.runnerClass)' "$route")" >> "$GITHUB_OUTPUT"
           echo "route_reason=$(node -e 'const r=JSON.parse(process.argv[1]);process.stdout.write(r.reason)' "$route")" >> "$GITHUB_OUTPUT"

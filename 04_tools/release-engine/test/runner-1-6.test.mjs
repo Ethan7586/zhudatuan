@@ -103,6 +103,7 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
   const workflow = parse(workflowSource);
   const action = parse(await readFile(join(root, '.github/actions/runner-1-6/action.yml'), 'utf8'));
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.operation.options, ['release', 'status', 'retry', 'rollback', 'control-update']);
+  assert.deepEqual(workflow.on.workflow_dispatch.inputs.execution_location.options, ['auto', 'github-hosted']);
   assert.match(workflowSource, /runs-on: \$\{\{ fromJSON\(needs\.route\.outputs\.runs_on\) \}\}/);
   assert.equal(workflow.jobs.execute.steps.at(-1).uses, './.github/actions/runner-1-6');
   assert.equal(workflow.jobs['hosted-startup-fallback'].steps.at(-1).uses, './.github/actions/runner-1-6');
@@ -120,6 +121,10 @@ test('control-side command only dispatches and queries GitHub', async () => {
   const controller = await readFile(join(root, '02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery'), 'utf8');
   assert.match(dispatcher, /workflow='delivery-1-6\.yml'/);
   assert.match(dispatcher, /gh workflow run/);
+  assert.match(dispatcher, /gh run cancel/);
+  assert.match(dispatcher, /core_steps.*-eq 0/);
+  assert.match(dispatcher, /-f execution_location="\$execution_location"/);
+  assert.match(dispatcher, /dispatch_run "\$aliyun_run_id" github-hosted/);
   assert.match(dispatcher, /\^r16-\[0-9a-f\]\{40\}\$/);
   assert.doesNotMatch(`${dispatcher}\n${controller}`, /npm ci|npm run|\bssh\b|\bscp\b|runner-1-6\.mjs/);
 });
