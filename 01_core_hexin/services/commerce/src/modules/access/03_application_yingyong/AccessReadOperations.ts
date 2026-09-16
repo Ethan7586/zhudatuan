@@ -5,6 +5,7 @@ import { ModuleOperations, requireAccess, type OperationActions } from '../../..
 import { keysetResult, queryPage } from '../../../foundation/interface/Validation';
 import { DATABASE_POOL } from '../../../foundation/persistence/Pool';
 import { ADMINISTRATOR_SEGMENT_READ_OPERATION_IDS, administratorSegmentReadActions } from './AdministratorSegmentOperations';
+import { presentIdentityDisplays } from '../../identity-display/IdentityDisplayPresenter';
 
 export const ACCESS_OPERATOR_READ_OPERATION_IDS = Object.freeze([
   'access.center.read',
@@ -129,10 +130,30 @@ export function accessOperatorReadActions(): OperationActions {
               where roleboundary.ancestor_id=role.scope_id and roleboundary.descendant_id=$1))
           order by governance desc,role.name,role.id`, [access.scope.id]),
       ]);
-      const pageResult = keysetResult(result, page, 'id');
-      return { ...pageResult, body: { ...(pageResult.body as Readonly<Record<string, unknown>>), roles: roles.rows } };
+      const roleMembershipIds = roles.rows.flatMap((role) => Array.isArray(role.members)
+        ? role.members.flatMap((member) => isRoleMember(member) ? [String(member.membership)] : []) : []);
+      const displays = await presentIdentityDisplays(database, access.scope.id, 'operator', [
+        ...result.rows.map((row) => ({ membershipId: String(row.id) })),
+        ...roleMembershipIds.map((membershipId) => ({ membershipId })),
+      ]);
+      const rows = result.rows.map((row) => {
+        const identityDisplay = displays.get(String(row.id));
+        return identityDisplay === undefined ? row : { ...row, identity_display: identityDisplay };
+      });
+      const pageResult = keysetResult({ ...result, rows }, page, 'id');
+      const presentedRoles = roles.rows.map((role) => ({ ...role, members: Array.isArray(role.members)
+        ? role.members.map((member) => {
+          if (!isRoleMember(member)) return member;
+          const identityDisplay = displays.get(String(member.membership));
+          return identityDisplay === undefined ? member : { ...member, identity_display: identityDisplay };
+        }) : role.members }));
+      return { ...pageResult, body: { ...(pageResult.body as Readonly<Record<string, unknown>>), roles: presentedRoles } };
     },
   };
+}
+
+function isRoleMember(value: unknown): value is Readonly<Record<string, unknown>> & { readonly membership: string } {
+  return typeof value === 'object' && value !== null && typeof (value as { readonly membership?: unknown }).membership === 'string';
 }
 
 export function accessOperatorReadOperations(context: ModuleContext): ModuleOperations {

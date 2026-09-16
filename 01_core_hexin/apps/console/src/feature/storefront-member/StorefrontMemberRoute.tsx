@@ -12,6 +12,7 @@ import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { scopeDisplayName } from '../../entity/session/ScopePresentation';
 import { safeQueryError } from '../../shared/api/QueryState';
 import { formatDate } from '../../shared/ui/Format';
+import { IdentityBadge } from '../../shared/ui/IdentityBadge';
 import { pageCursor } from '../../shared/url/PageCursor';
 import { scopePath } from '../../shared/url/ScopePath';
 import { aftersaleLabel, fulfillmentLabel, paymentLabel } from '../order/OrderPresentation';
@@ -128,7 +129,7 @@ export function Component() {
               type="search"
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
-              placeholder="搜索姓名或手机号后四位"
+              placeholder="搜索姓名、会员身份代码或手机号后四位"
             />
             <button type="submit">搜索</button>
           </form>
@@ -143,7 +144,7 @@ export function Component() {
             {query.data !== undefined && visibleRows.length === 0 && error === undefined ? (
               <Empty
                 title={q === '' && filter === 'all' ? '暂无数据' : '未找到匹配会员'}
-                description={filter === 'all' ? '请检查姓名或脱敏手机号后四位。' : '当前页没有符合此绑定状态的会员。'}
+                description={filter === 'all' ? '请检查姓名、会员身份代码或脱敏手机号后四位。' : '当前页没有符合此绑定状态的会员。'}
               />
             ) : (
               <ResourceState condition={condition} {...(error === undefined ? {} : { error })} retry={() => void query.refetch()} resourceLabel="商城会员名单">
@@ -237,7 +238,7 @@ function MemberDirectory({ rows, selectedId, onSelect }: Readonly<{
             <span className="storefrontmemberperson" role="cell">
               <i>{member.display_name.slice(0, 1)}</i>
               <strong>{member.display_name}</strong>
-              <small>{member.mobile_masked}</small>
+              <IdentityBadge hint={member.identity_display} fallback={member.mobile_masked} />
             </span>
             <BindingState bound={member.mobile_bound} label="手机" />
             <BindingState bound={member.wechat_bound} label="微信" />
@@ -305,7 +306,7 @@ function MemberDetail({ member, mallName, open, onClose }: Readonly<{
           <i>{visibleMember.display_name.slice(0, 1)}</i>
           <div>
             <h3>{visibleMember.display_name}</h3>
-            <p>{visibleMember.mobile_masked}</p>
+            <IdentityBadge hint={visibleMember.identity_display} fallback={visibleMember.mobile_masked} />
           </div>
           <StatusState status={visibleMember.membership_status} />
         </section>
@@ -370,6 +371,7 @@ function ProfileTab({ detail, mallName }: Readonly<{ detail: StorefrontMemberDet
       <header><h3>系统资料</h3><span>只读</span></header>
       <dl className="storefrontmemberfacts">
         <Fact label="显示名称" value={detail.display_name} />
+        <Fact label="身份指代码" value={detail.identity_display?.code ?? '未分配'} />
         <Fact label="脱敏手机号" value={detail.mobile_masked} />
         <Fact label="当前状态" value={membershipLabel(detail.membership_status)} tone={detail.membership_status === 'active' ? 'success' : 'muted'} />
         <Fact label="手机绑定" value={detail.mobile_bound ? '已绑定' : '未绑定'} tone={detail.mobile_bound ? 'success' : 'muted'} />
@@ -389,7 +391,6 @@ function ReferralTab({ detail, query, page, onPrevious, onNext }: Readonly<{
   onPrevious: () => void;
   onNext: (cursor: string) => void;
 }>) {
-  const error = safeQueryError(query.error);
   const inviter = detail.inviter;
   const parent = detail.parent;
   return <>

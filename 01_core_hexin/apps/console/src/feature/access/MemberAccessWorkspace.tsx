@@ -6,6 +6,7 @@ import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import type { ConsoleContext, ConsoleScope, ConsoleSession } from '../../entity/session/ConsoleSession';
 import { safeQueryError } from '../../shared/api/QueryState';
 import { formatDate } from '../../shared/ui/Format';
+import { IdentityBadge } from '../../shared/ui/IdentityBadge';
 import { pageCursor } from '../../shared/url/PageCursor';
 import { scopePath } from '../../shared/url/ScopePath';
 import { MemberInvitationDialog } from '../member/MemberInvitationDialog';
@@ -48,6 +49,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
   const [selectedId, setSelectedId] = useState<string>();
   const [invitationOpen, setInvitationOpen] = useState(false);
   const [resetTarget, setResetTarget] = useState<Member>();
+  const [actionReceipt, setActionReceipt] = useState<string>();
   const cursor = search.get('cursor') ?? undefined;
   const canReadAccess = primary === 'access' || hasOperation(context, 'access.center.read');
   const canReadMembers = primary === 'members' || hasOperation(context, 'member.members.read');
@@ -148,7 +150,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
             <form className="storefrontmembersearch" role="search" onSubmit={submitSearch}>
               <label htmlFor="memberaccessfilter">搜索管理员</label>
               <MemberIcon name="search" />
-              <input id="memberaccessfilter" type="search" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="搜索姓名、角色或管理范围" />
+              <input id="memberaccessfilter" type="search" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="搜索姓名、身份代码、角色或管理范围" />
               <button type="submit">搜索</button>
             </form>
 
@@ -201,7 +203,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
               {hasSourceData && visibleRows.length === 0 && fatalError === undefined ? (
                 <Empty
                   title={rows.length === 0 && filter === '' && directoryFilter === 'all' ? '暂无管理员' : '未找到匹配管理员'}
-                  description={rows.length === 0 ? '当前范围暂未返回管理员资料。' : '请调整姓名、角色、管理范围或筛选条件。'}
+                  description={rows.length === 0 ? '当前范围暂未返回管理员资料。' : '请调整姓名、身份代码、角色、管理范围或筛选条件。'}
                 />
               ) : (
                 <ResourceState condition={condition} {...(fatalError === undefined ? {} : { error: fatalError })} retry={refresh} resourceLabel="管理员名单">
@@ -228,6 +230,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
                 {fetching ? '加载中…' : '下一页'}
               </button>
             </footer>
+            {actionReceipt === undefined ? null : <p className="storefrontmembernotice" role="status">{actionReceipt}</p>}
           </section>
 
           <MemberDetail
@@ -244,6 +247,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
               return { members: refreshedMembers.data.items, access: refreshedAccess.data.items, roles: refreshedAccess.data.roles };
             }}
             onRemoved={closeDetail}
+            onReceipt={setActionReceipt}
             onManage={(roleId, view) => {
               const path = scopePath(context.scope, 'settings/access');
               const params = new URLSearchParams();
@@ -289,7 +293,7 @@ function MemberDirectory({ rows, selectedId, onSelect }: Readonly<{ rows: readon
               <span className="storefrontmemberperson" role="cell">
                 <i>{rowName(row).slice(0, 1)}</i>
                 <strong>{rowName(row)}</strong>
-                <small>{row.member?.mobile ?? row.member?.mobile_masked ?? '管理员身份'}</small>
+                <IdentityBadge hint={rowIdentityDisplay(row)} fallback={row.member?.mobile ?? row.member?.mobile_masked ?? '管理员身份'} />
               </span>
               <BindingState bound={row.member?.login_identity_bound} trueLabel="已绑定" falseLabel="未绑定" unknownLabel="待补充" />
               <span className="memberaccessrole" data-administrator={isAdministrator(row)} role="cell">
@@ -325,6 +329,7 @@ function MemberDetail({
   onReset,
   onRefresh,
   onRemoved,
+  onReceipt,
   onManage,
 }: Readonly<{
   row: MemberAccessRow | undefined;
@@ -336,6 +341,7 @@ function MemberDetail({
   onReset: (member: Member) => void;
   onRefresh: () => Promise<Readonly<{ members: readonly Member[]; access: readonly AccessMembership[]; roles: readonly AccessRole[] }>>;
   onRemoved: () => void;
+  onReceipt: (receipt: string) => void;
   onManage: (roleId?: string, view?: 'permissions' | 'members') => void;
 }>) {
   const detailRef = useRef<HTMLElement>(null);
@@ -398,6 +404,7 @@ function MemberDetail({
         setPendingAction('upgrade');
       }
     },
+    onSuccess: (receipt) => onReceipt(actionReceiptLabel(row, '升级', receipt.access_version)),
   });
   const demoteMutation = useMutation({
     mutationFn: async (session: ConsoleSession) => {
@@ -416,6 +423,7 @@ function MemberDetail({
         setPendingAction('demote');
       }
     },
+    onSuccess: (receipt) => onReceipt(actionReceiptLabel(row, '降级', receipt.access_version)),
   });
   const offboardMutation = useMutation({
     mutationFn: async (session: ConsoleSession) => {
@@ -426,7 +434,10 @@ function MemberDetail({
         || reread.access.some((membership) => membership.id === row.id)) throw new Error('ADMINISTRATOR_OFFBOARD_VERIFICATION_FAILED');
       return receipt;
     },
-    onSuccess: onRemoved,
+    onSuccess: (receipt) => {
+      onReceipt(actionReceiptLabel(row, '移除', receipt.access_version));
+      onRemoved();
+    },
     onError: (error) => {
       if (isStepUpRequired(error)) {
         setElevatedSession(undefined);
@@ -480,7 +491,7 @@ function MemberDetail({
             <i>{rowName(row).slice(0, 1)}</i>
             <div>
               <h3>{rowName(row)}</h3>
-              <p>{memberAccountLabel(row)}</p>
+              <IdentityBadge hint={rowIdentityDisplay(row)} fallback={memberAccountLabel(row)} />
             </div>
             <StatusState status={rowStatus(row)} />
           </section>
@@ -552,14 +563,18 @@ function MemberDetail({
                 <button type="button" disabled={actionPending} onClick={() => {
                   setOffboardArmed(false);
                   beginAction('demote');
-                }}>{demoteMutation.isPending ? '正在降级并核对…' : '降级为普通管理员'}</button>
+                }}>{demoteMutation.isPending ? '正在降级并核对…' : rowIdentityDisplay(row) === undefined
+                  ? '降级为普通管理员' : `降级管理身份 ${rowIdentityDisplay(row)?.code}`}</button>
               )}
               {canOffboardAdministrator ? (
                 <button type="button" data-tone="danger" disabled={actionPending} onClick={() => {
                   resetActionErrors();
                   if (offboardArmed) beginAction('offboard');
                   else setOffboardArmed(true);
-                }}>{offboardMutation.isPending ? '正在移除并核对…' : offboardArmed ? '确认移除管理员' : '删除管理员'}</button>
+                }}>{offboardMutation.isPending ? '正在移除并核对…' : rowIdentityDisplay(row) === undefined
+                  ? offboardArmed ? '确认移除管理员' : '删除管理员'
+                  : offboardArmed ? `确认移除管理身份 ${rowIdentityDisplay(row)?.code}`
+                    : `移除管理身份 ${rowIdentityDisplay(row)?.code}`}</button>
               ) : null}
             </footer>
           ) : null}
@@ -574,6 +589,9 @@ function MemberDetail({
         action={pendingAction}
         context={context}
         targetName={row === undefined ? '当前管理员' : rowName(row)}
+        targetIdentity={row === undefined ? undefined : rowIdentityDisplay(row)}
+        targetRole={row === undefined ? undefined : administratorLabel(row)}
+        targetScope={row === undefined ? undefined : managementScopeLabel(row)}
         onClose={() => setPendingAction(undefined)}
         onExecute={executeElevatedAction}
       />
@@ -851,10 +869,17 @@ function hasOperation(context: ConsoleContext, operation: string): boolean {
 }
 function rowSearchText(row: MemberAccessRow): string {
   return [rowName(row), row.member?.mobile, row.member?.mobile_masked, row.member?.employee_no,
-    clientLabel(row.member?.client), ...row.managementRoles.map((role) => role.name)]
+    rowIdentityDisplay(row)?.code, clientLabel(row.member?.client), ...row.managementRoles.map((role) => role.name)]
     .filter((value): value is string => typeof value === 'string')
     .join(' ')
     .toLocaleLowerCase('zh-CN');
+}
+function rowIdentityDisplay(row: MemberAccessRow) {
+  return row.member?.identity_display ?? row.access?.identity_display;
+}
+function actionReceiptLabel(row: MemberAccessRow | undefined, operation: string, accessVersion: string | number): string {
+  const target = row === undefined ? '管理身份' : rowIdentityDisplay(row)?.code ?? rowName(row);
+  return `管理身份 ${target} · ${operation} · 成功（Access v${accessVersion}）`;
 }
 function rowName(row: MemberAccessRow): string {
   return row.member?.display_name ?? row.access?.display_name ?? '未命名成员';

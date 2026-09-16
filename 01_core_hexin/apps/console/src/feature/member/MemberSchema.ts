@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { DatabaseIntegerSchema } from '../../shared/schema/DatabaseInteger';
 import { pageEnvelope } from '../../shared/schema/PageEnvelope';
+import { OperatorIdentityDisplayHintSchema } from '@shop/contract';
 
 export const MemberSchema = z.object({
   id: z.string().min(1), display_name: z.string().min(1), status: z.string().min(1), membership_id: z.string().min(1),
@@ -11,6 +12,7 @@ export const MemberSchema = z.object({
   reset_block_reason: z.string().min(1).nullable(),
   governance_parent_membership_id: z.string().min(1).nullable().optional(),
   governance_parent_name: z.string().min(1).nullable().optional(),
+  identity_display: z.optional(OperatorIdentityDisplayHintSchema),
 }).passthrough();
 export const MemberPageSchema = pageEnvelope(MemberSchema);
 export type Member = z.infer<typeof MemberSchema>;

@@ -7,6 +7,7 @@ export * from './EventContract';
 export * from './EventSerializer';
 export * from './ExperienceContract';
 export * from './FinancialActionPolicy';
+export * from './IdentityDisplayContract';
 export * from './Operation';
 export * from './OperationCatalog';
 export * from './PasswordPolicyContract';

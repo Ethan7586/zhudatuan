@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { ScopeSchema } from '../../entity/session/ConsoleSession';
 import { DatabaseIntegerSchema } from '../../shared/schema/DatabaseInteger';
 import { pageEnvelope } from '../../shared/schema/PageEnvelope';
+import { OperatorIdentityDisplayHintSchema } from '@shop/contract';
 
 export const AccessScopeSourceSchema = z.enum(['direct', 'inherited', 'l1_owner']);
 const AccessEditableScopeSourceSchema = z.enum(['direct', 'inherited']);
@@ -22,11 +23,13 @@ export const AccessMembershipSchema = z.object({
     effect: z.enum(['allow', 'deny']), expires: z.string().nullable() })),
   denies: z.array(z.string().min(1)),
   effective_permissions: z.array(z.string().min(1)),
+  identity_display: z.optional(OperatorIdentityDisplayHintSchema),
 }).passthrough();
 export const AccessRoleMemberSchema = AccessRoleAssignmentSchema.omit({ role: true, name: true }).extend({
   membership: z.string().min(1), member_id: z.string().min(1), display_name: z.string().min(1),
   employee_no: z.string().nullable(), access_version: DatabaseIntegerSchema,
   scope_source: AccessEditableScopeSourceSchema,
+  identity_display: z.optional(OperatorIdentityDisplayHintSchema),
 });
 export const AccessRoleSchema = z.object({
   id: z.string().min(1),

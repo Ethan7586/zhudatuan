@@ -128,6 +128,29 @@ describe('member directory pagination', () => {
     expect(screen.getAllByText('19287247586')).toHaveLength(2);
   });
 
+  it('distinguishes administrators with the same mobile suffix and uses the code in target actions', async () => {
+    const first = { ...member('first', '同名管理员'), mobile_masked: '134****7586',
+      identity_display: { kind: 'operator', code: 'OP-7K2M', label: '管理身份', maskedMobile: '134****7586' } as const };
+    const second = { ...member('second', '同名管理员'), mobile_masked: '192****7586',
+      identity_display: { kind: 'operator', code: 'OP-8R3A', label: '管理身份', maskedMobile: '192****7586' } as const };
+    server.use(
+      http.get('*/api/v1/members', () => HttpResponse.json({ items: [first, second], count: 2 })),
+      http.get('*/api/v1/access/center', () => HttpResponse.json({
+        items: [accessMembership(first.membership_id, first.display_name, true), accessMembership(second.membership_id, second.display_name, true)],
+        count: 2,
+        roles: [],
+      })),
+    );
+    const user = userEvent.setup();
+    renderWorkspace(ownerContext());
+
+    expect(await screen.findByText('OP-7K2M')).toBeTruthy();
+    expect(screen.getByText('OP-8R3A')).toBeTruthy();
+    await user.click(screen.getAllByRole('row', { name: '查看管理员 同名管理员' })[0]!);
+    expect(screen.getByRole('button', { name: '降级管理身份 OP-7K2M' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '移除管理身份 OP-7K2M' })).toBeTruthy();
+  });
+
   it('upgrades an ordinary administrator from the detail panel and verifies the authoritative reread', async () => {
     let senior = false;
     let requestBody: unknown;
