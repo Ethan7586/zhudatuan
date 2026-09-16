@@ -137,3 +137,13 @@ test('build command environment expands the exact source SHA', async () => {
   );
   assert.equal(result.output, `0.0.0-g${sha}`);
 });
+
+test('production frontend builds receive their existing required environment', async () => {
+  const release = JSON.parse(await readFile(join(root, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8'));
+  assert.equal(release.targets['auth-web'].build[0].environment.VITE_CLIENT_VERSION, '0.0.0-g{{sourceSha}}');
+  assert.deepEqual(release.targets.console.build[0].environment, {
+    VITE_API_BASE_URL: 'https://api.hbbtzn.com',
+    VITE_AUTH_BASE_URL: 'https://accounts.hbbtzn.com',
+    VITE_CLIENT_VERSION: '0.0.0-g{{sourceSha}}',
+  });
+});
