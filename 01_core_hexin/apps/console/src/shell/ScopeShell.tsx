@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { WorkspacePanelSkeleton } from '@shop/design';
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { Outlet, useLoaderData, useLocation, useMatches, useNavigate, useNavigation } from 'react-router';
@@ -6,6 +6,7 @@ import { selectConsoleNavigationItems } from '../entity/navigation/ConsoleNaviga
 import { ConsoleContextProvider } from '../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../entity/session/ConsoleSession';
 import { scopeDisplayName, scopeKindLabel } from '../entity/session/ScopePresentation';
+import { accessKey } from '../feature/access/AccessQueryKey';
 import { consoleModuleById, consoleModules, selectConsoleModuleByEntryPath } from '../route/ConsoleModuleRegistry';
 import { deepestConsoleRouteHandle, resolveConsoleRoutePresentation } from '../route/ConsoleModuleRoutes';
 import { scopeSuffix } from '../route/ProfessionalRouteCatalog';
@@ -43,6 +44,16 @@ export function ScopeShell() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoutState, setLogoutState] = useState<'idle' | 'pending' | 'error'>('idle');
+  const [requestedAccountKey, setRequestedAccountKey] = useState<string>();
+  const currentAccountKey = `${context.scope.kind}:${context.scope.id}:${context.session.membership}:${context.session.accessVersion}`;
+  const selfAccess = useQuery({
+    queryKey: accessKey(context),
+    queryFn: async ({ signal }) => (await import('../feature/access/AccessQuery')).readAccess(context, undefined, signal),
+    enabled: requestedAccountKey === currentAccountKey && context.session.permissions.includes('access.center.read'),
+    staleTime: Infinity,
+    retry: false,
+  });
+  const identityDisplay = selfAccess.data?.items.find(({ id }) => id === context.session.membership)?.identity_display;
   const handle = deepestConsoleRouteHandle(matches);
   const activeModule = handle === undefined ? undefined : consoleModuleById.get(handle.moduleId);
   const presentation = handle === undefined
@@ -210,6 +221,7 @@ export function ScopeShell() {
           <Suspense fallback={<header className="consoleheader" aria-hidden="true" />}>
             <LazyHeader title={routeTitle} summary={routeSummary} scopeLabel={scopeLabel}
               displayName={context.profile.display_name} assuranceLevel={context.session.assurance.level} syncedAt={context.session.syncedAt}
+              identityDisplay={identityDisplay} onOpenAccount={() => setRequestedAccountKey(currentAccountKey)}
               loggingOut={logoutState === 'pending'} onLogout={() => { void logout(); }}
               onOpenNavigation={() => setMobileOpen(true)}
               onOpenProfile={() => openRoute('settings/profile')}

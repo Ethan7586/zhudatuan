@@ -6,6 +6,8 @@ import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import type { ConsoleContext, ConsoleScope } from '../entity/session/ConsoleSession';
+import { accessKey } from '../feature/access/AccessQueryKey';
+import { readAccess } from '../feature/access/AccessQuery';
 import { consoleModules } from '../route/ConsoleModuleRegistry';
 import {
   deepestConsoleRouteHandle,
@@ -16,6 +18,11 @@ import {
 import { ScopeShell, WorkspaceRouteLoading } from './ScopeShell';
 
 const materializedRoutes = materializeConsoleModules(consoleModules);
+vi.mock('../feature/access/AccessQuery', () => ({
+  readAccess: vi.fn(async () => ({ items: [{ id: 'membership:1', identity_display: {
+    kind: 'operator', code: 'OP-7K2M', label: '管理身份',
+  } }] })),
+}));
 const entryOperations = consoleModules.flatMap((module) => module.routes.find(({ kind }) => kind === 'entry')?.operations ?? []);
 const enterpriseScope: ConsoleScope = { kind: 'enterprise', id: 'enterprise:1', name: '鸿泰集团' };
 const mallScope: ConsoleScope = { kind: 'mall', id: 'mall:1', name: '鸿泰商城' };
@@ -47,6 +54,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.mocked(readAccess).mockClear();
   vi.unstubAllGlobals();
 });
 
@@ -168,6 +176,36 @@ describe('ScopeShell route handles', () => {
     expect(screen.getByRole('button', { name: '个人中心：测试运营' })).toBeTruthy();
   });
 
+  it('shows the signed-in operator code in the account menu from the existing access query', async () => {
+    const user = userEvent.setup();
+    const authorized = { ...context, session: { ...context.session, permissions: ['access.center.read'] } };
+    const { queryClient } = renderShell('/scopes/enterprise/enterprise%3A1/settings/profile', authorized);
+    queryClient.setQueryData(accessKey(authorized), { items: [{ id: 'membership:1', identity_display: {
+      kind: 'operator', code: 'OP-7K2M', label: '管理身份',
+    } }] });
+
+    await user.click(await screen.findByRole('button', { name: '打开 测试运营 的账户菜单' }));
+    expect(screen.getByText('OP-7K2M')).toBeTruthy();
+    expect(screen.getByRole('button', { name: '退出登录' })).toBeTruthy();
+  });
+
+  it('loads the code only when the account menu opens and reuses it on reopen', async () => {
+    const user = userEvent.setup();
+    renderShell('/scopes/enterprise/enterprise%3A1/settings/profile', {
+      ...context, session: { ...context.session, permissions: ['access.center.read'] },
+    });
+    const account = await screen.findByRole('button', { name: '打开 测试运营 的账户菜单' });
+    expect(readAccess).not.toHaveBeenCalled();
+
+    await user.click(account);
+    expect(await screen.findByText('OP-7K2M')).toBeTruthy();
+    expect(readAccess).toHaveBeenCalledTimes(1);
+    await user.click(account);
+    await user.click(account);
+    expect(screen.getByText('OP-7K2M')).toBeTruthy();
+    expect(readAccess).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps unknown/profile-like matches outside the business module owner model', async () => {
     expect(deepestConsoleRouteHandle([{ handle: undefined }, { handle: { kind: 'profile' } }])).toBeUndefined();
     const { container } = renderShell('/scopes/enterprise/enterprise%3A1/unknown');
@@ -222,7 +260,7 @@ function renderShell(initialEntry: string, loadedContext: ConsoleContext = conte
       <RouterProvider router={router} />
     </QueryClientProvider>,
   );
-  return { ...rendered, router };
+  return { ...rendered, router, queryClient };
 }
 
 function FixturePage() {

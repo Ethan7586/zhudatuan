@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import type { IdentityDisplayHint } from '@shop/contract';
+import { IdentityBadge } from '../shared/ui/IdentityBadge';
 import { ShellIcon } from './ShellIcon';
 
 export interface HeaderProps {
@@ -8,18 +10,20 @@ export interface HeaderProps {
   readonly displayName: string;
   readonly assuranceLevel: number;
   readonly syncedAt: string;
+  readonly identityDisplay?: IdentityDisplayHint | undefined;
   readonly loggingOut: boolean;
   readonly logoutError?: string;
   readonly onLogout: () => void;
   readonly onOpenNavigation: () => void;
   readonly onOpenProfile: () => void;
+  readonly onOpenAccount?: () => void;
 }
 
 type HeaderPanel = 'account' | 'command' | 'notices' | 'tasks' | null;
 
 export function Header(props: HeaderProps) {
-  const { title, summary, scopeLabel, displayName, assuranceLevel, syncedAt, loggingOut, logoutError, onLogout,
-    onOpenNavigation, onOpenProfile } = props;
+  const { title, summary, scopeLabel, displayName, assuranceLevel, syncedAt, identityDisplay, loggingOut, logoutError, onLogout,
+    onOpenNavigation, onOpenProfile, onOpenAccount } = props;
   const [panel, setPanel] = useState<HeaderPanel>(null);
 
   useEffect(() => {
@@ -36,6 +40,10 @@ export function Header(props: HeaderProps) {
   }, []);
 
   const togglePanel = (next: Exclude<HeaderPanel, null>) => setPanel((current) => current === next ? null : next);
+  const toggleAccount = () => {
+    if (panel !== 'account') onOpenAccount?.();
+    togglePanel('account');
+  };
   const openProfile = () => {
     setPanel(null);
     onOpenProfile();
@@ -75,7 +83,7 @@ export function Header(props: HeaderProps) {
         {panel === 'notices' ? <StatusPopup title="通知中心" detail="最新运行状态已同步。" /> : null}
       </div>
       <div className="headeractionwrap operatorprofile">
-        <button className="avatarbutton" type="button" onClick={() => togglePanel('account')}
+        <button className="avatarbutton" type="button" onClick={toggleAccount}
           aria-label={`打开 ${displayName} 的账户菜单`} aria-haspopup="dialog" aria-expanded={panel === 'account'}>
           {avatarLetter(displayName)}
         </button>
@@ -85,6 +93,7 @@ export function Header(props: HeaderProps) {
         </span>
         {panel === 'account' ? <div className="headerpopup accountpopup" role="dialog" aria-label="账户菜单">
           <strong>{displayName}</strong><span>{scopeLabel}</span>
+          {identityDisplay === undefined ? null : <IdentityBadge hint={identityDisplay} fallback={displayName} />}
           <span>AAL{assuranceLevel} · {formatTime(syncedAt)}</span>
           <button className="accountprofileentry" type="button" onClick={openProfile}>个人信息</button>
           <button className="accountlogout" type="button" onClick={onLogout} disabled={loggingOut}>{loggingOut ? '正在退出' : '退出登录'}</button>
