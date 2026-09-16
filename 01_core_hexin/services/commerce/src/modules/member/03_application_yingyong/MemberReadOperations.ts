@@ -12,6 +12,7 @@ import { KMS_CLIENT, type KmsClient } from '../../../foundation/infrastructure/K
 import { keysetResult, queryPage } from '../../../foundation/interface/Validation';
 import { DATABASE_POOL } from '../../../foundation/persistence/Pool';
 import { requireGovernanceContext } from '../../../foundation/security/AccessContext';
+import { presentIdentityDisplays, resolveIdentityDisplayMembership } from '../../identity-display/IdentityDisplayPresenter';
 
 export const MEMBER_OPERATOR_READ_OPERATION_IDS = Object.freeze([
   'member.members.read',
@@ -89,13 +90,20 @@ export function memberOperatorReadActions(kms: Pick<KmsClient, 'decrypt'>): Oper
         ...row,
         mobile: ciphertext == null ? null : await kms.decrypt('identity/mobile', ciphertext, { principal: row.principal_id }),
       })));
-      return keysetResult({ ...result, rows }, page, 'directory_sort', 'id');
+      const displays = await presentIdentityDisplays(database, access.scope.id, 'operator', rows.map((row) => ({
+        membershipId: String(row.membership_id), maskedMobile: typeof row.mobile_masked === 'string' ? row.mobile_masked : null,
+      })));
+      return keysetResult({ ...result, rows: rows.map((row) => {
+        const identityDisplay = displays.get(String(row.membership_id));
+        return identityDisplay === undefined ? row : { ...row, identity_display: identityDisplay };
+      }) }, page, 'directory_sort', 'id');
     },
     'member.storefront.members.read': async (request, database) => {
       const access = requireAccess(request);
       if (access.scope.kind !== 'mall') throw new Error('SCOPE_NOT_ALLOWED_FOR_OPERATION');
       const page = queryPage(request);
       const query = queryValue(request.input.query.q);
+      const identityMembership = await resolveIdentityDisplayMembership(database, access.scope.id, 'member', query);
       const result = await database.query(`select membership.id membership_id,profile.display_name,profile.mobile_masked,
         member_context.signed_level identity_level,member_context.node_profile identity_kind,
         membership.status membership_status,profile.mobile_token is not null mobile_bound,
@@ -111,11 +119,12 @@ export function memberOperatorReadActions(kms: Pick<KmsClient, 'decrypt'>): Oper
           and member_context.signed_level in('L6','L7','L8','L9','L10','L11')
         where membership.organization_id=$1 and membership.client='storefront'
           and ($2='' or profile.display_name ilike '%'||$2||'%' or membership.id ilike '%'||$2||'%'
-            or profile.mobile_masked ilike '%'||$2||'%')
+            or profile.mobile_masked ilike '%'||$2||'%' or membership.id=$5)
           and ($3::text is null or membership.id<$3)
         order by membership.id desc limit $4`,
-      [access.scope.id, query, page.sort, page.fetch]);
-      const response = keysetResult(result, page, 'membership_id', 'membership_id');
+      [access.scope.id, query, page.sort, page.fetch, identityMembership ?? null]);
+      const rows = await withMemberIdentityDisplays(database, access.scope.id, result.rows);
+      const response = keysetResult({ ...result, rows }, page, 'membership_id', 'membership_id');
       return { ...response, body: StorefrontMemberPageSchema.parse(response.body) };
     },
     'member.storefront.detail.read': async (request, database) => {
@@ -165,7 +174,8 @@ export function memberOperatorReadActions(kms: Pick<KmsClient, 'decrypt'>): Oper
         left join member.profile inviter_profile on inviter_profile.id=inviter_member.member_id
         where membership.id=$2 and membership.organization_id=$1 and membership.client='storefront'`,
       [access.scope.id, request.input.path.membershipid!]);
-      const response = rowResult(result);
+      const rows = await withMemberIdentityDisplays(database, access.scope.id, result.rows);
+      const response = rowResult({ ...result, rows });
       return { ...response, body: StorefrontMemberDetailSchema.parse(response.body) };
     },
     'member.storefront.invitees.read': async (request, database) => {
@@ -264,6 +274,20 @@ export function memberOperatorReadActions(kms: Pick<KmsClient, 'decrypt'>): Oper
   };
 }
 
+async function withMemberIdentityDisplays<T extends Record<string, unknown>>(
+  database: import('../../../foundation/application/ModuleOperations').OperationDatabase,
+  contextId: string,
+  rows: readonly T[],
+): Promise<T[]> {
+  const displays = await presentIdentityDisplays(database, contextId, 'member', rows.map((row) => ({
+    membershipId: String(row.membership_id), maskedMobile: typeof row.mobile_masked === 'string' ? row.mobile_masked : null,
+  })));
+  return rows.map((row) => {
+    const identityDisplay = displays.get(String(row.membership_id));
+    return identityDisplay === undefined ? row : { ...row, identity_display: identityDisplay };
+  });
+}
+
 export function memberOperatorReadOperations(context: ModuleContext): ModuleOperations {
   return new ModuleOperations('member', context.container.get(DATABASE_POOL), context.container.get(AUDIT_SINK),
     memberOperatorReadActions(context.container.get(KMS_CLIENT)), MEMBER_OPERATOR_READ_OPERATION_IDS);
@@ -271,8 +295,10 @@ export function memberOperatorReadOperations(context: ModuleContext): ModuleOper
 
 interface OperatorDirectoryRow extends Readonly<Record<string, unknown>> {
   readonly id: string;
+  readonly membership_id: string;
   readonly directory_sort: string;
   readonly principal_id: string;
+  readonly mobile_masked?: string | null;
   readonly mobile_ciphertext?: string | null;
 }
 

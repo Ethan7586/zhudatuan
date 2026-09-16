@@ -137,8 +137,12 @@ describe('storefront member directory boundary', () => {
   it('returns only exact-mall storefront Membership rows with masked and membership-bound identity facts', async () => {
     const database = new PGlite();
     try {
-      await database.exec(`create schema access; create schema member; create schema identity;
+      await database.exec(`create schema access; create schema member; create schema identity; create schema identity_display;
         create schema referral; create schema ordering; create schema organization;
+        create table identity_display.code_mapping(
+          context_id text not null,kind text not null,membership_id text not null,code text not null,
+          primary key(context_id,kind,membership_id),unique(context_id,kind,code)
+        );
         create table member.profile(
           id text primary key,principal_id text not null,display_name text not null,mobile_ciphertext text,
           mobile_token text,mobile_masked text not null
@@ -278,6 +282,12 @@ describe('storefront member directory boundary', () => {
       expect(page.items[1]).toMatchObject({
         display_name: '测试消费者甲', mobile_masked: '188****8866', mobile_bound: true, wechat_bound: false,
       });
+      expect(page.items.map(({ identity_display }) => identity_display?.code)).toEqual([
+        expect.stringMatching(/^MB-[2-9A-HJKMNP-Z]{6}$/),
+        expect.stringMatching(/^MB-[2-9A-HJKMNP-Z]{6}$/),
+        expect.stringMatching(/^MB-[2-9A-HJKMNP-Z]{6}$/),
+      ]);
+      expect(new Set(page.items.map(({ identity_display }) => identity_display?.code)).size).toBe(3);
       expect(JSON.stringify(response.body)).not.toContain('18800008866');
       expect(JSON.stringify(response.body)).not.toContain('token:8866');
 
@@ -285,6 +295,10 @@ describe('storefront member directory boundary', () => {
         storefrontRequest('mall:one', { q: '8866' }), database as unknown as OperationDatabase,
       )).body);
       expect(searched.items.map(({ membership_id }) => membership_id)).toEqual(['membership:storefront:one']);
+      const codeSearched = StorefrontMemberPageSchema.parse((await action(
+        storefrontRequest('mall:one', { q: page.items[1]!.identity_display!.code }), database as unknown as OperationDatabase,
+      )).body);
+      expect(codeSearched.items.map(({ membership_id }) => membership_id)).toEqual(['membership:storefront:one']);
 
       const first = StorefrontMemberPageSchema.parse((await action(
         storefrontRequest('mall:one', { limit: '1' }), database as unknown as OperationDatabase,

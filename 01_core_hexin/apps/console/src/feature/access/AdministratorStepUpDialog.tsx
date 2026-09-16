@@ -5,6 +5,8 @@ import type { ConsoleContext, ConsoleSession } from '../../entity/session/Consol
 import { completeStepUpAndReadSession, requestStepUp, type StepUpChallenge } from '../../entity/session/StepUpCommand';
 import { safeQueryError } from '../../shared/api/QueryState';
 import { formatDate } from '../../shared/ui/Format';
+import type { IdentityDisplayHint } from '@shop/contract';
+import { IdentityBadge } from '../../shared/ui/IdentityBadge';
 
 export type AdministratorCriticalAction = 'upgrade' | 'demote' | 'offboard';
 
@@ -12,12 +14,18 @@ export function AdministratorStepUpDialog({
   action,
   context,
   targetName,
+  targetIdentity,
+  targetRole,
+  targetScope,
   onClose,
   onExecute,
 }: Readonly<{
   action: AdministratorCriticalAction | undefined;
   context: ConsoleContext;
   targetName: string;
+  targetIdentity: IdentityDisplayHint | undefined;
+  targetRole: string | undefined;
+  targetScope: string | undefined;
   onClose: () => void;
   onExecute: (session: ConsoleSession) => Promise<void>;
 }>) {
@@ -52,7 +60,11 @@ export function AdministratorStepUpDialog({
       {presentation === undefined ? null : (
         <form className="administratorstepup" aria-label={presentation.title} onSubmit={submit}>
           <section className="administratorstepupsummary">
+            <span>本次操作目标</span>
             <strong>{targetName}</strong>
+            <IdentityBadge hint={targetIdentity} fallback="管理身份" />
+            {targetRole === undefined ? null : <p>{targetRole}</p>}
+            {targetScope === undefined ? null : <p>当前范围：{targetScope}</p>}
             <p>{presentation.impact}</p>
           </section>
           <section className="administratorstepupboundary">

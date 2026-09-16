@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import type { ConsoleContext, ConsoleScope } from '../../entity/session/ConsoleSession';
 import { scopeDisplayName, scopeKindLabel } from '../../entity/session/ScopePresentation';
 import { safeQueryError } from '../../shared/api/QueryState';
+import { IdentityBadge } from '../../shared/ui/IdentityBadge';
 import { deleteAccessRole, roleCommandAvailable, saveAccessRoleAssignment, verifyAccessRoleAssignment,
   verifyAccessRoleDelete, type AccessRoleAssignmentDraft } from './AccessRoleCommand';
 import type { AccessMembership, AccessRole, AccessRoleMember } from './AccessSchema';
@@ -53,8 +54,12 @@ export function RoleScopeMembers({ context, role, members, onRefresh, onNotice, 
     onSuccess: ({ member, receipt }) => {
       setAssignmentOpen(false);
       onNotice(seniorGovernanceRole
-        ? `${member.display_name} 已升级为高级管理员；角色、权限、Scope 与 Access Version v${receipt.access_version} 已重读核对，商城会员身份未改动。`
-        : `“${role.name}”已分配给 ${member.display_name}，${scopeSourceLabel(receipt.scope_source)} ${scopeLabel(receipt.scope)}；成员、身份、权限与 Access Version v${receipt.access_version} 已重读核对。`);
+        ? member.identity_display === undefined
+          ? `${member.display_name} 已升级为高级管理员；角色、权限、Scope 与 Access Version v${receipt.access_version} 已重读核对，商城会员身份未改动。`
+          : `${identityTarget(member)} · 升级成功；角色、权限、Scope 与 Access Version v${receipt.access_version} 已重读核对，商城会员身份未改动。`
+        : member.identity_display === undefined
+          ? `“${role.name}”已分配给 ${member.display_name}，${scopeSourceLabel(receipt.scope_source)} ${scopeLabel(receipt.scope)}；成员、身份、权限与 Access Version v${receipt.access_version} 已重读核对。`
+          : `“${role.name}”已分配给 ${identityTarget(member)}，${scopeSourceLabel(receipt.scope_source)} ${scopeLabel(receipt.scope)}；成员、身份、权限与 Access Version v${receipt.access_version} 已重读核对。`);
     },
   });
   const revokeMutation = useMutation({
@@ -69,8 +74,12 @@ export function RoleScopeMembers({ context, role, members, onRefresh, onNotice, 
       return { assignment, receipt };
     },
     onSuccess: ({ assignment, receipt }) => onNotice(seniorGovernanceRole
-      ? `${assignment.display_name} 已降级为普通管理员；高级角色与对应 Scope 已撤销，其他管理员角色及商城会员身份保持不变；Access Version v${receipt.access_version} 已重读核对。`
-      : `已撤销 ${assignment.display_name} 的“${role.name}”身份（${scopeLabel(assignment.scope)}），其他身份与成员账户保持不变；Access Version v${receipt.access_version} 已重读核对。`),
+      ? assignment.identity_display === undefined
+        ? `${assignment.display_name} 已降级为普通管理员；高级角色与对应 Scope 已撤销，其他管理员角色及商城会员身份保持不变；Access Version v${receipt.access_version} 已重读核对。`
+        : `${identityTarget(assignment)} · 降级成功；高级角色与对应 Scope 已撤销，其他管理员角色及商城会员身份保持不变；Access Version v${receipt.access_version} 已重读核对。`
+      : assignment.identity_display === undefined
+        ? `已撤销 ${assignment.display_name} 的“${role.name}”身份（${scopeLabel(assignment.scope)}），其他身份与成员账户保持不变；Access Version v${receipt.access_version} 已重读核对。`
+        : `已撤销 ${identityTarget(assignment)} 的“${role.name}”身份（${scopeLabel(assignment.scope)}），其他身份与成员账户保持不变；Access Version v${receipt.access_version} 已重读核对。`),
   });
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -108,12 +117,13 @@ export function RoleScopeMembers({ context, role, members, onRefresh, onNotice, 
       </header>
       {role.members.length === 0 ? <span>当前范围内尚未分配成员。</span> : <ul>{role.members.map((assignment) => (
         <li key={`${assignment.membership}:${scopeKey(assignment.scope)}`}>
-          <div><strong>{assignment.display_name}</strong><small>{assignment.employee_no ?? '未设置员工号'} · Access v{assignment.access_version}</small></div>
+          <div><strong>{assignment.display_name}</strong><IdentityBadge hint={assignment.identity_display} fallback={`${assignment.employee_no ?? '未设置员工号'} · Access v${assignment.access_version}`} /></div>
           <div><Badge tone={assignment.scope_source === 'direct' ? 'info' : 'neutral'}>{scopeSourceLabel(assignment.scope_source)}</Badge>
             <small>{scopeLabel(assignment.scope)}</small></div>
           <Button type="button" tone="quiet" size="compact" isDisabled={!canAssign || pending}
             onPress={() => { revokeMutation.reset(); deleteMutation.reset(); revokeMutation.mutate(assignment); }}>
-            {seniorGovernanceRole ? '降级为普通管理员' : '撤销'}
+            {assignment.identity_display === undefined ? seniorGovernanceRole ? '降级为普通管理员' : '撤销'
+              : seniorGovernanceRole ? `降级管理身份 ${assignment.identity_display.code}` : `撤销 ${assignment.identity_display.code}`}
           </Button>
         </li>
       ))}</ul>}
@@ -123,7 +133,7 @@ export function RoleScopeMembers({ context, role, members, onRefresh, onNotice, 
       <strong>{seniorGovernanceRole ? '选择要升级的普通管理员' : `分配“${role.name}”`}</strong>
       <label>成员<select value={selectedMember?.id ?? ''} disabled={pending || assignableMembers.length === 0}
         onChange={(event) => { setSelectedMemberId(event.target.value); setSelectedScopeKey(undefined); assignMutation.reset(); }}>
-        {assignableMembers.map((member) => <option key={member.id} value={member.id}>{member.display_name} · {member.roles.length} 个身份</option>)}
+        {assignableMembers.map((member) => <option key={member.id} value={member.id}>{identityTarget(member)} · {member.roles.length} 个身份</option>)}
       </select></label>
       <label>范围来源<select value={scopeSource} disabled={pending} onChange={(event) => {
         setScopeSource(event.target.value as 'direct' | 'inherited'); setSelectedScopeKey(undefined); assignMutation.reset();
@@ -136,7 +146,9 @@ export function RoleScopeMembers({ context, role, members, onRefresh, onNotice, 
       {duplicate ? <p role="status">该成员已在此范围拥有当前身份，无需重复分配。</p> : null}
       <Button type="button" tone="primary" isPending={assignMutation.isPending}
         isDisabled={!canAssign || pending || duplicate || selectedMember === undefined || selectedScope === undefined}
-        onPress={() => assignMutation.mutate()}>{seniorGovernanceRole ? '确认升级并重读' : '确认分配并重读'}</Button>
+        onPress={() => assignMutation.mutate()}>{selectedMember?.identity_display === undefined
+          ? seniorGovernanceRole ? '确认升级并重读' : '确认分配并重读'
+          : seniorGovernanceRole ? `升级管理身份 ${selectedMember.identity_display.code}` : `分配给 ${selectedMember.identity_display.code}`}</Button>
     </div> : null}
 
     {!canAssign && (role.editable || seniorGovernanceRole) ? <p className="rolescopepermission" role="status">
@@ -173,6 +185,10 @@ function scopeLabel(scope: Pick<ConsoleScope, 'kind' | 'id' | 'name'>): string {
 
 function scopeSourceLabel(source: 'direct' | 'inherited'): string {
   return source === 'direct' ? '直接指定' : '继承来源';
+}
+
+function identityTarget(member: Pick<AccessMembership, 'display_name' | 'identity_display'> | AccessRoleMember): string {
+  return member.identity_display === undefined ? member.display_name : `管理身份 ${member.identity_display.code}`;
 }
 
 function commandError(error: Error | null): Readonly<{

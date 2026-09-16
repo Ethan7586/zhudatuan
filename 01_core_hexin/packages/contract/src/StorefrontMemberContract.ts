@@ -1,4 +1,5 @@
 import * as z from 'zod/mini';
+import { MemberIdentityDisplayHintSchema } from './IdentityDisplayContract';
 
 const storefrontMemberFields = {
   membership_id: z.string().check(z.minLength(1)),
@@ -13,6 +14,7 @@ const storefrontMemberFields = {
   mobile_bound: z.boolean(),
   wechat_bound: z.boolean(),
   joined_at: z.nullable(z.string().check(z.minLength(1))),
+  identity_display: z.optional(MemberIdentityDisplayHintSchema),
 } as const;
 
 export const StorefrontMemberSchema = z.strictObject(storefrontMemberFields);
