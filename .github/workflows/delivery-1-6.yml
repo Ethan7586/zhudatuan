@@ -47,6 +47,11 @@ jobs:
         with:
           ref: ${{ github.sha }}
           fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /04_tools/release-engine/select-runner-1-6.mjs
+            /04_tools/release-engine/src/runner-selection-1-6.mjs
       - name: Resolve release identity
         id: identity
         env:
@@ -122,6 +127,19 @@ jobs:
       CONTROL_SHA: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v6
+        if: ${{ inputs.operation == 'status' }}
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/actions/runner-1-6/
+            /02_platform_pingtai/infrastructure/release/
+            /04_tools/release-engine/
+            /scripts/runner-1-6.sh
+      - uses: actions/checkout@v6
+        if: ${{ inputs.operation != 'status' }}
         with:
           ref: ${{ github.sha }}
           fetch-depth: 1
@@ -153,6 +171,19 @@ jobs:
       CONTROL_SHA: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v6
+        if: ${{ inputs.operation == 'status' }}
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/actions/runner-1-6/
+            /02_platform_pingtai/infrastructure/release/
+            /04_tools/release-engine/
+            /scripts/runner-1-6.sh
+      - uses: actions/checkout@v6
+        if: ${{ inputs.operation != 'status' }}
         with:
           ref: ${{ github.sha }}
           fetch-depth: 1

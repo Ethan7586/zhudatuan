@@ -6,7 +6,7 @@ import { promisify } from 'node:util';
 import test from 'node:test';
 import { parse } from 'yaml';
 
-import { aggregateStatus, observationDiagnostic, sourceFromIdentifier } from '../runner-1-6.mjs';
+import { aggregateStatus, observationDiagnostic, observedTarget, sourceFromIdentifier } from '../runner-1-6.mjs';
 import { DeliveryError } from '../src/errors.mjs';
 import { runCommand } from '../src/runner.mjs';
 import { selectExecutionRunner } from '../src/runner-selection-1-6.mjs';
@@ -205,23 +205,46 @@ test('remote policy contains no lock or unlock authority', async () => {
   assert.doesNotMatch(policy, /lockRoot|staleLockSeconds|owner\.json/i);
 });
 
-test('release installs dependencies before dynamic impact planning', async () => {
+test('release installs dependencies only when a cache miss requires a build', async () => {
   const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
   const release = core.slice(core.indexOf('async function release'), core.indexOf('async function installDependencies'));
-  assert.ok(release.indexOf('await installDependencies') < release.indexOf('const plan = await createReleasePlan'));
+  assert.ok(release.indexOf('const plan = await createReleasePlan') < release.indexOf('if (needsBuild)'));
+  assert.ok(release.indexOf('if (needsBuild)') < release.indexOf('await installDependencies'));
+  assert.ok(release.indexOf('await installDependencies') < release.indexOf('await buildRelease'));
   assert.match(core, /name: 'install-control-dependencies'/);
   assert.match(core, /name: 'install-source-dependencies'/);
   assert.match(core, /resolve\(controlRoot\) !== resolve\(adapter\.projectRoot\)/);
+  const serviceImpact = await readFile(join(root, '04_tools/release-engine/adapters/zdt-next/service-impact.mjs'), 'utf8');
+  const workspaceImpact = await readFile(join(root, '04_tools/release-engine/adapters/zdt-next/workspace-impact.mjs'), 'utf8');
+  assert.doesNotMatch(serviceImpact + workspaceImpact, /from ['"](?:esbuild|typescript|yaml)['"]/);
 });
 
-test('status plans without dependency installation and uses one SSH observation per node', async () => {
+test('status observes configured physical nodes without source checkout or a release plan', async () => {
   const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
   const status = core.slice(core.indexOf('async function status'), core.indexOf('async function rollback'));
-  assert.doesNotMatch(status, /installDependencies|npm ci/);
+  assert.doesNotMatch(status, /installDependencies|npm ci|createReleasePlan/);
   assert.match(status, /remoteObserveNode/);
   assert.match(status, /mode: 'one-connection-per-node'/);
+  assert.match(status, /all-configured-placements/);
+  const action = await readFile(join(root, '.github/actions/runner-1-6/action.yml'), 'utf8');
+  assert.match(action, /inputs\.operation == 'release' \|\| inputs\.operation == 'retry'/);
+  assert.match(action, /inputs\.target == ''/);
+  const workflow = await readFile(join(root, '.github/workflows/delivery-1-6.yml'), 'utf8');
+  assert.match(workflow, /inputs\.operation == 'status'/);
+  assert.match(workflow, /filter: blob:none/);
+  assert.match(workflow, /sparse-checkout:/);
   const impact = await readFile(join(root, '04_tools/release-engine/adapters/zdt-next/service-impact.mjs'), 'utf8');
   assert.doesNotMatch(impact, /(?:from|require\()['"]esbuild['"]/);
+});
+
+test('live observation distinguishes current, previous and unrelated source without calling them failures', () => {
+  const observation = (current, previous) => ({ status: { currentArtifact: { sourceSha: current }, previousArtifact: { sourceSha: previous } }, verification: { readiness: { status: 'ready' } } });
+  assert.equal(observedTarget(sha, 'identity-api', 'hbbtzn-l1', observation(sha, 'b'.repeat(40))).state, 'HEALTHY');
+  assert.equal(observedTarget(sha, 'identity-api', 'hbbtzn-l1', observation('b'.repeat(40), sha)).state, 'PREVIOUS');
+  assert.equal(observedTarget(sha, 'identity-api', 'hbbtzn-l1', observation('b'.repeat(40), 'c'.repeat(40))).state, 'OTHER');
+  assert.equal(observedTarget(sha, 'identity-api', 'hbbtzn-l1', null).state, 'UNKNOWN');
+  const unreadable = { ...observation(sha, 'b'.repeat(40)), error: { code: 'SERVICE_UNREADABLE' } };
+  assert.equal(observedTarget(sha, 'identity-api', 'hbbtzn-l1', unreadable).state, 'FAILED');
 });
 
 test('isolated legacy recovery has no concurrency lock', async () => {

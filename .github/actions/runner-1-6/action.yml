@@ -25,7 +25,7 @@ runs:
   using: composite
   steps:
     - name: Load exact source
-      if: inputs.source-sha != ''
+      if: inputs.source-sha != '' && (inputs.operation == 'release' || inputs.operation == 'retry') && inputs.target == ''
       uses: actions/checkout@v6
       with:
         ref: ${{ inputs.source-sha }}
@@ -43,7 +43,7 @@ runs:
       shell: bash
       env:
         CONTROL_ROOT: ${{ github.workspace }}
-        SOURCE_ROOT: ${{ inputs.source-sha != '' && format('{0}/.runner-1-6/source', github.workspace) || '' }}
+        SOURCE_ROOT: ${{ inputs.source-sha != '' && (inputs.operation == 'release' || inputs.operation == 'retry') && inputs.target == '' && format('{0}/.runner-1-6/source', github.workspace) || '' }}
         RELEASE_IDENTIFIER: ${{ inputs.identifier }}
         RELEASE_TARGET: ${{ inputs.target }}
         PHYSICAL_NODE: ${{ inputs.physical-node }}

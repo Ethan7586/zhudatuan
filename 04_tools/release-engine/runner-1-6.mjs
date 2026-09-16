@@ -32,7 +32,7 @@ async function main() {
       result = await release(adapter, controlRoot, sourceSha, options.target, options.node);
     } else if (options.operation === 'status') {
       invariant(sourceSha, 'SOURCE_SHA_REQUIRED', 'status requires a full Source SHA or r16 release id');
-      result = await status(adapter, controlRoot, sourceSha);
+      result = await status(adapter, sourceSha);
     } else if (options.operation === 'rollback') {
       result = await rollback(adapter, controlRoot, options.target, options.node);
     } else if (options.operation === 'control-update') {
@@ -66,9 +66,6 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
   const exactScope = Boolean(target || node);
   invariant(!exactScope || (target && node), 'EXACT_SCOPE_INCOMPLETE', 'Fast production deployment requires both target and physical node');
   if (exactScope) return deployExact(adapter, controlRoot, sourceSha, target, node);
-  context.stage = 'dependencies';
-  progress('dependencies', { sourceSha });
-  await installDependencies(adapter, controlRoot);
   context.stage = 'plan';
   progress('plan', { sourceSha });
   const plan = await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha });
@@ -81,6 +78,9 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
   const needsBuild = cache.some((item) => !item.exists);
   let cacheStatus = 'reused';
   if (needsBuild) {
+    context.stage = 'dependencies';
+    progress('dependencies', { sourceSha });
+    await installDependencies(adapter, controlRoot);
     context.stage = 'build';
     progress('build', { sourceSha, targets: plan.deploymentOrder });
     const built = await buildRelease(adapter, plan.planPath);
@@ -293,12 +293,10 @@ printf 'CONTROL_UPDATED agent=sha256:${agentSha256} policy=sha256:${policySha256
 `;
 }
 
-async function status(adapter, controlRoot, sourceSha) {
+async function status(adapter, sourceSha) {
   const startedAt = performance.now();
-  context.stage = 'plan';
-  progress('plan', { sourceSha, operation: 'status' });
-  const plan = await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha });
-  const placements = plan.deploymentOrder.flatMap((target) => physicalPlacements(adapter, target).map((node) => ({ target, node })));
+  // Status observes the physical nodes, not a plan reconstructed from source code.
+  const placements = Object.keys(adapter.targets).flatMap((target) => physicalPlacements(adapter, target).map((node) => ({ target, node })));
   context.stage = 'status';
   const nodeTargets = Map.groupBy(placements, ({ node }) => node);
   progress('status', { sourceSha, total: placements.length, mode: 'one-connection-per-node', connections: nodeTargets.size });
@@ -308,21 +306,22 @@ async function status(adapter, controlRoot, sourceSha) {
     for (const observation of remote.result?.targets ?? []) observations.set(`${node}:${observation.target}`, observation);
   }));
   const targets = placements.map(({ target, node }) => observedTarget(sourceSha, target, node, observations.get(`${node}:${target}`)));
-  const state = aggregateStatus(targets.map((target) => target.state));
+  const currentTargets = targets.filter((target) => target.state === 'HEALTHY');
   const durationMs = Math.round(performance.now() - startedAt);
-  progress('complete', { sourceSha, operation: 'status', state, durationMs });
-  return { state, releaseId: `r16-${sourceSha}`, sourceSha, controlSha: process.env.CONTROL_SHA, executor: executor(), durationMs, targets };
+  progress('complete', { sourceSha, operation: 'status', state: 'OBSERVED', durationMs });
+  return { state: 'OBSERVED', scope: 'all-configured-placements', releaseId: `r16-${sourceSha}`, sourceSha, controlSha: process.env.CONTROL_SHA, executor: executor(), durationMs, currentTargetCount: currentTargets.length, targets };
 }
 
-function observedTarget(sourceSha, target, node, observation) {
+export function observedTarget(sourceSha, target, node, observation) {
   if (!observation) return { target, node, state: 'UNKNOWN', currentSourceSha: null, previousSourceSha: null, health: null, diagnostic: { code: 'OBSERVATION_MISSING' } };
   const currentSha = observation.status?.currentArtifact?.sourceSha ?? null;
   const previousSha = observation.status?.previousArtifact?.sourceSha ?? null;
+  const health = observation.verification?.readiness ?? null;
+  if (observation.error) return { target, node, state: 'FAILED', currentSourceSha: currentSha, previousSourceSha: previousSha, health, diagnostic: observation.error };
   if (currentSha !== sourceSha) {
-    return { target, node, state: previousSha === sourceSha ? 'ROLLED_BACK' : 'FAILED', currentSourceSha: currentSha, previousSourceSha: previousSha, health: null };
+    return { target, node, state: previousSha === sourceSha ? 'PREVIOUS' : currentSha ? 'OTHER' : 'EMPTY', currentSourceSha: currentSha, previousSourceSha: previousSha, health };
   }
-  if (observation.error) return { target, node, state: 'FAILED', currentSourceSha: currentSha, previousSourceSha: previousSha, health: null, diagnostic: observation.error };
-  return { target, node, state: 'HEALTHY', currentSourceSha: currentSha, previousSourceSha: previousSha, health: observation.verification?.readiness ?? null };
+  return { target, node, state: 'HEALTHY', currentSourceSha: currentSha, previousSourceSha: previousSha, health };
 }
 
 async function rollback(adapter, controlRoot, target, node) {
