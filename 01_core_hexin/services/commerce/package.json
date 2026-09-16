@@ -12,6 +12,7 @@
     "@shop/config": "1.0.0",
     "@shop/contract": "1.0.0",
     "@shop/kernel": "1.0.0",
+    "@shop/l-kernel": "1.0.0",
     "@shop/providercore": "1.0.0",
     "@shop/providerbook": "1.0.0",
     "@shop/providercake": "1.0.0",
