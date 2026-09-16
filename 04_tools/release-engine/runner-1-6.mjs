@@ -81,15 +81,7 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
   const needsBuild = cache.some((item) => !item.exists);
   let cacheStatus = 'reused';
   if (needsBuild) {
-    context.stage = 'build';
-    progress('build', { sourceSha, targets: plan.deploymentOrder });
-    const built = await buildRelease(adapter, plan.planPath);
-    context.stage = 'package';
-    progress('package', { sourceSha, targets: plan.deploymentOrder });
-    const packaged = await packageRelease(adapter, built.buildPath);
-    context.stage = 'upload';
-    progress('upload', { sourceSha, targets: plan.deploymentOrder });
-    await publishSimpleArtifacts(adapter, packaged.packagePath, client);
+    await buildAndPublish(adapter, plan, client, sourceSha);
     cacheStatus = 'built';
   }
 
@@ -130,25 +122,38 @@ async function installDependencies(adapter, controlRoot) {
   }
 }
 
+async function buildAndPublish(adapter, plan, client, sourceSha) {
+  context.stage = 'build';
+  progress('build', { sourceSha, targets: plan.deploymentOrder });
+  const built = await buildRelease(adapter, plan.planPath);
+  context.stage = 'package';
+  progress('package', { sourceSha, targets: plan.deploymentOrder });
+  const packaged = await packageRelease(adapter, built.buildPath);
+  context.stage = 'upload';
+  progress('upload', { sourceSha, targets: plan.deploymentOrder });
+  await publishSimpleArtifacts(adapter, packaged.packagePath, client);
+}
+
 async function deployExact(adapter, controlRoot, sourceSha, target, node) {
   context.stage = 'artifact-lookup';
   context.target = target;
   context.node = node;
   resolveDeployment(adapter, node, target);
-  const productionStarted = performance.now();
   const client = simpleOssClientFromEnvironment();
   progress('artifact-lookup', { sourceSha, target, node });
   const cached = await inspectSimpleArtifact(adapter, { target, sourceSha }, client);
+  let cacheStatus = 'reused';
   if (!cached.exists) {
-    throw new DeliveryError('ARTIFACT_NOT_READY', `Immutable artifact is not ready for ${target} at ${sourceSha}`, {
-      sourceSha,
-      target,
-      node,
-      cache: cached,
-      retryable: false,
-      nextSafeAction: 'prepare the immutable artifact outside the production cutover and rerun the same exact deployment',
-    });
+    context.stage = 'dependencies';
+    progress('dependencies', { sourceSha, target, node });
+    await installDependencies(adapter, controlRoot);
+    context.stage = 'plan';
+    progress('plan', { sourceSha, target, node });
+    const plan = await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha, target, prepare: true });
+    await buildAndPublish(adapter, plan, client, sourceSha);
+    cacheStatus = 'built';
   }
+  const productionStarted = performance.now();
   context.stage = 'deploy';
   progress('deploy', { sourceSha, target, node, completed: 0, total: 1 });
   const deployed = await deployTarget(adapter, controlRoot, client, { target, node, sourceSha });
@@ -160,7 +165,7 @@ async function deployExact(adapter, controlRoot, sourceSha, target, node) {
     sourceSha,
     controlSha: process.env.CONTROL_SHA,
     executor: executor(),
-    cacheStatus: 'reused',
+    cacheStatus,
     exactScope: true,
     productionDurationMs,
     productionSlo: productionDurationMs <= 60_000 ? 'met' : 'missed',

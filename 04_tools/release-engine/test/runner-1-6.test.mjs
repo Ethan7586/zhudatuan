@@ -176,15 +176,21 @@ test('normal path uses direct artifact deployment and does not depend on old aut
   }
 });
 
-test('exact production cutover skips dependencies and build and reports the one-minute objective', async () => {
+test('exact release rebuilds a missing cache before the timed production cutover', async () => {
   const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
   const exactBranch = core.indexOf('if (exactScope) return deployExact');
   const dependencyInstall = core.indexOf("name: 'install-control-dependencies'");
   const exactFunction = core.indexOf('async function deployExact');
   assert.ok(exactBranch > 0 && exactBranch < dependencyInstall && exactFunction > dependencyInstall);
   const exactSource = core.slice(exactFunction, core.indexOf('async function deployTarget'));
-  assert.doesNotMatch(exactSource, /npm|buildRelease|packageRelease|createReleasePlan/);
-  assert.match(exactSource, /ARTIFACT_NOT_READY/);
+  const cacheMiss = exactSource.indexOf('if (!cached.exists)');
+  const build = exactSource.indexOf('await buildAndPublish');
+  const timedCutover = exactSource.indexOf('const productionStarted = performance.now()');
+  assert.ok(cacheMiss > 0 && cacheMiss < build && build < timedCutover);
+  assert.match(exactSource, /await installDependencies\(adapter, controlRoot\)/);
+  assert.match(exactSource, /createReleasePlan\(adapter, \{ from: `\$\{sourceSha\}\^`, to: sourceSha, target, prepare: true \}\)/);
+  assert.doesNotMatch(exactSource, /ARTIFACT_NOT_READY/);
+  assert.match(exactSource, /cacheStatus = 'built'/);
   assert.match(exactSource, /productionSloMs: 60_000/);
   assert.match(exactSource, /productionDurationMs <= 60_000/);
 });
