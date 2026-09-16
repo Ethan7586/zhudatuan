@@ -109,3 +109,11 @@ test('normal path uses direct artifact deployment and does not depend on old aut
     await assert.rejects(access(join(root, '.github/workflows', obsolete)));
   }
 });
+
+test('release installs dependencies before dynamic impact planning', async () => {
+  const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
+  const install = core.indexOf("name: 'install-release-dependencies'");
+  const plan = core.indexOf('const plan = await createReleasePlan');
+  assert.ok(install > 0 && install < plan);
+  assert.equal(core.match(/name: 'install-release-dependencies'/g)?.length, 1);
+});
