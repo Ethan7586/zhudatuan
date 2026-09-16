@@ -3,7 +3,7 @@ import type { OperationDatabase } from '../../../foundation/application/ModuleOp
 import { readMemberDirectory } from '../03_application_yingyong/MemberDirectoryReader';
 
 describe('shared member directory reader', () => {
-  it('uses the same MB-only query with each node database and local scope', async () => {
+  it('uses the same MB-only query with simulated node databases and local scopes', async () => {
     const statements: string[] = [];
     for (const scope of ['mall:zhudatuan', 'mall:hbbtzn', 'mall:h6'] as const) {
       const query = vi.fn(async (_sql: string, _values: readonly unknown[]) => ({ rows: [{ membership_id: scope }] }));
