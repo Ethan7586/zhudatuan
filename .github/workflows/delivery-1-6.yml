@@ -145,6 +145,14 @@ jobs:
           ref: ${{ github.sha }}
           path: .runner-1-6/control-release
           fetch-depth: 1
+      - name: Report previous default workspace state
+        if: ${{ inputs.operation == 'status' && needs.route.outputs.runner_class == 'aliyun' }}
+        shell: bash
+        run: |
+          printf 'default_workdir=%s\n' "$GITHUB_WORKSPACE"
+          printf 'default_head=%s\n' "$(git -C "$GITHUB_WORKSPACE" rev-parse HEAD 2>/dev/null || printf unavailable)"
+          if [ -f "$GITHUB_WORKSPACE/package-lock.json" ]; then printf 'default_lockfile=present\n'; else printf 'default_lockfile=missing\n'; fi
+          printf 'default_sparse=%s\n' "$(git -C "$GITHUB_WORKSPACE" config --local --get core.sparseCheckout 2>/dev/null || printf unset)"
       - name: Run shared release core
         id: release
         if: ${{ inputs.operation != 'status' }}
