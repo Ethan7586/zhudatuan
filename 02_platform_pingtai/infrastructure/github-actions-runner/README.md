@@ -1,16 +1,16 @@
 # Runner 1.6 execution
 
-The installed `zdt-delivery` command is a control-side dispatcher. It fetches the latest `origin/zdt-next`, starts `delivery-1-6.yml`, follows the GitHub run, and prints the final `RUNNER_1_6_RESULT`.
+The repository includes `02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery`. Run it from any clone or worktree; no per-user installation is needed. It fetches the latest `origin/zdt-next`, starts the single `delivery-1-6.yml` workflow, follows the GitHub run, and prints the final `RUNNER_1_6_RESULT`. An installed copy also works when run from a checkout, or with `ZDT_GIT_ANCHOR` pointing to one. GitHub's Actions page exposes the same workflow to repository collaborators with permission to run it.
 
 Normal commands:
 
 ```text
-zdt-delivery release <full-source-sha>
-zdt-delivery deploy <full-source-sha>
-zdt-delivery deploy <target> <full-source-sha> <physical-node>
-zdt-delivery status <full-source-sha-or-r16-release-id>
-zdt-delivery retry <r16-release-id>
-zdt-delivery rollback <target> <physical-node>
+./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery release <full-source-sha>
+./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery deploy <full-source-sha>
+./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery deploy <target> <full-source-sha> <physical-node>
+./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery status <full-source-sha-or-r16-release-id>
+./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery retry <r16-release-id>
+./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery rollback <target> <physical-node>
 ```
 
 `deploy` and `release` are interchangeable names for the same release path. `deploy` with an explicit target uses the historical target-first argument order; the wrapper forwards it to `release` with Source SHA first. Neither command has priority over the other.

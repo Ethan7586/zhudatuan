@@ -35,9 +35,16 @@ case "$operation" in
     ;;
 esac
 
-repository_root="${ZDT_GIT_ANCHOR:-/Users/Ethan/Desktop/zdt-next}"
+if [ -n "${ZDT_GIT_ANCHOR:-}" ]; then
+  repository_root="$ZDT_GIT_ANCHOR"
+else
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+  repository_root="$(git -C "$script_dir" rev-parse --show-toplevel 2>/dev/null || git rev-parse --show-toplevel 2>/dev/null)" \
+    || { echo 'Run zdt-delivery from a repository checkout or set ZDT_GIT_ANCHOR.' >&2; exit 1; }
+fi
 git -C "$repository_root" rev-parse --git-dir >/dev/null 2>&1 || { echo "Git anchor unavailable: $repository_root" >&2; exit 1; }
-control_parent="$(mktemp -d /private/tmp/zdt-delivery-control.XXXXXX)"
+tmp_base="${TMPDIR:-/tmp}"
+control_parent="$(mktemp -d "${tmp_base%/}/zdt-delivery-control.XXXXXX")"
 control_root="$control_parent/zdt-next"
 added=false
 cleanup() {
@@ -50,4 +57,4 @@ control_sha="$(git -C "$repository_root" rev-parse origin/zdt-next)"
 git -C "$repository_root" worktree add --detach "$control_root" "$control_sha" --quiet
 added=true
 printf 'Delivery control: %s\n' "$control_sha"
-exec bash "$control_root/scripts/delivery-dispatch.sh" "$@"
+(cd "$control_root" && bash scripts/delivery-dispatch.sh "$@")
