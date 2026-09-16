@@ -123,7 +123,7 @@ test('direct explicit scope always builds the requested target without validatio
     to: currentSha.trim(),
     target: 'console',
     direct: true,
-    files: ['.github/workflows/legacy-direct-recovery-aliyun.yml'],
+    files: ['AI-DELIVERY.md'],
     nodes: ['hbbtzn-l1'],
   });
   assert.equal(plan.direct, true);

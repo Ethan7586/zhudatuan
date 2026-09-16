@@ -50,19 +50,6 @@ export async function assertWorktreeClean(projectRoot) {
   });
 }
 
-export async function assertGitAncestor(projectRoot, ancestor, descendant) {
-  invariant(/^[a-f0-9]{40}$/.test(String(ancestor ?? '')) && /^[a-f0-9]{40}$/.test(String(descendant ?? '')),
-    'GIT_ANCESTRY_SHA_INVALID', 'Ancestry requires two full lowercase Git SHAs');
-  try {
-    await execFileAsync('git', ['merge-base', '--is-ancestor', ancestor, descendant], { cwd: projectRoot, encoding: 'utf8' });
-  } catch {
-    throw new DeliveryError('GIT_ANCESTOR_REQUIRED', 'Closure recovery base must be an ancestor of the exact source SHA', {
-      ancestor, descendant, retryable: false, nextSafeAction: 'select-exact-failed-closure-base-and-rerun-doctor',
-    });
-  }
-  return true;
-}
-
 export async function git(projectRoot, args) {
   try {
     const { stdout } = await execFileAsync('git', args, { cwd: projectRoot, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
@@ -79,7 +66,7 @@ export function parseNameStatus(buffer) {
   const tokens = buffer.toString('utf8').split('\0');
   if (tokens.at(-1) === '') tokens.pop();
   const changes = [];
-  for (let index = 0; index < tokens.length;) {
+  for (let index = 0; index < tokens.length; ) {
     const status = tokens[index++];
     invariant(Boolean(status), 'GIT_DIFF_PARSE_FAILED', 'Missing git diff status');
     if (status.startsWith('R') || status.startsWith('C')) {

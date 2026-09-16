@@ -14,4 +14,4 @@ runner-1-6.mjs
 
 The normal path calculates affected targets, reuses or rebuilds ordinary OSS artifacts, deploys them with the existing direct remote action, waits for real health, and reports the target's `current/previous` state. OSS is storage, not a deployment authority.
 
-The older `cli.mjs` and `src/engine.mjs` are retained only for the explicit recovery workflows documented in `RECOVERY.md`. They are not imported by Runner 1.6.
+The retired Seal, Closure, Lease, runner-routing and prepared-deploy engine has been removed. Recovery uses the same target `current/previous` truth as Runner 1.6; the remaining legacy OSS workflow is an explicitly isolated last resort and is not a deployment authority.

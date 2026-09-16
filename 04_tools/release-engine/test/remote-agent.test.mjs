@@ -146,7 +146,7 @@ test('OSS direct mode rejects missing deployment control-plane provenance before
   );
 });
 
-test('prepared v2 actions reject Agent or policy drift before download and cutover', async () => {
+test('direct v2 actions reject Agent or policy drift before download and cutover', async () => {
   const fixture = await createFixture();
   const artifact = await createArtifact(fixture, 'drift-refused', '1'.repeat(40));
   const payload = await artifactPayload(artifact);
@@ -164,7 +164,7 @@ test('prepared v2 actions reject Agent or policy drift before download and cutov
   );
 });
 
-test('prepared v2 deploy verifies and activates in one locked action without a candidate seal', async () => {
+test('direct v2 deploy verifies and activates in one locked action without a candidate seal', async () => {
   const fixture = await createFixture();
   const artifact = await createArtifact(fixture, 'atomic-prepared', '2'.repeat(40));
   const deployed = await invokeOss(fixture, artifact, await artifactPayload(artifact), true, 'deploy-oss-direct-v2');
@@ -191,12 +191,6 @@ test('prepared candidate validation downloads and checks the release without mov
   assert.match(await readlink(join(fixture.pointerRoot, 'candidate')), new RegExp(candidate.sourceSha));
   assert.equal(validated.result.controlPlane.sourceSha, 'f'.repeat(40));
   assert.equal(validated.result.current.sourceSha, baseline.sourceSha);
-  const sealed = await invokeOss(fixture, candidate, {}, true, 'seal-validated-candidate-v3', {
-    expectedCurrent: current,
-    expectedCurrentSourceSha: baseline.sourceSha,
-  });
-  assert.equal(sealed.result.schema, 'ai.delivery.candidate-seal.v1');
-  assert.equal(sealed.result.expectedCurrent, current);
 });
 
 test('prepared validation accepts only the legacy readable-mode widening of a frontend current release', async () => {
@@ -206,7 +200,7 @@ test('prepared validation accepts only the legacy readable-mode widening of a fr
   const current = await readlink(join(fixture.pointerRoot, 'current'));
   const manifestPath = join(current, 'AI_DELIVERY_ARTIFACT.json');
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
-  manifest.entries = manifest.entries.map((entry) => entry.type === 'file' ? { ...entry, mode: 0o600 } : entry);
+  manifest.entries = manifest.entries.map((entry) => (entry.type === 'file' ? { ...entry, mode: 0o600 } : entry));
   manifest.treeDigest = digest(manifest.entries);
   delete manifest.manifestDigest;
   manifest.manifestDigest = digest(manifest);
@@ -223,179 +217,6 @@ test('prepared validation accepts only the legacy readable-mode widening of a fr
   const nextPayload = await artifactPayload(nextCandidate);
   const rejected = await captureAgentFailure(() => invokeOss(fixture, nextCandidate, nextPayload, true, 'validate-oss-candidate-v3'));
   assert.equal(rejected.code, 'CURRENT_RELEASE_TREE_MISMATCH');
-});
-
-test('1.4 deploy consumes only a sealed candidate and never downloads during cutover', async () => {
-  const fixture = await createFixture();
-  const baseline = await createArtifact(fixture, 'baseline', '8'.repeat(40));
-  await invokeOss(fixture, baseline, await artifactPayload(baseline));
-  const candidate = await createArtifact(fixture, 'sealed-candidate', '9'.repeat(40));
-  const missingSeal = await captureAgentFailure(() =>
-    invokeOss(fixture, candidate, { artifactUrl: 'http://127.0.0.1:1/not-used', manifestUrl: 'http://127.0.0.1:1/not-used' }, true, 'deploy-sealed-candidate-v3')
-  );
-  assert.equal(missingSeal.code, 'CANDIDATE_SEAL_MISSING');
-
-  const validated = await invokeOss(fixture, candidate, await artifactPayload(candidate), true, 'validate-oss-candidate-v3');
-  await invokeOss(fixture, candidate, {}, true, 'seal-validated-candidate-v3', {
-    expectedCurrent: validated.result.current.after,
-    expectedCurrentSourceSha: validated.result.current.sourceSha,
-  });
-  const deployed = await invokeOss(
-    fixture,
-    candidate,
-    { artifactUrl: 'http://127.0.0.1:1/not-used', manifestUrl: 'http://127.0.0.1:1/not-used' },
-    true,
-    'deploy-sealed-candidate-v3'
-  );
-  assert.equal(deployed.result.schema, 'ai.delivery.oss-sealed-deploy.v1');
-  assert.equal(deployed.result.downloadedBytes, 0);
-  assert.equal(deployed.result.activation.mode, 'sealed-activated');
-  assert.equal(deployed.result.activation.receipt.finalStatus, 'success');
-});
-
-test('1.4 deploy restores its own sealed candidate when another source sealed later', async () => {
-  const fixture = await createFixture();
-  const baseline = await createArtifact(fixture, 'baseline', 'a'.repeat(40));
-  await invokeOss(fixture, baseline, await artifactPayload(baseline));
-  const first = await createArtifact(fixture, 'first-sealed', 'b'.repeat(40));
-  const firstValidation = await invokeOss(fixture, first, await artifactPayload(first), true, 'validate-oss-candidate-v3');
-  await invokeOss(fixture, first, {}, true, 'seal-validated-candidate-v3', {
-    expectedCurrent: firstValidation.result.current.after,
-    expectedCurrentSourceSha: firstValidation.result.current.sourceSha,
-  });
-  const later = await createArtifact(fixture, 'later-sealed', 'c'.repeat(40));
-  const laterValidation = await invokeOss(fixture, later, await artifactPayload(later), true, 'validate-oss-candidate-v3');
-  await invokeOss(fixture, later, {}, true, 'seal-validated-candidate-v3', {
-    expectedCurrent: laterValidation.result.current.after,
-    expectedCurrentSourceSha: laterValidation.result.current.sourceSha,
-  });
-
-  const deployed = await invokeOss(fixture, first, {}, true, 'deploy-sealed-candidate-v3');
-  assert.equal(deployed.result.activation.receipt.sourceSha, first.sourceSha);
-  assert.equal(deployed.result.seal.restoredCandidate, true);
-  assert.match(await readlink(join(fixture.pointerRoot, 'current')), new RegExp(first.sourceSha));
-});
-
-test('1.4 deploy rejects a sealed candidate when production changed after validation', async () => {
-  const fixture = await createFixture();
-  const baseline = await createArtifact(fixture, 'baseline', 'a'.repeat(40));
-  await invokeOss(fixture, baseline, await artifactPayload(baseline));
-  const candidate = await createArtifact(fixture, 'sealed-before-drift', 'b'.repeat(40));
-  const validated = await invokeOss(fixture, candidate, await artifactPayload(candidate), true, 'validate-oss-candidate-v3');
-  await invokeOss(fixture, candidate, {}, true, 'seal-validated-candidate-v3', {
-    expectedCurrent: validated.result.current.after,
-    expectedCurrentSourceSha: validated.result.current.sourceSha,
-  });
-
-  const drift = await createArtifact(fixture, 'new-production', 'c'.repeat(40));
-  await invokeOss(fixture, drift, await artifactPayload(drift));
-  await invoke(fixture, 'reuse', candidate);
-  const current = await readlink(join(fixture.pointerRoot, 'current'));
-  const rejected = await captureAgentFailure(() =>
-    invokeOss(fixture, candidate, {}, true, 'deploy-sealed-candidate-v3')
-  );
-  assert.equal(rejected.code, 'CANDIDATE_SEAL_CURRENT_CHANGED');
-  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), current);
-});
-
-test('1.4 deploy rejects a seal bound to a different artifact identity', async () => {
-  const fixture = await createFixture();
-  const baseline = await createArtifact(fixture, 'baseline', '1'.repeat(40));
-  await invokeOss(fixture, baseline, await artifactPayload(baseline));
-  const sealedCandidate = await createArtifact(fixture, 'sealed-identity', '2'.repeat(40));
-  const validated = await invokeOss(fixture, sealedCandidate, await artifactPayload(sealedCandidate), true, 'validate-oss-candidate-v3');
-  await invokeOss(fixture, sealedCandidate, {}, true, 'seal-validated-candidate-v3', {
-    expectedCurrent: validated.result.current.after,
-    expectedCurrentSourceSha: validated.result.current.sourceSha,
-  });
-  const differentArtifact = await createArtifact(fixture, 'different-identity', '3'.repeat(40));
-  const rejected = await captureAgentFailure(() => invokeOss(fixture, differentArtifact, {}, true, 'deploy-sealed-candidate-v3'));
-  assert.equal(rejected.code, 'CANDIDATE_SEAL_IDENTITY_MISMATCH');
-  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), validated.result.current.after);
-});
-
-test('registers a proven legacy current baseline without changing release bytes, pointer, or process', async () => {
-  const fixture = await createFixture();
-  const sourceSha = '1'.repeat(40);
-  const artifactSha256 = '2'.repeat(64);
-  const release = join(fixture.pointerRoot, 'releases', `${sourceSha.slice(0, 12)}-${artifactSha256.slice(0, 16)}`);
-  await mkdir(release, { recursive: true });
-  await writeFile(join(release, 'app.txt'), 'legacy-production');
-  await symlink(release, join(fixture.pointerRoot, 'current'));
-  const artifact = await createArtifact(fixture, 'proof-carrier', sourceSha);
-
-  const registered = await invokeOss(fixture, artifact, {}, true, 'register-current-baseline-v3', {
-    legacyArtifactSha256: artifactSha256,
-    expectedCurrent: release,
-  });
-  assert.equal(registered.result.status, 'registered');
-  assert.equal(registered.result.current.unchanged, true);
-  assert.equal(registered.result.process.unchanged, true);
-  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), release);
-  await assert.rejects(() => readFile(join(release, 'AI_DELIVERY_ARTIFACT.json')), { code: 'ENOENT' });
-  assert.equal(JSON.parse(await readFile(registered.result.baselinePath, 'utf8')).sourceSha, sourceSha);
-
-  const candidate = await createArtifact(fixture, 'next-release', '3'.repeat(40));
-  const validated = await invokeOss(fixture, candidate, await artifactPayload(candidate), true, 'validate-oss-candidate-v3');
-  assert.equal(validated.result.current.sourceSha, sourceSha);
-  assert.equal(validated.result.current.unchanged, true);
-});
-
-test('registered legacy baseline fails closed when current release bytes change', async () => {
-  const fixture = await createFixture();
-  const sourceSha = '4'.repeat(40);
-  const artifactSha256 = '5'.repeat(64);
-  const release = join(fixture.pointerRoot, 'releases', `${sourceSha.slice(0, 12)}-${artifactSha256.slice(0, 16)}`);
-  await mkdir(release, { recursive: true });
-  await writeFile(join(release, 'app.txt'), 'legacy-production');
-  await symlink(release, join(fixture.pointerRoot, 'current'));
-  const artifact = await createArtifact(fixture, 'proof-carrier', sourceSha);
-  await invokeOss(fixture, artifact, {}, true, 'register-current-baseline-v3', {
-    legacyArtifactSha256: artifactSha256,
-    expectedCurrent: release,
-  });
-  await writeFile(join(release, 'app.txt'), 'tampered-production');
-
-  const candidate = await createArtifact(fixture, 'next-release', '6'.repeat(40));
-  const payload = await artifactPayload(candidate);
-  const rejected = await captureAgentFailure(() => invokeOss(fixture, candidate, payload, true, 'validate-oss-candidate-v3'));
-  assert.equal(rejected.code, 'CURRENT_BASELINE_TREE_MISMATCH');
-  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), release);
-});
-
-test('legacy baseline registration rejects a source or artifact that does not match the current release id', async () => {
-  const fixture = await createFixture();
-  const sourceSha = '7'.repeat(40);
-  const artifactSha256 = '8'.repeat(64);
-  const release = join(fixture.pointerRoot, 'releases', `wrong-${artifactSha256.slice(0, 16)}`);
-  await mkdir(release, { recursive: true });
-  await writeFile(join(release, 'app.txt'), 'legacy-production');
-  await symlink(release, join(fixture.pointerRoot, 'current'));
-  const artifact = await createArtifact(fixture, 'proof-carrier', sourceSha);
-
-  const rejected = await captureAgentFailure(() => invokeOss(fixture, artifact, {}, true, 'register-current-baseline-v3', {
-    legacyArtifactSha256: artifactSha256,
-    expectedCurrent: release,
-  }));
-  assert.equal(rejected.code, 'CURRENT_BASELINE_RELEASE_ID_MISMATCH');
-  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), release);
-});
-
-test('1.4 deploy requires candidate revalidation after Agent policy changes', async () => {
-  const fixture = await createFixture();
-  const baseline = await createArtifact(fixture, 'baseline', 'd'.repeat(40));
-  await invokeOss(fixture, baseline, await artifactPayload(baseline));
-  const candidate = await createArtifact(fixture, 'sealed-before-policy-change', 'e'.repeat(40));
-  const validated = await invokeOss(fixture, candidate, await artifactPayload(candidate), true, 'validate-oss-candidate-v3');
-  await invokeOss(fixture, candidate, {}, true, 'seal-validated-candidate-v3', {
-    expectedCurrent: validated.result.current.after,
-    expectedCurrentSourceSha: validated.result.current.sourceSha,
-  });
-  fixture.policy.readiness.intervalMs = 21;
-  await writePolicy(fixture);
-  const rejected = await captureAgentFailure(() => invokeOss(fixture, candidate, {}, true, 'deploy-sealed-candidate-v3'));
-  assert.equal(rejected.code, 'CANDIDATE_SEAL_CONTROL_PLANE_CHANGED');
-  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), validated.result.current.after);
 });
 
 test('server locks are scoped by project, node and target without a production-wide lock', async () => {
@@ -1375,30 +1196,6 @@ async function invokeOss(fixture, artifact, payload, includeControlPlane = true,
         expectedOverrides.remotePolicySha256 ?? `sha256:${await hashFile(join(fixture.policyRoot, 'fixture.json'))}`
       );
     }
-  }
-  if (action === 'seal-validated-candidate-v3') {
-    args.push(
-      '--expected-current',
-      expectedOverrides.expectedCurrent ?? 'none',
-      '--expected-current-source-sha',
-      expectedOverrides.expectedCurrentSourceSha ?? 'none'
-    );
-  } else if (action === 'register-current-baseline-v3') {
-    const legacyArtifactSha256 = expectedOverrides.legacyArtifactSha256 ?? '1'.repeat(64);
-    args.push(
-      '--legacy-artifact-sha256',
-      legacyArtifactSha256,
-      '--legacy-run-id',
-      expectedOverrides.legacyRunId ?? '999',
-      '--legacy-run-attempt',
-      expectedOverrides.legacyRunAttempt ?? '1',
-      '--legacy-workflow-path',
-      '.github/workflows/legacy-oss-recovery-aliyun.yml',
-      '--expected-current',
-      expectedOverrides.expectedCurrent ?? 'none',
-      '--approval',
-      expectedOverrides.approval ?? `fixture:register-current-baseline:${artifact.sourceSha}:${legacyArtifactSha256}`
-    );
   }
   return new Promise((resolveInvoke, rejectInvoke) => {
     const child = spawn(process.execPath, args, {

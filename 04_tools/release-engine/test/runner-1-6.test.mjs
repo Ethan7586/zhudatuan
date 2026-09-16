@@ -15,9 +15,18 @@ const root = resolve(new URL('../../..', import.meta.url).pathname);
 const sha = 'a'.repeat(40);
 
 test('Aliyun is selected only when a matching runner is online and idle', () => {
-  const selected = selectExecutionRunner({ runners: [{ name: 'aliyun-1', status: 'online', busy: false, labels: ['self-hosted', 'linux', 'x64', 'zdt-aliyun-build', 'zdt-aliyun-build-1'] }] });
+  const selected = selectExecutionRunner({
+    runners: [
+      {
+        name: 'aliyun-1',
+        status: 'online',
+        busy: false,
+        labels: ['self-hosted', 'Linux', 'X64', 'zdt-aliyun-build', 'zdt-aliyun-build-1'].map((name) => ({ name })),
+      },
+    ],
+  });
   assert.equal(selected.runnerClass, 'aliyun');
-  assert.deepEqual(selected.runsOn, ['self-hosted', 'linux', 'x64', 'zdt-aliyun-build', 'zdt-aliyun-build-1']);
+  assert.deepEqual(selected.runsOn, ['self-hosted', 'Linux', 'X64', 'zdt-aliyun-build', 'zdt-aliyun-build-1']);
 });
 
 for (const [name, observation, reason] of [
@@ -125,13 +134,32 @@ test('shared core keeps SSH material isolated to the current runner invocation',
 test('normal path uses direct artifact deployment and does not depend on old authorities', async () => {
   const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
   const shell = await readFile(join(root, 'scripts/runner-1-6.sh'), 'utf8');
+  const agent = await readFile(join(root, '04_tools/release-engine/remote/agent.mjs'), 'utf8');
   assert.match(core, /deploy-oss-direct-v2/);
   assert.match(core, /previous/);
   assert.match(core, /rollback/);
   assert.doesNotMatch(core, /from '.\/src\/(?:engine|oss)\.mjs'/);
   assert.doesNotMatch(`${core}\n${shell}`, /final.?seal|closure|writer.?lease|runner.?lease|slot.?claim|readiness.?doctor/i);
-  for (const obsolete of ['delivery-1-4-3.yml', 'auto-prepare-artifacts.yml', 'prepare-artifact-aliyun.yml', 'deploy-prepared-aliyun.yml', 'deploy-source-aliyun.yml']) {
-    await assert.rejects(access(join(root, '.github/workflows', obsolete)));
+  assert.doesNotMatch(agent, /seal-validated-candidate|deploy-sealed-candidate|register-current-baseline/);
+  for (const obsolete of [
+    '.github/workflows/delivery-1-4-3.yml',
+    '.github/workflows/auto-prepare-artifacts.yml',
+    '.github/workflows/prepare-artifact-aliyun.yml',
+    '.github/workflows/deploy-prepared-aliyun.yml',
+    '.github/workflows/deploy-source-aliyun.yml',
+    '.github/workflows/deploy-oss.yml',
+    '.github/workflows/deploy-prepared.yml',
+    '.github/workflows/prepare-artifact.yml',
+    '.github/workflows/register-current-baseline.yml',
+    '.github/workflows/register-current-baseline-aliyun.yml',
+    '.github/workflows/legacy-direct-recovery-aliyun.yml',
+    '04_tools/release-engine/cli.mjs',
+    '04_tools/release-engine/src/engine.mjs',
+    '04_tools/release-engine/src/seal-lifecycle.mjs',
+    '04_tools/release-engine/src/seal-recovery.mjs',
+    '04_tools/release-engine/src/release-writer-lease.mjs',
+  ]) {
+    await assert.rejects(access(join(root, obsolete)));
   }
 });
 
