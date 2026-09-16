@@ -11,6 +11,8 @@
 ## Runner 1.6 发布口令
 
 - 普通发布使用 `/Users/Ethan/.codex/bin/zdt-delivery release <full-source-sha>`；状态、重试和回滚分别使用 `status`、`retry`、`rollback`。
+- Ethan 对当前修复说“部署”时，在同一任务内完成验证、提交和推送，使用包含修复的新完整业务 Source SHA 发起发布；不得让 Ethan 另行串接提交、制品准备或“封板”，也不得部署不含修复的旧 SHA。
+- 指定目标与物理节点的发布在缓存缺失时由同一 Runner 核心先构建、上传，再开始生产切换；一分钟只衡量生产切换，不冒充整次交付耗时。
 - 控制端只获取最新发布控制面、派发 GitHub 工作流、查询并展示结果；不得在控制端安装依赖、构建、上传、部署或回滚。
 - 实际执行优先使用阿里云 Runner；无法接单时使用 GitHub Hosted Runner。两者调用同一个发布核心，本机不是第三执行路线。
 - 业务 Source SHA 与最新控制面 SHA 必须分别保留。
