@@ -63,7 +63,7 @@ describe('AccessPort invited registration', () => {
     expect(query.mock.calls[0]?.[0]).toContain('operator_display_name');
     expect(query.mock.calls[0]?.[1]).toContain('mall:one');
     expect(query.mock.calls[0]?.[1]).toContain('李厚亿');
-    expect(query.mock.calls[2]?.[1]).toContain('tenant:one');
+    expect(query.mock.calls[2]?.[1]).toContain('mall:one');
   });
 });
 
