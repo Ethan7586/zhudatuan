@@ -322,7 +322,7 @@ async function operationAccess(operation: ReturnType<typeof OperationCatalog.get
     return authorizer.authorize(request.headers, currentSession.id, currentSession.permission ?? currentSession.id, resource);
   }
   if (operation.audience === 'public' || operation.audience === 'provider') return null;
-  if (isAdministratorOffboard(operation.id, request.body)) {
+  if (isAdministratorOffboard(operation.id, request.body) || isAdministratorDemote(operation.id, request)) {
     return authorizer.authorize(request.headers, operation.id, operation.permission, resource, false);
   }
   return authorizer.authorize(request.headers, operation.id, operation.permission, resource);
@@ -331,6 +331,13 @@ async function operationAccess(operation: ReturnType<typeof OperationCatalog.get
 function isAdministratorOffboard(operation: string, body: unknown): boolean {
   return operation === 'access.roles.manage' && body !== null && typeof body === 'object'
     && !Array.isArray(body) && Reflect.get(body, 'action') === 'offboard';
+}
+
+function isAdministratorDemote(operation: string, request: HttpRequest): boolean {
+  return operation === 'access.roles.manage'
+    && request.parameters.roleid?.startsWith('role-senior-administrator-v1:') === true
+    && request.body !== null && typeof request.body === 'object' && !Array.isArray(request.body)
+    && Reflect.get(request.body, 'action') === 'demote';
 }
 
 function authenticatedWechatMode(body: unknown): boolean {
@@ -355,7 +362,7 @@ function contractOperationInput(operation: OperationId, input: OperationInput): 
 }
 
 function operationResource(operation: string, request: HttpRequest): string | undefined {
-  if (isAdministratorOffboard(operation, request.body)) return undefined;
+  if (isAdministratorOffboard(operation, request.body) || isAdministratorDemote(operation, request)) return undefined;
   // A new policy id is not resolvable before its first approved revision. The selected Scope is the authorization resource; the path id remains bound by ExpectedVersion and the canonical request hash.
   if (operation === 'finance.policies.manage' || operation === 'finance.policies.preview') return undefined;
   // Member targets remain path IDs; authorization resolves the selected mall.

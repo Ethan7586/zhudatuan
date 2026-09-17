@@ -710,10 +710,12 @@ describe('custom identity and permission directory', () => {
     expect(assignmentWrites[0]?.body).toMatchObject({ action: 'assign', kind: 'tenant', scope: 'tenant:one' });
 
     await user.click(screen.getByRole('button', { name: '降级为普通管理员' }));
+    expect(screen.queryByRole('dialog', { name: '验证后降级普通管理员' })).toBeNull();
     expect(await screen.findByText(/已降级为普通管理员/)).toBeTruthy();
     expect(member.roles.map(({ role }) => role)).toEqual(['role-finance']);
     expect(member.effective_permissions).toEqual(['finance.overview.read', 'order.read']);
-    expect(assignmentWrites.map(({ body }) => body.action)).toEqual(['assign', 'revoke']);
+    expect(assignmentWrites.map(({ body }) => body.action)).toEqual(['assign', 'demote']);
+    expect(screen.queryByText('验证后降级普通管理员')).toBeNull();
   });
 
   it('keeps senior administrator scheduling read-only for non-Owner sessions', async () => {
@@ -912,7 +914,7 @@ interface RoleWriteBody {
   permissions: string[];
 }
 interface RoleAssignmentBody {
-  action: 'assign' | 'revoke';
+  action: 'assign' | 'revoke' | 'demote';
   membership: string;
   kind: WireScope['kind'];
   scope: string;
@@ -957,14 +959,15 @@ function updateAssignment(roleId: string, body: RoleAssignmentBody) {
       member.scopes.push(scopeGrant(scope));
     }
     changed = true;
-  } else if (body.action === 'revoke' && index >= 0) {
+  } else if ((body.action === 'revoke' || body.action === 'demote') && index >= 0) {
     member.roles.splice(index, 1);
     changed = true;
   }
   if (changed) member.access_version = String(Number(member.access_version) + 1);
   recompute(member);
   syncRoleMetadata();
-  return { action: body.action, changed, role: roleId, membership: member.id, scope, scope_source: body.scopeSource, access_version: member.access_version };
+  return { action: body.action === 'demote' ? 'revoke' : body.action, changed, role: roleId, membership: member.id,
+    scope, scope_source: body.scopeSource, access_version: member.access_version };
 }
 
 function deleteRole(roleId: string) {

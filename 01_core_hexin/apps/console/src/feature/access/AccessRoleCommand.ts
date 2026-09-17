@@ -53,8 +53,10 @@ export async function saveAccessRole(context: ConsoleContext, draft: AccessRoleD
 
 export async function saveAccessRoleAssignment(context: ConsoleContext, draft: AccessRoleAssignmentDraft, signal?: AbortSignal) {
   if (!roleCommandAvailable(context)) throw new Error('ACCESS_ROLE_COMMAND_NOT_AVAILABLE');
+  const action = draft.action === 'revoke' && draft.role.startsWith('role-senior-administrator-v1:')
+    ? 'demote' : draft.action;
   const response = await rolesManage(
-    { path: { roleid: draft.role }, body: { action: draft.action, membership: draft.membership,
+    { path: { roleid: draft.role }, body: { action, membership: draft.membership,
       kind: draft.scope.kind, scope: draft.scope.id, scopeSource: draft.scopeSource } },
     consoleCommand(context.scope, {
       accessVersion: context.session.accessVersion,

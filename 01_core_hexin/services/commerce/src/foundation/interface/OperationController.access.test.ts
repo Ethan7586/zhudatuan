@@ -54,6 +54,32 @@ describe('access role management authorization resource', () => {
     );
   });
 
+  it('authorizes senior administrator demotion against the selected mall without SMS step-up', async () => {
+    const { authorize, route } = accessRolesManageRoute();
+    const headers = { 'x-scope-hint': 'mall:one' };
+
+    await expect(route.handler({
+      headers,
+      parameters: { roleid: 'role-senior-administrator-v1:tenant:one' },
+      body: { action: 'demote', membership: 'membership:target' },
+    } as never)).rejects.toThrow('STOP_AFTER_SCOPE_CAPTURE');
+
+    expect(authorize).toHaveBeenCalledWith(headers, 'access.roles.manage', 'access.role.manage', undefined, false);
+  });
+
+  it('keeps other role revocations on their original resource and step-up policy', async () => {
+    const { authorize, route } = accessRolesManageRoute();
+    const headers = { 'x-scope-hint': 'mall:one' };
+
+    await expect(route.handler({
+      headers,
+      parameters: { roleid: 'role:finance' },
+      body: { action: 'revoke', membership: 'membership:target' },
+    } as never)).rejects.toThrow('STOP_AFTER_SCOPE_CAPTURE');
+
+    expect(authorize).toHaveBeenCalledWith(headers, 'access.roles.manage', 'access.role.manage', 'role:finance');
+  });
+
   it('keeps normal role changes bound to the concrete role resource', async () => {
     const { authorize, route } = accessRolesManageRoute();
     const headers = { 'x-scope-hint': 'mall:one' };

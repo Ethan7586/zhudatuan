@@ -17,6 +17,9 @@ insert into access.membership(id,member_id,organization_id,client,status,access_
     'storefront','active',1,clock_timestamp(),'realm:l1','account:offboard-target');
 insert into access.membershiprole(membership_id,role_id,effective_at)
 values('membership:offboard-target','role-senior-administrator-v1:tenant-zhudatuan',clock_timestamp()-interval '1 day');
+insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version)
+values('scope:offboard-senior','membership:offboard-target','tenant','tenant-zhudatuan',
+  'organization-platform-root/tenant-zhudatuan','allow',clock_timestamp()-interval '1 day',2);
 insert into access.administratoridentity(
   id,membership_id,realm_id,account_id,principal_id,host_node_id,status,version,created_at
 ) values
@@ -45,6 +48,42 @@ set role zhudatuanidentityapi;
 do $test$
 begin
   begin
+    perform access.demote_administrator('membership:offboard-owner','membership:offboard-target',
+      'role-senior-administrator-v1:tenant-zhudatuan',
+      'mall','mall:d1708f04df2dd8a61736852c4900fb43',1);
+    raise exception 'STALE_DEMOTION_WAS_ACCEPTED';
+  exception when others then
+    if sqlerrm<>'VERSION_CONFLICT' then raise; end if;
+  end;
+  begin
+    perform access.demote_administrator('membership:offboard-owner','membership:offboard-member',
+      'role-senior-administrator-v1:tenant-zhudatuan',
+      'mall','mall:d1708f04df2dd8a61736852c4900fb43',1);
+    raise exception 'MB_DEMOTION_WAS_ACCEPTED';
+  exception when others then
+    if sqlerrm<>'ADMINISTRATOR_NOT_ACTIVE' then raise; end if;
+  end;
+  begin
+    perform access.demote_administrator('membership:offboard-owner','membership-platform-owner-ethan-v1',
+      'role-senior-administrator-v1:tenant-zhudatuan',
+      'mall','mall:d1708f04df2dd8a61736852c4900fb43',14);
+    raise exception 'CROSS_REALM_DEMOTION_WAS_ACCEPTED';
+  exception when others then
+    if sqlerrm<>'MANAGEMENT_PERMISSION_REALM_MISMATCH' then raise; end if;
+  end;
+  if access.demote_administrator('membership:offboard-owner','membership:offboard-target',
+    'role-senior-administrator-v1:tenant-zhudatuan',
+    'mall','mall:d1708f04df2dd8a61736852c4900fb43',2)<>3 then
+    raise exception 'DEMOTION_VERSION_NOT_ADVANCED';
+  end if;
+  if (select status from access.membership where id='membership:offboard-target')<>'active'
+    or (select status from access.membership where id='membership:offboard-member')<>'active'
+    or (select expires_at from access.membershiprole where membership_id='membership:offboard-target') is null
+    or (select expires_at from access.scopegrant where id='scope:offboard-senior') is null
+    or (select revoked_at from identity.session where id='session:offboard-target') is not null then
+    raise exception 'DEMOTION_AFFECTED_UNRELATED_IDENTITY_OR_SESSION';
+  end if;
+  begin
     perform access.offboard_administrator('membership:offboard-owner','membership:offboard-target',
       'mall','mall:d1708f04df2dd8a61736852c4900fb43',1);
     raise exception 'STALE_VERSION_WAS_ACCEPTED';
@@ -66,7 +105,7 @@ begin
     if sqlerrm<>'ADMINISTRATOR_NOT_ACTIVE' then raise; end if;
   end;
   if access.offboard_administrator('membership:offboard-owner','membership:offboard-target',
-    'mall','mall:d1708f04df2dd8a61736852c4900fb43',2)<>3 then
+    'mall','mall:d1708f04df2dd8a61736852c4900fb43',3)<>4 then
     raise exception 'ACCESS_VERSION_NOT_ADVANCED';
   end if;
 end

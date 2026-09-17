@@ -28,7 +28,7 @@ try {
     '02_platform_pingtai/database/supabase/tests/offboard_operator_identity_contract.sql'), 'utf8');
   await run('docker', ['exec', '-i', container, 'psql', '-X', '-v', 'ON_ERROR_STOP=1',
     '-U', 'postgres', '-d', database, '-f', '-'], false, fixture);
-  console.log('L1 OP lifecycle PostgreSQL 17 passed: offboard, fresh reinvitation, import, MB untouched');
+  console.log('L1 OP lifecycle PostgreSQL 17 passed: senior demotion, offboard, fresh reinvitation, import, MB untouched');
 } finally {
   await run('docker', ['rm', '-f', container], true);
 }

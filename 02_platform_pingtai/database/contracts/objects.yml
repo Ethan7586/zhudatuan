@@ -97,6 +97,12 @@ objects:
     source: 02_platform_pingtai/database/supabase/migrations/20260917130000_offboard_operator_identity.sql
     callers:
       - 01_core_hexin/services/commerce/src/modules/access/03_application_yingyong/AccessOperations.ts
+  - id: access.demote_administrator
+    kind: function
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260917160000_demote_operator_identity.sql
+    callers:
+      - 01_core_hexin/services/commerce/src/modules/access/03_application_yingyong/AccessOperations.ts
   - id: access.list_administrator_members
     kind: function
     owner: access
@@ -18449,6 +18455,14 @@ objects:
     role: zhudatuanidentityapi
     objectType: function
     target: access.offboard_administrator(text,text,text,text,bigint)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:access.demote_administrator(text,text,text,text,text,bigint):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260917160000_demote_operator_identity.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: access.demote_administrator(text,text,text,text,text,bigint)
     privilege: execute
   - id: zhudatuanidentityapi:function:access.list_administrator_members(text,text,integer):execute
     kind: grant

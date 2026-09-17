@@ -181,6 +181,20 @@ describe('access scope management boundary', () => {
     expect(harness.queries.some((query) => /delete from (access\.)?membership\b/.test(query))).toBe(false);
   });
 
+  it('demotes the L1 senior administrator through the selected mall without broad table writes', async () => {
+    const harness = operationHarness({ scope: tenantA, targetMembershipScope: mallA, seniorRole: true });
+    const request = seniorAssignmentRequest('revoke', projectedOwnerAccess(mallA));
+    const response = await accessOperations(context(harness.pool)).invoke({ ...request,
+      input: { ...request.input, body: { ...request.input.body as Record<string, unknown>, action: 'demote' } } });
+
+    expect(response).toMatchObject({ status: 200, body: { action: 'revoke', changed: true,
+      role: 'role-senior-administrator-v1:tenant-a', membership: 'membership:target', access_version: 3 } });
+    expect(harness.calls.find(({ text }) => text.startsWith('select access.demote_administrator('))?.values)
+      .toEqual(['membership:manager', 'membership:target', 'role-senior-administrator-v1:tenant-a',
+        'mall', mallA.id, 2, tenantA.id]);
+    expect(harness.queries.some((query) => query.startsWith('update access.membershiprole'))).toBe(false);
+  });
+
   it('rejects senior role changes by a non-Owner before any database write', async () => {
     const harness = operationHarness({ scope: tenantA, targetMembershipScope: mallA, seniorRole: true });
 
@@ -559,6 +573,10 @@ function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipS
         if (options.targetGovernance === 'senior_administrator' && values[0] === 'membership:senior')
           throw new Error('OWNER_REQUIRED_FOR_ADMINISTRATOR_OFFBOARDING');
         return result([{ access_version: 3 }]);
+      }
+      if (text.startsWith('select access.demote_administrator(')) {
+        if (options.targetClient === 'storefront' || options.targetStatus === 'offboarded') throw new Error('ADMINISTRATOR_NOT_ACTIVE');
+        return result([{ access_version: 3, scope: options.scope ?? tenantA }]);
       }
       if (text.includes('permission.code=any($2::text[])') && text.includes('from access.membershiprole assignment')) {
         return result([{ target_membership_id: 'membership:target', target_client: options.targetClient ?? 'operator',

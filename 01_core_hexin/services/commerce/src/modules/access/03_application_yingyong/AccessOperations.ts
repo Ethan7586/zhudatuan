@@ -24,6 +24,7 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
       const body = bodyRecord(request);
       const role = request.input.path.roleid!;
       if (body.action === 'offboard') return offboardAdministrator(request, database, access);
+      if (body.action === 'demote') return demoteAdministrator(request, database, access, role);
       if (body.action === 'assign' || body.action === 'revoke') {
         return manageRoleAssignment(request, database, access, role, body.action);
       }
@@ -198,6 +199,28 @@ async function offboardAdministrator(request: OperationRequest, database: Operat
   if (changed === undefined) throw new Error('VERSION_CONFLICT');
   return { status: 200, body: Object.freeze({ action: 'offboard', changed: true, membership,
     status: 'offboarded', access_version: numericVersion(changed.access_version) }) };
+}
+
+async function demoteAdministrator(request: OperationRequest, database: OperationDatabase,
+  access: ReturnType<typeof requireAccess>, role: string): Promise<Readonly<{ status: number; body: Readonly<Record<string, unknown>> }>> {
+  if (!role.startsWith('role-senior-administrator-v1:')) throw new Error('ROLE_ASSIGNMENT_NOT_AVAILABLE');
+  const body = bodyRecord(request);
+  const membership = textField(body, 'membership');
+  const kind = textField(body, 'kind');
+  const scope = textField(body, 'scope');
+  const source = textField(body, 'scopeSource');
+  if (source !== 'direct' && source !== 'inherited') throw new Error('VALIDATION_FAILED:scopeSource');
+  const changed = (await database.query<{ access_version: string | number; scope: unknown }>(
+    `select access.demote_administrator($1,$2,$3,$4,$5,$6) access_version,
+      access.scope_object($7) scope`,
+    [access.membership.id, membership, role, access.scope.kind, access.scope.id,
+      requireExpectedVersion(request), scope],
+  )).rows[0];
+  if (changed === undefined) throw new Error('VERSION_CONFLICT');
+  const targetScope = canonicalScope(changed.scope);
+  if (targetScope === null || targetScope.kind !== kind) throw new Error('VALIDATION_FAILED:scope');
+  return { status: 200, body: Object.freeze({ action: 'revoke', changed: true, role, membership,
+    scope: targetScope, scope_source: source, access_version: numericVersion(changed.access_version) }) };
 }
 
 async function manageRoleAssignment(request: OperationRequest, database: OperationDatabase, access: ReturnType<typeof requireAccess>,

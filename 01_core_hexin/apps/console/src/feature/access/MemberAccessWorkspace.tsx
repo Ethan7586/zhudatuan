@@ -410,12 +410,6 @@ function MemberDetail({
       verifyAccessRoleAssignment(draft, receipt, row.access, reread.roles, reread.access);
       return receipt;
     },
-    onError: (error) => {
-      if (isStepUpRequired(error)) {
-        setElevatedSession(undefined);
-        setPendingAction('demote');
-      }
-    },
     onSuccess: (receipt) => onReceipt(actionReceiptLabel(row, '降级', receipt.access_version)),
   });
   const offboardMutation = useMutation({
@@ -435,7 +429,7 @@ function MemberDetail({
   const actionPending = upgradeMutation.isPending || demoteMutation.isPending || offboardMutation.isPending;
   const mutationError = upgradeMutation.error ?? demoteMutation.error ?? offboardMutation.error;
   const actionError = mutationError !== null && isStepUpRequired(mutationError)
-    && offboardMutation.error === null ? undefined : safeQueryError(mutationError);
+    && pendingAction === 'upgrade' ? undefined : safeQueryError(mutationError);
   const resetActionErrors = () => {
     upgradeMutation.reset();
     demoteMutation.reset();
@@ -449,7 +443,7 @@ function MemberDetail({
   };
   const beginAction = (action: AdministratorCriticalAction) => {
     const session = elevatedSession ?? context.session;
-    if (action !== 'offboard' && session.assurance.level < 3) {
+    if (action === 'upgrade' && session.assurance.level < 3) {
       resetActionErrors();
       setPendingAction(action);
       return;
