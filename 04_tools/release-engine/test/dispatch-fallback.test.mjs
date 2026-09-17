@@ -140,7 +140,15 @@ test('log timing reports real target health separately from workflow completion'
   const result = releaseLogTimings(log, Date.parse('2026-09-16T23:16:47Z'), 'release');
   assert.equal(result.sourceCheckoutMs, 9_925);
   assert.equal(result.targetHealthMs, 115_854);
+  assert.equal(result.targetCurrentMs, null);
   assert.match(result.resultLine, /^RUNNER_1_6_RESULT=/);
   assert.equal(releaseLogTimings(log, Date.parse('2026-09-16T23:16:47Z'), 'control-update').targetHealthMs, null);
   assert.equal(releaseLogTimings(log, Date.parse('2026-09-16T23:16:47Z'), 'status').sourceCheckoutMs, null);
+});
+
+test('unchecked static target reports command-to-current time, never command-to-health time', () => {
+  const log = 'Execute on aliyun\tRun shared release core\t2026-09-16T23:18:42.854Z RUNNER_1_6_RESULT={"state":"DEPLOYED","targets":[{"current":"/opt/zhudatuan/targets/console/releases/example","health":{"status":"not-checked","checks":[]}}]}';
+  const result = releaseLogTimings(log, Date.parse('2026-09-16T23:16:47Z'), 'release');
+  assert.equal(result.targetCurrentMs, 115_854);
+  assert.equal(result.targetHealthMs, null);
 });

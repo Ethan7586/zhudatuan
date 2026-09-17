@@ -50,10 +50,16 @@ export function releaseLogTimings(log, commandStartedMs, operation) {
     && result.targets?.length > 0
     && result.targets.every((target) => target.health?.status === 'ready')
     ? at(resultLine) - commandMs : null;
+  const targetCurrentMs = releaseOperation
+    && ['HEALTHY', 'DEPLOYED'].includes(result?.state)
+    && result.targets?.length > 0
+    && result.targets.every((target) => target.current && ['ready', 'not-checked'].includes(target.health?.status))
+    ? at(resultLine) - commandMs : null;
   return {
     resultLine: resultLine ? resultLine.slice(resultLine.indexOf(marker)) : null,
     sourceCheckoutMs: Number.isFinite(sourceCheckoutMs) && sourceCheckoutMs >= 0 ? sourceCheckoutMs : null,
     targetHealthMs: Number.isFinite(targetHealthMs) && targetHealthMs >= 0 ? targetHealthMs : null,
+    targetCurrentMs: Number.isFinite(targetCurrentMs) && targetCurrentMs >= 0 ? targetCurrentMs : null,
   };
 }
 
@@ -65,5 +71,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     if (result.resultLine) process.stdout.write(`${result.resultLine}\n`);
     if (result.sourceCheckoutMs !== null) process.stdout.write(`DELIVERY_SOURCE_CHECKOUT_MS=${result.sourceCheckoutMs}\n`);
     if (result.targetHealthMs !== null) process.stdout.write(`DELIVERY_END_TO_END_MS=${result.targetHealthMs}\n`);
+    if (result.targetCurrentMs !== null) process.stdout.write(`DELIVERY_TARGET_CURRENT_MS=${result.targetCurrentMs}\n`);
   } else process.stdout.write(`DELIVERY_PRE_CORE_TIMINGS=${JSON.stringify(githubTimings(JSON.parse(input)))}\n`);
 }

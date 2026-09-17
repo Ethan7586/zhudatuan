@@ -7,7 +7,7 @@ import { promisify } from 'node:util';
 import test from 'node:test';
 import { parse } from 'yaml';
 
-import { aggregateStatus, observationDiagnostic, observedTarget, selectedWorkspaces, sourceFromIdentifier } from '../runner-1-6.mjs';
+import { deploymentState, observationDiagnostic, observedTarget, selectedWorkspaces, sourceFromIdentifier } from '../runner-1-6.mjs';
 import { DeliveryError } from '../src/errors.mjs';
 import { runCommand } from '../src/runner.mjs';
 import { selectExecutionRunner } from '../src/runner-selection-1-6.mjs';
@@ -86,10 +86,7 @@ test('release id is deterministic and retry resolves the original Source SHA', (
   assert.equal(sourceFromIdentifier('invalid'), null);
 });
 
-test('status keeps an unreadable observation UNKNOWN without hiding confirmed failure', () => {
-  assert.equal(aggregateStatus(['HEALTHY', 'UNKNOWN']), 'UNKNOWN');
-  assert.equal(aggregateStatus(['UNKNOWN', 'FAILED']), 'FAILED');
-  assert.equal(aggregateStatus(['HEALTHY', 'ROLLED_BACK']), 'ROLLED_BACK');
+test('status keeps failure diagnostics without hiding remote evidence', () => {
   const unreadable = observationDiagnostic(new DeliveryError('COMMAND_FAILED', 'status failed', { exitCode: 255, outputTail: 'ssh unavailable' }));
   assert.equal(unreadable.remoteFailure, null);
   const unhealthy = observationDiagnostic(new DeliveryError('COMMAND_FAILED', 'verify failed', { exitCode: 1, outputTail: JSON.stringify({ ok: false, error: { code: 'READINESS_TIMEOUT', message: 'not ready' } }) }));
@@ -271,6 +268,7 @@ test('control update uses the shared core and changes no business pointer or ser
   const updateStart = core.indexOf('async function updateRemoteControl');
   const updateEnd = core.indexOf('async function status');
   const update = core.slice(updateStart, updateEnd);
+  assert.match(update, /state: 'UPDATED'/);
   assert.match(update, /remoteControlUpdateScript/);
   assert.match(update, /node --check/);
   assert.match(update, /mktemp --suffix=\.mjs/);
@@ -327,6 +325,11 @@ test('status observes configured physical nodes without source checkout or a rel
 test('live observation distinguishes current, previous and unrelated source without calling them failures', () => {
   const observation = (current, previous) => ({ status: { currentArtifact: { sourceSha: current }, previousArtifact: { sourceSha: previous } }, verification: { readiness: { status: 'ready' } } });
   assert.equal(observedTarget(sha, 'identity-api', 'hbbtzn-l1', observation(sha, 'b'.repeat(40))).state, 'HEALTHY');
+  const unchecked = { ...observation(sha, 'b'.repeat(40)), verification: { readiness: { status: 'not-checked', checks: [] } } };
+  assert.equal(observedTarget(sha, 'console', 'zhudatuan-l0', unchecked).state, 'CURRENT');
+  assert.equal(deploymentState([{ health: { status: 'ready' } }]), 'HEALTHY');
+  assert.equal(deploymentState([{ health: { status: 'not-checked' } }]), 'DEPLOYED');
+  assert.equal(deploymentState([{ health: { status: 'ready' } }, { health: { status: 'not-checked' } }]), 'DEPLOYED');
   assert.equal(observedTarget(sha, 'identity-api', 'hbbtzn-l1', observation('b'.repeat(40), sha)).state, 'PREVIOUS');
   assert.equal(observedTarget(sha, 'identity-api', 'hbbtzn-l1', observation('b'.repeat(40), 'c'.repeat(40))).state, 'OTHER');
   assert.equal(observedTarget(sha, 'identity-api', 'hbbtzn-l1', null).state, 'UNKNOWN');
@@ -334,6 +337,13 @@ test('live observation distinguishes current, previous and unrelated source with
   assert.equal(observedTarget(sha, 'identity-api', 'hbbtzn-l1', unreadable).state, 'FAILED');
   const uninitialized = { status: { currentArtifact: null, previousArtifact: null }, error: { code: 'CURRENT_POINTER_MISSING' } };
   assert.equal(observedTarget(sha, 'catalog-media', 'hbbtzn-l1', uninitialized).state, 'EMPTY');
+});
+
+test('L0 console route serves the active Runner pointer, not the obsolete monolith directory', async () => {
+  const caddy = await readFile(join(root, '02_platform_pingtai/infrastructure/zhudatuan/aliyun/Caddyfile'), 'utf8');
+  const policy = JSON.parse(await readFile(join(root, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8'));
+  const consoleRoot = policy.nodes['zhudatuan-l0'].deployments.console.pointerRoot;
+  assert.match(caddy, new RegExp(`root \\* ${consoleRoot}/current/static`));
 });
 
 test('isolated legacy recovery has no concurrency lock', async () => {
