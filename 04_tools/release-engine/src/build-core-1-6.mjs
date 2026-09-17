@@ -87,7 +87,11 @@ export async function packageRelease(adapter, buildPath) {
 }
 
 function commandContext(adapter, plan, runDirectory, target, logName) {
-  return { projectRoot: adapter.projectRoot, environment: {}, changedFiles: plan.changes.map((change) => change.path), sourceSha: plan.to.sha, node: '', target: target ?? '', logPath: join(runDirectory, 'logs', `${logName}.log`) };
+  return { projectRoot: adapter.projectRoot, environment: {}, changedFiles: plan.changes.map((change) => change.path), sourceSha: plan.to.sha, node: '', target: target ?? '', typecheckCacheDirectory: typecheckCacheDirectory(adapter.projectRoot), logPath: join(runDirectory, 'logs', `${logName}.log`) };
+}
+
+export function typecheckCacheDirectory(projectRoot, githubWorkspace = process.env.GITHUB_WORKSPACE) {
+  return githubWorkspace ? join(githubWorkspace, '.runner-1-6') : join(projectRoot, 'node_modules');
 }
 
 function elapsed(started) {

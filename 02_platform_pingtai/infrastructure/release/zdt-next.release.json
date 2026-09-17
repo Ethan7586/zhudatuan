@@ -88,7 +88,7 @@
         {"name":"console-related-tests","argv":["node","04_tools/release-engine/adapters/zdt-next/related-tests.mjs","console","{{changedFiles}}"],"timeoutMs":300000}
       ],
       "typecheck": [
-        {"name":"console-typecheck","argv":["npm","run","typecheck","--workspace","@shop/console"],"timeoutMs":300000}
+        {"name":"console-typecheck","argv":["npm","run","typecheck","--workspace","@shop/console","--","--incremental","--tsBuildInfoFile","{{typecheckCacheDirectory}}/console.tsbuildinfo"],"timeoutMs":300000}
       ],
       "build": [
         {"name":"console-production-build","argv":["npm","run","build:console"],"environment":{"VITE_API_BASE_URL":"https://api.hbbtzn.com","VITE_AUTH_BASE_URL":"https://accounts.hbbtzn.com","VITE_CLIENT_VERSION":"0.0.0-g{{sourceSha}}"},"timeoutMs":300000}
@@ -107,7 +107,7 @@
         {"name":"identity-related-tests","argv":["node","04_tools/release-engine/adapters/zdt-next/related-tests.mjs","commerce","{{changedFiles}}"],"timeoutMs":420000}
       ],
       "typecheck": [
-        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce"],"timeoutMs":420000}
+        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce","--","--incremental","--tsBuildInfoFile","{{typecheckCacheDirectory}}/commerce.tsbuildinfo"],"timeoutMs":420000}
       ],
       "build": [
         {"name":"identity-service-build","argv":["node","04_tools/release-engine/adapters/zdt-next/build-commerce-service.mjs","identity-api"],"timeoutMs":300000}
@@ -130,7 +130,7 @@
         {"name":"identity-notification-related-tests","argv":["node","04_tools/release-engine/adapters/zdt-next/related-tests.mjs","commerce","{{changedFiles}}"],"timeoutMs":420000}
       ],
       "typecheck": [
-        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce"],"timeoutMs":420000}
+        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce","--","--incremental","--tsBuildInfoFile","{{typecheckCacheDirectory}}/commerce.tsbuildinfo"],"timeoutMs":420000}
       ],
       "build": [
         {"name":"identity-notification-service-build","argv":["node","04_tools/release-engine/adapters/zdt-next/build-commerce-service.mjs","identity-notification-jobs"],"timeoutMs":300000}
@@ -153,7 +153,7 @@
         {"name":"mall-provisioning-related-tests","argv":["node","04_tools/release-engine/adapters/zdt-next/related-tests.mjs","commerce","{{changedFiles}}"],"timeoutMs":420000}
       ],
       "typecheck": [
-        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce"],"timeoutMs":420000}
+        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce","--","--incremental","--tsBuildInfoFile","{{typecheckCacheDirectory}}/commerce.tsbuildinfo"],"timeoutMs":420000}
       ],
       "build": [
         {"name":"mall-provisioning-service-build","argv":["node","04_tools/release-engine/adapters/zdt-next/build-commerce-service.mjs","mall-provisioning-api"],"timeoutMs":300000}
@@ -176,7 +176,7 @@
         {"name":"support-related-tests","argv":["node","04_tools/release-engine/adapters/zdt-next/related-tests.mjs","commerce","{{changedFiles}}"],"timeoutMs":420000}
       ],
       "typecheck": [
-        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce"],"timeoutMs":420000}
+        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce","--","--incremental","--tsBuildInfoFile","{{typecheckCacheDirectory}}/commerce.tsbuildinfo"],"timeoutMs":420000}
       ],
       "build": [
         {"name":"support-service-build","argv":["node","04_tools/release-engine/adapters/zdt-next/build-commerce-service.mjs","support-api"],"timeoutMs":300000}
@@ -197,7 +197,7 @@
         {"name":"purchase-related-tests","argv":["node","04_tools/release-engine/adapters/zdt-next/related-tests.mjs","commerce","{{changedFiles}}"],"timeoutMs":420000}
       ],
       "typecheck": [
-        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce"],"timeoutMs":420000}
+        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce","--","--incremental","--tsBuildInfoFile","{{typecheckCacheDirectory}}/commerce.tsbuildinfo"],"timeoutMs":420000}
       ],
       "build": [
         {"name":"purchase-service-build","argv":["node","04_tools/release-engine/adapters/zdt-next/build-commerce-service.mjs","purchase-api"],"timeoutMs":300000}
@@ -220,7 +220,7 @@
         {"name":"web-api-related-tests","argv":["node","04_tools/release-engine/adapters/zdt-next/related-tests.mjs","commerce","{{changedFiles}}"],"timeoutMs":420000}
       ],
       "typecheck": [
-        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce"],"timeoutMs":420000}
+        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce","--","--incremental","--tsBuildInfoFile","{{typecheckCacheDirectory}}/commerce.tsbuildinfo"],"timeoutMs":420000}
       ],
       "build": [
         {"name":"web-api-service-build","argv":["node","04_tools/release-engine/adapters/zdt-next/build-commerce-service.mjs","web-api"],"timeoutMs":300000}
@@ -243,7 +243,7 @@
         {"name":"catalog-api-related-tests","argv":["node","04_tools/release-engine/adapters/zdt-next/related-tests.mjs","commerce","{{changedFiles}}"],"timeoutMs":420000}
       ],
       "typecheck": [
-        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce"],"timeoutMs":420000}
+        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce","--","--incremental","--tsBuildInfoFile","{{typecheckCacheDirectory}}/commerce.tsbuildinfo"],"timeoutMs":420000}
       ],
       "build": [
         {"name":"catalog-api-service-build","argv":["node","04_tools/release-engine/adapters/zdt-next/build-commerce-service.mjs","catalog-api"],"timeoutMs":300000}
@@ -266,7 +266,7 @@
         {"name":"catalog-jobs-related-tests","argv":["node","04_tools/release-engine/adapters/zdt-next/related-tests.mjs","commerce","{{changedFiles}}"],"timeoutMs":420000}
       ],
       "typecheck": [
-        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce"],"timeoutMs":420000}
+        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce","--","--incremental","--tsBuildInfoFile","{{typecheckCacheDirectory}}/commerce.tsbuildinfo"],"timeoutMs":420000}
       ],
       "build": [
         {"name":"catalog-jobs-service-build","argv":["node","04_tools/release-engine/adapters/zdt-next/build-commerce-service.mjs","catalog-jobs"],"timeoutMs":300000}
@@ -289,7 +289,7 @@
         {"name":"payment-webhook-related-tests","argv":["node","04_tools/release-engine/adapters/zdt-next/related-tests.mjs","commerce","{{changedFiles}}"],"timeoutMs":420000}
       ],
       "typecheck": [
-        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce"],"timeoutMs":420000}
+        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce","--","--incremental","--tsBuildInfoFile","{{typecheckCacheDirectory}}/commerce.tsbuildinfo"],"timeoutMs":420000}
       ],
       "build": [
         {"name":"payment-webhook-service-build","argv":["node","04_tools/release-engine/adapters/zdt-next/build-commerce-service.mjs","payment-webhook-api"],"timeoutMs":300000}
@@ -312,7 +312,7 @@
         {"name":"payment-jobs-related-tests","argv":["node","04_tools/release-engine/adapters/zdt-next/related-tests.mjs","commerce","{{changedFiles}}"],"timeoutMs":420000}
       ],
       "typecheck": [
-        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce"],"timeoutMs":420000}
+        {"name":"commerce-typecheck","argv":["npm","run","typecheck","--workspace","@shop/commerce","--","--incremental","--tsBuildInfoFile","{{typecheckCacheDirectory}}/commerce.tsbuildinfo"],"timeoutMs":420000}
       ],
       "build": [
         {"name":"payment-jobs-service-build","argv":["node","04_tools/release-engine/adapters/zdt-next/build-commerce-service.mjs","payment-jobs"],"timeoutMs":300000}

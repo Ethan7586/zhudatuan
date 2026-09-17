@@ -9,8 +9,9 @@ import { parse } from 'yaml';
 
 import { deploymentState, observationDiagnostic, observedTarget, remoteRuntimeSyncScript, selectedWorkspaces, sourceFromIdentifier, sourceInstallArguments } from '../runner-1-6.mjs';
 import { loadAdapter } from '../src/adapter.mjs';
+import { typecheckCacheDirectory } from '../src/build-core-1-6.mjs';
 import { DeliveryError } from '../src/errors.mjs';
-import { runCommand } from '../src/runner.mjs';
+import { expandArgv, runCommand } from '../src/runner.mjs';
 import { selectExecutionRunner } from '../src/runner-selection-1-6.mjs';
 import { inspectSimpleArtifact, SIMPLE_RELEASE_SCHEMA, simpleReleaseObject } from '../src/simple-artifact-store.mjs';
 import { digest, prettyStableJson, sha256 } from '../src/stable.mjs';
@@ -42,6 +43,21 @@ test('console cold install omits unrelated root tools without changing other tar
   assert.deepEqual(sourceInstallArguments(base, ['@shop/commerce']), [...base, '--workspace', '@shop/commerce', '--include-workspace-root']);
   assert.deepEqual(sourceInstallArguments(base, ['@shop/console', '@shop/commerce']), [...base, '--workspace', '@shop/console', '--workspace', '@shop/commerce', '--include-workspace-root']);
   assert.deepEqual(sourceInstallArguments(base, []), base);
+});
+
+test('commerce and console typechecks use per-runner TypeScript cache paths', async () => {
+  const adapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const cacheDirectory = typecheckCacheDirectory('/runner/work/repo/.runner-1-6/source', '/runner/work/repo');
+  assert.equal(cacheDirectory, '/runner/work/repo/.runner-1-6');
+  assert.equal(typecheckCacheDirectory('/local/repo', ''), '/local/repo/node_modules');
+  const commerceTargets = Object.keys(adapter.targets).filter((target) => adapter.targets[target].typecheck.some((command) => command.name === 'commerce-typecheck'));
+  assert.ok(commerceTargets.length > 1);
+  for (const [target, filename] of [...commerceTargets.map((target) => [target, 'commerce.tsbuildinfo']), ['console', 'console.tsbuildinfo']]) {
+    const command = adapter.targets[target].typecheck[0];
+    const argv = expandArgv(command.argv, { typecheckCacheDirectory: cacheDirectory });
+    assert.deepEqual(argv.slice(-4), ['--', '--incremental', '--tsBuildInfoFile', `${cacheDirectory}/${filename}`]);
+    assert.equal(command.name.endsWith('-typecheck'), true);
+  }
 });
 
 test('failed release emits control identity and a useful next action', async () => {
