@@ -204,11 +204,9 @@ describe('access scope management boundary', () => {
 
     expect(response).toMatchObject({ status: 200, body: { action: 'offboard', changed: true,
       membership: 'membership:target', status: 'offboarded', access_version: 3 } });
-    expect(harness.queries.some((query) => query.startsWith('update access.membershiprole set expires_at'))).toBe(true);
-    expect(harness.queries.some((query) => query.startsWith('update access.scopegrant set expires_at'))).toBe(true);
-    expect(harness.queries.some((query) => query.startsWith('update identity.session set revoked_at'))).toBe(true);
-    const membershipWrite = harness.queries.find((query) => query.startsWith('update access.membership\n    set status='));
-    expect(membershipWrite).toContain("where id=$1 and client='operator'");
+    const write = harness.calls.find(({ text }) => text.startsWith('select access.offboard_administrator('));
+    expect(write?.values).toEqual(['membership:manager', 'membership:target', 'mall', mallA.id, 2]);
+    expect(harness.queries.filter((query) => query.includes('access.offboard_administrator('))).toHaveLength(1);
     expect(harness.queries.some((query) => query.includes("client='storefront'"))).toBe(false);
     expect(harness.queries.some((query) => /delete from (access|member|identity)\./.test(query))).toBe(false);
   });
@@ -220,7 +218,7 @@ describe('access scope management boundary', () => {
     await expect(accessOperations(context(harness.pool)).invoke({ ...request, access: managerAccess() }))
       .rejects.toThrow('OWNER_REQUIRED_FOR_ADMINISTRATOR_OFFBOARDING');
 
-    expect(harness.queries.some((query) => query.startsWith('update access.membership\n    set status='))).toBe(false);
+    expect(harness.queries.some((query) => query.includes('access.offboard_administrator('))).toBe(false);
   });
 
   it('lets a senior administrator offboard an ordinary administrator only', async () => {
@@ -230,8 +228,7 @@ describe('access scope management boundary', () => {
       ...offboardAdministratorRequest(), access: seniorAdministratorAccess(),
     })).resolves.toMatchObject({ status: 200, body: { action: 'offboard', status: 'offboarded' } });
 
-    expect(harness.queries.some((query) => query.includes('access.resolve_authoritative_governance'))).toBe(true);
-    expect(harness.queries.some((query) => query.startsWith('update access.membership\n    set status='))).toBe(true);
+    expect(harness.queries.some((query) => query.includes('access.offboard_administrator('))).toBe(true);
   });
 
   it('rejects administrator offboarding across Realms before any write', async () => {
@@ -240,7 +237,6 @@ describe('access scope management boundary', () => {
     await expect(accessOperations(context(harness.pool)).invoke(offboardAdministratorRequest()))
       .rejects.toThrow('MANAGEMENT_PERMISSION_REALM_MISMATCH');
 
-    expect(harness.queries.some((query) => query.startsWith('update access.membershiprole set expires_at'))).toBe(false);
     expect(harness.queries.some((query) => query.startsWith('update access.membership\n    set status='))).toBe(false);
   });
 
@@ -250,7 +246,6 @@ describe('access scope management boundary', () => {
     await expect(accessOperations(context(harness.pool)).invoke(offboardAdministratorRequest()))
       .rejects.toThrow('MANAGEMENT_PERMISSION_ORGANIZATION_MISMATCH');
 
-    expect(harness.queries.some((query) => query.startsWith('update access.membershiprole set expires_at'))).toBe(false);
     expect(harness.queries.some((query) => query.startsWith('update access.membership\n    set status='))).toBe(false);
   });
 
@@ -258,9 +253,8 @@ describe('access scope management boundary', () => {
     const harness = operationHarness({ targetClient: 'storefront' });
 
     await expect(accessOperations(context(harness.pool)).invoke(offboardAdministratorRequest()))
-      .rejects.toThrow('MANAGEMENT_PERMISSION_TARGET_NOT_ACTIVE_OPERATOR');
+      .rejects.toThrow('ADMINISTRATOR_NOT_ACTIVE');
 
-    expect(harness.queries.some((query) => query.startsWith('update access.membershiprole set expires_at'))).toBe(false);
     expect(harness.queries.some((query) => query.startsWith('update access.membership\n    set status='))).toBe(false);
   });
 
@@ -497,7 +491,8 @@ function projectedOwnerAccess(scope: AccessContext['scope']): AccessContext {
 
 function seniorAdministratorAccess(): AccessContext {
   const access = ownerAccess(mallA);
-  return { ...access, governance: { ...access.governance!, governanceLevel: 'senior_administrator',
+  return { ...access, membership: { ...access.membership, id: 'membership:senior' },
+    governance: { ...access.governance!, governanceLevel: 'senior_administrator',
     isExactOwner: false, ownerMembershipId: 'membership:owner' } };
 }
 
@@ -555,15 +550,16 @@ function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipS
           management_role: options.managementRole ?? true }]);
         return result([{ ...target, scope: options.scope ?? null, target_membership_scope: options.targetMembershipScope ?? null }]);
       }
-      if (text.startsWith('select target.id,target.access_version')) return result([{
-        id: 'membership:target', access_version: 2, target_is_owner: options.targetIsOwner ?? false,
-        governance_level: options.targetGovernance ?? 'administrator',
-        target_membership_id: 'membership:target', target_client: options.targetClient ?? 'operator',
-        target_status: options.targetStatus ?? 'active', target_realm_id: options.targetRealm ?? 'realm:tenant-a',
-        actor_realm_id: options.actorRealm ?? 'realm:tenant-a', target_realm_binding: options.targetRealmBinding ?? true,
-        target_organization_binding: options.targetOrganizationBinding ?? true,
-        target_membership_scope: options.targetMembershipScope ?? tenantA,
-      }]);
+      if (text.startsWith('select access.offboard_administrator(')) {
+        if (options.targetClient === 'storefront' || options.targetStatus === 'offboarded') throw new Error('ADMINISTRATOR_NOT_ACTIVE');
+        if (options.targetRealm !== undefined && options.targetRealm !== (options.actorRealm ?? 'realm:tenant-a'))
+          throw new Error('MANAGEMENT_PERMISSION_REALM_MISMATCH');
+        if (options.targetMembershipScope === tenantB) throw new Error('MANAGEMENT_PERMISSION_ORGANIZATION_MISMATCH');
+        if (options.targetIsOwner) throw new Error('OWNER_ROLE_LEVEL_IMMUTABLE');
+        if (options.targetGovernance === 'senior_administrator' && values[0] === 'membership:senior')
+          throw new Error('OWNER_REQUIRED_FOR_ADMINISTRATOR_OFFBOARDING');
+        return result([{ access_version: 3 }]);
+      }
       if (text.includes('permission.code=any($2::text[])') && text.includes('from access.membershiprole assignment')) {
         return result([{ target_membership_id: 'membership:target', target_client: options.targetClient ?? 'operator',
           target_status: options.targetStatus ?? 'active', target_realm_id: options.targetRealm ?? 'realm:tenant-a',

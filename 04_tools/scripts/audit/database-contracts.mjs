@@ -238,6 +238,7 @@ const REPAIR_FILES = [
   '20260917100000_restore_storefront_member_order_read.sql',
   '20260917110000_restore_storefront_custom_profile_acl.sql',
   '20260917120000_add_mb_4x4_identity_mapping.sql',
+  '20260917130000_offboard_operator_identity.sql',
 ];
 
 const mode = process.argv[2];
