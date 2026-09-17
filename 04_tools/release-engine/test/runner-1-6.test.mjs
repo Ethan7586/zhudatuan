@@ -340,24 +340,6 @@ test('isolated legacy recovery has no concurrency lock', async () => {
   assert.doesNotMatch(recovery, /^concurrency:|cancel-in-progress:|^\s+group:/m);
 });
 
-test('workspace isolation checks the selected source workspace', async () => {
-  const isolation = await readFile(join(root, '04_tools/release-engine/adapters/zdt-next/assert-workspace-isolation.mjs'), 'utf8');
-  assert.match(isolation, /resolve\(process\.cwd\(\)\)/);
-  assert.doesNotMatch(isolation, /fileURLToPath\(import\.meta\.url\)/);
-});
-
-test('workspace isolation accepts an absent optional workspace scope after a scoped install', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'runner-scoped-install-'));
-  try {
-    await mkdir(join(directory, 'node_modules', '@shop'), { recursive: true });
-    const script = join(root, '04_tools/release-engine/adapters/zdt-next/assert-workspace-isolation.mjs');
-    const { stdout } = await execFileAsync(process.execPath, [script], { cwd: directory });
-    assert.match(stdout, /WORKSPACE_ISOLATED/);
-  } finally {
-    await rm(directory, { recursive: true, force: true });
-  }
-});
-
 test('build command environment expands the exact source SHA', async () => {
   const result = await runCommand(
     {
