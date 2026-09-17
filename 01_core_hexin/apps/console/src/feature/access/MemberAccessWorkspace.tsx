@@ -25,7 +25,7 @@ import type { InvitationRecord } from './InvitationRecordsSchema';
 import './member-access-discord.css';
 
 export type MemberAccessPrimary = 'access' | 'members';
-type MemberDirectoryFilter = 'all' | 'senior' | 'administrator' | 'incomplete';
+type MemberDirectoryFilter = 'all' | 'senior' | 'administrator';
 type MemberDetailTab = 'profile' | 'roles' | 'invitations';
 type MemberIconName = 'chevron' | 'close' | 'expand' | 'member' | 'mobile' | 'refresh' | 'search' | 'shield';
 type MemberRole = AccessMembership['roles'][number];
@@ -85,7 +85,6 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
       rows.filter((row) => {
         if (directoryFilter === 'senior' && !isSeniorAdministrator(row)) return false;
         if (directoryFilter === 'administrator' && isSeniorAdministrator(row)) return false;
-        if (directoryFilter === 'incomplete' && row.member?.login_identity_bound === true) return false;
         return normalizedFilter === '' || rowSearchText(row).includes(normalizedFilter);
       }),
     [directoryFilter, normalizedFilter, rows]
@@ -182,15 +181,9 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
               >
                 管理员
               </FilterButton>
-              <FilterButton
-                active={directoryFilter === 'incomplete'}
-                onPress={() => {
-                  setDirectoryFilter('incomplete');
-                  closeDetail();
-                }}
-              >
-                待补充
-              </FilterButton>
+              <button type="button" onClick={() => void navigate(`${scopePath(context.scope, 'settings/access')}?section=invitations`)}>
+                邀请码
+              </button>
             </div>
 
             {supplementalError === undefined ? null : (

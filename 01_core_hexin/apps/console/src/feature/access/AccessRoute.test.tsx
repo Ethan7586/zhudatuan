@@ -337,6 +337,8 @@ describe('custom identity and permission directory', () => {
     expect(screen.queryByRole('navigation', { name: '管理与权限工作台' })).toBeNull();
     expect(screen.getByRole('button', { name: '角色模板' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '邀请管理员' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '邀请码' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: '待补充' })).toBeNull();
 
     const administratorRow = await screen.findByRole('row', { name: '查看管理员 小白管理员' });
     expect(screen.queryByRole('row', { name: '查看管理员 普通消费者' })).toBeNull();
@@ -351,6 +353,16 @@ describe('custom identity and permission directory', () => {
     expect(await screen.findByText('受邀管理员')).toBeTruthy();
     expect(screen.queryByText('不应出现')).toBeNull();
     expect(invitationReads).toBe(1);
+  });
+
+  it('opens the existing invitation management page from the administrator directory', async () => {
+    const user = userEvent.setup();
+    renderSwitchWorkspace();
+
+    await user.click(await screen.findByRole('button', { name: '邀请码' }));
+
+    expect(await screen.findByRole('heading', { name: '邀请管理' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '邀请记录' })).toBeTruthy();
   });
 
   it('creates a freely named identity with finance, order, and product permissions and verifies it by rereading', async () => {
