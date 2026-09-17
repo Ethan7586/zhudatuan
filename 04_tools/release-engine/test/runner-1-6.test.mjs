@@ -138,7 +138,7 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
   const workflow = parse(workflowSource);
   const action = parse(await readFile(join(root, '.github/actions/runner-1-6/action.yml'), 'utf8'));
   assert.equal(workflow.name, 'Delivery Control 1.7');
-  assert.deepEqual(workflow.on.workflow_dispatch.inputs.operation.options, ['release', 'status', 'retry', 'rollback', 'control-update']);
+  assert.deepEqual(workflow.on.workflow_dispatch.inputs.operation.options, ['release', 'status', 'retry', 'rollback']);
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.execution_location.options, ['auto', 'github-hosted']);
   assert.match(workflowSource, /runs-on: \$\{\{ fromJSON\(needs\.route\.outputs\.runs_on\) \}\}/);
   for (const job of [workflow.jobs.execute, workflow.jobs['hosted-startup-fallback']]) {
@@ -202,6 +202,18 @@ test('control-side command only dispatches and queries GitHub', async () => {
   assert.doesNotMatch(`${dispatcher}\n${controller}`, /npm ci|npm run|\bssh\b|\bscp\b|runner-1-6\.mjs/);
 });
 
+test('team entry and dispatcher no longer expose a standalone remote update operation', async () => {
+  for (const path of [
+    '02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery',
+    'scripts/delivery-dispatch.sh',
+  ]) {
+    await assert.rejects(
+      execFileAsync('bash', [join(root, path), 'control-update'], { cwd: root }),
+      (error) => error.code === 64
+    );
+  }
+});
+
 test('shared core keeps SSH material isolated to the current runner invocation', async () => {
   const shell = await readFile(join(root, 'scripts/runner-1-6.sh'), 'utf8');
   const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
@@ -257,8 +269,8 @@ test('exact release builds only a missing target artifact before deploying one n
   assert.match(exactSource, /createReleasePlan\(adapter, \{ from: `\$\{sourceSha\}\^`, to: sourceSha, target, prepare: true \}\)/);
   assert.match(exactSource, /await buildAndPublish\(adapter, controlRoot, plan, client, \{ sourceSha, target, node \}\)/);
   assert.ok(exactSource.indexOf('await buildAndPublish') < exactSource.indexOf('await deployTarget'));
-  assert.ok(exactSource.indexOf('await updateRemoteControl(adapter, controlRoot)') > exactSource.indexOf('await buildAndPublish'));
-  assert.ok(exactSource.indexOf('await updateRemoteControl(adapter, controlRoot)') < exactSource.indexOf('await deployTarget'));
+  assert.ok(exactSource.indexOf('await syncRemoteRuntime(adapter, controlRoot)') > exactSource.indexOf('await buildAndPublish'));
+  assert.ok(exactSource.indexOf('await syncRemoteRuntime(adapter, controlRoot)') < exactSource.indexOf('await deployTarget'));
   assert.match(exactSource, /cacheStatus: 'reused'|let cacheStatus = 'reused'/);
   assert.doesNotMatch(exactSource, /physicalPlacements\(adapter/);
   assert.match(exactSource, /coreDurationMs/);
@@ -268,23 +280,26 @@ test('exact release builds only a missing target artifact before deploying one n
 test('normal release installs its own remote core once before the first target, while status stays read-only', async () => {
   const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
   const release = core.slice(core.indexOf('async function release('), core.indexOf('async function deployExact('));
-  assert.equal((release.match(/await updateRemoteControl\(adapter, controlRoot\)/g) ?? []).length, 1);
-  assert.ok(release.indexOf('await updateRemoteControl(adapter, controlRoot)') > release.indexOf('await buildAndPublish'));
-  assert.ok(release.indexOf('await updateRemoteControl(adapter, controlRoot)') < release.indexOf('for (const deploymentTarget'));
+  assert.equal((release.match(/await syncRemoteRuntime\(adapter, controlRoot\)/g) ?? []).length, 1);
+  assert.ok(release.indexOf('await syncRemoteRuntime(adapter, controlRoot)') > release.indexOf('await buildAndPublish'));
+  assert.ok(release.indexOf('await syncRemoteRuntime(adapter, controlRoot)') < release.indexOf('for (const deploymentTarget'));
   const status = core.slice(core.indexOf('async function status('), core.indexOf('async function rollback('));
-  assert.doesNotMatch(status, /updateRemoteControl/);
+  assert.doesNotMatch(status, /syncRemoteRuntime/);
 });
 
-test('control update uses the shared core and changes no business pointer or service', async () => {
+test('remote runtime sync is internal to release and changes no business pointer or service', async () => {
   const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
-  const updateStart = core.indexOf('async function updateRemoteControl');
+  const updateStart = core.indexOf('async function syncRemoteRuntime');
   const updateEnd = core.indexOf('async function status');
   const update = core.slice(updateStart, updateEnd);
-  assert.match(update, /state: 'UPDATED'/);
-  assert.match(update, /remoteControlUpdateScript/);
+  assert.match(update, /progress\('remote-sync-complete'/);
+  assert.match(update, /remoteRuntimeSyncScript/);
   assert.match(update, /node --check/);
   assert.match(update, /mktemp --suffix=\.mjs/);
   assert.doesNotMatch(update, /\b(?:current|previous|restart|systemctl|lock|lease|seal)\b/i);
+  assert.doesNotMatch(core, /options\.operation === 'control-update'|expected-remote-agent-sha256|expected-remote-policy-sha256/);
+  const agent = await readFile(join(root, '04_tools/release-engine/remote/agent.mjs'), 'utf8');
+  assert.doesNotMatch(agent, /assertExpectedPreparedControlPlane|REMOTE_AGENT_SHA256_MISMATCH|REMOTE_POLICY_SHA256_MISMATCH/);
 });
 
 test('remote policy contains no lock or unlock authority', async () => {

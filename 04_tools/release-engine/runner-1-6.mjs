@@ -39,8 +39,6 @@ async function main() {
       result = await status(adapter, sourceSha);
     } else if (options.operation === 'rollback') {
       result = await rollback(adapter, controlRoot, options.target, options.node);
-    } else if (options.operation === 'control-update') {
-      result = await updateRemoteControl(adapter, controlRoot);
     } else throw new DeliveryError('OPERATION_UNKNOWN', `Unknown Runner 1.7 operation: ${options.operation}`);
     process.stdout.write(`RUNNER_1_6_RESULT=${JSON.stringify(result)}\n`);
   } catch (unknown) {
@@ -98,14 +96,14 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
   const deployments = [];
   const totalPlacements = plan.deploymentOrder.reduce((count, deploymentTarget) => count + physicalPlacements(adapter, deploymentTarget).length, 0);
   const productionStarted = performance.now();
-  await updateRemoteControl(adapter, controlRoot);
+  await syncRemoteRuntime(adapter, controlRoot);
   for (const deploymentTarget of plan.deploymentOrder) {
     for (const physicalNode of physicalPlacements(adapter, deploymentTarget)) {
       context.stage = 'deploy';
       context.target = deploymentTarget;
       context.node = physicalNode;
       progress('deploy', { sourceSha, target: deploymentTarget, node: physicalNode, completed: deployments.length, total: totalPlacements });
-      const deployed = await deployTarget(adapter, controlRoot, client, { target: deploymentTarget, node: physicalNode, sourceSha });
+      const deployed = await deployTarget(adapter, client, { target: deploymentTarget, node: physicalNode, sourceSha });
       deployments.push(deployed);
     }
   }
@@ -188,10 +186,10 @@ async function deployExact(adapter, controlRoot, sourceSha, target, node) {
     cacheStatus = 'built';
   }
   const productionStarted = performance.now();
-  await updateRemoteControl(adapter, controlRoot);
+  await syncRemoteRuntime(adapter, controlRoot);
   context.stage = 'deploy';
   progress('deploy', { sourceSha, target, node, completed: 0, total: 1 });
-  const deployed = await deployTarget(adapter, controlRoot, client, { target, node, sourceSha });
+  const deployed = await deployTarget(adapter, client, { target, node, sourceSha });
   const coreDurationMs = Math.round(performance.now() - productionStarted);
   progress('complete', { sourceSha, target, node, coreDurationMs });
   return {
@@ -208,15 +206,13 @@ async function deployExact(adapter, controlRoot, sourceSha, target, node) {
   };
 }
 
-async function deployTarget(adapter, controlRoot, publicClient, { target, node, sourceSha }) {
+async function deployTarget(adapter, publicClient, { target, node, sourceSha }) {
   const resolved = await resolveSimpleArtifact(adapter, { target, sourceSha }, publicClient);
   const deployment = resolveDeployment(adapter, node, target);
   const transport = deployment.node.transport ?? adapter.transport;
   const host = process.env[transport.hostEnv ?? 'AI_DELIVERY_SSH_HOST'] ?? transport.host;
   invariant(host, 'DEPLOY_SSH_HOST_MISSING', `SSH host missing for ${node}`);
   const downloadClient = simpleOssClientFromEnvironment(simpleDownloadEndpoint(publicClient.endpoint, process.env.ALIYUN_OSS_INTERNAL_ENDPOINT));
-  const agentHash = await fileHash(join(controlRoot, '04_tools/release-engine/remote/agent.mjs'));
-  const policyHash = await fileHash(join(controlRoot, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'));
   const artifact = resolved.release.artifact;
   const runtimeManifest = resolved.release.runtimeManifest;
   const result = await runCommand(
@@ -245,10 +241,6 @@ async function deployTarget(adapter, controlRoot, publicClient, { target, node, 
         requiredEnv('GITHUB_RUN_ID'),
         '--github-run-attempt',
         requiredEnv('GITHUB_RUN_ATTEMPT'),
-        '--expected-remote-agent-sha256',
-        `sha256:${agentHash}`,
-        '--expected-remote-policy-sha256',
-        `sha256:${policyHash}`,
       ]),
       input: `${JSON.stringify({ artifactUrl: downloadClient.signGet(artifact.object), manifestUrl: downloadClient.signGet(runtimeManifest.object) })}\n`,
       timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
@@ -279,18 +271,18 @@ function normalizeReadiness(reported) {
     : reported ?? null;
 }
 
-async function updateRemoteControl(adapter, controlRoot) {
-  context.stage = 'control-update';
+async function syncRemoteRuntime(adapter, controlRoot) {
+  context.stage = 'remote-sync';
   const transport = adapter.transport;
   const host = process.env[transport.hostEnv ?? 'AI_DELIVERY_SSH_HOST'] ?? transport.host;
-  invariant(host, 'DEPLOY_SSH_HOST_MISSING', 'SSH host missing for control update');
+  invariant(host, 'DEPLOY_SSH_HOST_MISSING', 'SSH host missing for remote runtime sync');
   const agentPath = join(controlRoot, '04_tools/release-engine/remote/agent.mjs');
   const policyPath = join(controlRoot, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json');
   const [agent, policy] = await Promise.all([readFile(agentPath), readFile(policyPath)]);
   const agentSha256 = createHash('sha256').update(agent).digest('hex');
   const policySha256 = createHash('sha256').update(policy).digest('hex');
-  progress('control-update', { controlSha: process.env.CONTROL_SHA, host });
-  const script = remoteControlUpdateScript({
+  progress('remote-sync', { controlSha: process.env.CONTROL_SHA, host });
+  const script = remoteRuntimeSyncScript({
     agent: agent.toString('base64'),
     policy: policy.toString('base64'),
     agentSha256,
@@ -298,27 +290,22 @@ async function updateRemoteControl(adapter, controlRoot) {
   });
   const result = await runCommand(
     {
-      name: 'control-update',
+      name: 'remote-sync',
       argv: sshArgv(host, ['bash', '-s']),
       input: script,
       timeoutMs: 60_000,
     },
     commandContext(adapter)
   );
-  return {
-    state: 'UPDATED',
-    operation: 'control-update',
+  progress('remote-sync-complete', {
     controlSha: process.env.CONTROL_SHA,
-    executor: executor(),
-    host,
     agentSha256: `sha256:${agentSha256}`,
     policySha256: `sha256:${policySha256}`,
-    output: result.output.trim(),
     durationMs: result.durationMs,
-  };
+  });
 }
 
-function remoteControlUpdateScript({ agent, policy, agentSha256, policySha256 }) {
+function remoteRuntimeSyncScript({ agent, policy, agentSha256, policySha256 }) {
   return `set -euo pipefail
 install -d -m 0755 /usr/local/lib/ai-delivery /etc/ai-delivery/projects
 agent_tmp="$(mktemp --suffix=.mjs /usr/local/lib/ai-delivery/.agent.XXXXXX)"
@@ -340,7 +327,7 @@ node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync(process.argv[
 mv -f "$agent_tmp" /usr/local/lib/ai-delivery/agent.mjs
 mv -f "$policy_tmp" /etc/ai-delivery/projects/zdt-next.json
 trap - EXIT
-printf 'CONTROL_UPDATED agent=sha256:${agentSha256} policy=sha256:${policySha256}\\n'
+printf 'REMOTE_RUNTIME_SYNCED agent=sha256:${agentSha256} policy=sha256:${policySha256}\\n'
 `;
 }
 
@@ -524,11 +511,6 @@ function progress(stage, details = {}) {
 function requiredEnv(name) {
   invariant(process.env[name], 'ENVIRONMENT_VALUE_REQUIRED', `${name} is required`);
   return process.env[name];
-}
-async function fileHash(path) {
-  return createHash('sha256')
-    .update(await readFile(path))
-    .digest('hex');
 }
 function nested(value, path) {
   return path.reduce((item, key) => item?.[key], value);

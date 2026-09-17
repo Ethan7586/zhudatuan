@@ -23,7 +23,7 @@ Aliyun Build runners are selected first when one is online and idle. Missing, of
 
 The control-side machine never installs release dependencies, builds, packages, uploads, deploys, or rolls back. Historical recovery remains separate under `RECOVERY.md`.
 
-Each real release or retry refreshes the matching remote Agent and policy inside the shared Runner core immediately before target deployment; there is no separate control-update step for the team to remember. `status` does not refresh remote files and remains read-only. An older remote Agent's zero-check `ready` report is displayed as `not-checked`, not healthy.
+Each real release or retry refreshes the matching remote Agent and policy inside the shared Runner core immediately before target deployment; there is no separate team command. Exact installed-file hash equality no longer blocks deployment, while the receipt still reports the actual remote hashes. `status` does not refresh remote files and remains read-only. An older remote Agent's zero-check `ready` report is displayed as `not-checked`, not healthy.
 
 On a cache miss, the shared core installs its minimal isolated control dependencies and only the selected source build workspaces concurrently; a target with no build workspace falls back to the full source install. Cache absence or damage triggers a normal rebuild, not an approval or repair step. Tests and typechecks run concurrently before building. Control checkouts are sparse. An exact `@shop/commerce` target, including `database-migration`, also checks out only the Source directories used by its build and tests; other targets retain the full Source checkout. Both Runner locations use the same action and core.
 

@@ -8,7 +8,7 @@ on:
         description: One Runner 1.7 operation; use zdt-delivery for queued-Aliyun fallback
         required: true
         type: choice
-        options: [release, status, retry, rollback, control-update]
+        options: [release, status, retry, rollback]
       identifier:
         description: Full Source SHA or r16 release id; empty for rollback
         required: false
@@ -79,9 +79,6 @@ jobs:
               ;;
             rollback)
               [ -n "$RELEASE_TARGET" ] && [ -n "$PHYSICAL_NODE" ] || { echo 'rollback requires target and physical node' >&2; exit 64; }
-              source_sha=''
-              ;;
-            control-update)
               source_sha=''
               ;;
           esac

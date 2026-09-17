@@ -142,7 +142,6 @@ test('log timing reports real target health separately from workflow completion'
   assert.equal(result.targetHealthMs, 115_854);
   assert.equal(result.targetCurrentMs, null);
   assert.match(result.resultLine, /^RUNNER_1_6_RESULT=/);
-  assert.equal(releaseLogTimings(log, Date.parse('2026-09-16T23:16:47Z'), 'control-update').targetHealthMs, null);
   assert.equal(releaseLogTimings(log, Date.parse('2026-09-16T23:16:47Z'), 'status').sourceCheckoutMs, null);
 });
 

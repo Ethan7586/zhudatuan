@@ -22,16 +22,12 @@ case "$operation" in
   rollback)
     [ "$#" -eq 3 ] || { echo 'Usage: zdt-delivery rollback <target> <physical-node>' >&2; exit 64; }
     ;;
-  control-update)
-    [ "$#" -eq 1 ] || { echo 'Usage: zdt-delivery control-update' >&2; exit 64; }
-    ;;
   *)
     echo 'Usage: zdt-delivery release <full-source-sha> [target physical-node]' >&2
     echo '       zdt-delivery deploy <full-source-sha> | deploy <target> <full-source-sha> <physical-node>' >&2
     echo '       zdt-delivery status <full-source-sha-or-release-id>' >&2
     echo '       zdt-delivery retry <release-id> [target physical-node]' >&2
     echo '       zdt-delivery rollback <target> <physical-node>' >&2
-    echo '       zdt-delivery control-update' >&2
     exit 64
     ;;
 esac

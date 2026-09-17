@@ -1,28 +1,28 @@
-# Runner 1.6 简单发布
+# Runner 1.7 简单发布
 
 状态：ACTIVE
 
 普通发布只有一个入口：
 
 ```text
-/Users/Ethan/.codex/bin/zdt-delivery release <full-source-sha>
-/Users/Ethan/.codex/bin/zdt-delivery release <full-source-sha> <target> <physical-node>
-/Users/Ethan/.codex/bin/zdt-delivery status <full-source-sha-or-r16-release-id>
-/Users/Ethan/.codex/bin/zdt-delivery retry <r16-release-id>
-/Users/Ethan/.codex/bin/zdt-delivery retry <r16-release-id> <target> <physical-node>
-/Users/Ethan/.codex/bin/zdt-delivery rollback <target> <physical-node>
-/Users/Ethan/.codex/bin/zdt-delivery control-update
+./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery release <full-source-sha>
+./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery deploy <full-source-sha>
+./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery release <full-source-sha> <target> <physical-node>
+./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery deploy <target> <full-source-sha> <physical-node>
+./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery status <full-source-sha-or-r16-release-id>
+./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery retry <r16-release-id> [target physical-node]
+./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery rollback <target> <physical-node>
 ```
 
 控制端每次读取最新 `origin/zdt-next`，只派发 `delivery-1-6.yml`、查询 GitHub 运行并展示结果。控制端不安装依赖、不构建、不上传制品、不连接生产，也不执行回滚。
 
-`control-update` 只在远端 Agent 或策略版本变化时使用。它通过同一个工作流和 Runner 核心，把已经通过本地语法与策略校验的 Agent、策略原子替换到目标主机；不移动任何业务指针，不重启服务，不改变流量，也不创建锁或解锁状态。
+普通 `release/retry` 在目标部署前由同一个 Runner 核心同步远端 Agent 和策略，不要求人工先更新。发布不再比较远端文件与本地文件的精确哈希作为阻断门禁；实际运行版本仍记入回执。`status` 只读，`rollback` 不依赖同步动作。
 
 GitHub 工作流先选择可立即执行的阿里云 Build Runner；没有匹配 Runner、Runner offline/busy 或状态不可读时直接使用 `ubuntu-24.04`。两种执行位置都调用 `.github/actions/runner-1-6/action.yml`，后者只调用同一个 `scripts/runner-1-6.sh` 和 `runner-1-6.mjs` 核心。阿里云任务若在核心启动前失败，GitHub Hosted 执行相同核心；核心启动后不自动换路。
 
 不带目标的 `release` 使用完整业务 Source SHA 计算受影响目标，保持数据库迁移、运行时和前端的依赖顺序。可读的普通 OSS 制品缓存会复用；缓存缺失或内容不完整时重新构建。
 
-带 `<target> <physical-node>` 的 `release/retry` 是按 1.3 原则重写的基础生产切换：它只接受已经存在且与 Source SHA 匹配的不可变制品，不安装依赖、不测试、不构建。生产计时只包含制品解析、SSH 下载与校验、原子更新 `current/previous`、重启、健康检查和失败自动恢复，目标为 60 秒以内。制品不存在就立即失败并提示在生产切换外准备，不把构建偷偷塞进部署现场。60 秒结果只是观测数据，不是阻塞发布或恢复的门禁。
+带 `<target> <physical-node>` 的 `release/retry` 只处理该目标和节点；缓存缺失时由同一个 Runner 构建对应制品，再继续部署。总耗时包括准备与目标切换；120 秒是观测目标，不是阻断发布或恢复的门禁。
 
 OSS 只是缓存和不可变制品存储，不是审批者。正常路径和目标节点都不创建全局锁、目录锁或解锁状态，也不存在 Seal、Closure、Claim、Lease 或另一份可部署权威。若两个切换并发，后完成的旧任务发现 `current` 已被更新时只报告被新切换取代，不会把新版本回滚掉。
 
