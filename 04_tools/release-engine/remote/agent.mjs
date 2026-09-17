@@ -1446,8 +1446,10 @@ async function command(argv, options = {}) {
   const started = Date.now();
   const chunks = [];
   const result = await new Promise((resolvePromise, reject) => {
+    const useProcessGroup = process.platform !== 'win32';
     const child = spawn(argv[0], argv.slice(1), {
       shell: false,
+      detached: useProcessGroup,
       stdio: ['ignore', 'pipe', 'pipe'],
       ...(options.cwd ? { cwd: options.cwd } : {}),
       ...(options.env ? { env: options.env } : {}),
@@ -1457,7 +1459,17 @@ async function command(argv, options = {}) {
     child.stdout.on('data', (chunk) => chunks.push(chunk));
     child.stderr.on('data', (chunk) => chunks.push(chunk));
     child.on('error', reject);
-    const timer = setTimeout(() => child.kill('SIGKILL'), options.timeoutMs ?? 30_000);
+    const timer = setTimeout(() => {
+      if (useProcessGroup && child.pid) {
+        try {
+          process.kill(-child.pid, 'SIGKILL');
+          return;
+        } catch (error) {
+          if (error?.code === 'ESRCH') return;
+        }
+      }
+      child.kill('SIGKILL');
+    }, options.timeoutMs ?? 30_000);
     child.on('close', (code, signal) => {
       clearTimeout(timer);
       resolvePromise({ code, signal });

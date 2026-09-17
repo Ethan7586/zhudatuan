@@ -131,7 +131,7 @@ test('targets without configured health checks report not-checked without blocki
   assert.equal(observed.result.targets[0].status.currentArtifact.sourceSha, artifact.sourceSha);
 });
 
-test('a killed activation leaves current, previous, status and manual rollback usable', async () => {
+test('a killed activation leaves current, previous, status, retry and manual rollback usable', async () => {
   const fixture = await createFixture();
   const baseline = await createArtifact(fixture, 'healthy', '1'.repeat(40));
   await invoke(fixture, 'stage', baseline);
@@ -167,6 +167,11 @@ test('a killed activation leaves current, previous, status and manual rollback u
   assert.match(status.result.current, new RegExp(candidate.treeDigest.slice(7)));
   assert.equal(status.result.previous, baselineCurrent);
   assert.equal('locks' in status.result, false);
+  fixture.policy.nodes.local.deployments.app.healthChecks = [{ argv: [process.execPath, '-e', 'process.exit(0)'] }];
+  await writePolicy(fixture);
+  const retried = await invoke(fixture, 'activate', candidate);
+  assert.equal(retried.result.mode, 'verify-only');
+  assert.equal(retried.result.previous, baselineCurrent);
   const rolledBack = await invoke(fixture, 'rollback', candidate);
   assert.equal(rolledBack.result.current, baselineCurrent);
   assert.equal(rolledBack.result.readiness.status, 'ready');
@@ -598,6 +603,39 @@ test('readiness timeout restores both current and runtime before reporting rollb
   assert.equal(failed.details.rollback.triggeredWithinMs, true);
   assert.equal(await readlink(join(fixture.pointerRoot, 'current')), before);
   assert.equal(await readlink(join(fixture.pointerRoot, 'runtime')), oldLayer);
+});
+
+test('a timed-out health command leaves no running descendant after rollback', { skip: process.platform === 'win32' }, async () => {
+  const fixture = await createFixture();
+  const baseline = await createArtifact(fixture, 'healthy', '1'.repeat(40));
+  await invoke(fixture, 'stage', baseline);
+  await invoke(fixture, 'activate', baseline);
+  const baselineCurrent = await readlink(join(fixture.pointerRoot, 'current'));
+  const candidate = await createArtifact(fixture, 'candidate', '2'.repeat(40));
+  await invoke(fixture, 'stage', candidate);
+  const pidPath = join(fixture.root, 'timed-out-health.pid');
+  const heartbeatPath = join(fixture.root, 'timed-out-health.heartbeat');
+  const descendant = `const fs=require('node:fs');setInterval(()=>fs.writeFileSync(${JSON.stringify(heartbeatPath)},String(Date.now())),20)`;
+  const check = `const fs=require('node:fs');const {spawn}=require('node:child_process');if(!process.argv[1].includes(${JSON.stringify(candidate.sourceSha)}))process.exit(0);if(fs.existsSync(${JSON.stringify(pidPath)}))process.exit(7);const child=spawn(process.execPath,['-e',${JSON.stringify(descendant)}],{stdio:'ignore'});fs.writeFileSync(${JSON.stringify(pidPath)},String(child.pid));setInterval(()=>{},1000)`;
+  fixture.policy.readiness = { timeoutMs: 700, intervalMs: 20, attemptTimeoutMs: 250, hardFailureGraceMs: 50 };
+  fixture.policy.nodes.local.deployments.app.healthChecks = [{ argv: [process.execPath, '-e', check, '{{currentDir}}'] }];
+  await writePolicy(fixture);
+  try {
+    const failed = await captureAgentFailure(() => invoke(fixture, 'activate', candidate));
+    assert.equal(failed.code, 'CUTOVER_FAILED_AND_ROLLED_BACK');
+    assert.equal(failed.details.rollback.finalCurrent, baselineCurrent);
+    assert.equal(failed.details.rollback.readiness.status, 'ready');
+    const heartbeat = await readFile(heartbeatPath, 'utf8');
+    await new Promise((resolve) => setTimeout(resolve, 120));
+    assert.equal(await readFile(heartbeatPath, 'utf8'), heartbeat, 'timed-out health descendant stopped before recovery completed');
+  } finally {
+    const pid = await readFile(pidPath, 'utf8').catch(() => null);
+    if (pid) {
+      try { process.kill(Number(pid), 'SIGKILL'); } catch (error) {
+        if (error?.code !== 'ESRCH') throw error;
+      }
+    }
+  }
 });
 
 test('an unrelated service PID change does not roll back a healthy target', async () => {
