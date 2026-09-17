@@ -967,6 +967,28 @@ describe('canonical member registration security boundary', () => {
     expect(harness.queries.some(({ text }) => text.startsWith("update access.membership set status='active'"))).toBe(false);
     expect(harness.queries.some(({ text }) => text.includes("client='storefront'") && text.startsWith('update'))).toBe(false);
   });
+
+  it.each([
+    ['active', 409, 'IDENTITY_SUBJECT_EXISTS'],
+    ['suspended', 403, 'MEMBERSHIP_INACTIVE'],
+  ] as const)('does not replace an existing %s OP identity on invitation', async (status, responseStatus, code) => {
+    const harness = registrationHarness({
+      challengeAccepted: true, subjectExists: true, inviteAccepted: true, operatorInvite: true,
+      storefrontOrganizationId: 'mall:d1708f04df2dd8a61736852c4900fb43', boundMobileRealm: 'realm:l1',
+      existingOperatorStatus: status,
+    });
+    const base = registrationRequest(`registration:existing-operator-${status}`);
+    const body = { ...(base.input.body as Readonly<Record<string, unknown>>) } as Record<string, unknown>;
+    delete body.password;
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke({
+      ...base, input: { ...base.input, headers: { ...base.input.headers, host: 'api.hbbtzn.com' }, body },
+    });
+
+    expect(response).toEqual({ status: responseStatus, body: { code } });
+    expect(harness.queries.some(({ text }) => text.includes('insert into access.membership(') && text.includes("'operator'"))).toBe(false);
+    expect(harness.queries.some(({ text }) => text === 'rollback to savepoint identity_business_mutation')).toBe(true);
+  });
 });
 
 function registrationRequest(idempotency: string, directLogin = false): OperationRequest {

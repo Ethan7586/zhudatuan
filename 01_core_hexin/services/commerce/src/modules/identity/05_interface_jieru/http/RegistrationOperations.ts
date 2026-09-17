@@ -11,6 +11,7 @@ import { organizationPort } from '../../../organization';
 import { canonicalMobile } from '../../02_domain_yewu/models_moxing/IdentitySubject';
 import { resolveBoundMobileAccount } from '../../03_application_yingyong/services_fuwu/SmsLogin';
 import { resolveActiveMembershipContext, resolveRealmApplication, resolveRealmContext, resolveRealmNode } from '../../03_application_yingyong/services_fuwu/RealmAccount';
+import { registerInvitedOperator, type ExistingOperatorSource } from '../../03_application_yingyong/services_fuwu/OperatorInvitationRegistration';
 import {
   registrationReference,
   requireValidInvite,
@@ -236,6 +237,20 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           let accountRealm = realm.realmId;
           const scopeKind = registrationTarget.target_client === 'storefront'
             ? await organizationPort.kind(database, organization) : 'tenant';
+          const registerOperator = (memberId: string, principalId: string, realmId: string, accountId: string,
+            existingSource?: ExistingOperatorSource) => registerInvitedOperator(database, {
+              operatorMembership,
+              governanceParentMembership: registrationTarget.created_by,
+              member: memberId,
+              principal: principalId,
+              realm: realmId,
+              account: accountId,
+              operatorOrganization: operatorRealm!.membershipOrganizationId,
+              managementOrganization: organization,
+              operatorRole: registrationTarget.role_id,
+              operatorDisplayName: operatorDisplayName!,
+              operatorScopes: [scopes[3], scopes[4]],
+            }, existingSource);
           if (existing.rows[0]) {
             const sourceAccount = existing.rows[0];
             resolvedPrincipal = sourceAccount.principal_id;
@@ -249,70 +264,27 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
             if (!profile.rows[0]) throw new Error('MEMBER_PROFILE_NOT_FOUND');
             resolvedMember = profile.rows[0].id;
             if (registrationTarget.target_client === 'operator') {
-              const targetAccount = await database.query<{
-                account_id: string; realm_id: string; credential_version: number;
-              }>(`select account.id account_id,account.realm_id,account.credential_version
-                from identity.account account join identity.credential credential
-                  on credential.account_id=account.id and credential.realm_id=account.realm_id
-                  and credential.provider='password' and credential.status='active'
-                where account.realm_id=$1 and account.legacy_principal_id=$2 and account.status='active'
-                for update of account,credential`, [operatorRealm!.realmId, resolvedPrincipal]);
-              if (targetAccount.rows[0]) {
-                resolvedAccount = targetAccount.rows[0].account_id;
-                accountRealm = targetAccount.rows[0].realm_id;
-                credentialVersion = targetAccount.rows[0].credential_version;
-              } else {
-                if (sourceAccount.secret_hash === null) throw new Error('CREDENTIAL_INVALID');
-                accountRealm = operatorRealm!.realmId;
-                resolvedAccount = account;
-                credentialVersion = 1;
-                await database.query(
-                  `insert into identity.account(id,realm_id,legacy_principal_id,status,credential_version,assurance_level,
-                    mobile_ciphertext,mobile_token,mobile_masked,phone_verified_at,created_at,updated_at)
-                  values($1,$2,$3,'active',1,2,$4,$5,$6,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
-                  [resolvedAccount, accountRealm, resolvedPrincipal, mobile.ciphertext, mobile.fingerprint,
-                    `${subject.slice(0, 3)}****${subject.slice(-4)}`]
-                );
-                await database.query(
-                  `insert into identity.credential(id,principal_id,provider,subject_hash,secret_hash,status,created_at,realm_id,account_id)
-                  values($1,$2,'password',$3,$4,'active',clock_timestamp(),$5,$6)`,
-                  [credential, resolvedPrincipal, subjectHash, sourceAccount.secret_hash, accountRealm, resolvedAccount]
-                );
-                await database.query(
-                  `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at,realm_id,account_id)
-                  values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days',$4,$5)`,
-                  [assurance, resolvedPrincipal, subjectHash, accountRealm, resolvedAccount]
-                );
-              }
-            }
-            const current = registrationTarget.target_client === 'operator'
-              ? await database.query<Record<string, unknown>>(
-                  `select * from access.membership where member_id=$1 and organization_id=$2 and client='operator'
-                    and realm_id=$3 and account_id=$4 and status<>'left'`,
-                  [resolvedMember, operatorRealm!.membershipOrganizationId, accountRealm, resolvedAccount]
-                )
-              : await database.query<Record<string, unknown>>(
-                  `select * from access.membership where member_id=$1 and organization_id=$2 and client='storefront'
-                    and realm_id=$3 and account_id=$4`,
-                  [resolvedMember, organization, accountRealm, resolvedAccount]
-                );
-            if (current.rows[0] && current.rows[0].status !== 'active') reject(403, 'MEMBERSHIP_INACTIVE');
-            if (current.rows[0] && registrationTarget.target_client === 'operator') reject(409, 'IDENTITY_SUBJECT_EXISTS');
-            result = current.rows[0] ?? (registrationTarget.target_client === 'operator'
-              ? await accessPort.createOperatorRegistration(database, {
-                  operatorMembership,
-                  governanceParentMembership: registrationTarget.created_by,
-                  member: resolvedMember,
-                  principal: resolvedPrincipal,
-                  realm: accountRealm,
-                  account: resolvedAccount,
-                  operatorOrganization: operatorRealm!.membershipOrganizationId,
-                  managementOrganization: organization,
-                  operatorRole: registrationTarget.role_id,
-                  operatorDisplayName: operatorDisplayName!,
-                  operatorScopes: [scopes[3], scopes[4]],
-                })
-              : await accessPort.createRegistration(database, {
+              const registered = await registerOperator(resolvedMember, resolvedPrincipal, operatorRealm!.realmId, account, {
+                sourceSecretHash: sourceAccount.secret_hash,
+                generatedCredential: credential,
+                generatedAssurance: assurance,
+                mobileCiphertext: mobile.ciphertext,
+                mobileFingerprint: mobile.fingerprint,
+                subject,
+                subjectHash,
+              });
+              resolvedAccount = registered.account;
+              accountRealm = registered.realm;
+              credentialVersion = registered.credentialVersion;
+              result = registered.membership;
+            } else {
+              const current = await database.query<Record<string, unknown>>(
+                `select * from access.membership where member_id=$1 and organization_id=$2 and client='storefront'
+                  and realm_id=$3 and account_id=$4`,
+                [resolvedMember, organization, accountRealm, resolvedAccount]
+              );
+              if (current.rows[0] && current.rows[0].status !== 'active') reject(403, 'MEMBERSHIP_INACTIVE');
+              result = current.rows[0] ?? await accessPort.createRegistration(database, {
                   membership,
                   member: resolvedMember,
                   principal: resolvedPrincipal,
@@ -322,7 +294,8 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
                   role: registrationTarget.role_id,
                   scopeKind,
                   scopes: [scopes[0], scopes[1], scopes[2]],
-                }));
+                });
+            }
           } else {
             if (password === null) throw new Error('PASSWORD_POLICY_REJECTED');
             if (registrationTarget.target_client === 'storefront') {
@@ -392,19 +365,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
               );
             }
             result = registrationTarget.target_client === 'operator'
-              ? await accessPort.createOperatorRegistration(database, {
-                  operatorMembership,
-                  governanceParentMembership: registrationTarget.created_by,
-                  member,
-                  principal,
-                  realm: accountRealm,
-                  account,
-                  operatorOrganization: operatorRealm!.membershipOrganizationId,
-                  managementOrganization: organization,
-                  operatorRole: registrationTarget.role_id,
-                  operatorDisplayName: operatorDisplayName!,
-                  operatorScopes: [scopes[3], scopes[4]],
-                })
+              ? (await registerOperator(member, principal, accountRealm, account)).membership
               : await accessPort.createRegistration(database, {
                   membership,
                   member,
