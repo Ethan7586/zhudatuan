@@ -1,5 +1,9 @@
 import { signedLevelNumber, type SignedLevel } from './SignedLevel';
 
+export type NodeProfile = 'operating_mall' | 'consumer';
+export type NodeLifecycleStatus = 'provisioning' | 'active' | 'suspended' | 'retired';
+export const NODE_LIFECYCLE_STATUSES = new Set<NodeLifecycleStatus>(['provisioning', 'active', 'suspended', 'retired']);
+
 export function parseSignedLevel(value: unknown): SignedLevel {
   const signedLevel = canonicalText(value, 'signed_level');
   signedLevelNumber(signedLevel);
@@ -33,4 +37,43 @@ export function exactRecord(value: unknown, expectedKeys: readonly string[], cod
   const expected = new Set(expectedKeys);
   if (keys.length !== expected.size || keys.some((key) => !expected.has(key))) throw new Error(code);
   return record;
+}
+
+export function parseLifecycleStatus(value: unknown): NodeLifecycleStatus {
+  const status = canonicalText(value, 'lifecycle_status');
+  if (!NODE_LIFECYCLE_STATUSES.has(status as NodeLifecycleStatus)) {
+    throw new Error('SFL_NODE_MANIFEST_LIFECYCLE_STATUS_INVALID');
+  }
+  return status as NodeLifecycleStatus;
+}
+
+export function parseNodeProfile(value: unknown): NodeProfile | null {
+  if (value === null) return null;
+  const profile = canonicalText(value, 'node_profile');
+  if (profile !== 'operating_mall' && profile !== 'consumer') {
+    throw new Error('SFL_NODE_PROFILE_INVALID');
+  }
+  return profile;
+}
+
+export function requiredArray(value: unknown, field: string): readonly unknown[] {
+  if (!Array.isArray(value)) throw new Error(`SFL_NODE_MANIFEST_ARRAY_INVALID:${field}`);
+  return value;
+}
+
+export function assertRegistryIdentifierUnique(values: readonly string[], field: string): void {
+  assertUniqueValues(values, (value) => `SFL_NODE_MANIFEST_REGISTRY_IDENTIFIER_AMBIGUOUS:${field}:${value}`);
+}
+
+export function assertUniqueValues(values: readonly string[], errorFor: (value: string) => string): void {
+  const seen = new Set<string>();
+  for (const value of values) {
+    if (seen.has(value)) throw new Error(errorFor(value));
+    seen.add(value);
+  }
+}
+
+export function compareText(left: string, right: string): number {
+  if (left === right) return 0;
+  return left < right ? -1 : 1;
 }

@@ -1,5 +1,32 @@
 import { classifySignedLevel, signedLevelNumber, type SignedLevel, type SignedLevelSegment } from '@shop/l-kernel/signed-level';
-import { canonicalText, exactRecord, parseCanonicalTimestamp, parseNullableText, parseSignedLevel } from '@shop/l-kernel/node-parsing';
+import {
+  NODE_LIFECYCLE_STATUSES,
+  assertRegistryIdentifierUnique,
+  assertUniqueValues,
+  canonicalText,
+  compareText,
+  exactRecord,
+  parseCanonicalTimestamp,
+  parseLifecycleStatus,
+  parseNodeProfile,
+  parseNullableText,
+  parseSignedLevel,
+  requiredArray,
+  type NodeLifecycleStatus,
+  type NodeProfile,
+} from '@shop/l-kernel/node-parsing';
+import {
+  NODE_RECORD_KEYS,
+  NODE_RELATION_KEYS,
+  parseNodeRecord,
+  parseNodeRelationRecord,
+  parseSflNodeTopology,
+  type NodeRecord,
+  type NodeRelationRecord,
+  type SflNodeTopology,
+  type ResolvedNodeRecord,
+  type SovereigntyTier,
+} from '@shop/l-kernel/node-topology';
 
 export { classifySignedLevel, type SignedLevel, type SignedLevelSegment } from '@shop/l-kernel/signed-level';
 export {
@@ -10,16 +37,25 @@ export {
   type MemberNodeRegistrationRequest,
   type MemberNodeRegistrationResult,
 } from '@shop/l-kernel/member-node-registration';
+export {
+  SFL_NODE_TOPOLOGY_SCHEMA_VERSION,
+  parseNodeRecord,
+  parseNodeRelationRecord,
+  parseSflNodeTopology,
+  resolveNodeRecord,
+  type NodeRecord,
+  type NodeRelationRecord,
+  type SflNodeTopology,
+  type ResolvedNodeRecord,
+  type SovereigntyTier,
+} from '@shop/l-kernel/node-topology';
 
 export const SFL_NODE_MANIFEST_SCHEMA_VERSION = 'sfl.node-manifest.v1' as const;
 export * from './AdminSegmentScope.ts';
 export const SFL_NODE_MANIFEST_REGISTRY_SCHEMA_VERSION = 'sfl.node-manifest-registry.v1' as const;
-export const SFL_NODE_TOPOLOGY_SCHEMA_VERSION = 'sfl.node-topology.v1' as const;
 
 export type ManifestDigest = `sha256:${string}`;
-export type NodeProfile = 'operating_mall' | 'consumer';
-export type SovereigntyTier = 'sovereign' | 'hosted';
-export type NodeLifecycleStatus = 'provisioning' | 'active' | 'suspended' | 'retired';
+export type { NodeProfile, NodeLifecycleStatus } from '@shop/l-kernel/node-parsing';
 
 export interface VersionedRef {
   readonly ref: string;
@@ -49,37 +85,6 @@ export interface NodeContext {
   readonly mall_id: string | null;
   readonly host_node_id: string | null;
 }
-
-export interface NodeRecord {
-  readonly line_id: string;
-  readonly node_id: string;
-  readonly sovereignty_tier: SovereigntyTier;
-  readonly node_profile: NodeProfile;
-  readonly realm_id: string;
-  readonly mall_id: string | null;
-  readonly status: NodeLifecycleStatus;
-  readonly created_at: string;
-}
-
-export interface NodeRelationRecord {
-  readonly line_id: string;
-  readonly node_id: string;
-  readonly parent_node_id: string | null;
-  readonly original_parent_node_id: string | null;
-  readonly signed_level: SignedLevel;
-  readonly host_sovereign_node_id: string;
-  readonly relation_version: number;
-  readonly effective_at: string;
-  readonly superseded_at: string | null;
-}
-
-export interface SflNodeTopology {
-  readonly schema_version: typeof SFL_NODE_TOPOLOGY_SCHEMA_VERSION;
-  readonly nodes: readonly NodeRecord[];
-  readonly relations: readonly NodeRelationRecord[];
-}
-
-export interface ResolvedNodeRecord extends NodeRecord, NodeRelationRecord {}
 
 /** Server-authoritative node facts resolved from persisted node and current relation rows. */
 export interface AuthoritativeNodeContext {
@@ -352,18 +357,6 @@ type UnsignedNodeManifest = Omit<NodeManifest, 'manifest_digest'>;
 type JsonRecord = Record<string, unknown>;
 
 const NODE_CONTEXT_KEYS = ['line_id', 'node_id', 'parent_node_id', 'signed_level', 'node_profile', 'mall_id', 'host_node_id'] as const;
-const NODE_RECORD_KEYS = ['line_id', 'node_id', 'sovereignty_tier', 'node_profile', 'realm_id', 'mall_id', 'status', 'created_at'] as const;
-const NODE_RELATION_KEYS = [
-  'line_id',
-  'node_id',
-  'parent_node_id',
-  'original_parent_node_id',
-  'signed_level',
-  'host_sovereign_node_id',
-  'relation_version',
-  'effective_at',
-  'superseded_at',
-] as const;
 const AUTHORITATIVE_NODE_CONTEXT_KEYS = [
   'line_id',
   'node_id',
@@ -386,7 +379,6 @@ const NODE_SCOPE_RECORD_KEYS = [
   'effective_at',
   'status',
 ] as const;
-const NODE_TOPOLOGY_KEYS = ['schema_version', 'nodes', 'relations'] as const;
 const HOSTED_NODE_PROVISIONING_REQUEST_KEYS = [
   'idempotency_key',
   'node_id',
@@ -539,7 +531,6 @@ const NODE_MANIFEST_REGISTRY_KEYS = ['schema_version', 'registry_version', 'gene
 const VERSIONED_REF_KEYS = ['ref', 'version'] as const;
 const DOMAIN_BINDING_KEYS = ['host', 'binding_ref', 'application_ref', 'surface_ref'] as const;
 const RELEASE_POINTER_KEYS = ['ref', 'version', 'source_sha', 'build_id', 'build_count', 'immutable_artifact_digest'] as const;
-const NODE_LIFECYCLE_STATUSES = new Set<NodeLifecycleStatus>(['provisioning', 'active', 'suspended', 'retired']);
 const MANIFEST_DIGEST_PATTERN = /^sha256:[0-9a-f]{64}$/;
 const SOURCE_SHA_PATTERN = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
 const MANIFEST_VERSION_PATTERN = /^1\.0\.(?:0|[1-9][0-9]*)$/;
@@ -633,57 +624,6 @@ export function parseNodeContext(value: unknown): NodeContext {
   return parseNodeContextFields(record);
 }
 
-export function parseNodeRecord(value: unknown): NodeRecord {
-  const record = exactRecord(value, NODE_RECORD_KEYS, 'SFL_NODE_RECORD_INVALID');
-  const sovereigntyTier = canonicalText(record.sovereignty_tier, 'sovereignty_tier');
-  if (sovereigntyTier !== 'sovereign' && sovereigntyTier !== 'hosted') {
-    throw new Error('SFL_SOVEREIGNTY_TIER_INVALID');
-  }
-  const nodeProfile = parseNodeProfile(record.node_profile);
-  if (nodeProfile === null) throw new Error('SFL_NODE_PROFILE_INVALID');
-  const node: NodeRecord = {
-    line_id: canonicalText(record.line_id, 'line_id'),
-    node_id: canonicalText(record.node_id, 'node_id'),
-    sovereignty_tier: sovereigntyTier,
-    node_profile: nodeProfile,
-    realm_id: canonicalText(record.realm_id, 'realm_id'),
-    mall_id: parseNullableText(record.mall_id, 'mall_id'),
-    status: parseLifecycleStatus(record.status),
-    created_at: parseCanonicalTimestamp(record.created_at),
-  };
-  if (node.sovereignty_tier === 'sovereign' && node.node_profile !== 'operating_mall') {
-    throw new Error(`SFL_SOVEREIGN_NODE_PROFILE_INVALID:${node.node_id}`);
-  }
-  if (node.node_profile === 'consumer' && node.mall_id !== null) {
-    throw new Error(`SFL_CONSUMER_NODE_MALL_INVALID:${node.node_id}`);
-  }
-  return Object.freeze(node);
-}
-
-export function parseNodeRelationRecord(value: unknown): NodeRelationRecord {
-  const record = exactRecord(value, NODE_RELATION_KEYS, 'SFL_NODE_RELATION_INVALID');
-  const relationVersion = record.relation_version;
-  if (!Number.isSafeInteger(relationVersion) || (relationVersion as number) < 1) {
-    throw new Error('SFL_NODE_RELATION_VERSION_INVALID');
-  }
-  const effectiveAt = parseCanonicalTimestamp(record.effective_at);
-  const supersededAt = record.superseded_at === null ? null : parseCanonicalTimestamp(record.superseded_at);
-  if (supersededAt !== null && supersededAt <= effectiveAt) {
-    throw new Error('SFL_NODE_RELATION_PERIOD_INVALID');
-  }
-  return Object.freeze({
-    line_id: canonicalText(record.line_id, 'line_id'),
-    node_id: canonicalText(record.node_id, 'node_id'),
-    parent_node_id: parseNullableText(record.parent_node_id, 'parent_node_id'),
-    original_parent_node_id: parseNullableText(record.original_parent_node_id, 'original_parent_node_id'),
-    signed_level: parseSignedLevel(record.signed_level),
-    host_sovereign_node_id: canonicalText(record.host_sovereign_node_id, 'host_sovereign_node_id'),
-    relation_version: relationVersion as number,
-    effective_at: effectiveAt,
-    superseded_at: supersededAt,
-  });
-}
-
 export function parseAuthoritativeNodeContext(value: unknown): AuthoritativeNodeContext {
   const record = exactRecord(value, AUTHORITATIVE_NODE_CONTEXT_KEYS, 'SFL_AUTHORITATIVE_NODE_CONTEXT_INVALID');
   const node = parseNodeRecord({
@@ -737,20 +677,6 @@ export function parseNodeScopeRecord(value: unknown): NodeScopeRecord {
     effective_at: parseCanonicalTimestamp(record.effective_at),
     status: parseLifecycleStatus(record.status),
   });
-}
-
-export function parseSflNodeTopology(value: unknown): SflNodeTopology {
-  const record = exactRecord(value, NODE_TOPOLOGY_KEYS, 'SFL_NODE_TOPOLOGY_INVALID');
-  if (record.schema_version !== SFL_NODE_TOPOLOGY_SCHEMA_VERSION) {
-    throw new Error('SFL_NODE_TOPOLOGY_SCHEMA_VERSION_INVALID');
-  }
-  const topology: SflNodeTopology = {
-    schema_version: SFL_NODE_TOPOLOGY_SCHEMA_VERSION,
-    nodes: requiredArray(record.nodes, 'nodes').map(parseNodeRecord).sort(compareNodes),
-    relations: requiredArray(record.relations, 'relations').map(parseNodeRelationRecord).sort(compareNodeRelations),
-  };
-  validateSflNodeTopology(topology);
-  return Object.freeze(topology);
 }
 
 export function parseHostedNodeProvisioningRequest(value: unknown): HostedNodeProvisioningRequest {
@@ -995,18 +921,6 @@ export function parseActiveRealmMembershipContext(value: unknown): ActiveRealmMe
     access_version: accessVersion,
     status: parseLifecycleStatus(record.status),
   });
-}
-
-export function resolveNodeRecord(topology: SflNodeTopology, nodeId: string, at: string): ResolvedNodeRecord {
-  const parsed = parseSflNodeTopology(topology);
-  const node = parsed.nodes.find((candidate) => candidate.node_id === nodeId);
-  if (node === undefined) throw new Error(`SFL_NODE_UNKNOWN:${nodeId}`);
-  const instant = parseCanonicalTimestamp(at);
-  const matches = parsed.relations.filter((relation) => relation.node_id === nodeId
-    && relation.effective_at <= instant
-    && (relation.superseded_at === null || instant < relation.superseded_at));
-  if (matches.length !== 1) throw new Error(`SFL_NODE_RELATION_NOT_UNIQUE:${nodeId}:${instant}`);
-  return Object.freeze({ ...node, ...matches[0]! });
 }
 
 export function validateNodeManifestOwnership(topology: SflNodeTopology, registry: NodeManifestRegistry): void {
@@ -1332,83 +1246,6 @@ function validateNodeManifestRegistry(registry: NodeManifestRegistry): void {
   }
 }
 
-function validateSflNodeTopology(topology: SflNodeTopology): void {
-  assertRegistryIdentifierUnique(topology.nodes.map((node) => node.node_id), 'node_id');
-  assertRegistryIdentifierUnique(topology.nodes.map((node) => node.realm_id), 'realm_id');
-  const nodes = new Map(topology.nodes.map((node) => [node.node_id, node]));
-  const grouped = new Map<string, NodeRelationRecord[]>();
-  for (const relation of topology.relations) {
-    const node = nodes.get(relation.node_id);
-    if (node === undefined || node.line_id !== relation.line_id) {
-      throw new Error(`SFL_NODE_RELATION_NODE_INVALID:${relation.node_id}`);
-    }
-    for (const reference of [relation.parent_node_id, relation.original_parent_node_id]) {
-      if (reference !== null && nodes.get(reference)?.line_id !== relation.line_id) {
-        throw new Error(`SFL_NODE_RELATION_PARENT_INVALID:${relation.node_id}`);
-      }
-    }
-    const host = nodes.get(relation.host_sovereign_node_id);
-    if (host === undefined || host.line_id !== relation.line_id || host.sovereignty_tier !== 'sovereign') {
-      throw new Error(`SFL_NODE_RELATION_HOST_INVALID:${relation.node_id}`);
-    }
-    if (node.sovereignty_tier === 'sovereign'
-      ? relation.host_sovereign_node_id !== node.node_id
-      : relation.host_sovereign_node_id === node.node_id) {
-      throw new Error(`SFL_NODE_RELATION_SOVEREIGNTY_INVALID:${relation.node_id}`);
-    }
-    const level = signedLevelNumber(relation.signed_level);
-    if (level === 0 ? relation.parent_node_id !== null : relation.parent_node_id === null) {
-      throw new Error(`SFL_NODE_RELATION_PARENT_INVALID:${relation.node_id}`);
-    }
-    const key = `${relation.line_id}\u0000${relation.node_id}`;
-    const history = grouped.get(key) ?? [];
-    history.push(relation);
-    grouped.set(key, history);
-  }
-  if (grouped.size !== topology.nodes.length) throw new Error('SFL_NODE_RELATION_MISSING');
-  for (const history of grouped.values()) validateNodeRelationHistory(history, topology.relations);
-}
-
-function validateNodeRelationHistory(history: NodeRelationRecord[], relations: readonly NodeRelationRecord[]): void {
-  history.sort(compareNodeRelations);
-  const first = history[0]!;
-  if (first.relation_version !== 1 || first.original_parent_node_id !== first.parent_node_id) {
-    throw new Error(`SFL_NODE_RELATION_ORIGIN_INVALID:${first.node_id}`);
-  }
-  for (let index = 0; index < history.length; index += 1) {
-    const relation = history[index]!;
-    if (relation.relation_version !== index + 1 || relation.original_parent_node_id !== first.original_parent_node_id) {
-      throw new Error(`SFL_NODE_RELATION_VERSION_SEQUENCE_INVALID:${relation.node_id}`);
-    }
-    const next = history[index + 1];
-    if (next !== undefined && (relation.superseded_at === null || relation.superseded_at > next.effective_at)) {
-      throw new Error(`SFL_NODE_RELATION_PERIOD_OVERLAP:${relation.node_id}`);
-    }
-    const level = signedLevelNumber(relation.signed_level);
-    if (level <= 0) continue;
-    const parent = relations.find((candidate) => candidate.node_id === relation.parent_node_id
-      && candidate.line_id === relation.line_id
-      && candidate.effective_at <= relation.effective_at
-      && (candidate.superseded_at === null || relation.effective_at < candidate.superseded_at));
-    if (parent === undefined) throw new Error(`SFL_NODE_RELATION_PARENT_INACTIVE:${relation.node_id}`);
-    const parentLevel = signedLevelNumber(parent.signed_level);
-    if ((level >= 7 && parentLevel !== level - 1) || (level === 6 && (parentLevel < 0 || parentLevel > 5))
-      || (level >= 1 && level <= 5 && (parentLevel < 0 || parentLevel >= level))) {
-      throw new Error(`SFL_NODE_RELATION_LEVEL_INVALID:${relation.node_id}`);
-    }
-  }
-}
-
-function compareNodes(left: NodeRecord, right: NodeRecord): number {
-  return compareText(left.line_id, right.line_id) || compareText(left.node_id, right.node_id);
-}
-
-function compareNodeRelations(left: NodeRelationRecord, right: NodeRelationRecord): number {
-  return compareText(left.line_id, right.line_id)
-    || compareText(left.node_id, right.node_id)
-    || left.relation_version - right.relation_version;
-}
-
 function stableJson(value: unknown): string {
   return `${JSON.stringify(canonicalValue(value), null, 2)}\n`;
 }
@@ -1609,26 +1446,9 @@ function normalizeLifecycleStatus(value: unknown): NodeLifecycleStatus {
   return status as NodeLifecycleStatus;
 }
 
-function parseLifecycleStatus(value: unknown): NodeLifecycleStatus {
-  const status = canonicalText(value, 'lifecycle_status');
-  if (!NODE_LIFECYCLE_STATUSES.has(status as NodeLifecycleStatus)) {
-    throw new Error('SFL_NODE_MANIFEST_LIFECYCLE_STATUS_INVALID');
-  }
-  return status as NodeLifecycleStatus;
-}
-
 function normalizeNodeProfile(value: unknown): NodeProfile | null {
   if (value === null) return null;
   const profile = requiredText(value, 'node_profile');
-  if (profile !== 'operating_mall' && profile !== 'consumer') {
-    throw new Error('SFL_NODE_PROFILE_INVALID');
-  }
-  return profile;
-}
-
-function parseNodeProfile(value: unknown): NodeProfile | null {
-  if (value === null) return null;
-  const profile = canonicalText(value, 'node_profile');
   if (profile !== 'operating_mall' && profile !== 'consumer') {
     throw new Error('SFL_NODE_PROFILE_INVALID');
   }
@@ -1660,11 +1480,6 @@ function requiredText(value: unknown, field: string): string {
   return normalized;
 }
 
-function requiredArray(value: unknown, field: string): readonly unknown[] {
-  if (!Array.isArray(value)) throw new Error(`SFL_NODE_MANIFEST_ARRAY_INVALID:${field}`);
-  return value;
-}
-
 function parseSerializedJson(serialized: unknown, code: string): unknown {
   if (typeof serialized !== 'string') throw new Error(code);
   try {
@@ -1679,18 +1494,6 @@ function assertUniqueReferences(references: readonly VersionedRef[], field: stri
     references.map((reference) => reference.ref),
     (ref) => `SFL_NODE_MANIFEST_REFERENCE_AMBIGUOUS:${field}:${ref}`
   );
-}
-
-function assertRegistryIdentifierUnique(values: readonly string[], field: string): void {
-  assertUniqueValues(values, (value) => `SFL_NODE_MANIFEST_REGISTRY_IDENTIFIER_AMBIGUOUS:${field}:${value}`);
-}
-
-function assertUniqueValues(values: readonly string[], errorFor: (value: string) => string): void {
-  const seen = new Set<string>();
-  for (const value of values) {
-    if (seen.has(value)) throw new Error(errorFor(value));
-    seen.add(value);
-  }
 }
 
 function compareManifests(left: NodeManifest, right: NodeManifest): number {
@@ -1708,9 +1511,4 @@ function compareDomainBindings(left: DomainBindingRef, right: DomainBindingRef):
 
 function compareVersionedRefs(left: VersionedRef, right: VersionedRef): number {
   return compareText(left.ref, right.ref) || compareText(left.version, right.version);
-}
-
-function compareText(left: string, right: string): number {
-  if (left === right) return 0;
-  return left < right ? -1 : 1;
 }
