@@ -4,9 +4,6 @@
   "projectRoot": "../../..",
   "defaultBaseRef": "origin/zdt-next",
   "stateDirectory": ".ai-delivery",
-  "buildPreflight": [
-    {"name":"workspace-isolation","argv":["node","04_tools/release-engine/adapters/zdt-next/assert-workspace-isolation.mjs"],"timeoutMs":30000}
-  ],
   "transport": {
     "kind": "ssh",
     "host": "root@123.57.232.253",

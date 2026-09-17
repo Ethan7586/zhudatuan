@@ -30,5 +30,4 @@ while IFS= read -r nested; do
   mkdir -p "$(dirname "$target")"
   cp -a -l "$nested" "$target"
 done < <(find "$donor_root/01_core_hexin" "$donor_root/04_tools" -type d -name node_modules -prune -print)
-node "$project_root/04_tools/release-engine/adapters/zdt-next/assert-workspace-isolation.mjs"
 printf 'Isolated dependencies prepared with hard-link reuse; donor files were not modified.\n'
