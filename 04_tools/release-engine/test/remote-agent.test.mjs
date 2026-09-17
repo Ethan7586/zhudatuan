@@ -65,6 +65,20 @@ test('stages, activates, rolls back and reports status with immutable releases',
   assert.equal(observed.result.targets[0].verification.readiness.status, 'ready');
 });
 
+test('targets without configured health checks report not-checked without blocking activation or status', async () => {
+  const fixture = await createFixture();
+  fixture.policy.nodes.local.deployments.app.healthChecks = [];
+  await writePolicy(fixture);
+  const artifact = await createArtifact(fixture, 'static', 'a'.repeat(40));
+  await invoke(fixture, 'stage', artifact);
+  const activated = await invoke(fixture, 'activate', artifact);
+  assert.equal(activated.result.readiness.status, 'not-checked');
+  assert.equal(activated.result.receipt.finalStatus, 'success');
+  const observed = await invokeObserve(fixture, ['app']);
+  assert.equal(observed.result.targets[0].verification.readiness.status, 'not-checked');
+  assert.equal(observed.result.targets[0].status.currentArtifact.sourceSha, artifact.sourceSha);
+});
+
 test('a killed activation leaves current, previous, status and manual rollback usable', async () => {
   const fixture = await createFixture();
   const baseline = await createArtifact(fixture, 'healthy', '1'.repeat(40));

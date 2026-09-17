@@ -1335,7 +1335,7 @@ async function waitForReadiness(context, values) {
   const settings = readinessSettings(context);
   const started = performance.now();
   if (checks.length === 0) {
-    return { status: 'ready', attempts: 0, durationMs: 0, timeoutMs: settings.timeoutMs, intervalMs: settings.intervalMs, lastError: null, checks: [] };
+    return { status: 'not-checked', attempts: 0, durationMs: 0, timeoutMs: settings.timeoutMs, intervalMs: settings.intervalMs, lastError: null, checks: [] };
   }
   const deadline = started + settings.timeoutMs;
   let attempts = 0;

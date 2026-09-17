@@ -82,7 +82,7 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
   progress('plan', { sourceSha });
   const plan = await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha });
   const releaseId = `r16-${sourceSha}`;
-  if (!plan.deployRequired) return { state: 'HEALTHY', releaseId, sourceSha, executor: executor(), targets: [], message: 'No runtime target changed.' };
+  if (!plan.deployRequired) return { state: 'NO_CHANGE', releaseId, sourceSha, executor: executor(), targets: [], message: 'No runtime target changed.' };
   const client = simpleOssClientFromEnvironment();
   const cache = [];
   progress('artifact-lookup', { sourceSha, targets: plan.deploymentOrder });
@@ -111,7 +111,7 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
   const coreDurationMs = Math.round(performance.now() - productionStarted);
   progress('complete', { sourceSha, coreDurationMs });
   return {
-    state: 'HEALTHY',
+    state: deploymentState(deployments),
     releaseId,
     sourceSha,
     controlSha: process.env.CONTROL_SHA,
@@ -193,7 +193,7 @@ async function deployExact(adapter, controlRoot, sourceSha, target, node) {
   const coreDurationMs = Math.round(performance.now() - productionStarted);
   progress('complete', { sourceSha, target, node, coreDurationMs });
   return {
-    state: 'HEALTHY',
+    state: deploymentState([deployed]),
     releaseId: `r16-${sourceSha}`,
     sourceSha,
     controlSha: process.env.CONTROL_SHA,
@@ -267,6 +267,10 @@ async function deployTarget(adapter, controlRoot, publicClient, { target, node, 
   };
 }
 
+export function deploymentState(targets) {
+  return targets.every((target) => target.health?.status === 'ready') ? 'HEALTHY' : 'DEPLOYED';
+}
+
 async function updateRemoteControl(adapter, controlRoot) {
   context.stage = 'control-update';
   const transport = adapter.transport;
@@ -294,7 +298,7 @@ async function updateRemoteControl(adapter, controlRoot) {
     commandContext(adapter)
   );
   return {
-    state: 'HEALTHY',
+    state: 'UPDATED',
     operation: 'control-update',
     controlSha: process.env.CONTROL_SHA,
     executor: executor(),
@@ -345,7 +349,7 @@ async function status(adapter, sourceSha) {
     for (const observation of remote.result?.targets ?? []) observations.set(`${node}:${observation.target}`, observation);
   }));
   const targets = placements.map(({ target, node }) => observedTarget(sourceSha, target, node, observations.get(`${node}:${target}`)));
-  const currentTargets = targets.filter((target) => target.state === 'HEALTHY');
+  const currentTargets = targets.filter((target) => ['HEALTHY', 'CURRENT'].includes(target.state));
   const durationMs = Math.round(performance.now() - startedAt);
   progress('complete', { sourceSha, operation: 'status', state: 'OBSERVED', durationMs });
   return { state: 'OBSERVED', scope: 'all-configured-placements', releaseId: `r16-${sourceSha}`, sourceSha, controlSha: process.env.CONTROL_SHA, executor: executor(), durationMs, currentTargetCount: currentTargets.length, targets };
@@ -361,7 +365,7 @@ export function observedTarget(sourceSha, target, node, observation) {
   if (currentSha !== sourceSha) {
     return { target, node, state: previousSha === sourceSha ? 'PREVIOUS' : currentSha ? 'OTHER' : 'EMPTY', currentSourceSha: currentSha, previousSourceSha: previousSha, health };
   }
-  return { target, node, state: 'HEALTHY', currentSourceSha: currentSha, previousSourceSha: previousSha, health };
+  return { target, node, state: health?.status === 'ready' ? 'HEALTHY' : 'CURRENT', currentSourceSha: currentSha, previousSourceSha: previousSha, health };
 }
 
 async function rollback(adapter, controlRoot, target, node) {
@@ -438,13 +442,6 @@ function sshArgv(host, remoteArguments) {
   const argv = ['ssh', '-o', 'BatchMode=yes', '-o', `UserKnownHostsFile=${requiredEnv('ZDT_RELEASE_KNOWN_HOSTS_PATH')}`];
   if (process.env.ZDT_RELEASE_SSH_KEY_PATH) argv.push('-i', process.env.ZDT_RELEASE_SSH_KEY_PATH, '-o', 'IdentitiesOnly=yes');
   return [...argv, host, ...remoteArguments];
-}
-
-export function aggregateStatus(states) {
-  if (states.includes('FAILED')) return 'FAILED';
-  if (states.includes('UNKNOWN')) return 'UNKNOWN';
-  if (states.includes('ROLLED_BACK')) return 'ROLLED_BACK';
-  return 'HEALTHY';
 }
 
 export function observationDiagnostic(unknown) {

@@ -12,7 +12,7 @@ runner-1-6.mjs
 
 `delivery-1-6.yml` chooses an execution location. Aliyun and GitHub Hosted both invoke the same composite action and `scripts/runner-1-6.sh`; runner selection does not create stored routing state.
 
-The normal path calculates affected targets, reuses or rebuilds ordinary OSS artifacts, deploys them with the existing direct remote action, waits for real health, and reports the target's `current/previous` state. OSS is storage, not a deployment authority.
+The normal path calculates affected targets, reuses or rebuilds ordinary OSS artifacts, deploys them with the existing direct remote action, runs configured health checks, and reports the target's `current/previous` state. Targets with no health checks report `not-checked`, not `ready`; this is an observation, not a new release gate. OSS is storage, not a deployment authority.
 
 An exact `release` or `retry` with both target and physical node limits work to that target and node. On a cache hit it skips dependency installation, tests, and build; on a cache miss it prepares the target's immutable artifact in the same shared core before deploying. The target verifies the artifact, atomically updates `current/previous`, restarts, checks health, and automatically restores the prior version after a health failure. The 120-second objective applies to the entire user-command-to-healthy-target interval, not just cutover; the observation is not a gate.
 
