@@ -585,6 +585,40 @@ describe('custom identity and permission directory', () => {
     expect(screen.queryByText('无权读取邀请记录')).toBeNull();
   });
 
+  it('refreshes invitation records after a successful administrator invitation', async () => {
+    server.use(http.post('*/api/v1/identity/invitations', () => {
+      invitationRecords = [{
+        id: 'invite:new', scope: 'tenant:one', scope_name: '主打团商户',
+        label: '138****0000', governance_level: 'administrator',
+        created_by: 'membership:owner', created_by_name: 'Ethan',
+        accepted_membership_id: null, invitee_name: null, destination_masked: '138****0000',
+        max_uses: 1, use_count: 0, starts_at: '2026-09-17T08:00:00.000Z',
+        expires_at: '2026-09-24T08:00:00.000Z', accepted_at: null,
+        status: 'active', created_at: '2026-09-17T08:00:00.000Z', version: '0',
+      }];
+      return HttpResponse.json({
+        id: 'invite:new', code: 'AAAAAAAAAA', label: '管理员邀请', target: 'console',
+        max_uses: 1, use_count: 0, starts_at: '2026-09-17T08:00:00.000Z',
+        expires_at: '2026-09-24T08:00:00.000Z', status: 'active',
+        created_at: '2026-09-17T08:00:00.000Z', version: '0',
+      }, { status: 201 });
+    }));
+    const user = userEvent.setup();
+    renderWorkspace(context, '/scopes/tenant/tenant%3Aone/settings/access?section=invitations');
+    expect(await screen.findByText('还没有邀请记录')).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: '生成管理员邀请码' }));
+    const dialog = await screen.findByRole('dialog', { name: '邀请管理员' });
+    await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
+    await user.click(within(dialog).getByRole('button', { name: '生成管理员邀请' }));
+    const receipt = await screen.findByRole('dialog', { name: '管理员邀请已生成' });
+    await user.click(within(receipt).getByRole('button', { name: '完成' }));
+
+    const table = await screen.findByRole('table', { name: '邀请记录，共 1 条' });
+    expect(within(table).getByText('138****0000')).toBeTruthy();
+    expect(invitationReads).toBeGreaterThan(1);
+  });
+
   it('assigns two custom identities to one member and rereads their overlaid permissions and Access Version', async () => {
     members = [memberFixture()];
     syncRoleMetadata();

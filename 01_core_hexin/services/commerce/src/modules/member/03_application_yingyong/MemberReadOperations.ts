@@ -149,6 +149,9 @@ export function memberOperatorReadActions(kms: Pick<KmsClient, 'decrypt'>): Oper
     'member.invitations.read': async (request, database) => {
       const access = requireAccess(request);
       const page = queryPage(request);
+      if (access.scope.kind === 'mall' && access.scope.tenant !== undefined) {
+        await database.query("select set_config('app.scope_id',$1,true)", [access.scope.tenant]);
+      }
       const result = await database.query(`select invitation.id,invitation.organization_id scope,
         organization.name scope_name,case
           when accepted_profile.display_name is not null and invitation.destination_masked is not null

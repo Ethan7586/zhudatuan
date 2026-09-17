@@ -1,5 +1,5 @@
 import { Badge, Button, MasterDetail, MasterItem, Surface, WorkspaceHero } from '@shop/design';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -18,6 +18,7 @@ import './role-access-workspace.css';
 
 export function RoleAccessWorkspace() {
   const context = useConsoleContext();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [search] = useSearchParams();
   const requestedRoleId = search.get('role') ?? undefined;
@@ -167,10 +168,8 @@ export function RoleAccessWorkspace() {
       <MemberInvitationDialog
         context={context}
         open={invitationOpen}
-        onClose={() => {
-          setInvitationOpen(false);
-          if (section === 'invitations' && invitationRecordsEnabled) void invitationRecordsQuery.refetch();
-        }}
+        onCreated={() => { void queryClient.invalidateQueries({ queryKey: invitationRecordsKey(context) }); }}
+        onClose={() => setInvitationOpen(false)}
       />
     </section>
   );

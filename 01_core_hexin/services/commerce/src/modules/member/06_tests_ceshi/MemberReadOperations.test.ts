@@ -131,6 +131,21 @@ describe('member directory scope boundary', () => {
     expect(sql).not.toContain('allowed_destination_hash');
     expect(values).toEqual(['organization-platform-root', null, null, 51]);
   });
+
+  it('reads mall invitations under their tenant context while keeping the list filtered to that mall', async () => {
+    const query = vi.fn(async (_sql: string, _values: readonly unknown[] = []) => result([]));
+    const action = memberOperatorReadActions(testKms)['member.invitations.read'];
+    if (typeof action !== 'function') throw new Error('MEMBER_INVITATION_READ_ACTION_MISSING');
+    const scopedRequest = { ...invitationRequest(), access: {
+      scope: { kind: 'mall', id: 'mall:l1', tenant: 'tenant-zhudatuan' },
+    } } as OperationRequest;
+
+    await action(scopedRequest, { query } as unknown as OperationDatabase);
+
+    expect(query.mock.calls[0]).toEqual(["select set_config('app.scope_id',$1,true)", ['tenant-zhudatuan']]);
+    expect(query.mock.calls[1]?.[0]).toContain('boundary.ancestor_id=$1');
+    expect(query.mock.calls[1]?.[1]).toEqual(['mall:l1', null, null, 51]);
+  });
 });
 
 describe('storefront member directory boundary', () => {
