@@ -4,7 +4,7 @@ import type { ModuleContext } from '../../../bootstrap/ModuleRegistry';
 import type { OperationRequest } from '../../../foundation/application/OperationHandler';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 import { IDENTITY_SECURITY_KEYS } from '../../../foundation/infrastructure/SecretStore';
-import { accessPort } from '../01_public_gongkai/AccessPort';
+import { operatorOwnershipStore } from '../04_adapters_shixian/persistence/OperatorOwnershipStore';
 import { operatorOwnershipActions } from '../03_application_yingyong/OperatorOwnershipOperations';
 
 afterEach(() => vi.restoreAllMocks());
@@ -21,9 +21,9 @@ describe('operator ownership slice', () => {
     const snapshot = { sourceMembership: 'membership:owner', targetMembership: 'membership:successor',
       formerOwnerMode: 'remove_admin' as const, formerOwnerRole: null, formerOwnerRoleVersion: null,
       ownershipVersion: 4, transferVersion: null, targetAccessVersion: 2 };
-    const snapshotCall = vi.spyOn(accessPort, 'createProofSnapshot').mockResolvedValue(snapshot);
-    const registered = vi.spyOn(accessPort, 'registerProof').mockResolvedValue(undefined);
-    const transferred = vi.spyOn(accessPort, 'createOwnerTransfer').mockResolvedValue({ id: 'owner-transfer:next', version: 0 });
+    const snapshotCall = vi.spyOn(operatorOwnershipStore, 'createProofSnapshot').mockResolvedValue(snapshot);
+    const registered = vi.spyOn(operatorOwnershipStore, 'registerProof').mockResolvedValue(undefined);
+    const transferred = vi.spyOn(operatorOwnershipStore, 'createOwnerTransfer').mockResolvedValue({ id: 'owner-transfer:next', version: 0 });
     const database = { query: vi.fn(async () => ({ rows: [], rowCount: 0 })) } as unknown as OperationDatabase;
     const request = { input: { body: { targetMembership: snapshot.targetMembership, formerOwnerMode: snapshot.formerOwnerMode },
       headers: {}, expectedVersion: 4 }, access: { actor: { id: 'principal:owner', session: 'session:owner' },

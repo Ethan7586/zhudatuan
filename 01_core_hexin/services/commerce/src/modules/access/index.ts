@@ -4,9 +4,7 @@ export {
   accessPort,
   type ImportedMembership,
   type InvitedRegistrationMembership,
-  type OperatorRegistrationMembership,
-  type OwnershipProofSnapshot,
-  type OwnershipTransferInput,
   type RegistrationMembership,
 } from './01_public_gongkai/AccessPort';
+export { type OwnershipProofSnapshot, type OwnershipTransferInput } from './02_domain_yewu/AccessOwnership';
 export { accessManifest } from './module.manifest';

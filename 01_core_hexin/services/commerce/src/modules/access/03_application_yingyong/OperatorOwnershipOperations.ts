@@ -4,8 +4,8 @@ import { requireAccess, type OperationActions, type OperationDatabase } from '..
 import type { OperationRequest } from '../../../foundation/application/OperationHandler';
 import { IDENTITY_SECURITY_KEYS } from '../../../foundation/infrastructure/SecretStore';
 import { bodyRecord, textField } from '../../../foundation/interface/Validation';
-import { accessPort, type OwnershipProofSnapshot, type OwnershipTransferInput } from '../01_public_gongkai/AccessPort';
-import type { OwnerAction, OwnerActionProofPayload } from '../02_domain_yewu/AccessOwnership';
+import type { OwnerAction, OwnerActionProofPayload, OwnershipProofSnapshot, OwnershipTransferInput } from '../02_domain_yewu/AccessOwnership';
+import { operatorOwnershipStore } from '../04_adapters_shixian/persistence/OperatorOwnershipStore';
 import { requireExpectedVersion } from './AccessOperationValues';
 import { OwnerActionProof } from './OwnerActionProof';
 
@@ -14,22 +14,22 @@ export function operatorOwnershipActions(context: ModuleContext): OperationActio
   return {
     'access.ownership.read': async (request, database) => {
       const access = requireAccess(request);
-      return { status: 200, body: await accessPort.ownership(database, access.membership.id) };
+      return { status: 200, body: await operatorOwnershipStore.ownership(database, access.membership.id) };
     },
     'access.ownership.transfers.preview': async (request, database) => {
       const access = requireAccess(request);
       const expectedVersion = requireExpectedVersion(request);
-      const snapshot = await accessPort.createProofSnapshot(database, access.membership.id, transferInput(request), expectedVersion);
+      const snapshot = await operatorOwnershipStore.createProofSnapshot(database, access.membership.id, transferInput(request), expectedVersion);
       const issued = proofs.issue(proofInput('create', request, snapshot, null));
-      await accessPort.registerProof(database, issued.payload);
+      await operatorOwnershipStore.registerProof(database, issued.payload);
       return { status: 200, body: proofResponse(issued.proof, issued.payload) };
     },
     'access.ownership.transfers.create': async (request, database) => {
       const access = requireAccess(request);
       const expectedVersion = requireExpectedVersion(request);
-      const snapshot = await accessPort.createProofSnapshot(database, access.membership.id, transferInput(request), expectedVersion);
+      const snapshot = await operatorOwnershipStore.createProofSnapshot(database, access.membership.id, transferInput(request), expectedVersion);
       const payload = proofs.verify(request.input.headers['x-action-proof'], proofInput('create', request, snapshot, null));
-      const transfer = await accessPort.createOwnerTransfer(database, `owner-transfer:${randomUUID()}`, payload);
+      const transfer = await operatorOwnershipStore.createOwnerTransfer(database, `owner-transfer:${randomUUID()}`, payload);
       await publishOwnerEvent(database, 'access.owner.transfer.initiated', String(transfer.id), access.trace, transfer);
       return { status: 201, body: transfer, headers: { etag: `"${String(transfer.version)}"` } };
     },
@@ -37,23 +37,23 @@ export function operatorOwnershipActions(context: ModuleContext): OperationActio
       const access = requireAccess(request);
       const expectedVersion = requireExpectedVersion(request);
       const transfer = request.input.path.transferid!;
-      const snapshot = await accessPort.transferProofSnapshot(database, transfer, access.membership.id, expectedVersion, 'accept');
+      const snapshot = await operatorOwnershipStore.transferProofSnapshot(database, transfer, access.membership.id, expectedVersion, 'accept');
       const issued = proofs.issue(proofInput('accept', request, snapshot, null));
-      await accessPort.registerProof(database, issued.payload);
+      await operatorOwnershipStore.registerProof(database, issued.payload);
       return { status: 200, body: proofResponse(issued.proof, issued.payload) };
     },
     'access.ownership.transfers.accept': async (request, database) => {
       const access = requireAccess(request);
       const expectedVersion = requireExpectedVersion(request);
       const transfer = request.input.path.transferid!;
-      const snapshot = await accessPort.transferProofSnapshot(database, transfer, access.membership.id, expectedVersion, 'accept');
+      const snapshot = await operatorOwnershipStore.transferProofSnapshot(database, transfer, access.membership.id, expectedVersion, 'accept');
       const payload = proofs.verify(request.input.headers['x-action-proof'], proofInput('accept', request, snapshot, null));
-      const accepted = await accessPort.acceptOwnerTransfer(database, transfer, payload);
+      const accepted = await operatorOwnershipStore.acceptOwnerTransfer(database, transfer, payload);
       await publishOwnerEvent(database, 'access.owner.transferred', transfer, access.trace, {
         transfer, previousOwnerMembership: payload.sourceMembership, ownerMembership: payload.targetMembership,
         ownershipVersion: accepted.ownershipVersion,
       });
-      const ownership = await accessPort.ownership(database, payload.targetMembership);
+      const ownership = await operatorOwnershipStore.ownership(database, payload.targetMembership);
       return { status: 200, body: { ...ownership, transfer: accepted }, headers: { etag: `"${String(accepted.version)}"` } };
     },
     'access.ownership.transfers.cancel.preview': async (request, database) => {
@@ -61,9 +61,9 @@ export function operatorOwnershipActions(context: ModuleContext): OperationActio
       const expectedVersion = requireExpectedVersion(request);
       const transfer = request.input.path.transferid!;
       const reason = transferReason(request);
-      const snapshot = await accessPort.transferProofSnapshot(database, transfer, access.membership.id, expectedVersion, 'cancel');
+      const snapshot = await operatorOwnershipStore.transferProofSnapshot(database, transfer, access.membership.id, expectedVersion, 'cancel');
       const issued = proofs.issue(proofInput('cancel', request, snapshot, reasonHash(reason)));
-      await accessPort.registerProof(database, issued.payload);
+      await operatorOwnershipStore.registerProof(database, issued.payload);
       return { status: 200, body: proofResponse(issued.proof, issued.payload) };
     },
     'access.ownership.transfers.cancel': async (request, database) => {
@@ -71,9 +71,9 @@ export function operatorOwnershipActions(context: ModuleContext): OperationActio
       const expectedVersion = requireExpectedVersion(request);
       const transfer = request.input.path.transferid!;
       const reason = transferReason(request);
-      const snapshot = await accessPort.transferProofSnapshot(database, transfer, access.membership.id, expectedVersion, 'cancel');
+      const snapshot = await operatorOwnershipStore.transferProofSnapshot(database, transfer, access.membership.id, expectedVersion, 'cancel');
       const payload = proofs.verify(request.input.headers['x-action-proof'], proofInput('cancel', request, snapshot, reasonHash(reason)));
-      const cancelled = await accessPort.cancelOwnerTransfer(database, transfer, payload, reason);
+      const cancelled = await operatorOwnershipStore.cancelOwnerTransfer(database, transfer, payload, reason);
       await publishOwnerEvent(database, 'access.owner.transfer.cancelled', transfer, access.trace, cancelled);
       return { status: 200, body: cancelled, headers: { etag: `"${String(cancelled.version)}"` } };
     },

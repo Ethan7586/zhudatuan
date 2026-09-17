@@ -1,6 +1,20 @@
 export type OwnerAction = 'create' | 'accept' | 'cancel';
 export type FormerOwnerMode = 'retain_admin' | 'remove_admin';
 
+export interface OwnershipTransferInput {
+  readonly targetMembership: string;
+  readonly formerOwnerMode: FormerOwnerMode;
+  readonly formerOwnerRole: string | null;
+}
+
+export interface OwnershipProofSnapshot extends OwnershipTransferInput {
+  readonly sourceMembership: string;
+  readonly ownershipVersion: number;
+  readonly transferVersion: number | null;
+  readonly targetAccessVersion: number;
+  readonly formerOwnerRoleVersion: number | null;
+}
+
 export interface OwnerActionProofPayload {
   readonly v: 1;
   readonly nonce: string;

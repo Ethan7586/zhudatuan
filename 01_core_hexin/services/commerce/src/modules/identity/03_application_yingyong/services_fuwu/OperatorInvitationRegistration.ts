@@ -1,7 +1,6 @@
 import { reject, type OperationDatabase } from '../../../../foundation/application/ModuleOperations';
-import { accessPort } from '../../../access';
-import type { OperatorRegistrationMembership } from '../../../access/01_public_gongkai/AccessPort';
-import { bindExistingOperatorAccount, currentOperatorMembership } from '../../04_adapters_shixian/persistence_cunchu/OperatorRegistrationStore';
+import { bindExistingOperatorAccount, createOperatorRegistration, currentOperatorMembership,
+  type OperatorRegistrationMembership } from '../../04_adapters_shixian/persistence_cunchu/OperatorRegistrationStore';
 
 export interface ExistingOperatorSource {
   readonly sourceSecretHash: string | null;
@@ -31,7 +30,7 @@ export async function registerInvitedOperator(database: OperationDatabase, input
     if (current && current.status !== 'active') reject(403, 'MEMBERSHIP_INACTIVE');
     if (current) reject(409, 'IDENTITY_SUBJECT_EXISTS');
   }
-  const membership = await accessPort.createOperatorRegistration(database,
+  const membership = await createOperatorRegistration(database,
     { ...input, realm: binding.realm, account: binding.account });
   return { membership, ...binding };
 }
