@@ -30,6 +30,9 @@ if [ "$1" = run ] && [ "$2" = list ]; then
 fi
 if [ "$1" = workflow ] && [ "$2" = run ]; then
   if [[ " $* " == *"execution_location=github-hosted"* ]]; then echo hosted > "$MOCK_STATE"; fi
+  if [[ "$MOCK_MODE" == *-url ]]; then
+    if [ "$(<"$MOCK_STATE")" = hosted ]; then echo 'https://github.com/Ethan7586/zhudatuan/actions/runs/102'; else echo 'https://github.com/Ethan7586/zhudatuan/actions/runs/101'; fi
+  fi
   exit 0
 fi
 if [ "$1" = run ] && [ "$2" = cancel ]; then
@@ -53,8 +56,8 @@ if [ "$1" = run ] && [ "$2" = view ]; then
   fi
   if [[ " $* " == *" --json jobs"* ]]; then
     if [[ " $* " == *"shared release core"* ]]; then
-      if [ "$MOCK_MODE" = started ] || { [ "$MOCK_MODE" = raced ] && [ "$(<"$MOCK_STATE")" = cancelled ]; }; then echo 1; else echo 0; fi
-    elif [ "$MOCK_MODE" = precore ] || [ "$MOCK_MODE" = started ]; then echo 1; else echo 0; fi
+      if [[ "$MOCK_MODE" == started* ]] || { [ "$MOCK_MODE" = raced ] && [ "$(<"$MOCK_STATE")" = cancelled ]; }; then echo 1; else echo 0; fi
+    elif [ "$MOCK_MODE" = precore ] || [[ "$MOCK_MODE" == started* ]]; then echo 1; else echo 0; fi
     exit 0
   fi
 fi
@@ -82,6 +85,22 @@ test('an unstarted Aliyun job is cancelled before one Hosted dispatch', async ()
   assert.match(output, /Hosted fallback run: 102/);
   assert.match(output, /DELIVERY_COMMAND_RETURN_MS=\d+/);
   assert.match(output, /DELIVERY_PRE_CORE_TIMINGS=/);
+});
+
+test('dispatch uses the exact returned run URL without searching same-title runs', async () => {
+  const { output, calls } = await simulate('started-url');
+  assert.match(output, /GitHub run: 101/);
+  assert.match(output, /https:\/\/github\.com\/Ethan7586\/zhudatuan\/actions\/runs\/101/);
+  assert.doesNotMatch(calls, /run list .*--event workflow_dispatch/);
+  assert.doesNotMatch(calls, /run cancel/);
+});
+
+test('Hosted fallback also uses its own returned run URL', async () => {
+  const { output, calls } = await simulate('queued-url');
+  assert.match(output, /GitHub run: 101/);
+  assert.match(output, /Hosted fallback run: 102/);
+  assert.doesNotMatch(calls, /run list .*--event workflow_dispatch/);
+  assert.match(calls, /run cancel 101/);
 });
 
 test('an already-started Aliyun job never creates a Hosted dispatch', async () => {

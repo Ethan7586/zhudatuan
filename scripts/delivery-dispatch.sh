@@ -41,17 +41,23 @@ run_id=''
 dispatch_run() {
   local after_id="$1"
   local execution_location="$2"
-  gh workflow run "$workflow" --ref zdt-next \
+  local dispatch_output
+  dispatch_output="$(gh workflow run "$workflow" --ref zdt-next \
     -f operation="$operation" -f identifier="$identifier" -f release_target="$target" -f physical_node="$physical_node" \
-    -f execution_location="$execution_location"
+    -f execution_location="$execution_location")"
+  [ -z "$dispatch_output" ] || printf '%s\n' "$dispatch_output"
   echo '状态：QUEUED'
   run_id=''
-  for attempt in {1..30}; do
-    run_id="$(gh run list --workflow "$workflow" --event workflow_dispatch --limit 30 --json databaseId,displayTitle \
-      --jq ".[] | select(.databaseId > ${after_id} and .displayTitle == \"${expected_title}\") | .databaseId" | head -1)"
-    [ -z "$run_id" ] || break
-    sleep "$(( attempt < 3 ? attempt : 3 ))"
-  done
+  if [[ "$dispatch_output" =~ /actions/runs/([0-9]+) ]]; then
+    run_id="${BASH_REMATCH[1]}"
+  else
+    for attempt in {1..30}; do
+      run_id="$(gh run list --workflow "$workflow" --event workflow_dispatch --limit 30 --json databaseId,displayTitle \
+        --jq ".[] | select(.databaseId > ${after_id} and .displayTitle == \"${expected_title}\") | .databaseId" | head -1)"
+      [ -z "$run_id" ] || break
+      sleep "$(( attempt < 3 ? attempt : 3 ))"
+    done
+  fi
   [ -n "$run_id" ] || { echo 'Request was dispatched but its GitHub run was not found.' >&2; exit 1; }
 }
 
