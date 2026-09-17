@@ -50,7 +50,8 @@ export class AccessPipeline {
     private readonly governance?: GovernanceResolver
   ) {}
 
-  async authorize(headers: Readonly<Record<string, string>>, operation: string, permission: string, resource?: string): Promise<AccessContext> {
+  async authorize(headers: Readonly<Record<string, string>>, operation: string, permission: string, resource?: string,
+    requireStepUp?: boolean): Promise<AccessContext> {
     const actor = await this.sessions.resolve(headers);
     const trace = headers['x-trace-id'] ?? actor.session;
     let scope: AccessContext['scope'] | undefined;
@@ -91,8 +92,10 @@ export class AccessPipeline {
       if (!await this.availability.resourceReady(actor, operation, resource)) {
         throw new DomainError('RESOURCE_NOT_READY', { operation });
       }
-      const assuranceFailure = checkAssurance(permission, { now, ...(actor.assurance.verified === undefined ? {} : { stepupAt: actor.assurance.verified }) });
-      if (assuranceFailure !== null || !this.stepup.accepts(permissionDefinition(permission).stepup, actor.assurance, now)) throw new DomainError('STEPUP_REQUIRED');
+      if (requireStepUp ?? permissionDefinition(permission).stepup) {
+        const assuranceFailure = checkAssurance(permission, { now, ...(actor.assurance.verified === undefined ? {} : { stepupAt: actor.assurance.verified }) });
+        if (assuranceFailure !== null || !this.stepup.accepts(true, actor.assurance, now)) throw new DomainError('STEPUP_REQUIRED');
+      }
       const risk = await this.risk.evaluate({ actor, operation, scope, trace, ...(resource === undefined ? {} : { resource }) });
       assertRiskAllowed(risk.outcome);
       if (requiresFinancialActionProof(operation)) {

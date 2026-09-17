@@ -74,6 +74,15 @@ describe('AccessPipeline audience boundary', () => {
     expect(fixture.decisions).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'allow', reason: 'POLICY_ALLOWED' }));
   });
 
+  it('requires step-up for role management but not for the explicitly scoped administrator offboard call', async () => {
+    const fixture = accessFixture('console', 'access.roles.manage', 'access.role.manage', MALL);
+
+    await expect(fixture.pipeline.authorize({}, 'access.roles.manage', 'access.role.manage'))
+      .rejects.toThrow('STEPUP_REQUIRED');
+    await expect(fixture.pipeline.authorize({}, 'access.roles.manage', 'access.role.manage', undefined, false))
+      .resolves.toMatchObject({ membership: { id: 'membership:one' }, scope: MALL });
+  });
+
   it('reuses one database membership snapshot for access version and capabilities', async () => {
     const fixture = accessFixture('console', 'access.center.read', 'access.center.read', PLATFORM);
     fixture.membership.mockResolvedValue({ access: fixture.membershipAccess, evaluatedAt: NOW,

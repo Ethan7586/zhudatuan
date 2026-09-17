@@ -1,4 +1,4 @@
-import { allocateMemberSuffixes, allocateStorefrontSegment, formatMemberIdentityCode } from '@shop/l-kernel/member-identity-code';
+import { allocateMemberSuffixes, allocateStorefrontSegment, formatMemberIdentityCode } from './MemberIdentityCode';
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
 
 interface AssignedMemberCode {

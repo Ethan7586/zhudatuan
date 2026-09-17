@@ -438,16 +438,11 @@ function MemberDetail({
       onReceipt(actionReceiptLabel(row, '移除', receipt.access_version));
       onRemoved();
     },
-    onError: (error) => {
-      if (isStepUpRequired(error)) {
-        setElevatedSession(undefined);
-        setPendingAction('offboard');
-      }
-    },
   });
   const actionPending = upgradeMutation.isPending || demoteMutation.isPending || offboardMutation.isPending;
   const mutationError = upgradeMutation.error ?? demoteMutation.error ?? offboardMutation.error;
-  const actionError = mutationError !== null && isStepUpRequired(mutationError) ? undefined : safeQueryError(mutationError);
+  const actionError = mutationError !== null && isStepUpRequired(mutationError)
+    && offboardMutation.error === null ? undefined : safeQueryError(mutationError);
   const resetActionErrors = () => {
     upgradeMutation.reset();
     demoteMutation.reset();
@@ -461,7 +456,7 @@ function MemberDetail({
   };
   const beginAction = (action: AdministratorCriticalAction) => {
     const session = elevatedSession ?? context.session;
-    if (session.assurance.level < 3) {
+    if (action !== 'offboard' && session.assurance.level < 3) {
       resetActionErrors();
       setPendingAction(action);
       return;
@@ -591,7 +586,7 @@ function MemberDetail({
         targetName={row === undefined ? '当前管理员' : rowName(row)}
         targetIdentity={row === undefined ? undefined : rowIdentityDisplay(row)}
         targetRole={row === undefined ? undefined : administratorLabel(row)}
-        targetScope={row === undefined ? undefined : managementScopeLabel(row)}
+        targetScope={context.scope.name ?? context.scope.id}
         onClose={() => setPendingAction(undefined)}
         onExecute={executeElevatedAction}
       />

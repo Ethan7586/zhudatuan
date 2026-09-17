@@ -236,7 +236,7 @@ describe('member directory pagination', () => {
     expect(screen.queryByRole('row', { name: '查看管理员 高级管理员 · 7586' })).toBeNull();
   });
 
-  it('completes SMS step-up before offboarding and never exposes STEPUP_REQUIRED as the final UI state', async () => {
+  it('offboards the selected OP without SMS step-up', async () => {
     let offboarded = false;
     let roleWrites = 0;
     const owner = ownerContext();
@@ -248,41 +248,43 @@ describe('member directory pagination', () => {
       http.get('*/api/v1/access/center', () => HttpResponse.json(offboarded
         ? { items: [], count: 0, roles: [] }
         : { items: [accessMembership('membership:target', '高级管理员 · 7586', true)], count: 1, roles: [] })),
-      http.post('*/api/v1/identity/stepup/challenges', () => HttpResponse.json({
-        id: 'challenge:administrator-action', purpose: 'stepup', expires_at: new Date(Date.now() + 300_000).toISOString(),
-      }, { status: 202 })),
-      http.post('*/api/v1/identity/stepup/verifications', async ({ request }) => {
-        expect(await request.json()).toEqual({ challenge: 'challenge:administrator-action', code: '123456' });
-        return HttpResponse.json({ id: 'session:owner', assurance_level: 3 });
-      }),
-      http.get('*/api/v1/identity/session', () => HttpResponse.json({
-        ...stepUpOwner.session, assurance: { level: 3, verified: new Date().toISOString() }, csrf: 'csrf:elevated-owner',
-      })),
       http.put('*/api/v1/access/roles/:roleid', ({ request }) => {
         roleWrites += 1;
-        expect(request.headers.get('x-csrf-token')).toBe('csrf:elevated-owner');
+        expect(request.headers.get('x-csrf-token')).toBe('csrf:owner');
         offboarded = true;
         return HttpResponse.json({ action: 'offboard', changed: true, membership: 'membership:target',
           status: 'offboarded', access_version: 8 });
       }),
     );
     const user = userEvent.setup();
-    renderWorkspace(stepUpOwner);
+    renderWorkspace({ ...stepUpOwner, scope: { kind: 'mall', id: 'mall:hbbtzn', name: '宏泰甄选' } });
     await user.click(await screen.findByRole('row', { name: '查看管理员 高级管理员 · 7586' }));
 
     await user.click(screen.getByRole('button', { name: '删除管理员' }));
     await user.click(screen.getByRole('button', { name: '确认移除管理员' }));
 
-    expect(roleWrites).toBe(0);
-    expect(await screen.findByRole('dialog', { name: '验证后删除管理员' })).toBeTruthy();
-    expect(screen.queryByText(/STEPUP_REQUIRED/)).toBeNull();
-    await user.click(screen.getByRole('button', { name: '发送本人短信验证码' }));
-    await user.type(await screen.findByLabelText('6 位短信验证码'), '123456');
-    await user.click(screen.getByRole('button', { name: '验证并移除' }));
-
     expect(await screen.findByText('暂无管理员')).toBeTruthy();
     expect(roleWrites).toBe(1);
     expect(screen.queryByRole('dialog', { name: '验证后删除管理员' })).toBeNull();
+  });
+
+  it('shows the current L1 operation scope instead of the target L0 role scope in an existing verification dialog', async () => {
+    const owner = ownerContext();
+    server.use(
+      http.get('*/api/v1/members', () => HttpResponse.json({ items: [member('target', '高级管理员 · 7586')], count: 1 })),
+      http.get('*/api/v1/access/center', () => HttpResponse.json({
+        items: [accessMembership('membership:target', '高级管理员 · 7586', true)], count: 1, roles: [],
+      })),
+    );
+    const user = userEvent.setup();
+    renderWorkspace({ ...owner, scope: { kind: 'mall', id: 'mall:hbbtzn', name: '宏泰甄选' },
+      session: { ...owner.session, assurance: { level: 2 } } });
+    await user.click(await screen.findByRole('row', { name: '查看管理员 高级管理员 · 7586' }));
+    await user.click(screen.getByRole('button', { name: '降级为普通管理员' }));
+
+    expect(await screen.findByRole('dialog', { name: '验证后降级普通管理员' })).toBeTruthy();
+    expect(screen.getByText('当前范围：宏泰甄选')).toBeTruthy();
+    expect(screen.queryByText('当前范围：主打团平台')).toBeNull();
   });
 
   it('lets a senior administrator remove an ordinary administrator without exposing peer-governance controls', async () => {

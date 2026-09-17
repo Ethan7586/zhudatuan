@@ -284,7 +284,8 @@ export const CONTROLLER_OPERATION_IDS = Object.freeze([
 ] as const satisfies readonly OperationId[]);
 
 export interface OperationAuthorizer {
-  authorize(headers: Readonly<Record<string, string>>, operation: string, permission: string, resource?: string): Promise<AccessContext>;
+  authorize(headers: Readonly<Record<string, string>>, operation: string, permission: string, resource?: string,
+    requireStepUp?: boolean): Promise<AccessContext>;
 }
 
 export const OPERATION_HANDLERS = token<Map<OperationId, OperationHandler>>('operation.handlers');
@@ -321,7 +322,15 @@ async function operationAccess(operation: ReturnType<typeof OperationCatalog.get
     return authorizer.authorize(request.headers, currentSession.id, currentSession.permission ?? currentSession.id, resource);
   }
   if (operation.audience === 'public' || operation.audience === 'provider') return null;
+  if (isAdministratorOffboard(operation.id, request.body)) {
+    return authorizer.authorize(request.headers, operation.id, operation.permission, resource, false);
+  }
   return authorizer.authorize(request.headers, operation.id, operation.permission, resource);
+}
+
+function isAdministratorOffboard(operation: string, body: unknown): boolean {
+  return operation === 'access.roles.manage' && body !== null && typeof body === 'object'
+    && !Array.isArray(body) && Reflect.get(body, 'action') === 'offboard';
 }
 
 function authenticatedWechatMode(body: unknown): boolean {
@@ -346,8 +355,7 @@ function contractOperationInput(operation: OperationId, input: OperationInput): 
 }
 
 function operationResource(operation: string, request: HttpRequest): string | undefined {
-  if (operation === 'access.roles.manage' && request.body !== null && typeof request.body === 'object'
-    && !Array.isArray(request.body) && Reflect.get(request.body, 'action') === 'offboard') return undefined;
+  if (isAdministratorOffboard(operation, request.body)) return undefined;
   // A new policy id is not resolvable before its first approved revision. The selected Scope is the authorization resource; the path id remains bound by ExpectedVersion and the canonical request hash.
   if (operation === 'finance.policies.manage' || operation === 'finance.policies.preview') return undefined;
   // Member targets remain path IDs; authorization resolves the selected mall.

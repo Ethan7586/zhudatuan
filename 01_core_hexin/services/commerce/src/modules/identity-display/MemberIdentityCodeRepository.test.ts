@@ -1,5 +1,5 @@
 import { PGlite } from '@electric-sql/pglite';
-import { allocateMemberSuffixes, allocateStorefrontSegment } from '@shop/l-kernel/member-identity-code';
+import { allocateMemberSuffixes, allocateStorefrontSegment } from './MemberIdentityCode';
 import { describe, expect, it } from 'vitest';
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
 import { assignMemberIdentityCodes, memberIdentityRepositoryAvailable } from './MemberIdentityCodeRepository';
