@@ -13,6 +13,7 @@
 - 团队唯一正式入口是仓库命令 `02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery release <full-source-sha>` 或 `deploy <full-source-sha>`，可从任意仓库检出位置运行。GitHub 工作流是该入口的执行面；网页直接启动不会执行命令入口的阿里云排队超时接管，不得宣传为等价入口。指定落点时分别使用 `release <full-source-sha> <target> <physical-node>` 或 `deploy <target> <full-source-sha> <physical-node>`。两个名字调用同一个 Runner 发布核心，谁被调用就用谁，不建立优先级或第二套发布路径；状态、重试和回滚分别使用 `status`、`retry`、`rollback`。
 - 当 Ethan 在当前任务说“部署”或“发布”时，若本任务代码已提交并推送、完整业务 Source SHA 已明确，直接调用上述入口；不要为了发布重新建分支、安装本地依赖、运行本地生产构建或重复 Runner 已执行的整套检查。若本任务仍有未提交改动，代理只对本任务改动做必要的针对性检查，随后提交、推送并取得完整业务 Source SHA，再调用同一入口；不要求 Ethan 手动提供 SHA 或办理“封板”，也不夹带其他任务的未提交文件。确有开发问题需要本地构建时按问题本身处理，不把本地构建变成普通发布前置步骤。Runner 控制端仍只派发，不在本机准备制品。
 - 指定单个目标和物理节点时，制品缺失由同一 Runner 仅构建该目标制品、再仅发布到指定节点；缓存命中直接发布。控制端不准备制品，也不扩大到其他节点。
+- 同一 Source SHA 需要按顺序发布数据库迁移与业务服务时，可在同一 `release`、`deploy` 或 `retry` 后追加明确的目标／物理节点对，例如 `release <full-source-sha> database-migration zhudatuan-l0 identity-api hbbtzn-l1`；Runner 只处理列出的落点，复用同一 workflow 和核心，不扩展其他服务。
 - 控制端只获取最新发布控制面、派发 GitHub 工作流、查询并展示结果；不得在控制端安装依赖、构建、上传、部署或回滚。
 - 实际执行优先使用阿里云 Runner；无法接单时使用 GitHub Hosted Runner。两者调用同一个发布核心，本机不是第三执行路线。
 - 业务 Source SHA 与最新控制面 SHA 必须分别保留。

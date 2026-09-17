@@ -171,6 +171,13 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
     assert.equal(cores.length, 4);
     assert.equal(cores.filter((step) => step.with.phase === 'prepare').length, 2);
     assert.equal(cores.filter((step) => step.with.phase === 'run').length, 2);
+    const exactPrepare = cores.find((step) => step.with.phase === 'prepare' && step.with.operation === '${{ inputs.operation }}');
+    const exactRun = cores.find((step) => step.with.phase === 'run' && step.with.operation === '${{ inputs.operation }}');
+    assert.equal(exactPrepare.with.target, '${{ inputs.release_target }}');
+    assert.equal(exactRun.with.target, '${{ inputs.release_target }}');
+    assert.equal(exactRun.with['physical-node'], '${{ inputs.physical_node }}');
+    assert.equal(exactPrepare.with['source-sha'], '${{ needs.route.outputs.source_sha }}');
+    assert.equal(exactRun.with['source-sha'], '${{ needs.route.outputs.source_sha }}');
     assert.deepEqual(new Set(cores.map((step) => step.uses)), new Set([
       './.runner-1-6/control-release/.github/actions/runner-1-6',
       './.runner-1-6/status-control/.github/actions/runner-1-6',
@@ -290,11 +297,11 @@ test('normal path uses direct artifact deployment and does not depend on old aut
 
 test('exact release builds only a missing target artifact before deploying one node', async () => {
   const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
-  const exactBranch = core.indexOf('if (exactScope) return deployExact');
+  const exactBranch = core.indexOf('if (exactScope) {');
   const dependencyInstall = core.indexOf("name: 'install-control-dependencies'");
   const exactFunction = core.indexOf('async function deployExact');
   assert.ok(exactBranch > 0 && exactBranch < dependencyInstall && exactFunction > dependencyInstall);
-  const exactSource = core.slice(exactFunction, core.indexOf('async function deployTarget'));
+  const exactSource = core.slice(exactFunction, core.indexOf('async function deployExactBatch'));
   assert.match(exactSource, /if \(!cached\.exists\)/);
   assert.match(exactSource, /createReleasePlan\(adapter, \{ from: `\$\{sourceSha\}\^`, to: sourceSha, target, prepare: true \}\)/);
   assert.match(exactSource, /await buildAndPublish\(adapter, controlRoot, plan, client, \{ sourceSha, target, node \}\)/);

@@ -26,8 +26,8 @@ const commercePaths = [
 ];
 
 export function sourceCheckoutPaths(target, targets) {
-  const workspace = targets[target]?.buildWorkspace ?? targets[target]?.workspace;
-  return workspace === '@shop/commerce' ? commercePaths : [];
+  const requested = target.split(',');
+  return requested.every((name) => (targets[name]?.buildWorkspace ?? targets[name]?.workspace) === '@shop/commerce') ? commercePaths : [];
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

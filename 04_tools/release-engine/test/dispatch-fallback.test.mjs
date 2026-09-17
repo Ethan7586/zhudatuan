@@ -99,6 +99,17 @@ test('dispatch uses the exact returned run URL without searching same-title runs
   assert.doesNotMatch(calls, /run cancel/);
 });
 
+test('one dispatch carries exact database and service placements without expanding their nodes', async () => {
+  const placements = ['identity-api', 'hbbtzn-l1', 'database-migration', 'zhudatuan-l0'];
+  const { calls } = await simulate('started-url', ['release', sourceSha, ...placements]);
+  assert.equal((calls.match(/workflow run /g) ?? []).length, 1);
+  assert.match(calls, /release_target=identity-api,database-migration/);
+  assert.match(calls, /physical_node=hbbtzn-l1,zhudatuan-l0/);
+  const retry = await simulate('started-url', ['retry', `r16-${sourceSha}`, ...placements]);
+  assert.match(retry.calls, /release_target=identity-api,database-migration/);
+  assert.match(retry.calls, /physical_node=hbbtzn-l1,zhudatuan-l0/);
+});
+
 test('Hosted fallback also uses its own returned run URL', async () => {
   const { output, calls } = await simulate('queued-url');
   assert.match(output, /GitHub run: 101/);
@@ -214,4 +225,11 @@ test('unchecked static target reports command-to-current time, never command-to-
   const result = releaseLogTimings(log, Date.parse('2026-09-16T23:16:47Z'), 'release');
   assert.equal(result.targetCurrentMs, 115_854);
   assert.equal(result.targetHealthMs, null);
+});
+
+test('migration plus healthy service reports the whole command-to-health interval', () => {
+  const log = 'Execute on aliyun\tRun shared release core\t2026-09-16T23:18:42.854Z RUNNER_1_6_RESULT={"state":"DEPLOYED","targets":[{"target":"database-migration","current":"migration-current","health":{"status":"not-checked"}},{"target":"identity-api","current":"service-current","health":{"status":"ready"}}]}';
+  const result = releaseLogTimings(log, Date.parse('2026-09-16T23:16:47Z'), 'release');
+  assert.equal(result.targetHealthMs, 115_854);
+  assert.equal(result.targetCurrentMs, 115_854);
 });

@@ -6,12 +6,16 @@ operation="${1:-}"
 export ZDT_DELIVERY_STARTED_MS="$(($(date +%s) * 1000))"
 case "$operation" in
   release|retry)
-    { [ "$#" -eq 2 ] || [ "$#" -eq 4 ]; } || { echo "Usage: zdt-delivery $operation <full-source-sha-or-release-id> [target physical-node]" >&2; exit 64; }
+    { [ "$#" -ge 2 ] && [ "$(( ($# - 2) % 2 ))" -eq 0 ]; } || { echo "Usage: zdt-delivery $operation <full-source-sha-or-release-id> [target physical-node ...]" >&2; exit 64; }
     ;;
   deploy)
-    { [ "$#" -eq 2 ] || [ "$#" -eq 4 ]; } || { echo 'Usage: zdt-delivery deploy <full-source-sha> | deploy <target> <full-source-sha> <physical-node>' >&2; exit 64; }
-    if [ "$#" -eq 4 ]; then
-      set -- release "$3" "$2" "$4"
+    { [ "$#" -eq 2 ] || { [ "$#" -ge 4 ] && [ "$(( ($# - 4) % 2 ))" -eq 0 ]; }; } || { echo 'Usage: zdt-delivery deploy <full-source-sha> | deploy <target> <full-source-sha> <physical-node> [target physical-node ...]' >&2; exit 64; }
+    if [ "$#" -ge 4 ]; then
+      source_sha="$3"
+      placements=("$2" "$4")
+      shift 4
+      while [ "$#" -gt 0 ]; do placements+=("$1" "$2"); shift 2; done
+      set -- release "$source_sha" "${placements[@]}"
     else
       set -- release "$2"
     fi
@@ -23,10 +27,10 @@ case "$operation" in
     [ "$#" -eq 3 ] || { echo 'Usage: zdt-delivery rollback <target> <physical-node>' >&2; exit 64; }
     ;;
   *)
-    echo 'Usage: zdt-delivery release <full-source-sha> [target physical-node]' >&2
-    echo '       zdt-delivery deploy <full-source-sha> | deploy <target> <full-source-sha> <physical-node>' >&2
+    echo 'Usage: zdt-delivery release <full-source-sha> [target physical-node ...]' >&2
+    echo '       zdt-delivery deploy <full-source-sha> | deploy <target> <full-source-sha> <physical-node> [target physical-node ...]' >&2
     echo '       zdt-delivery status [full-source-sha-or-release-id]' >&2
-    echo '       zdt-delivery retry <release-id> [target physical-node]' >&2
+    echo '       zdt-delivery retry <release-id> [target physical-node ...]' >&2
     echo '       zdt-delivery rollback <target> <physical-node>' >&2
     exit 64
     ;;

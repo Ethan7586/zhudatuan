@@ -214,7 +214,7 @@ function expandTargetDependencies(adapter, targets) {
   return [...selected].sort();
 }
 
-function orderTargets(adapter, targets) {
+export function orderTargets(adapter, targets) {
   const selected = new Set(targets),
     ordered = [],
     visiting = new Set(),
