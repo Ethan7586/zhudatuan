@@ -54,10 +54,13 @@ runs:
       run: |
         source_root="$GITHUB_WORKSPACE/.runner-1-6/source"
         git -C "$source_root" rev-parse HEAD
+        git -C "$source_root" config --show-origin --get core.sparseCheckout || true
+        git -C "$source_root" sparse-checkout list 2>&1 | head -16 || true
         git -C "$source_root" ls-files -v 04_tools/scripts/audit/migrations.mjs
         if test -f "$source_root/04_tools/scripts/audit/migrations.mjs"; then echo 'MIGRATIONS_BEFORE_INSTALL=present'; else echo 'MIGRATIONS_BEFORE_INSTALL=absent'; fi
-        npm --prefix "$source_root" ci --ignore-scripts --no-audit --no-fund >/dev/null
-        if test -f "$source_root/04_tools/scripts/audit/migrations.mjs"; then echo 'MIGRATIONS_AFTER_INSTALL=present'; else echo 'MIGRATIONS_AFTER_INSTALL=absent'; fi
+        git -C "$source_root" sparse-checkout disable
+        git -C "$source_root" ls-files -v 04_tools/scripts/audit/migrations.mjs
+        if test -f "$source_root/04_tools/scripts/audit/migrations.mjs"; then echo 'MIGRATIONS_AFTER_SECOND_DISABLE=present'; else echo 'MIGRATIONS_AFTER_SECOND_DISABLE=absent'; fi
     - name: Mark shared release core started
       id: started
       shell: bash
