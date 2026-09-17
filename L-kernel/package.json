@@ -5,6 +5,7 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
+    "./hosted-mall-opening": "./src/member/HostedMallOpening.ts",
     "./member-node-registration": "./src/member/MemberNodeRegistration.ts",
     "./member-profile": "./src/member/MemberProfileRules.ts",
     "./node-parsing": "./src/node/NodeParsing.ts",
