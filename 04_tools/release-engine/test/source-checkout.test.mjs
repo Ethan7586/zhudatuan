@@ -40,24 +40,24 @@ test('workflow and shared action use sparse checkout without an overriding filte
 test('full Source recovery materializes a file hidden by a reused sparse index', async () => {
   const workspace = await mkdtemp(join(tmpdir(), 'runner-source-checkout-'));
   const source = join(workspace, '.runner-1-6/source');
-  const migration = join(source, '04_tools/scripts/audit/migrations.mjs');
+  const auditFile = join(source, '04_tools/scripts/audit/database-contracts.mjs');
   const git = (...args) => execFileSync('git', ['-C', source, ...args], { stdio: 'pipe' });
   try {
     await mkdir(join(source, '04_tools/scripts/audit'), { recursive: true });
     await writeFile(join(source, 'package.json'), '{}\n');
-    await writeFile(migration, 'export {};\n');
+    await writeFile(auditFile, 'export {};\n');
     execFileSync('git', ['init', source], { stdio: 'pipe' });
     git('add', '.');
     git('-c', 'user.name=Runner Test', '-c', 'user.email=runner@example.invalid', 'commit', '-m', 'fixture');
     git('sparse-checkout', 'set', '--no-cone', '/package.json');
-    await assert.rejects(access(migration));
-    assert.match(git('ls-files', '-v', '04_tools/scripts/audit/migrations.mjs').toString(), /^S /);
+    await assert.rejects(access(auditFile));
+    assert.match(git('ls-files', '-v', '04_tools/scripts/audit/database-contracts.mjs').toString(), /^S /);
 
     const action = parse(await readFile(join(root, '.github/actions/runner-1-6/action.yml'), 'utf8'));
     const materialize = action.runs.steps.find((step) => step.name === 'Materialize full Source after reused sparse checkout');
     execFileSync('bash', ['-c', materialize.run], { env: { ...process.env, GITHUB_WORKSPACE: workspace }, stdio: 'pipe' });
-    await access(migration);
-    assert.match(git('ls-files', '-v', '04_tools/scripts/audit/migrations.mjs').toString(), /^H /);
+    await access(auditFile);
+    assert.match(git('ls-files', '-v', '04_tools/scripts/audit/database-contracts.mjs').toString(), /^H /);
   } finally {
     await rm(workspace, { recursive: true, force: true });
   }

@@ -103,7 +103,6 @@
     "check:navigation": "node 04_tools/scripts/audit/navigation.mjs",
     "check:dependencies": "node 04_tools/scripts/audit/dependencies.mjs",
     "check:database": "node 04_tools/scripts/audit/database.mjs",
-    "check:migrations": "node 04_tools/scripts/audit/migrations.mjs",
     "check:operations": "node 04_tools/scripts/audit/operations.mjs",
     "check:events": "node 04_tools/scripts/audit/events.mjs",
     "check:providers": "node 04_tools/scripts/audit/providers.mjs",
@@ -145,8 +144,8 @@
     "test:password-login-stability": "node 04_tools/scripts/audit/password-login-stability.pg17-fixture.mjs",
     "replay:fresh": "npm run replay:schema-fresh && npm run test:inventory-cutover-unsafe && npm run test:environment-bootstrap",
     "quality": "npm run quality:baseline",
-    "quality:baseline": "npm run check:cleaninstall && npm run check:artifacts && npm run check:approved-ui && npm run check:identity-nodes && npm run check:migrations && npm run test:sql && npm run test:mvp && npm run typecheck && npm run test:unit && npm run test:contract && npm run test:journey && npm run test:security && npm run test:performance && npm run build && npm run audit:prod",
-    "quality:canonical-hard-cut": "npm run check:cleaninstall && npm run check:supplychain && npm run check:generated && npm run check:errors && npm run check:requirements && npm run audit:architecture && npm run check:lines && npm run check:approved-ui && npm run check:identity-nodes && npm run typecheck && npm run check:migrations && npm run test:sql && npm run test:mvp && npm run test:unit && npm run test:contract && npm run test:integration && npm run test:adapters && npm run test:component && npm run test:e2e && npm run test:journey && npm run test:security && npm run test:performance && npm run build && npm run check:bundles && npm run audit:prod",
+    "quality:baseline": "npm run check:cleaninstall && npm run check:artifacts && npm run check:approved-ui && npm run check:identity-nodes && npm run test:sql && npm run test:mvp && npm run typecheck && npm run test:unit && npm run test:contract && npm run test:journey && npm run test:security && npm run test:performance && npm run build && npm run audit:prod",
+    "quality:canonical-hard-cut": "npm run check:cleaninstall && npm run check:supplychain && npm run check:generated && npm run check:errors && npm run check:requirements && npm run audit:architecture && npm run check:lines && npm run check:approved-ui && npm run check:identity-nodes && npm run typecheck && npm run test:sql && npm run test:mvp && npm run test:unit && npm run test:contract && npm run test:integration && npm run test:adapters && npm run test:component && npm run test:e2e && npm run test:journey && npm run test:security && npm run test:performance && npm run build && npm run check:bundles && npm run audit:prod",
     "audit:prod": "npm audit --omit=dev"
   },
   "devDependencies": {

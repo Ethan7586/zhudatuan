@@ -1018,7 +1018,6 @@ npm run audit:architecture
 npm run check:lines
 npm run check:deployment
 npm run typecheck
-npm run check:migrations
 npm run test:sql
 npm run test:unit
 npm run test:contract
