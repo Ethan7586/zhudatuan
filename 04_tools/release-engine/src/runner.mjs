@@ -16,24 +16,51 @@ export async function runCommand(spec, context) {
   const output = [];
   let timedOut = false;
   const result = await new Promise((resolve, reject) => {
+    // Give each command its own process group so a timeout also stops its local descendants.
+    const useProcessGroup = process.platform !== 'win32';
+    let escalation;
+    let closedResult;
     const child = spawn(argv[0], argv.slice(1), {
       cwd,
       env: { ...process.env, ...context.environment, ...environment },
       shell: false,
+      detached: useProcessGroup,
       stdio: [spec.input === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe'],
     });
+    const terminate = (signal) => {
+      if (useProcessGroup && child.pid) {
+        try {
+          process.kill(-child.pid, signal);
+          return;
+        } catch (error) {
+          if (error?.code === 'ESRCH') return;
+        }
+      }
+      child.kill(signal);
+    };
     if (spec.input !== undefined) child.stdin.end(spec.input);
     child.stdout.on('data', (chunk) => output.push(chunk));
     child.stderr.on('data', (chunk) => output.push(chunk));
     child.on('error', reject);
     const timer = setTimeout(() => {
       timedOut = true;
-      child.kill('SIGTERM');
-      setTimeout(() => child.kill('SIGKILL'), 2_000).unref();
+      terminate('SIGTERM');
+      escalation = setTimeout(() => {
+        terminate('SIGKILL');
+        if (closedResult) resolve(closedResult);
+      }, 2_000);
+      escalation.unref();
     }, timeoutMs);
     child.on('close', (exitCode, signal) => {
       clearTimeout(timer);
-      resolve({ exitCode, signal });
+      const completed = { exitCode, signal };
+      if (escalation && useProcessGroup && processGroupExists(child.pid)) {
+        closedResult = completed;
+        escalation.ref();
+        return;
+      }
+      if (escalation) clearTimeout(escalation);
+      resolve(completed);
     });
   });
   const durationMs = Math.round(performance.now() - started);
@@ -53,6 +80,16 @@ export async function runCommand(spec, context) {
     });
   }
   return { name: spec.name, argv, cwd, startedAt, durationMs, exitCode: result.exitCode, ...(spec.input === undefined ? {} : { inputBytes: Buffer.byteLength(spec.input) }), output: log, outputTail: log.slice(-2_000) };
+}
+
+function processGroupExists(pid) {
+  if (!pid) return false;
+  try {
+    process.kill(-pid, 0);
+    return true;
+  } catch (error) {
+    return error?.code === 'EPERM';
+  }
 }
 
 export function expandArgv(argv, context) {
