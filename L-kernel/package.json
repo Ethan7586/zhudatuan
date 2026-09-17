@@ -10,6 +10,7 @@
     "./member-node-registration": "./src/member/MemberNodeRegistration.ts",
     "./member-identity-code": "./src/member/MemberIdentityCode.ts",
     "./member-profile": "./src/member/MemberProfileRules.ts",
+    "./member-share-facts": "./src/member/MemberShareFacts.ts",
     "./node-parsing": "./src/node/NodeParsing.ts",
     "./node-topology": "./src/node/NodeTopology.ts",
     "./signed-level": "./src/node/SignedLevel.ts"
