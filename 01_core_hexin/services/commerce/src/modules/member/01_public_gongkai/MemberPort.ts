@@ -17,6 +17,7 @@ import {
   changeMemberMobile,
   createMemberProfile,
   ensureImportedMemberProfile,
+  readSecurityProfile,
 } from '../04_adapters_shixian/persistence/MemberProfileRepository';
 
 export interface MemberInvite {
@@ -87,15 +88,7 @@ export class MemberPort {
   }
 
   async securityProfile(database: OperationDatabase, principal: string): Promise<Readonly<{ displayName: string | null; mobileCiphertext: string | null }>> {
-    const result = await database.query<{ display_name: string; mobile_ciphertext: string | null }>(
-      `select display_name,mobile_ciphertext from member.profile
-      where principal_id=$1 and status='active'`,
-      [principal]
-    );
-    return {
-      displayName: result.rows[0]?.display_name ?? null,
-      mobileCiphertext: result.rows[0]?.mobile_ciphertext ?? null,
-    };
+    return readSecurityProfile(database, principal);
   }
 
   async sessionSecurityProjection(database: OperationDatabase, account: string, realm: string, principal: string): Promise<Readonly<{

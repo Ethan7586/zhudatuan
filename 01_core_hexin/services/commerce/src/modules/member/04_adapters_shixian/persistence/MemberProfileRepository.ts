@@ -1,6 +1,21 @@
 import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import type { MemberProfile } from '../../01_public_gongkai/MemberPort';
 
+export async function readSecurityProfile(database: OperationDatabase, principal: string): Promise<Readonly<{
+  displayName: string | null;
+  mobileCiphertext: string | null;
+}>> {
+  const result = await database.query<{ display_name: string; mobile_ciphertext: string | null }>(
+    `select display_name,mobile_ciphertext from member.profile
+      where principal_id=$1 and status='active'`,
+    [principal]
+  );
+  return {
+    displayName: result.rows[0]?.display_name ?? null,
+    mobileCiphertext: result.rows[0]?.mobile_ciphertext ?? null,
+  };
+}
+
 export async function createMemberProfile(database: OperationDatabase, input: MemberProfile): Promise<void> {
   await database.query(
     `insert into member.profile(id,principal_id,display_name,status,mobile_ciphertext,mobile_token,mobile_masked,created_at,updated_at)
