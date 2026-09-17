@@ -1,6 +1,10 @@
 name: Runner 1.7 shared release core
 description: Runs the same release implementation on Aliyun or GitHub Hosted runners
 inputs:
+  phase:
+    description: Prepare the runner or execute the shared core
+    required: false
+    default: run
   operation:
     required: true
   identifier:
@@ -20,27 +24,24 @@ inputs:
   control-root:
     required: false
     default: ''
-outputs:
-  started:
-    description: True once the shared release core is about to execute
-    value: ${{ steps.started.outputs.value }}
 runs:
   using: composite
   steps:
     - name: Use Node 22
+      if: inputs.phase == 'prepare'
       uses: actions/setup-node@v6
       with:
         node-version: 22.22.0
     - name: Select exact Source checkout paths
       id: source_scope
-      if: inputs.source-sha != '' && (inputs.operation == 'release' || inputs.operation == 'retry')
+      if: inputs.phase == 'prepare' && inputs.source-sha != '' && (inputs.operation == 'release' || inputs.operation == 'retry')
       shell: bash
       env:
         CONTROL_ROOT: ${{ inputs.control-root != '' && inputs.control-root || github.workspace }}
         RELEASE_TARGET: ${{ inputs.target }}
       run: node "$CONTROL_ROOT/04_tools/release-engine/source-checkout-1-7.mjs" "$CONTROL_ROOT" "$RELEASE_TARGET" >> "$GITHUB_OUTPUT"
     - name: Load exact source
-      if: inputs.source-sha != '' && (inputs.operation == 'release' || inputs.operation == 'retry')
+      if: inputs.phase == 'prepare' && inputs.source-sha != '' && (inputs.operation == 'release' || inputs.operation == 'retry')
       uses: actions/checkout@v6
       with:
         ref: ${{ inputs.source-sha }}
@@ -49,14 +50,11 @@ runs:
         sparse-checkout-cone-mode: false
         sparse-checkout: ${{ steps.source_scope.outputs.paths }}
     - name: Materialize full Source after reused sparse checkout
-      if: inputs.source-sha != '' && (inputs.operation == 'release' || inputs.operation == 'retry') && steps.source_scope.outputs.paths == ''
+      if: inputs.phase == 'prepare' && inputs.source-sha != '' && (inputs.operation == 'release' || inputs.operation == 'retry') && steps.source_scope.outputs.paths == ''
       shell: bash
       run: git -C "$GITHUB_WORKSPACE/.runner-1-6/source" sparse-checkout disable
-    - name: Mark shared release core started
-      id: started
-      shell: bash
-      run: echo 'value=true' >> "$GITHUB_OUTPUT"
     - name: Run shared release core
+      if: inputs.phase == 'run'
       shell: bash
       env:
         CONTROL_ROOT: ${{ inputs.control-root != '' && inputs.control-root || github.workspace }}

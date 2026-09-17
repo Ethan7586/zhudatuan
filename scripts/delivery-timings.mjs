@@ -42,7 +42,7 @@ export function releaseLogTimings(log, commandStartedMs, operation) {
   };
   const releaseOperation = ['release', 'retry'].includes(operation);
   const sourceStart = releaseOperation ? lines.slice(0, resultIndex < 0 ? undefined : resultIndex).findLastIndex((line) => line.includes('start-action display=Load exact source')) : -1;
-  const sourceEnd = sourceStart < 0 ? -1 : lines.findIndex((line, index) => index > sourceStart && line.includes('start-action display=Mark shared release core started'));
+  const sourceEnd = sourceStart < 0 ? -1 : lines.findIndex((line, index) => index > sourceStart && (line.includes('start-action display=Mark shared release core started') || line.includes('\tMark shared release core started\t')));
   const sourceCheckoutMs = sourceStart >= 0 && sourceEnd >= 0 ? at(lines[sourceEnd]) - at(lines[sourceStart]) : null;
   const commandMs = Number(commandStartedMs);
   const targetHealthMs = ['release', 'retry'].includes(operation)

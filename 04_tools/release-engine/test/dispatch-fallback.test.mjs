@@ -55,9 +55,13 @@ if [ "$1" = run ] && [ "$2" = view ]; then
     exit 0
   fi
   if [[ " $* " == *" --json jobs"* ]]; then
-    if [[ " $* " == *"shared release core"* ]]; then
-      if [[ "$MOCK_MODE" == started* ]] || { [ "$MOCK_MODE" = raced ] && [ "$(<"$MOCK_STATE")" = cancelled ]; }; then echo 1; else echo 0; fi
-    elif [ "$MOCK_MODE" = precore ] || [[ "$MOCK_MODE" == started* ]]; then echo 1; else echo 0; fi
+    if [[ " $* " == *"Mark shared release core started"* ]]; then
+      if [[ "$MOCK_MODE" == started* ]] || [ "$MOCK_MODE" = hosted-core ] || { [ "$MOCK_MODE" = raced ] && [ "$(<"$MOCK_STATE")" = cancelled ]; }; then echo 1; else echo 0; fi
+    elif [[ " $* " == *".conclusion == \\"failure\\""* ]]; then
+      if [ "$MOCK_MODE" = hosted-precore ]; then echo 1; else echo 0; fi
+    elif [[ " $* " == *"shared release core"* ]]; then
+      if [ "$MOCK_MODE" = precore ]; then echo 1; else echo 0; fi
+    elif [ "$MOCK_MODE" = precore ] || [ "$MOCK_MODE" = hosted-precore ] || [[ "$MOCK_MODE" == started* ]]; then echo 1; else echo 0; fi
     exit 0
   fi
 fi
@@ -110,10 +114,11 @@ test('an already-started Aliyun job never creates a Hosted dispatch', async () =
   assert.equal((calls.match(/workflow run /g) ?? []).length, 1);
 });
 
-test('a stalled pre-core checkout is cancelled before Hosted takes over', async () => {
+test('a started composite still in pre-core checkout is cancelled before Hosted takes over', async () => {
   const { calls } = await simulate('precore');
   assert.match(calls, /run cancel 101/);
   assert.match(calls, /execution_location=github-hosted/);
+  assert.match(calls, /Mark shared release core started/);
 });
 
 test('live status dispatches without requiring a Source SHA', async () => {
@@ -127,6 +132,19 @@ test('a core that starts while cancellation is pending blocks Hosted dispatch', 
     assert.match(error.stderr, /shared core started before cancellation/);
     return true;
   });
+});
+
+test('same-run Hosted core is observed without cancelling or dispatching a second run', async () => {
+  const { calls } = await simulate('hosted-core');
+  assert.doesNotMatch(calls, /run cancel/);
+  assert.equal((calls.match(/workflow run /g) ?? []).length, 1);
+});
+
+test('same-run Hosted preparation is left to finish after Aliyun failed', async () => {
+  const { calls, output } = await simulate('hosted-precore');
+  assert.doesNotMatch(calls, /run cancel/);
+  assert.equal((calls.match(/workflow run /g) ?? []).length, 1);
+  assert.match(output, /等待同一次 GitHub 运行中的 Hosted 接管/);
 });
 
 test('GitHub timeline separates queue, routing, and checkout without counting fallback twice', () => {
@@ -179,6 +197,15 @@ test('log timing reports real target health separately from workflow completion'
   assert.equal(result.targetCurrentMs, null);
   assert.match(result.resultLine, /^RUNNER_1_6_RESULT=/);
   assert.equal(releaseLogTimings(log, Date.parse('2026-09-16T23:16:47Z'), 'status').sourceCheckoutMs, null);
+});
+
+test('source checkout timing survives the top-level core-start marker', () => {
+  const log = [
+    'Execute on aliyun\tPrepare shared release core\t2026-09-16T23:17:27.917Z ##[start-action display=Load exact source;id=release.checkout]',
+    'Execute on aliyun\tMark shared release core started\t2026-09-16T23:17:37.842Z ##[group]Run echo value=true',
+    'Execute on aliyun\tRun shared release core\t2026-09-16T23:17:38.842Z RUNNER_1_6_RESULT={"state":"DEPLOYED","targets":[]}',
+  ].join('\n');
+  assert.equal(releaseLogTimings(log, Date.parse('2026-09-16T23:16:47Z'), 'release').sourceCheckoutMs, 9_925);
 });
 
 test('unchecked static target reports command-to-current time, never command-to-health time', () => {
