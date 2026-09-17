@@ -17,7 +17,7 @@ case "$operation" in
     fi
     ;;
   status)
-    [ "$#" -eq 2 ] || { echo 'Usage: zdt-delivery status <full-source-sha-or-release-id>' >&2; exit 64; }
+    { [ "$#" -eq 1 ] || [ "$#" -eq 2 ]; } || { echo 'Usage: zdt-delivery status [full-source-sha-or-release-id]' >&2; exit 64; }
     ;;
   rollback)
     [ "$#" -eq 3 ] || { echo 'Usage: zdt-delivery rollback <target> <physical-node>' >&2; exit 64; }
@@ -25,7 +25,7 @@ case "$operation" in
   *)
     echo 'Usage: zdt-delivery release <full-source-sha> [target physical-node]' >&2
     echo '       zdt-delivery deploy <full-source-sha> | deploy <target> <full-source-sha> <physical-node>' >&2
-    echo '       zdt-delivery status <full-source-sha-or-release-id>' >&2
+    echo '       zdt-delivery status [full-source-sha-or-release-id]' >&2
     echo '       zdt-delivery retry <release-id> [target physical-node]' >&2
     echo '       zdt-delivery rollback <target> <physical-node>' >&2
     exit 64

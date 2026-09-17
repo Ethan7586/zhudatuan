@@ -8,18 +8,22 @@ Normal commands:
 ./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery release <full-source-sha>
 ./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery deploy <full-source-sha>
 ./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery deploy <target> <full-source-sha> <physical-node>
-./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery status <full-source-sha-or-r16-release-id>
+./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery status [full-source-sha-or-r16-release-id]
 ./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery retry <r16-release-id>
 ./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery rollback <target> <physical-node>
 ```
 
 `deploy` and `release` are interchangeable names for the same release path. `deploy` with an explicit target uses the historical target-first argument order; the wrapper forwards it to `release` with Source SHA first. Neither command has priority over the other.
 
+`status` without a SHA reads the live current/previous and health of configured physical targets; providing a Source SHA additionally shows whether that version is current, previous, or elsewhere. Status and rollback do not depend on unrelated build settings, other targets' release checks or a release receipt; target/node identity and paths remain checked.
+
 When Ethan asks an agent to deploy work from the current task, the agent completes that task's code checks, commit and push, obtains the full Source SHA, then invokes this entry. The user does not need to supply a SHA or perform a separate sealing step. Unrelated uncommitted changes are not included. The entry itself remains a dispatcher, not a local build or deployment tool.
 
 For one physical node, use `zdt-delivery release <full-source-sha> <target> <physical-node>` or `zdt-delivery deploy <target> <full-source-sha> <physical-node>`. If that target's immutable artifact is absent or incomplete, the same Runner builds and publishes only that target's artifact, then deploys only the named node. A cache hit skips the build. The control-side machine never builds or prepares the artifact.
 
-Aliyun Build runners are selected first when one is online and idle. Missing, offline, busy, or unreadable Aliyun state selects GitHub Hosted immediately. The repository command also cancels an Aliyun job that did not start within 20 seconds after routing and retries on Hosted only after cancellation is confirmed and the core is confirmed unstarted; it never switches after the core started. Both locations invoke `.github/actions/runner-1-6/action.yml` and `scripts/runner-1-6.sh`; there is no second release implementation. GitHub Hosted uses the public OSS endpoint for Runner uploads and reads, the configured endpoint for target downloads, and the same SSH target/host-key configuration. Real Hosted connectivity still requires a production run to prove.
+Normal release synchronizes the matching Agent and remote policy as one versioned pair before deploying targets, then executes that exact pair even if another release updates the default Agent entry. Unrelated process restarts, Caddy changes, a fixed free-space reserve, lifecycle-unit queries, audit writes and extra rollback-point files do not determine a target release outcome. The target's immutable artifact, current/previous pointers, service restart and health still do; a failed health check restores the previous service when available.
+
+Aliyun Build runners are selected first when one is online and idle. Missing, offline, busy, or unreadable Aliyun state selects GitHub Hosted immediately. The repository command cancels an Aliyun job that has not started any step after 20 seconds, or has started setup but not reached the shared core after 60 seconds. It retries on Hosted only after cancellation is confirmed and the core is confirmed unstarted; it never switches after the core started. Both locations invoke `.github/actions/runner-1-6/action.yml` and `scripts/runner-1-6.sh`; there is no second release implementation. GitHub Hosted uses the public OSS endpoint for Runner uploads and reads, the configured endpoint for target downloads, and the same SSH target/host-key configuration. Real Hosted connectivity still requires a production run to prove.
 
 The control-side machine never installs release dependencies, builds, packages, uploads, deploys, or rolls back. Historical recovery remains separate under `RECOVERY.md`.
 

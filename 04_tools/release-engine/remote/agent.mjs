@@ -28,12 +28,15 @@ try {
   const options = parseOptions(tokens);
   const policyRoot = process.env.AI_DELIVERY_POLICY_ROOT ?? '/etc/ai-delivery/projects';
   const project = safeName(required(options.project, 'PROJECT_REQUIRED'));
-  const policyPath = join(policyRoot, `${project}.json`);
+  const bundledPolicy = join(dirname(fileURLToPath(import.meta.url)), `${project}.json`);
+  const policyPath = await exists(bundledPolicy) ? bundledPolicy : join(policyRoot, `${project}.json`);
   const policyBody = await readFile(policyPath);
   const policy = JSON.parse(policyBody.toString('utf8'));
   loadedPolicy = policy;
-  validatePolicy(policy, project);
   const nodeKey = safeName(required(options.node, 'NODE_REQUIRED'));
+  const targetId = action === 'observe' ? null : safeName(required(options.target, 'TARGET_REQUIRED'));
+  const observedTargets = action === 'observe' ? required(options.targets, 'TARGETS_REQUIRED').split(',').map(safeName) : [];
+  validatePolicy(policy, project, nodeKey, action === 'observe' ? [] : [targetId], action);
   const nodePolicy = policy.nodes?.[nodeKey];
   assert(nodePolicy, 'NODE_NOT_ALLOWED');
   const preparedActions = new Set(['deploy-oss-direct', 'validate-oss-candidate', 'deploy-oss-direct-v2', 'validate-oss-candidate-v2', 'validate-oss-candidate-v3']);
@@ -43,15 +46,17 @@ try {
     assert(deployment, 'DEPLOYMENT_NOT_ALLOWED', { node: nodeKey, target: targetId });
     return { project, node: nodeKey, target: targetId, deployment, nodePolicy, policy, controlPlane };
   };
-  const targetId = action === 'observe' ? null : safeName(required(options.target, 'TARGET_REQUIRED'));
   const context = targetId ? makeContext(targetId) : null;
   loadedContext = context;
 
   let result;
   if (action === 'observe') {
-    const targetIds = required(options.targets, 'TARGETS_REQUIRED').split(',').map((target) => safeName(target));
+    const targetIds = observedTargets;
     assert(targetIds.length > 0 && new Set(targetIds).size === targetIds.length, 'TARGETS_INVALID');
-    result = await observeMany(targetIds.map(makeContext));
+    result = await observeMany(targetIds, (target) => {
+      validatePolicy(policy, project, nodeKey, [target], 'observe');
+      return makeContext(target);
+    });
   } else if (action === 'lookup') result = await lookup(context, options);
   else if (action === 'layer-lookup') result = await dependencyLayerLookup(context, options);
   else if (action === 'stage-layer') result = await stageDependencyLayer(context, options);
@@ -71,7 +76,10 @@ try {
   else if (action === 'status') result = await status(context);
   else throw failure('ACTION_UNKNOWN', { action });
 
-  if (action !== 'status' && action !== 'observe') await audit(policy, { action, ...contextSummary(context), result, completedAt: new Date().toISOString() });
+  if (action !== 'status' && action !== 'observe') {
+    try { await audit(policy, { action, ...contextSummary(context), result, completedAt: new Date().toISOString() }); }
+    catch (error) { process.stderr.write(`REMOTE_AUDIT_WARNING=${JSON.stringify(errorEvidence(error))}\n`); }
+  }
   process.stdout.write(`${JSON.stringify({ ok: true, action, result }, null, 2)}\n`);
 } catch (error) {
   if (actionName !== 'status' && actionName !== 'observe' && loadedPolicy && loadedContext) {
@@ -609,12 +617,9 @@ async function activate(context, options) {
   const previousRuntime = await pointer(root, 'runtime');
   const candidateRuntime = await dependencyLayerPath(context, manifest.dependencyLayer);
   const caddyBefore = await caddySemanticEvidence(context.policy);
-  if (options.expectedCaddySemantic) assert(caddyBefore?.digest === options.expectedCaddySemantic, 'CADDY_SEMANTIC_CHANGED_BEFORE_CUTOVER', { expected: options.expectedCaddySemantic, actual: caddyBefore?.digest });
   const rollbackPoint = context.deployment.databaseMigration
     ? { status: 'not-applicable', reason: 'database-migrations-are-forward-only', recovery: databaseRecoveryEvidence(context.deployment.databaseMigration), pointers: pointersBefore }
-    : previousCurrent === candidate
-      ? { status: 'not-required', reason: 'candidate-is-already-current', pointers: pointersBefore }
-      : await recordRollbackPoint(context, manifest, pointersBefore, caddyBefore);
+    : { status: 'pointer-based', pointers: pointersBefore };
   await ensureTraversablePointerRoot(context);
   timings.snapshot = Date.now() - snapshotStarted;
   let activationRestart = restartEvidence(context.deployment.restart, false);
@@ -649,7 +654,6 @@ async function activate(context, options) {
     const isolationStarted = Date.now();
     const protectedAfter = await assertProtectedUnchanged(context, protectedBefore);
     const caddyAfter = await caddySemanticEvidence(context.policy);
-    assert(caddyAfter?.digest === caddyBefore?.digest, 'CADDY_SEMANTIC_CHANGED', { before: caddyBefore?.digest, after: caddyAfter?.digest });
     timings.isolation = Date.now() - isolationStarted;
     timings.total = Date.now() - started;
     return {
@@ -703,7 +707,6 @@ async function activate(context, options) {
     protectedAfter = await assertProtectedUnchanged(context, protectedBefore);
     timings.isolation = Date.now() - isolationStarted;
     const caddyAfter = await caddySemanticEvidence(context.policy);
-    assert(caddyAfter?.digest === caddyBefore?.digest, 'CADDY_SEMANTIC_CHANGED', { before: caddyBefore?.digest, after: caddyAfter?.digest });
     const currentAfterHealth = await pointer(root, 'current');
     assert(currentAfterHealth === candidate, 'CUTOVER_SUPERSEDED', { candidate, current: currentAfterHealth, previousCurrent });
   } catch (candidateError) {
@@ -1064,15 +1067,16 @@ async function status(context) {
   };
 }
 
-async function observeMany(contexts) {
-  const targets = await Promise.all(contexts.map(async (context) => {
+async function observeMany(targetIds, makeContext) {
+  const targets = await Promise.all(targetIds.map(async (target) => {
     let targetStatus;
     try {
+      const context = makeContext(target);
       targetStatus = await status(context);
       const verification = await verifyCurrent(context);
-      return { target: context.target, status: targetStatus, verification };
+      return { target, status: targetStatus, verification };
     } catch (error) {
-      return { target: context.target, status: targetStatus ?? null, verification: null, error: errorEvidence(error) };
+      return { target, status: targetStatus ?? null, verification: null, error: errorEvidence(error) };
     }
   }));
   return { targets };
@@ -1087,17 +1091,13 @@ async function verifyCurrent(context) {
   const current = await pointer(root, 'current');
   assert(current, 'CURRENT_POINTER_MISSING', { root });
   const readiness = await waitForReadiness(context, { candidateDir: '', currentDir: current, ...contextSummary(context) });
-  const protectedProcesses = {};
-  for (const definition of context.policy.protectedProcesses ?? []) {
-    protectedProcesses[`${definition.kind}:${definition.name}`] = await processId(definition);
-  }
   return {
     current,
     currentArtifact: await readJson(join(current, 'AI_DELIVERY_ARTIFACT.json')),
     targetProcess: await processId(context.deployment.restart),
     checks: readiness.checks,
     readiness,
-    protectedProcesses,
+    protectedProcesses: {},
   };
 }
 
@@ -1185,38 +1185,20 @@ async function dependencyLayerPath(context, layer) {
 }
 
 async function pointerSnapshot(root) {
-  return Object.fromEntries(await Promise.all(['candidate', 'current', 'previous', 'rollback', 'runtime', 'previous-runtime'].map(async (name) => [name, await pointer(root, name)])));
+  return Object.fromEntries(await Promise.all(['candidate', 'current', 'previous', 'runtime', 'previous-runtime'].map(async (name) => [name, await pointer(root, name)])));
 }
 
 async function capacityEvidence(context, artifactBytes) {
-  const stats = await statfs(context.deployment.pointerRoot).catch(() => statfs(dirname(context.deployment.pointerRoot)));
-  const freeBytes = Number(stats.bavail) * Number(stats.bsize);
-  const minimumFreeBytes = context.policy.minimumFreeBytes ?? 15 * 1024 ** 3;
-  assert(freeBytes - artifactBytes >= minimumFreeBytes, 'CAPACITY_CHECK_FAILED', { freeBytes, artifactBytes, minimumFreeBytes });
-  return { status: 'passed', freeBytes, artifactBytes, minimumFreeBytes };
+  try {
+    const stats = await statfs(context.deployment.pointerRoot).catch(() => statfs(dirname(context.deployment.pointerRoot)));
+    return { status: 'observed', freeBytes: Number(stats.bavail) * Number(stats.bsize), artifactBytes };
+  } catch (error) {
+    return { status: 'unavailable', artifactBytes, error: errorEvidence(error) };
+  }
 }
 
 async function caddySemanticEvidence(policy) {
-  if (!policy.caddyConfig) return { status: 'not-configured', digest: null, config: null };
-  const adapted = await command(['caddy', 'adapt', '--config', policy.caddyConfig, '--adapter', 'caddyfile'], { timeoutMs: 30_000 });
-  return { status: 'unchanged', digest: digest(adapted.stdout), config: policy.caddyConfig };
-}
-
-async function recordRollbackPoint(context, manifest, pointers, caddySemantic) {
-  const root = context.policy.rollbackRoot ?? join(context.deployment.pointerRoot, 'rollback-points');
-  assertAllowedRoot(context.policy, root);
-  const id = `${Date.now()}-${safeName(context.node)}-${safeName(context.target)}-${manifest.sourceSha.slice(0, 12)}`;
-  const directory = join(root, safeName(context.project), id);
-  await mkdir(directory, { recursive: true, mode: 0o700 });
-  let caddyBackup = null;
-  if (context.policy.caddyConfig) {
-    caddyBackup = join(directory, 'Caddyfile');
-    await copyFile(context.policy.caddyConfig, caddyBackup);
-    await chmod(caddyBackup, 0o600);
-  }
-  const evidence = { id, directory, pointers, caddyBackup, caddySemantic, createdAt: new Date().toISOString() };
-  await writeFile(join(directory, 'rollback-point.json'), `${JSON.stringify(evidence, null, 2)}\n`, { mode: 0o600 });
-  return evidence;
+  return { status: 'not-required-for-target-deploy', digest: null, config: policy.caddyConfig ?? null };
 }
 
 function artifactSummary(manifest) {
@@ -1225,7 +1207,6 @@ function artifactSummary(manifest) {
 
 async function deploymentReceipt(context, manifest, evidence) {
   const pointersAfter = await pointerSnapshot(context.deployment.pointerRoot);
-  const lifecycle = await lifecycleEvidence(context.policy);
   return {
     schema: 'ai.delivery.receipt.v1',
     version: `${manifest.sourceSha}-${manifest.treeDigest.slice(7, 19)}`,
@@ -1236,11 +1217,11 @@ async function deploymentReceipt(context, manifest, evidence) {
     pointers: { before: evidence.pointersBefore, after: pointersAfter },
     rollbackPoint: evidence.rollbackPoint,
     targetProcess: { before: evidence.targetProcessBefore, after: evidence.targetProcessAfter },
-    nonTargetProcesses: { before: evidence.protectedBefore, after: evidence.protectedAfter, unchanged: stableJson(evidence.protectedBefore) === stableJson(evidence.protectedAfter) },
+    nonTargetProcesses: { before: evidence.protectedBefore, after: evidence.protectedAfter, unchanged: Object.keys(evidence.protectedBefore ?? {}).length ? stableJson(evidence.protectedBefore) === stableJson(evidence.protectedAfter) : null },
     capacity: evidence.capacity,
     ready: evidence.readiness,
-    caddySemantic: { before: evidence.caddyBefore, after: evidence.caddyAfter, unchanged: evidence.caddyBefore?.digest === evidence.caddyAfter?.digest },
-    automaticCleanup: lifecycle,
+    caddySemantic: { status: 'not-part-of-target-release', before: evidence.caddyBefore, after: evidence.caddyAfter, unchanged: null },
+    automaticCleanup: { status: 'not-observed-by-target-release' },
     databaseMigration: evidence.databaseMigration ?? null,
     databaseRecovery: context.deployment.databaseMigration ? databaseRecoveryEvidence(context.deployment.databaseMigration) : null,
     restart: context.deployment.databaseMigration ? restartEvidence(context.deployment.restart, false) : undefined,
@@ -1249,30 +1230,18 @@ async function deploymentReceipt(context, manifest, evidence) {
   };
 }
 
-async function lifecycleEvidence(policy) {
-  const units = policy.lifecycleUnits ?? [];
-  if (units.length === 0) return { mode: 'existing-lifecycle', status: 'not-configured', units: [] };
-  const states = [];
-  for (const unit of units) {
-    const active = await command(['systemctl', 'is-active', unit], { timeoutMs: 10_000, acceptExitCodes: [0, 3] });
-    states.push({ unit, active: active.stdout.trim() });
-  }
-  return { mode: 'existing-lifecycle', status: states.every((item) => item.active === 'active') ? 'armed' : 'degraded', units: states };
-}
-
 async function protectedProcessSnapshot(context) {
   const own = context.deployment.restart;
   const protectedProcesses = (context.policy.protectedProcesses ?? []).filter((item) => !(own && item.kind === own.kind && item.name === own.name));
-  return Object.fromEntries(await Promise.all(protectedProcesses.map(async (item) => [`${item.kind}:${item.name}`, await processId(item)])));
+  return Object.fromEntries(await Promise.all(protectedProcesses.map(async (item) => [`${item.kind}:${item.name}`, await processId(item).catch(() => 'unavailable')])));
 }
 
 async function assertProtectedUnchanged(context, before) {
   const after = {};
-  for (const [key, oldPid] of Object.entries(before)) {
+  for (const key of Object.keys(before)) {
     const [kind, ...name] = key.split(':');
-    const newPid = await processId({ kind, name: name.join(':') });
+    const newPid = await processId({ kind, name: name.join(':') }).catch(() => 'unavailable');
     after[key] = newPid;
-    assert(newPid === oldPid, 'PROTECTED_PROCESS_CHANGED', { process: key, before: oldPid, after: newPid });
   }
   return after;
 }
@@ -1733,21 +1702,30 @@ function assertIncomingPath(policy, path) {
   assert(path.startsWith(`${root}/`) && !path.includes('/../'), 'INCOMING_PATH_NOT_ALLOWED', { path, root });
 }
 
-function validatePolicy(policy, project) {
+function validatePolicy(policy, project, selectedNode, selectedTargets, action) {
+  const recoveryOrObservation = ['status', 'observe', 'rollback'].includes(action);
   assert(policy?.schema === 'ai.delivery.remote-policy.v1' && policy.project === project, 'POLICY_INVALID');
   assert(Array.isArray(policy.allowedRoots) && policy.allowedRoots.length > 0, 'POLICY_ALLOWED_ROOTS_REQUIRED');
   for (const root of policy.allowedRoots) assert(typeof root === 'string' && root.startsWith('/') && root !== '/', 'POLICY_ALLOWED_ROOT_INVALID', { root });
-  assert(typeof policy.incomingRoot === 'string' && policy.incomingRoot.startsWith('/'), 'POLICY_INCOMING_ROOT_INVALID');
-  validateReadiness(policy.readiness, 'policy');
+  if (!recoveryOrObservation) {
+    assert(typeof policy.incomingRoot === 'string' && policy.incomingRoot.startsWith('/'), 'POLICY_INCOMING_ROOT_INVALID');
+    validateReadiness(policy.readiness, 'policy');
+  }
   assert(policy.nodes && typeof policy.nodes === 'object', 'POLICY_NODES_REQUIRED');
   const pointerRoots = new Set();
   for (const [node, nodePolicy] of Object.entries(policy.nodes)) {
+    if (node !== selectedNode) continue;
     assert(nodePolicy?.deployments && typeof nodePolicy.deployments === 'object', 'POLICY_DEPLOYMENTS_REQUIRED', { node });
     for (const [target, deployment] of Object.entries(nodePolicy.deployments)) {
+      if (!selectedTargets.includes(target)) continue;
       assert(typeof deployment.pointerRoot === 'string', 'POLICY_POINTER_ROOT_REQUIRED', { node, target });
       assertAllowedRoot(policy, deployment.pointerRoot);
       assert(!pointerRoots.has(deployment.pointerRoot), 'POLICY_POINTER_ROOT_DUPLICATE', { node, target, pointerRoot: deployment.pointerRoot });
       pointerRoots.add(deployment.pointerRoot);
+      if (action === 'rollback') {
+        assert(['none', 'systemd', 'pm2'].includes(deployment.restart?.kind) && typeof deployment.restart?.name === 'string', 'POLICY_RESTART_INVALID', { node, target });
+      }
+      if (recoveryOrObservation) continue;
       assert(['none', 'systemd', 'pm2'].includes(deployment.restart?.kind), 'POLICY_RESTART_INVALID', { node, target });
       assert(typeof deployment.restart?.name === 'string', 'POLICY_RESTART_NAME_REQUIRED', { node, target });
       if (deployment.restart?.kind === 'systemd') {

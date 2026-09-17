@@ -24,9 +24,9 @@ async function main() {
     const controlRoot = resolve(options.controlRoot ?? process.cwd());
     const sourceSha = sourceFromIdentifier(options.identifier ?? options.sourceSha);
     context.sourceSha = sourceSha;
-    const loaded = await loadAdapter(join(controlRoot, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), controlRoot);
+    const loaded = await loadAdapter(join(controlRoot, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), controlRoot, { observationOrRecovery: ['status', 'rollback'].includes(options.operation) });
     const adapter = Object.freeze({
-      ...bindControlPlaneModules(loaded, controlRoot),
+      ...(['status', 'rollback'].includes(options.operation) ? loaded : bindControlPlaneModules(loaded, controlRoot)),
       projectRoot: options.sourceRoot ? resolve(options.sourceRoot) : controlRoot,
       stateDirectory: resolve(process.env.RUNNER_TEMP ?? '/tmp', `zdt-runner-1-6-${process.env.GITHUB_RUN_ID ?? process.pid}`),
     });
@@ -35,7 +35,7 @@ async function main() {
       invariant(sourceSha, 'SOURCE_SHA_REQUIRED', 'release and retry require a full Source SHA or r16 release id');
       result = await release(adapter, controlRoot, sourceSha, options.target, options.node);
     } else if (options.operation === 'status') {
-      invariant(sourceSha, 'SOURCE_SHA_REQUIRED', 'status requires a full Source SHA or r16 release id');
+      invariant(!(options.identifier ?? options.sourceSha) || sourceSha, 'SOURCE_SHA_INVALID', 'status accepts an optional full Source SHA or r16 release id');
       result = await status(adapter, sourceSha);
     } else if (options.operation === 'rollback') {
       result = await rollback(adapter, controlRoot, options.target, options.node);
@@ -96,14 +96,14 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
   const deployments = [];
   const totalPlacements = plan.deploymentOrder.reduce((count, deploymentTarget) => count + physicalPlacements(adapter, deploymentTarget).length, 0);
   const productionStarted = performance.now();
-  await syncRemoteRuntime(adapter, controlRoot);
+  const runtimeAgent = await syncRemoteRuntime(adapter, controlRoot);
   for (const deploymentTarget of plan.deploymentOrder) {
     for (const physicalNode of physicalPlacements(adapter, deploymentTarget)) {
       context.stage = 'deploy';
       context.target = deploymentTarget;
       context.node = physicalNode;
       progress('deploy', { sourceSha, target: deploymentTarget, node: physicalNode, completed: deployments.length, total: totalPlacements });
-      const deployed = await deployTarget(adapter, client, { target: deploymentTarget, node: physicalNode, sourceSha });
+      const deployed = await deployTarget(adapter, client, { target: deploymentTarget, node: physicalNode, sourceSha, runtimeAgent });
       deployments.push(deployed);
     }
   }
@@ -186,10 +186,10 @@ async function deployExact(adapter, controlRoot, sourceSha, target, node) {
     cacheStatus = 'built';
   }
   const productionStarted = performance.now();
-  await syncRemoteRuntime(adapter, controlRoot);
+  const runtimeAgent = await syncRemoteRuntime(adapter, controlRoot);
   context.stage = 'deploy';
   progress('deploy', { sourceSha, target, node, completed: 0, total: 1 });
-  const deployed = await deployTarget(adapter, client, { target, node, sourceSha });
+  const deployed = await deployTarget(adapter, client, { target, node, sourceSha, runtimeAgent });
   const coreDurationMs = Math.round(performance.now() - productionStarted);
   progress('complete', { sourceSha, target, node, coreDurationMs });
   return {
@@ -206,7 +206,7 @@ async function deployExact(adapter, controlRoot, sourceSha, target, node) {
   };
 }
 
-async function deployTarget(adapter, publicClient, { target, node, sourceSha }) {
+async function deployTarget(adapter, publicClient, { target, node, sourceSha, runtimeAgent }) {
   const resolved = await resolveSimpleArtifact(adapter, { target, sourceSha }, publicClient);
   const deployment = resolveDeployment(adapter, node, target);
   const transport = deployment.node.transport ?? adapter.transport;
@@ -219,7 +219,7 @@ async function deployTarget(adapter, publicClient, { target, node, sourceSha }) 
     {
       name: `deploy:${node}:${target}`,
       argv: sshArgv(host, [
-        transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs',
+        runtimeAgent,
         'deploy-oss-direct-v2',
         '--project',
         adapter.project,
@@ -303,29 +303,39 @@ async function syncRemoteRuntime(adapter, controlRoot) {
     policySha256: `sha256:${policySha256}`,
     durationMs: result.durationMs,
   });
+  return `/usr/local/lib/ai-delivery/versions/${agentSha256}-${policySha256}/agent.mjs`;
 }
 
-function remoteRuntimeSyncScript({ agent, policy, agentSha256, policySha256 }) {
+export function remoteRuntimeSyncScript({ agent, policy, agentSha256, policySha256 }) {
   return `set -euo pipefail
-install -d -m 0755 /usr/local/lib/ai-delivery /etc/ai-delivery/projects
-agent_tmp="$(mktemp --suffix=.mjs /usr/local/lib/ai-delivery/.agent.XXXXXX)"
-policy_tmp="$(mktemp /etc/ai-delivery/projects/.zdt-next.XXXXXX)"
-cleanup() { rm -f -- "$agent_tmp" "$policy_tmp"; }
+install -d -m 0755 /usr/local/lib/ai-delivery/versions
+version_dir="/usr/local/lib/ai-delivery/versions/${agentSha256}-${policySha256}"
+stage_dir="$(mktemp -d /usr/local/lib/ai-delivery/versions/.stage.XXXXXX)"
+agent_link="$(mktemp /usr/local/lib/ai-delivery/.agent-link.XXXXXX)"
+cleanup() { rm -rf -- "$stage_dir"; rm -f -- "$agent_link"; }
 trap cleanup EXIT
-base64 -d > "$agent_tmp" <<'RUNNER_1_6_AGENT'
+base64 -d > "$stage_dir/agent.mjs" <<'RUNNER_1_6_AGENT'
 ${agent}
 RUNNER_1_6_AGENT
-base64 -d > "$policy_tmp" <<'RUNNER_1_6_POLICY'
+base64 -d > "$stage_dir/zdt-next.json" <<'RUNNER_1_6_POLICY'
 ${policy}
 RUNNER_1_6_POLICY
-chmod 0755 "$agent_tmp"
-chmod 0644 "$policy_tmp"
-node --check "$agent_tmp"
-node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync(process.argv[1]));if(p.schema!=="ai.delivery.remote-policy.v1"||p.project!=="zdt-next")process.exit(1)' "$policy_tmp"
-[ "$(sha256sum "$agent_tmp" | cut -d' ' -f1)" = "${agentSha256}" ]
-[ "$(sha256sum "$policy_tmp" | cut -d' ' -f1)" = "${policySha256}" ]
-mv -f "$agent_tmp" /usr/local/lib/ai-delivery/agent.mjs
-mv -f "$policy_tmp" /etc/ai-delivery/projects/zdt-next.json
+chmod 0755 "$stage_dir/agent.mjs"
+chmod 0644 "$stage_dir/zdt-next.json"
+chmod 0755 "$stage_dir"
+node --check "$stage_dir/agent.mjs"
+node -e 'const fs=require("fs");const p=JSON.parse(fs.readFileSync(process.argv[1]));if(p.schema!=="ai.delivery.remote-policy.v1"||p.project!=="zdt-next")process.exit(1)' "$stage_dir/zdt-next.json"
+[ "$(sha256sum "$stage_dir/agent.mjs" | cut -d' ' -f1)" = "${agentSha256}" ]
+[ "$(sha256sum "$stage_dir/zdt-next.json" | cut -d' ' -f1)" = "${policySha256}" ]
+if [ ! -d "$version_dir" ]; then
+  mv -T "$stage_dir" "$version_dir" || [ -d "$version_dir" ]
+fi
+[ "$(sha256sum "$version_dir/agent.mjs" | cut -d' ' -f1)" = "${agentSha256}" ]
+[ "$(sha256sum "$version_dir/zdt-next.json" | cut -d' ' -f1)" = "${policySha256}" ]
+rm -f -- "$agent_link"
+ln -s "$version_dir/agent.mjs" "$agent_link"
+mv -Tf "$agent_link" /usr/local/lib/ai-delivery/agent.mjs
+cleanup
 trap - EXIT
 printf 'REMOTE_RUNTIME_SYNCED agent=sha256:${agentSha256} policy=sha256:${policySha256}\\n'
 `;
@@ -340,14 +350,18 @@ async function status(adapter, sourceSha) {
   progress('status', { sourceSha, total: placements.length, mode: 'one-connection-per-node', connections: nodeTargets.size });
   const observations = new Map();
   await Promise.all([...nodeTargets].map(async ([node, entries]) => {
-    const remote = await remoteObserveNode(adapter, node, entries.map(({ target }) => target));
-    for (const observation of remote.result?.targets ?? []) observations.set(`${node}:${observation.target}`, observation);
+    try {
+      const remote = await remoteObserveNode(adapter, node, entries.map(({ target }) => target));
+      for (const observation of remote.result?.targets ?? []) observations.set(`${node}:${observation.target}`, observation);
+    } catch (error) {
+      for (const { target } of entries) observations.set(`${node}:${target}`, { error: observationDiagnostic(error) });
+    }
   }));
   const targets = placements.map(({ target, node }) => observedTarget(sourceSha, target, node, observations.get(`${node}:${target}`)));
   const currentTargets = targets.filter((target) => ['HEALTHY', 'CURRENT'].includes(target.state));
   const durationMs = Math.round(performance.now() - startedAt);
   progress('complete', { sourceSha, operation: 'status', state: 'OBSERVED', durationMs });
-  return { state: 'OBSERVED', scope: 'all-configured-placements', releaseId: `r16-${sourceSha}`, sourceSha, controlSha: process.env.CONTROL_SHA, executor: executor(), durationMs, currentTargetCount: currentTargets.length, targets };
+  return { state: 'OBSERVED', scope: 'all-configured-placements', releaseId: sourceSha ? `r16-${sourceSha}` : null, sourceSha, controlSha: process.env.CONTROL_SHA, executor: executor(), durationMs, currentTargetCount: currentTargets.length, targets };
 }
 
 export function observedTarget(sourceSha, target, node, observation) {
@@ -357,6 +371,7 @@ export function observedTarget(sourceSha, target, node, observation) {
   const health = normalizeReadiness(observation.verification?.readiness);
   if (observation.error?.code === 'CURRENT_POINTER_MISSING' && !currentSha) return { target, node, state: 'EMPTY', currentSourceSha: null, previousSourceSha: previousSha, health, diagnostic: observation.error };
   if (observation.error) return { target, node, state: 'FAILED', currentSourceSha: currentSha, previousSourceSha: previousSha, health, diagnostic: observation.error };
+  if (!sourceSha) return { target, node, state: currentSha ? (health?.status === 'ready' ? 'HEALTHY' : 'CURRENT') : 'EMPTY', currentSourceSha: currentSha, previousSourceSha: previousSha, health };
   if (currentSha !== sourceSha) {
     return { target, node, state: previousSha === sourceSha ? 'PREVIOUS' : currentSha ? 'OTHER' : 'EMPTY', currentSourceSha: currentSha, previousSourceSha: previousSha, health };
   }
@@ -416,7 +431,7 @@ async function remoteObserveNode(adapter, node, targets) {
 
 function physicalPlacements(adapter, target) {
   return Object.entries(adapter.nodes)
-    .filter(([, node]) => node.deployments?.[target] && node.deployments[target].hostedBy === undefined)
+    .filter(([, node]) => node?.deployments?.[target] && node.deployments[target].hostedBy === undefined)
     .map(([node]) => node)
     .sort();
 }

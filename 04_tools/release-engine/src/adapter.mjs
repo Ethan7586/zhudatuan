@@ -5,10 +5,20 @@ import { invariant } from './errors.mjs';
 
 export const ADAPTER_SCHEMA = 'ai.delivery.project.v1';
 
-export async function loadAdapter(adapterPath, invocationRoot = process.cwd()) {
+export async function loadAdapter(adapterPath, invocationRoot = process.cwd(), { observationOrRecovery = false } = {}) {
   const absolutePath = isAbsolute(adapterPath) ? adapterPath : resolve(invocationRoot, adapterPath);
   const adapter = JSON.parse(await readFile(absolutePath, 'utf8'));
-  validateAdapter(adapter);
+  if (observationOrRecovery) {
+    invariant(adapter?.schema === ADAPTER_SCHEMA && safeIdentifier(adapter.project), 'ADAPTER_IDENTITY_INVALID', 'Adapter identity is required');
+    invariant(adapter.targets && typeof adapter.targets === 'object' && adapter.nodes && typeof adapter.nodes === 'object', 'ADAPTER_PLACEMENTS_INVALID', 'Adapter placements are required');
+    for (const target of Object.keys(adapter.targets)) invariant(safeIdentifier(target), 'ADAPTER_TARGET_ID_INVALID', `Target id is unsafe: ${target}`);
+    for (const [node, definition] of Object.entries(adapter.nodes)) {
+      invariant(safeIdentifier(node), 'ADAPTER_NODE_KEY_INVALID', `Node key is unsafe: ${node}`);
+      for (const [target, deployment] of Object.entries(definition?.deployments ?? {})) {
+        invariant(safeIdentifier(target) && (!deployment?.hostedBy || safeIdentifier(deployment.hostedBy)), 'ADAPTER_PLACEMENT_ID_INVALID', `Placement id is unsafe: ${node}/${target}`);
+      }
+    }
+  } else validateAdapter(adapter);
   const configuredRoot = adapter.projectRoot ?? '../../..';
   const projectRoot = resolve(dirname(absolutePath), configuredRoot);
   return Object.freeze({ ...adapter, adapterPath: absolutePath, projectRoot });

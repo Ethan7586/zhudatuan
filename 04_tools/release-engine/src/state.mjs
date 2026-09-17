@@ -10,7 +10,6 @@ export function statePaths(adapter) {
     root,
     runs: join(root, 'runs'),
     artifacts: join(root, 'artifacts'),
-    locks: join(root, 'locks'),
   };
 }
 
