@@ -98,6 +98,7 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
   const deployments = [];
   const totalPlacements = plan.deploymentOrder.reduce((count, deploymentTarget) => count + physicalPlacements(adapter, deploymentTarget).length, 0);
   const productionStarted = performance.now();
+  await updateRemoteControl(adapter, controlRoot);
   for (const deploymentTarget of plan.deploymentOrder) {
     for (const physicalNode of physicalPlacements(adapter, deploymentTarget)) {
       context.stage = 'deploy';
@@ -186,8 +187,9 @@ async function deployExact(adapter, controlRoot, sourceSha, target, node) {
     preparationTimings = await buildAndPublish(adapter, controlRoot, plan, client, { sourceSha, target, node });
     cacheStatus = 'built';
   }
-  context.stage = 'deploy';
   const productionStarted = performance.now();
+  await updateRemoteControl(adapter, controlRoot);
+  context.stage = 'deploy';
   progress('deploy', { sourceSha, target, node, completed: 0, total: 1 });
   const deployed = await deployTarget(adapter, controlRoot, client, { target, node, sourceSha });
   const coreDurationMs = Math.round(performance.now() - productionStarted);
@@ -260,7 +262,7 @@ async function deployTarget(adapter, controlRoot, publicClient, { target, node, 
     requestedNode: node,
     current: remote.result?.activation?.current ?? null,
     previous: remote.result?.activation?.previous ?? null,
-    health: remote.result?.activation?.readiness ?? null,
+    health: normalizeReadiness(remote.result?.activation?.readiness),
     recovery: remote.result?.activation?.rollback ?? null,
     targetTimings: remote.result?.activation?.timings ?? null,
     durationMs: result.durationMs,
@@ -269,6 +271,12 @@ async function deployTarget(adapter, controlRoot, publicClient, { target, node, 
 
 export function deploymentState(targets) {
   return targets.every((target) => target.health?.status === 'ready') ? 'HEALTHY' : 'DEPLOYED';
+}
+
+function normalizeReadiness(reported) {
+  return reported?.status === 'ready' && reported.attempts === 0 && Array.isArray(reported.checks) && reported.checks.length === 0
+    ? { ...reported, status: 'not-checked' }
+    : reported ?? null;
 }
 
 async function updateRemoteControl(adapter, controlRoot) {
@@ -359,7 +367,7 @@ export function observedTarget(sourceSha, target, node, observation) {
   if (!observation) return { target, node, state: 'UNKNOWN', currentSourceSha: null, previousSourceSha: null, health: null, diagnostic: { code: 'OBSERVATION_MISSING' } };
   const currentSha = observation.status?.currentArtifact?.sourceSha ?? null;
   const previousSha = observation.status?.previousArtifact?.sourceSha ?? null;
-  const health = observation.verification?.readiness ?? null;
+  const health = normalizeReadiness(observation.verification?.readiness);
   if (observation.error?.code === 'CURRENT_POINTER_MISSING' && !currentSha) return { target, node, state: 'EMPTY', currentSourceSha: null, previousSourceSha: previousSha, health, diagnostic: observation.error };
   if (observation.error) return { target, node, state: 'FAILED', currentSourceSha: currentSha, previousSourceSha: previousSha, health, diagnostic: observation.error };
   if (currentSha !== sourceSha) {
@@ -381,7 +389,7 @@ async function rollback(adapter, controlRoot, target, node) {
     executor: executor(),
     current: remote.result?.current ?? null,
     previous: remote.result?.previous ?? null,
-    serviceStatus: remote.result?.readiness ?? null,
+    serviceStatus: normalizeReadiness(remote.result?.readiness),
     durationMs: remote.result?.timings?.total ?? null,
   };
 }

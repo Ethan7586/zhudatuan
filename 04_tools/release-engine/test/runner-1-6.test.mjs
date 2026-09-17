@@ -257,10 +257,22 @@ test('exact release builds only a missing target artifact before deploying one n
   assert.match(exactSource, /createReleasePlan\(adapter, \{ from: `\$\{sourceSha\}\^`, to: sourceSha, target, prepare: true \}\)/);
   assert.match(exactSource, /await buildAndPublish\(adapter, controlRoot, plan, client, \{ sourceSha, target, node \}\)/);
   assert.ok(exactSource.indexOf('await buildAndPublish') < exactSource.indexOf('await deployTarget'));
+  assert.ok(exactSource.indexOf('await updateRemoteControl(adapter, controlRoot)') > exactSource.indexOf('await buildAndPublish'));
+  assert.ok(exactSource.indexOf('await updateRemoteControl(adapter, controlRoot)') < exactSource.indexOf('await deployTarget'));
   assert.match(exactSource, /cacheStatus: 'reused'|let cacheStatus = 'reused'/);
   assert.doesNotMatch(exactSource, /physicalPlacements\(adapter/);
   assert.match(exactSource, /coreDurationMs/);
   assert.doesNotMatch(exactSource, /productionSlo/);
+});
+
+test('normal release installs its own remote core once before the first target, while status stays read-only', async () => {
+  const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
+  const release = core.slice(core.indexOf('async function release('), core.indexOf('async function deployExact('));
+  assert.equal((release.match(/await updateRemoteControl\(adapter, controlRoot\)/g) ?? []).length, 1);
+  assert.ok(release.indexOf('await updateRemoteControl(adapter, controlRoot)') > release.indexOf('await buildAndPublish'));
+  assert.ok(release.indexOf('await updateRemoteControl(adapter, controlRoot)') < release.indexOf('for (const deploymentTarget'));
+  const status = core.slice(core.indexOf('async function status('), core.indexOf('async function rollback('));
+  assert.doesNotMatch(status, /updateRemoteControl/);
 });
 
 test('control update uses the shared core and changes no business pointer or service', async () => {
@@ -327,6 +339,9 @@ test('live observation distinguishes current, previous and unrelated source with
   assert.equal(observedTarget(sha, 'identity-api', 'hbbtzn-l1', observation(sha, 'b'.repeat(40))).state, 'HEALTHY');
   const unchecked = { ...observation(sha, 'b'.repeat(40)), verification: { readiness: { status: 'not-checked', checks: [] } } };
   assert.equal(observedTarget(sha, 'console', 'zhudatuan-l0', unchecked).state, 'CURRENT');
+  const oldAgent = { ...observation(sha, 'b'.repeat(40)), verification: { readiness: { status: 'ready', attempts: 0, checks: [] } } };
+  assert.equal(observedTarget(sha, 'console', 'zhudatuan-l0', oldAgent).state, 'CURRENT');
+  assert.equal(observedTarget(sha, 'console', 'zhudatuan-l0', oldAgent).health.status, 'not-checked');
   assert.equal(deploymentState([{ health: { status: 'ready' } }]), 'HEALTHY');
   assert.equal(deploymentState([{ health: { status: 'not-checked' } }]), 'DEPLOYED');
   assert.equal(deploymentState([{ health: { status: 'ready' } }, { health: { status: 'not-checked' } }]), 'DEPLOYED');
