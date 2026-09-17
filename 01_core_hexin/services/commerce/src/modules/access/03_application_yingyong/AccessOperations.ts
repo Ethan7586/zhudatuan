@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { checkScope, SCOPE_KINDS, type Scope } from '@shop/authz';
+import { checkScope, type Scope } from '@shop/authz';
 import type { ModuleContext } from '../../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../../foundation/application/AuditSink';
 import { ModuleOperations, requireAccess, rowResult, type OperationDatabase } from '../../../foundation/application/ModuleOperations';
@@ -12,6 +12,8 @@ import { accessOperatorReadActions } from './AccessReadOperations';
 import type { OwnerAction, OwnerActionProofPayload } from '../02_domain_yewu/AccessOwnership';
 import { OwnerActionProof } from './OwnerActionProof';
 import { administratorSegmentWriteActions } from './AdministratorSegmentOperations';
+import { canonicalScope, numericVersion, requireExpectedVersion } from './AccessOperationValues';
+import { demoteAdministrator, offboardAdministrator } from './OperatorLifecycleOperations';
 
 export function accessOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
@@ -184,45 +186,6 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
   });
 }
 
-async function offboardAdministrator(request: OperationRequest, database: OperationDatabase,
-  access: ReturnType<typeof requireAccess>): Promise<Readonly<{ status: number; body: Readonly<Record<string, unknown>> }>> {
-  const actorLevel = access.governance?.governanceLevel;
-  if (actorLevel !== 'owner' && actorLevel !== 'senior_administrator') {
-    throw new Error('OWNER_REQUIRED_FOR_ADMINISTRATOR_OFFBOARDING');
-  }
-  const membership = textField(bodyRecord(request), 'membership');
-  const expectedVersion = requireExpectedVersion(request);
-  const changed = (await database.query<{ access_version: string | number }>(
-    `select access.offboard_administrator($1,$2,$3,$4,$5) access_version`,
-    [access.membership.id, membership, access.scope.kind, access.scope.id, expectedVersion],
-  )).rows[0];
-  if (changed === undefined) throw new Error('VERSION_CONFLICT');
-  return { status: 200, body: Object.freeze({ action: 'offboard', changed: true, membership,
-    status: 'offboarded', access_version: numericVersion(changed.access_version) }) };
-}
-
-async function demoteAdministrator(request: OperationRequest, database: OperationDatabase,
-  access: ReturnType<typeof requireAccess>, role: string): Promise<Readonly<{ status: number; body: Readonly<Record<string, unknown>> }>> {
-  if (!role.startsWith('role-senior-administrator-v1:')) throw new Error('ROLE_ASSIGNMENT_NOT_AVAILABLE');
-  const body = bodyRecord(request);
-  const membership = textField(body, 'membership');
-  const kind = textField(body, 'kind');
-  const scope = textField(body, 'scope');
-  const source = textField(body, 'scopeSource');
-  if (source !== 'direct' && source !== 'inherited') throw new Error('VALIDATION_FAILED:scopeSource');
-  const changed = (await database.query<{ access_version: string | number; scope: unknown }>(
-    `select access.demote_administrator($1,$2,$3,$4,$5,$6) access_version,
-      access.scope_object($7) scope`,
-    [access.membership.id, membership, role, access.scope.kind, access.scope.id,
-      requireExpectedVersion(request), scope],
-  )).rows[0];
-  if (changed === undefined) throw new Error('VERSION_CONFLICT');
-  const targetScope = canonicalScope(changed.scope);
-  if (targetScope === null || targetScope.kind !== kind) throw new Error('VALIDATION_FAILED:scope');
-  return { status: 200, body: Object.freeze({ action: 'revoke', changed: true, role, membership,
-    scope: targetScope, scope_source: source, access_version: numericVersion(changed.access_version) }) };
-}
-
 async function manageRoleAssignment(request: OperationRequest, database: OperationDatabase, access: ReturnType<typeof requireAccess>,
   role: string, action: 'assign' | 'revoke'): Promise<Readonly<{ status: number; body: Readonly<Record<string, unknown>> }>> {
   const seniorRoleRequested = role.startsWith('role-senior-administrator-v1:');
@@ -389,12 +352,6 @@ async function raiseMembershipVersion(database: OperationDatabase, membership: s
   return numericVersion(version);
 }
 
-function numericVersion(value: string | number): number {
-  const version = Number(value);
-  if (!Number.isSafeInteger(version) || version < 0) throw new Error('INVALID_ACCESS_VERSION');
-  return version;
-}
-
 interface ManagementTargetRow {
   readonly target_membership_id: string | null;
   readonly target_client: string | null;
@@ -426,28 +383,6 @@ function governanceOrganization(scope: Scope): string {
   return scope.tenant ?? [...scope.path].reverse().find(({ kind }) => kind === 'tenant')?.id ?? scope.id;
 }
 
-function canonicalScope(value: unknown): Scope | null {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return null;
-  const candidate = value as Readonly<Record<string, unknown>>;
-  if (typeof candidate.kind !== 'string' || !(SCOPE_KINDS as readonly string[]).includes(candidate.kind)
-    || typeof candidate.id !== 'string' || candidate.id.length === 0
-    || (candidate.tenant !== undefined && typeof candidate.tenant !== 'string')
-    || !Array.isArray(candidate.path)) return null;
-  const path = candidate.path.map((item) => {
-    if (item === null || typeof item !== 'object' || Array.isArray(item)) return null;
-    const ancestor = item as Readonly<Record<string, unknown>>;
-    if (typeof ancestor.kind !== 'string' || !(SCOPE_KINDS as readonly string[]).includes(ancestor.kind)
-      || typeof ancestor.id !== 'string' || ancestor.id.length === 0) return null;
-    return { kind: ancestor.kind as Scope['kind'], id: ancestor.id };
-  });
-  if (path.some((ancestor) => ancestor === null)) return null;
-  return {
-    kind: candidate.kind as Scope['kind'], id: candidate.id,
-    ...(candidate.tenant === undefined ? {} : { tenant: candidate.tenant as string }),
-    path: path as Scope['path'],
-  };
-}
-
 function scopesAreRelated(left: Scope, right: Scope): boolean {
   return scopeContains(left, right) || scopeContains(right, left);
 }
@@ -468,11 +403,6 @@ function transferInput(request: OperationRequest): OwnershipTransferInput {
   const role = typeof body.formerOwnerRole === 'string' && body.formerOwnerRole.trim() ? body.formerOwnerRole.trim() : null;
   if ((mode === 'retain_admin') !== (role !== null)) throw new Error('OWNER_TRANSFER_ROLE_INVALID');
   return Object.freeze({ targetMembership: textField(body, 'targetMembership'), formerOwnerMode: mode, formerOwnerRole: role });
-}
-
-function requireExpectedVersion(request: OperationRequest): number {
-  if (request.input.expectedVersion === undefined) throw new Error('EXPECTED_VERSION_REQUIRED');
-  return request.input.expectedVersion;
 }
 
 function proofInput(action: OwnerAction, request: OperationRequest, snapshot: OwnershipProofSnapshot,
