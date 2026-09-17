@@ -237,6 +237,7 @@ const REPAIR_FILES = [
   '20260916150000_add_identity_display_code_mapping.sql',
   '20260916160000_repair_identity_display_runtime_acl.sql',
   '20260917100000_restore_storefront_member_order_read.sql',
+  '20260917110000_restore_storefront_custom_profile_acl.sql',
 ];
 
 const mode = process.argv[2];
