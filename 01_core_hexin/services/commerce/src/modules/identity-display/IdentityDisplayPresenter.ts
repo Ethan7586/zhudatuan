@@ -1,6 +1,7 @@
 import type { IdentityDisplayHint } from '@shop/contract';
 import type { OperationDatabase } from '../../foundation/application/ModuleOperations';
 import { allocateIdentityCodes, identityCodeCandidate, type IdentityCode, type IdentityCodeKind } from './IdentityCode';
+import { assignMemberIdentityCodes, memberIdentityRepositoryAvailable } from './MemberIdentityCodeRepository';
 
 interface IdentityDisplaySource {
   readonly membershipId: string;
@@ -32,7 +33,19 @@ export async function resolveIdentityDisplayMembership(
   kind: IdentityCodeKind,
   code: string,
 ): Promise<string | undefined> {
-  if (!/^(?:OP-[2-9A-HJKMNP-Z]{4}|MB-[2-9A-HJKMNP-Z]{6})$/i.test(code)) return undefined;
+  if (kind === 'member') {
+    if (!/^MB-[0-9A-HJKMNP-Z]{8}$/i.test(code)) return undefined;
+    try {
+      if (!await memberIdentityRepositoryAvailable(database)) return undefined;
+      const result = await database.query<{ readonly membership_id: string }>(`select membership_id
+        from identity_display.member_code_mapping where context_id=$1 and code=$2`,
+      [contextId, code.toUpperCase()]);
+      return result.rows[0]?.membership_id;
+    } catch {
+      return undefined;
+    }
+  }
+  if (!/^OP-[2-9A-HJKMNP-Z]{4}$/i.test(code)) return undefined;
   try {
     if (!await identityDisplayRepositoryAvailable(database)) return undefined;
     const result = await database.query<{ readonly membership_id: string }>(`select membership_id
@@ -50,6 +63,17 @@ async function assignDisplays(
   kind: IdentityCodeKind,
   sources: readonly IdentityDisplaySource[],
 ): Promise<ReadonlyMap<string, IdentityDisplayHint>> {
+  if (kind === 'member') {
+    if (!await memberIdentityRepositoryAvailable(database)) return new Map();
+    const codes = await assignMemberIdentityCodes(database, contextId, sources.map((source) => source.membershipId));
+    return new Map(sources.flatMap((source): [string, IdentityDisplayHint][] => {
+      const code = codes.get(source.membershipId);
+      if (code === undefined) return [];
+      const hint: IdentityDisplayHint = { kind: 'member', code, label: '会员身份',
+        ...(source.maskedMobile == null ? {} : { maskedMobile: source.maskedMobile }) };
+      return [[source.membershipId, hint]];
+    }));
+  }
   if (!await identityDisplayRepositoryAvailable(database)) return new Map();
   const membershipIds = [...new Set(sources.map(({ membershipId }) => membershipId))];
   const candidates = membershipIds.flatMap((membershipId) =>
@@ -77,9 +101,8 @@ async function assignDisplays(
   const sourceById = new Map(sources.map((source) => [source.membershipId, source]));
   return new Map([...assigned].map(([membershipId, code]) => {
     const mobile = sourceById.get(membershipId)?.maskedMobile;
-    const hint: IdentityDisplayHint = kind === 'operator'
-      ? { kind, code: code as `OP-${string}`, label: '管理身份', ...(mobile == null ? {} : { maskedMobile: mobile }) }
-      : { kind, code: code as `MB-${string}`, label: '会员身份', ...(mobile == null ? {} : { maskedMobile: mobile }) };
+    const hint: IdentityDisplayHint = { kind: 'operator', code, label: '管理身份',
+      ...(mobile == null ? {} : { maskedMobile: mobile }) };
     return [membershipId, hint];
   }));
 }

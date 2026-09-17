@@ -4,7 +4,6 @@ import { allocateIdentityCodes, identityCodeCandidate, type IdentityCode } from 
 describe('identity display codes', () => {
   it('keeps fixed vectors stable and uses the intended lengths', () => {
     expect(identityCodeCandidate('mall:hbbtzn', 'operator', 'membership:operator:ethan')).toBe('OP-3MFC');
-    expect(identityCodeCandidate('mall:hbbtzn', 'member', 'membership:storefront:ethan')).toBe('MB-63BHU8');
   });
 
   it('resolves a collision without changing the code shape', () => {

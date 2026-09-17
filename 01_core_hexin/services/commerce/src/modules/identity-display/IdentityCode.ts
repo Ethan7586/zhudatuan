@@ -1,17 +1,17 @@
 import { createHash } from 'node:crypto';
 
 export type IdentityCodeKind = 'operator' | 'member';
-export type IdentityCode = `OP-${string}` | `MB-${string}`;
+export type IdentityCode = `OP-${string}`;
 
 const ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
 
 export function identityCodeCandidate(
   contextId: string,
-  kind: IdentityCodeKind,
+  kind: 'operator',
   membershipId: string,
   attempt = 0,
 ): IdentityCode {
-  const length = kind === 'operator' ? 4 : 6;
+  const length = 4;
   const digest = createHash('sha256').update(`${contextId}\0${kind}\0${membershipId}\0${attempt}`).digest();
   let value = digest.readBigUInt64BE();
   let suffix = '';
@@ -19,7 +19,7 @@ export function identityCodeCandidate(
     suffix = ALPHABET[Number(value % BigInt(ALPHABET.length))]! + suffix;
     value /= BigInt(ALPHABET.length);
   }
-  return `${kind === 'operator' ? 'OP' : 'MB'}-${suffix}`;
+  return `OP-${suffix}`;
 }
 
 export function allocateIdentityCodes(

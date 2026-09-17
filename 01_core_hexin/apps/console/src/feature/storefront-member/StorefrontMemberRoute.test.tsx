@@ -66,7 +66,7 @@ describe('storefront member workspace', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: '商城会员' })).toBeTruthy();
     expect(within(table).getByText('测试消费者')).toBeTruthy();
-    expect(within(table).getByText('MB-4F9Q2A').closest('small')?.textContent).toContain('188****8866');
+    expect(within(table).getByText('MB-4F9Q2A7R').closest('small')?.textContent).toContain('188****8866');
     expect(within(table).getByText('消费者')).toBeTruthy();
     expect(screen.queryByText(/L6|membership:storefront:test/)).toBeNull();
     expect(within(table).getAllByText('已绑定')).toHaveLength(2);
@@ -326,7 +326,7 @@ const memberPage = {
     membership_id: 'membership:storefront:test', display_name: '测试消费者', mobile_masked: '188****8866',
     identity_level: 'L6', identity_kind: 'consumer', membership_status: 'active', mobile_bound: true,
     wechat_bound: true, joined_at: '2026-09-06T08:00:00.000Z',
-    identity_display: { kind: 'member', code: 'MB-4F9Q2A', label: '会员身份', maskedMobile: '188****8866' },
+    identity_display: { kind: 'member', code: 'MB-4F9Q2A7R', label: '会员身份', maskedMobile: '188****8866' },
   }],
   count: 1,
   nextCursor: 'cursor:next',

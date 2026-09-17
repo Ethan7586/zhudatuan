@@ -143,6 +143,13 @@ describe('storefront member directory boundary', () => {
           context_id text not null,kind text not null,membership_id text not null,code text not null,
           primary key(context_id,kind,membership_id),unique(context_id,kind,code)
         );
+        create table identity_display.member_store_segment(
+          context_id text primary key,storefront_node_id text not null unique,segment text not null unique
+        );
+        create table identity_display.member_code_mapping(
+          context_id text not null,membership_id text primary key,suffix text not null,code text not null unique,
+          unique(context_id,suffix)
+        );
         create table member.profile(
           id text primary key,principal_id text not null,display_name text not null,mobile_ciphertext text,
           mobile_token text,mobile_masked text not null
@@ -283,9 +290,9 @@ describe('storefront member directory boundary', () => {
         display_name: '测试消费者甲', mobile_masked: '188****8866', mobile_bound: true, wechat_bound: false,
       });
       expect(page.items.map(({ identity_display }) => identity_display?.code)).toEqual([
-        expect.stringMatching(/^MB-[2-9A-HJKMNP-Z]{6}$/),
-        expect.stringMatching(/^MB-[2-9A-HJKMNP-Z]{6}$/),
-        expect.stringMatching(/^MB-[2-9A-HJKMNP-Z]{6}$/),
+        expect.stringMatching(/^MB-[0-9A-HJKMNP-Z]{8}$/),
+        expect.stringMatching(/^MB-[0-9A-HJKMNP-Z]{8}$/),
+        expect.stringMatching(/^MB-[0-9A-HJKMNP-Z]{8}$/),
       ]);
       expect(new Set(page.items.map(({ identity_display }) => identity_display?.code)).size).toBe(3);
       expect(JSON.stringify(response.body)).not.toContain('18800008866');

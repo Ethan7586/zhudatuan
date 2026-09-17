@@ -11,7 +11,7 @@ export const OperatorIdentityDisplayHintSchema = z.strictObject({
 
 export const MemberIdentityDisplayHintSchema = z.strictObject({
   kind: z.literal('member'),
-  code: z.string().check(z.regex(/^MB-[2-9A-HJKMNP-Z]{6}$/)),
+  code: z.string().check(z.regex(/^MB-[0-9A-HJKMNP-Z]{8}$/)),
   label: z.literal('会员身份'),
   maskedMobile,
 });
