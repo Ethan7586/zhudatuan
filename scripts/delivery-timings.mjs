@@ -27,8 +27,42 @@ export function githubTimings(run) {
   };
 }
 
+export function releaseLogTimings(log, commandStartedMs, operation) {
+  const lines = log.split('\n');
+  const marker = 'RUNNER_1_6_RESULT=';
+  const resultIndex = lines.findLastIndex((line) => line.includes(marker));
+  const resultLine = resultIndex < 0 ? null : lines[resultIndex];
+  let result = null;
+  try {
+    if (resultLine) result = JSON.parse(resultLine.slice(resultLine.indexOf(marker) + marker.length));
+  } catch {}
+  const at = (line) => {
+    const match = line?.match(/\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z/);
+    return match ? Date.parse(match[0]) : NaN;
+  };
+  const sourceStart = lines.slice(0, resultIndex < 0 ? undefined : resultIndex).findLastIndex((line) => line.includes('start-action display=Load exact source'));
+  const sourceEnd = sourceStart < 0 ? -1 : lines.findIndex((line, index) => index > sourceStart && line.includes('start-action display=Mark shared release core started'));
+  const sourceCheckoutMs = sourceStart >= 0 && sourceEnd >= 0 ? at(lines[sourceEnd]) - at(lines[sourceStart]) : null;
+  const commandMs = Number(commandStartedMs);
+  const targetHealthMs = ['release', 'retry'].includes(operation)
+    && result?.state === 'HEALTHY'
+    && result.targets?.length > 0
+    && result.targets.every((target) => target.health?.status === 'ready')
+    ? at(resultLine) - commandMs : null;
+  return {
+    resultLine: resultLine ? resultLine.slice(resultLine.indexOf(marker)) : null,
+    sourceCheckoutMs: Number.isFinite(sourceCheckoutMs) && sourceCheckoutMs >= 0 ? sourceCheckoutMs : null,
+    targetHealthMs: Number.isFinite(targetHealthMs) && targetHealthMs >= 0 ? targetHealthMs : null,
+  };
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   let input = '';
   for await (const chunk of process.stdin) input += chunk;
-  process.stdout.write(`DELIVERY_PRE_CORE_TIMINGS=${JSON.stringify(githubTimings(JSON.parse(input)))}\n`);
+  if (process.argv[2] === 'log') {
+    const result = releaseLogTimings(input, process.argv[3], process.argv[4]);
+    if (result.resultLine) process.stdout.write(`${result.resultLine}\n`);
+    if (result.sourceCheckoutMs !== null) process.stdout.write(`DELIVERY_SOURCE_CHECKOUT_MS=${result.sourceCheckoutMs}\n`);
+    if (result.targetHealthMs !== null) process.stdout.write(`DELIVERY_END_TO_END_MS=${result.targetHealthMs}\n`);
+  } else process.stdout.write(`DELIVERY_PRE_CORE_TIMINGS=${JSON.stringify(githubTimings(JSON.parse(input)))}\n`);
 }

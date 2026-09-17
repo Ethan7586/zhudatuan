@@ -47,7 +47,6 @@ jobs:
         with:
           ref: ${{ github.sha }}
           fetch-depth: 1
-          filter: blob:none
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /04_tools/release-engine/select-runner-1-6.mjs
@@ -132,7 +131,6 @@ jobs:
           ref: ${{ github.sha }}
           path: .runner-1-6/status-control
           fetch-depth: 1
-          filter: blob:none
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /.github/actions/runner-1-6/
@@ -145,7 +143,6 @@ jobs:
           ref: ${{ github.sha }}
           path: .runner-1-6/control-release
           fetch-depth: 1
-          filter: blob:none
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /.github/actions/runner-1-6/
@@ -197,7 +194,6 @@ jobs:
           ref: ${{ github.sha }}
           path: .runner-1-6/status-control
           fetch-depth: 1
-          filter: blob:none
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /.github/actions/runner-1-6/
@@ -210,7 +206,6 @@ jobs:
           ref: ${{ github.sha }}
           path: .runner-1-6/control-release
           fetch-depth: 1
-          filter: blob:none
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /.github/actions/runner-1-6/

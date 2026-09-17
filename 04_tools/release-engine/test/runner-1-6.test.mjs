@@ -177,7 +177,7 @@ test('control-side command only dispatches and queries GitHub', async () => {
   assert.match(dispatcher, /-f execution_location="\$execution_location"/);
   assert.match(dispatcher, /dispatch_run "\$aliyun_run_id" github-hosted/);
   assert.match(dispatcher, /\^r16-\[0-9a-f\]\{40\}\$/);
-  assert.match(dispatcher, /DELIVERY_END_TO_END_MS=/);
+  assert.match(dispatcher, /DELIVERY_COMMAND_RETURN_MS=/);
   const readme = await readFile(join(root, '02_platform_pingtai/infrastructure/github-actions-runner/README.md'), 'utf8');
   assert.match(readme, /Direct dispatch from GitHub's Actions page bypasses/);
   assert.doesNotMatch(`${dispatcher}\n${controller}`, /npm ci|npm run|\bssh\b|\bscp\b|runner-1-6\.mjs/);
@@ -292,7 +292,7 @@ test('status observes configured physical nodes without source checkout or a rel
   assert.doesNotMatch(action, /inputs\.target == ''/);
   const workflow = await readFile(join(root, '.github/workflows/delivery-1-6.yml'), 'utf8');
   assert.match(workflow, /inputs\.operation == 'status'/);
-  assert.match(workflow, /filter: blob:none/);
+  assert.doesNotMatch(workflow, /filter: blob:none/);
   assert.match(workflow, /sparse-checkout:/);
   assert.match(workflow, /path: \.runner-1-6\/status-control/);
   assert.match(workflow, /path: \.runner-1-6\/control-release/);
