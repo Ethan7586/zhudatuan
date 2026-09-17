@@ -66,6 +66,22 @@ describe('MemberPort invitation constraints', () => {
     expect(values).toEqual(['principal:one', 'ciphertext:new', 'fingerprint:new', '+86****4716']);
   });
 
+  it('keeps profile creation and import SQL unchanged behind the port', async () => {
+    const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) => result([]));
+    const database = { query } as unknown as OperationDatabase;
+    const profile = { member: 'member:one', principal: 'principal:one', display: '张三', status: 'active' as const,
+      mobileCiphertext: 'ciphertext:mobile', mobileFingerprint: 'fingerprint:mobile', mobileMasked: '138****4716' };
+    const port = new MemberPort();
+
+    await port.create(database, profile);
+    await port.ensureImported(database, profile);
+
+    expect(query).toHaveBeenCalledWith(expect.stringContaining('insert into member.profile'),
+      ['member:one', 'principal:one', '张三', 'active', 'ciphertext:mobile', 'fingerprint:mobile', '138****4716']);
+    expect(query).toHaveBeenCalledWith('select member.ensure_imported_profile($1,$2,$3)',
+      ['member:one', 'principal:one', '张三']);
+  });
+
   it('resolves only invitations that are effective, active, unexpired and not exhausted', async () => {
     const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) => result([{ target_client: 'operator', terms_hash: 'f'.repeat(64) }]));
     const port = new MemberPort();
