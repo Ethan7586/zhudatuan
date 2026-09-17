@@ -46,10 +46,10 @@ test('rejects automatic runner switching after the core started', () => {
   assert.throws(() => validateDeploymentContract({ ...current, workflow }), /DEPLOY_WORKFLOW_FALLBACK_SCOPE_INVALID/);
 });
 
-test('rejects a shared action that does not export the core-started boundary', () => {
-  const action = structuredClone(current.action);
-  delete action.outputs.started;
-  assert.throws(() => validateDeploymentContract({ ...current, action }), /DEPLOY_ACTION_STARTED_OUTPUT_MISSING/);
+test('rejects a workflow that does not export the top-level core-started boundary', () => {
+  const workflow = structuredClone(current.workflow);
+  delete workflow.jobs.execute.outputs.core_started;
+  assert.throws(() => validateDeploymentContract({ ...current, workflow }), /DEPLOY_WORKFLOW_STARTED_OUTPUT_MISSING/);
 });
 
 test('rejects a manifest and remote pointer disagreement', () => {

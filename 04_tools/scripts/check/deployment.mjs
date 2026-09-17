@@ -80,13 +80,16 @@ function validateDeployWorkflow(adapter, workflow, action) {
   assert(execute?.['runs-on'] === '${{ fromJSON(needs.route.outputs.runs_on) }}', 'DEPLOY_WORKFLOW_DYNAMIC_RUNNER_MISSING');
   assert(fallback?.['runs-on'] === 'ubuntu-24.04', 'DEPLOY_WORKFLOW_HOSTED_FALLBACK_MISSING');
   assert(String(fallback?.if).includes("core_started != 'true'"), 'DEPLOY_WORKFLOW_FALLBACK_SCOPE_INVALID');
-  assert(action?.outputs?.started?.value === '${{ steps.started.outputs.value }}', 'DEPLOY_ACTION_STARTED_OUTPUT_MISSING');
-  const startedStep = action?.runs?.steps?.findIndex((step) => step.id === 'started');
-  const coreStep = action?.runs?.steps?.findIndex((step) => String(step.run ?? '').includes('scripts/runner-1-6.sh'));
-  assert(startedStep >= 0 && coreStep > startedStep, 'DEPLOY_ACTION_STARTED_BOUNDARY_INVALID');
+  assert(execute?.outputs?.core_started === '${{ steps.started.outputs.value }}', 'DEPLOY_WORKFLOW_STARTED_OUTPUT_MISSING');
+  const coreStep = action?.runs?.steps?.find((step) => String(step.run ?? '').includes('scripts/runner-1-6.sh'));
+  assert(coreStep?.if === "inputs.phase == 'run'", 'DEPLOY_ACTION_STARTED_BOUNDARY_INVALID');
   for (const job of [execute, fallback]) {
-    const releaseCore = job?.steps?.find((step) => step.uses === './.runner-1-6/control-release/.github/actions/runner-1-6');
-    const statusCore = job?.steps?.find((step) => step.uses === './.runner-1-6/status-control/.github/actions/runner-1-6');
+    const marker = job?.steps?.findIndex((step) => step.name === 'Mark shared release core started');
+    const prepare = job?.steps?.findIndex((step) => step.with?.phase === 'prepare');
+    const run = job?.steps?.findIndex((step) => step.with?.phase === 'run');
+    assert(prepare >= 0 && marker > prepare && run > marker, 'DEPLOY_WORKFLOW_STARTED_BOUNDARY_INVALID');
+    const releaseCore = job?.steps?.find((step) => step.with?.phase === 'run' && step.uses === './.runner-1-6/control-release/.github/actions/runner-1-6');
+    const statusCore = job?.steps?.find((step) => step.with?.phase === 'run' && step.uses === './.runner-1-6/status-control/.github/actions/runner-1-6');
     assert(releaseCore && statusCore, 'DEPLOY_WORKFLOW_SHARED_CORE_MISSING');
     assert(releaseCore.with.operation === '${{ inputs.operation }}' && statusCore.with.operation === 'status', 'DEPLOY_WORKFLOW_OPERATION_BINDING_INVALID');
   }

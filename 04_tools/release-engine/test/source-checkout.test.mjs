@@ -33,10 +33,10 @@ test('workflow and shared action use sparse checkout without an overriding filte
   assert.equal(checkout.with.filter, undefined);
   assert.ok(action.runs.steps.findIndex((step) => step.id === 'source_scope') < action.runs.steps.indexOf(checkout));
   const materialize = action.runs.steps.find((step) => step.name === 'Materialize full Source after reused sparse checkout');
-  assert.equal(materialize.if, "inputs.source-sha != '' && (inputs.operation == 'release' || inputs.operation == 'retry') && steps.source_scope.outputs.paths == ''");
+  assert.equal(materialize.if, "inputs.phase == 'prepare' && inputs.source-sha != '' && (inputs.operation == 'release' || inputs.operation == 'retry') && steps.source_scope.outputs.paths == ''");
   assert.match(materialize.run, /git -C "\$GITHUB_WORKSPACE\/\.runner-1-6\/source" sparse-checkout disable/);
   assert.ok(action.runs.steps.indexOf(checkout) < action.runs.steps.indexOf(materialize));
-  assert.ok(action.runs.steps.indexOf(materialize) < action.runs.steps.findIndex((step) => step.id === 'started'));
+  assert.ok(action.runs.steps.indexOf(materialize) < action.runs.steps.findIndex((step) => step.name === 'Run shared release core'));
 });
 
 test('full Source recovery materializes a file hidden by a reused sparse index', async () => {

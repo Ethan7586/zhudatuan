@@ -152,11 +152,16 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
   assert.match(workflowSource, /runs-on: \$\{\{ fromJSON\(needs\.route\.outputs\.runs_on\) \}\}/);
   for (const job of [workflow.jobs.execute, workflow.jobs['hosted-startup-fallback']]) {
     const cores = job.steps.filter((step) => String(step.uses ?? '').endsWith('/.github/actions/runner-1-6'));
-    assert.equal(cores.length, 2);
+    assert.equal(cores.length, 4);
+    assert.equal(cores.filter((step) => step.with.phase === 'prepare').length, 2);
+    assert.equal(cores.filter((step) => step.with.phase === 'run').length, 2);
     assert.deepEqual(new Set(cores.map((step) => step.uses)), new Set([
       './.runner-1-6/control-release/.github/actions/runner-1-6',
       './.runner-1-6/status-control/.github/actions/runner-1-6',
     ]));
+    const marker = job.steps.findIndex((step) => step.name === 'Mark shared release core started');
+    assert.ok(marker > job.steps.findIndex((step) => step.with?.phase === 'prepare'));
+    assert.ok(marker < job.steps.findIndex((step) => step.with?.phase === 'run'));
     assert.equal(job.env.ALIYUN_OSS_ENDPOINT, '${{ secrets.ALIYUN_OSS_ENDPOINT }}');
     assert.equal(job.env.ZDT_RELEASE_SSH_KEY, '${{ secrets.ZDT_RELEASE_SSH_KEY }}');
     assert.equal(job.env.CONTROL_SHA, '${{ github.sha }}');
@@ -164,8 +169,8 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
     assert.match(releaseCheckout.with['sparse-checkout'], /04_tools\/release-engine/);
   }
   assert.match(workflow.jobs['hosted-startup-fallback'].if, /core_started != 'true'/);
-  assert.equal(action.outputs.started.value, '${{ steps.started.outputs.value }}');
-  assert.ok(action.runs.steps.findIndex((step) => step.id === 'started') < action.runs.steps.findIndex((step) => String(step.run ?? '').includes('scripts/runner-1-6.sh')));
+  assert.equal(workflow.jobs.execute.outputs.core_started, '${{ steps.started.outputs.value }}');
+  assert.match(action.runs.steps.find((step) => String(step.run ?? '').includes('scripts/runner-1-6.sh')).if, /inputs.phase == 'run'/);
   assert.match(action.runs.steps.find((step) => String(step.run ?? '').includes('scripts/runner-1-6.sh')).run, /bash "\$CONTROL_ROOT\/scripts\/runner-1-6\.sh"/);
   assert.doesNotMatch(workflowSource, /final.?seal|closure|runner.?lease|writer.?lease|slot.?claim|readiness.?doctor|finalizer/i);
   assert.match(workflow.on.workflow_dispatch.inputs.release_target.description, /fast exact release\/retry/);
