@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import test from 'node:test';
-import { githubTimings } from '../../../scripts/delivery-timings.mjs';
+import { githubTimings, releaseLogTimings } from '../../../scripts/delivery-timings.mjs';
 
 const execFileAsync = promisify(execFile);
 const root = resolve(new URL('../../..', import.meta.url).pathname);
@@ -75,7 +75,7 @@ test('an unstarted Aliyun job is cancelled before one Hosted dispatch', async ()
   assert.match(calls, /execution_location=github-hosted/);
   assert.equal((calls.match(/workflow run /g) ?? []).length, 2);
   assert.match(output, /Hosted fallback run: 102/);
-  assert.match(output, /DELIVERY_END_TO_END_MS=\d+/);
+  assert.match(output, /DELIVERY_COMMAND_RETURN_MS=\d+/);
   assert.match(output, /DELIVERY_PRE_CORE_TIMINGS=/);
 });
 
@@ -104,4 +104,17 @@ test('GitHub timeline separates queue, routing, and checkout without counting fa
   assert.equal(result.queueMs, 5_000);
   assert.equal(result.routingMs, 3_000);
   assert.equal(result.checkoutMs, 3_000);
+});
+
+test('log timing reports real target health separately from workflow completion', () => {
+  const log = [
+    'Execute on aliyun\tRun shared release core\t2026-09-16T23:17:27.917Z ##[start-action display=Load exact source;id=release.checkout]',
+    'Execute on aliyun\tRun shared release core\t2026-09-16T23:17:37.842Z ##[start-action display=Mark shared release core started;id=release.started]',
+    'Execute on aliyun\tRun shared release core\t2026-09-16T23:18:42.854Z RUNNER_1_6_RESULT={"state":"HEALTHY","targets":[{"health":{"status":"ready"}}]}',
+  ].join('\n');
+  const result = releaseLogTimings(log, Date.parse('2026-09-16T23:16:47Z'), 'release');
+  assert.equal(result.sourceCheckoutMs, 9_925);
+  assert.equal(result.targetHealthMs, 115_854);
+  assert.match(result.resultLine, /^RUNNER_1_6_RESULT=/);
+  assert.equal(releaseLogTimings(log, Date.parse('2026-09-16T23:16:47Z'), 'control-update').targetHealthMs, null);
 });

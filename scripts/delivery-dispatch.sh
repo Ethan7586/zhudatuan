@@ -102,9 +102,11 @@ fi
 
 watch_status=0
 gh run watch "$run_id" --exit-status || watch_status=$?
-gh run view "$run_id" --log | sed -n '/RUNNER_1_6_RESULT=/p' | tail -1 || true
+run_log="$(gh run view "$run_id" --log 2>/dev/null || true)"
+printf '%s\n' "$run_log" | node scripts/delivery-timings.mjs log "${ZDT_DELIVERY_STARTED_MS:-}" "$operation" \
+  || printf '%s\n' "$run_log" | sed -n '/RUNNER_1_6_RESULT=/p' | tail -1
 gh run view "$run_id" --json createdAt,jobs | node scripts/delivery-timings.mjs || echo 'DELIVERY_PRE_CORE_TIMINGS=unavailable'
 finished_ms="$(($(date +%s) * 1000))"
 end_to_end_ms="$((finished_ms - ${ZDT_DELIVERY_STARTED_MS:-finished_ms}))"
-printf 'DELIVERY_END_TO_END_MS=%s\n' "$end_to_end_ms"
+printf 'DELIVERY_COMMAND_RETURN_MS=%s\n' "$end_to_end_ms"
 exit "$watch_status"
