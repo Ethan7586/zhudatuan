@@ -940,13 +940,13 @@ describe('canonical member registration security boundary', () => {
     expect(grant?.values).toContain('tenant-zhudatuan');
   });
 
-  it('reactivates an offboarded operator after a new administrator invitation without changing storefront membership', async () => {
+  it('creates a fresh OP identity after offboarding without reviving its old code or changing MB', async () => {
     const harness = registrationHarness({
       challengeAccepted: true, subjectExists: true, inviteAccepted: true, operatorInvite: true, seniorInvite: true,
       storefrontOrganizationId: 'mall:d1708f04df2dd8a61736852c4900fb43', boundMobileRealm: 'realm:l1',
-      credentialSecret: 'existing-password-hash', existingOperatorStatus: 'offboarded',
+      credentialSecret: 'existing-password-hash', existingOperatorStatus: 'left',
     });
-    const base = registrationRequest('registration:reactivate-operator');
+    const base = registrationRequest('registration:reinvite-operator');
     const body = { ...(base.input.body as Readonly<Record<string, unknown>>) } as Record<string, unknown>;
     delete body.password;
 
@@ -955,10 +955,15 @@ describe('canonical member registration security boundary', () => {
       input: { ...base.input, headers: { ...base.input.headers, host: 'api.hbbtzn.com' }, body },
     });
 
-    expect(response).toMatchObject({ status: 201, body: { id: 'membership:existing-operator', client: 'operator',
+    expect(response).toMatchObject({ status: 201, body: { client: 'operator',
       status: 'active', governanceLevel: 'senior_administrator' } });
-    expect(harness.queries.some(({ text }) => text.startsWith("update access.membership set status='active'"))).toBe(true);
-    expect(harness.queries.some(({ text }) => text.includes('insert into access.membership(') && text.includes("'operator'"))).toBe(false);
+    const renewedId = String((response.body as Readonly<Record<string, unknown>>).id);
+    expect(renewedId).toMatch(/^membership:/);
+    expect(renewedId).not.toBe('membership:existing-operator');
+    expect(harness.queries.find(({ text }) => text.includes('accepted_membership_id=case'))?.values[2]).toBe(renewedId);
+    expect(harness.queries.some(({ text }) => text.includes("client='operator'") && text.includes("status<>'left'"))).toBe(true);
+    expect(harness.queries.some(({ text }) => text.includes('insert into access.membership(') && text.includes("'operator'"))).toBe(true);
+    expect(harness.queries.some(({ text }) => text.startsWith("update access.membership set status='active'"))).toBe(false);
     expect(harness.queries.some(({ text }) => text.includes("client='storefront'") && text.startsWith('update'))).toBe(false);
   });
 });
@@ -1445,7 +1450,8 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
         }] : []);
       }
       if (text.includes("select * from access.membership") && text.includes("client='operator'")) {
-        return result(input.existingOperatorStatus === undefined ? [] : [{
+        return result(input.existingOperatorStatus === undefined
+          || (input.existingOperatorStatus === 'left' && text.includes("status<>'left'")) ? [] : [{
           id: 'membership:existing-operator', member_id: 'member:existing-phone',
           organization_id: 'mall:d1708f04df2dd8a61736852c4900fb43', client: 'operator',
           status: input.existingOperatorStatus, access_version: 3, joined_at: '2026-09-03T00:00:00.000Z', left_at: null,

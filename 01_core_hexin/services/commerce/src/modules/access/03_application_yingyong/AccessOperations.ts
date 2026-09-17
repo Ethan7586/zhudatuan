@@ -191,55 +191,10 @@ async function offboardAdministrator(request: OperationRequest, database: Operat
   }
   const membership = textField(bodyRecord(request), 'membership');
   const expectedVersion = requireExpectedVersion(request);
-  const target = (await database.query<ManagementTargetRow & {
-    id: string;
-    access_version: string | number;
-    target_is_owner: boolean;
-    governance_level: 'owner' | 'senior_administrator' | 'administrator' | 'member';
-  }>(`select target.id,target.access_version,access.scope_object(target.organization_id) target_membership_scope,
-      target.id target_membership_id,target.client target_client,target.status target_status,
-      target.realm_id target_realm_id,actor.realm_id actor_realm_id,
-      exists(select 1 from identity.realmtarget realm_target where realm_target.realm_id=target.realm_id
-        and realm_target.surface='admin' and realm_target.membership_client='operator') target_realm_binding,
-      exists(select 1 from identity.realmtarget realm_target where realm_target.realm_id=target.realm_id
-        and realm_target.surface='admin' and realm_target.membership_client='operator'
-        and realm_target.membership_organization_id=target.organization_id) target_organization_binding,
-      exists(select 1 from access.platformowner owner where owner.singleton=true and owner.state='active'
-        and owner.membership_id=target.id) target_is_owner,target_governance.governance_level
-    from access.membership target
-    join access.membership actor on actor.id=$4 and actor.status='active' and actor.client='operator'
-    join member.profile profile on profile.id=target.member_id
-    cross join lateral access.resolve_authoritative_governance(
-      target.id,profile.principal_id,$2,$3) target_governance
-    where target.id=$1 and target.client='operator' and target.status='active'
-    for update of target`, [membership, access.scope.kind, access.scope.id, access.membership.id])).rows[0];
-  if (target === undefined) throw new Error('ADMINISTRATOR_NOT_ACTIVE');
-  requireManagementTarget(target, access.scope);
-  if (target.target_is_owner) throw new Error('OWNER_ROLE_LEVEL_IMMUTABLE');
-  if (actorLevel === 'senior_administrator' && target.governance_level !== 'administrator') {
-    throw new Error('OWNER_REQUIRED_FOR_ADMINISTRATOR_OFFBOARDING');
-  }
-  const currentVersion = numericVersion(target.access_version);
-  if (currentVersion !== expectedVersion) throw new Error('VERSION_CONFLICT');
-  const changedAt = new Date();
-  await database.query(`update access.membershiprole set expires_at=$2
-    where membership_id=$1 and effective_at<=$2 and (expires_at is null or expires_at>$2)`, [membership, changedAt]);
-  await database.query(`update access.scopegrant set expires_at=$2
-    where membership_id=$1 and effective_at<=$2 and (expires_at is null or expires_at>$2)`, [membership, changedAt]);
-  await database.query(`update access.membershipoverride set revoked_at=$2
-    where membership_id=$1 and revoked_at is null and effective_at<=$2
-      and (expires_at is null or expires_at>$2)`, [membership, changedAt]);
-  await database.query(`update access.administratorsegmentscope scope set status='revoked',revoked_at=$2
-    from access.administratoridentity identity where identity.membership_id=$1
-      and scope.administrator_identity_id=identity.id and scope.status='active'`, [membership, changedAt]);
-  await database.query(`update access.administratoridentity set status='revoked',revoked_at=$2,version=version+1
-    where membership_id=$1 and status='active'`, [membership, changedAt]);
-  await database.query(`update identity.session set revoked_at=$2,revoked_reason='administrator_offboarded'
-    where membership_id=$1 and revoked_at is null`, [membership, changedAt]);
-  const changed = (await database.query<{ access_version: string | number }>(`update access.membership
-    set status='offboarded',left_at=$2,access_version=access_version+1
-    where id=$1 and client='operator' and status='active' and access_version=$3
-    returning access_version`, [membership, changedAt, currentVersion])).rows[0];
+  const changed = (await database.query<{ access_version: string | number }>(
+    `select access.offboard_administrator($1,$2,$3,$4,$5) access_version`,
+    [access.membership.id, membership, access.scope.kind, access.scope.id, expectedVersion],
+  )).rows[0];
   if (changed === undefined) throw new Error('VERSION_CONFLICT');
   return { status: 200, body: Object.freeze({ action: 'offboard', changed: true, membership,
     status: 'offboarded', access_version: numericVersion(changed.access_version) }) };
