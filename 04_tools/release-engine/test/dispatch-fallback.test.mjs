@@ -106,6 +106,31 @@ test('GitHub timeline separates queue, routing, and checkout without counting fa
   assert.equal(result.checkoutMs, 3_000);
 });
 
+test('GitHub timeline ignores a skipped Hosted fallback job', () => {
+  const result = githubTimings({
+    createdAt: '2026-09-16T00:00:00Z',
+    jobs: [
+      { name: 'Choose execution location', startedAt: '2026-09-16T00:00:02Z', completedAt: '2026-09-16T00:00:06Z', steps: [] },
+      { name: 'Execute on aliyun', startedAt: '2026-09-16T00:00:09Z', steps: [] },
+      { name: 'Retry pre-core startup on GitHub Hosted', startedAt: '2026-09-16T00:00:12Z', conclusion: 'skipped', steps: [] },
+    ],
+  });
+  assert.equal(result.queueMs, 5_000);
+});
+
+test('GitHub timeline uses the Hosted job when same-run startup fallback executes', () => {
+  const result = githubTimings({
+    createdAt: '2026-09-16T00:00:00Z',
+    jobs: [
+      { name: 'Choose execution location', startedAt: '2026-09-16T00:00:02Z', completedAt: '2026-09-16T00:00:06Z', steps: [] },
+      { name: 'Execute on aliyun', startedAt: '2026-09-16T00:00:09Z', steps: [{ name: 'Run actions/checkout@v6', startedAt: '2026-09-16T00:00:09Z', completedAt: '2026-09-16T00:00:11Z' }] },
+      { name: 'Retry pre-core startup on GitHub Hosted', startedAt: '2026-09-16T00:00:12Z', steps: [{ name: 'Run actions/checkout@v6', startedAt: '2026-09-16T00:00:12Z', completedAt: '2026-09-16T00:00:15Z' }] },
+    ],
+  });
+  assert.equal(result.queueMs, 8_000);
+  assert.equal(result.checkoutMs, 3_000);
+});
+
 test('log timing reports real target health separately from workflow completion', () => {
   const log = [
     'Execute on aliyun\tRun shared release core\t2026-09-16T23:17:27.917Z ##[start-action display=Load exact source;id=release.checkout]',
@@ -117,4 +142,5 @@ test('log timing reports real target health separately from workflow completion'
   assert.equal(result.targetHealthMs, 115_854);
   assert.match(result.resultLine, /^RUNNER_1_6_RESULT=/);
   assert.equal(releaseLogTimings(log, Date.parse('2026-09-16T23:16:47Z'), 'control-update').targetHealthMs, null);
+  assert.equal(releaseLogTimings(log, Date.parse('2026-09-16T23:16:47Z'), 'status').sourceCheckoutMs, null);
 });

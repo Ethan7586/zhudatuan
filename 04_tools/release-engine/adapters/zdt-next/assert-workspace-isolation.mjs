@@ -13,7 +13,13 @@ if (!(resolvedDependencyRoot === projectRoot || resolvedDependencyRoot.startsWit
 
 for (const scope of ['@shop', '@smart-wing']) {
   const scopeRoot = join(dependencyRoot, scope);
-  for (const name of await readdir(scopeRoot)) {
+  let names;
+  try { names = await readdir(scopeRoot); }
+  catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    continue;
+  }
+  for (const name of names) {
     const path = join(scopeRoot, name);
     const stats = await lstat(path);
     if (!stats.isSymbolicLink()) continue;

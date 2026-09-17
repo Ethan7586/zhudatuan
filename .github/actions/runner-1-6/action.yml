@@ -62,4 +62,4 @@ runs:
         PHYSICAL_NODE: ${{ inputs.physical-node }}
         RUNNER_CLASS: ${{ inputs.runner-class }}
       run: |
-        bash scripts/runner-1-6.sh "${{ inputs.operation }}"
+        bash "$CONTROL_ROOT/scripts/runner-1-6.sh" "${{ inputs.operation }}"
