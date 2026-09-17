@@ -149,7 +149,8 @@ describe('access scope management boundary', () => {
   });
 
   it('lets the authoritative Owner principal promote an active operator through the ancestor senior role without touching storefront membership', async () => {
-    const harness = operationHarness({ scope: tenantA, targetMembershipScope: mallA, seniorRole: true });
+    const harness = operationHarness({ scope: tenantA, targetMembershipScope: mallA, seniorRole: true,
+      targetRealm: 'realm:l1', actorRealm: 'realm:l1' });
 
     const response = await accessOperations(context(harness.pool)).invoke(seniorAssignmentRequest('assign', projectedOwnerAccess(mallA)));
 
@@ -157,13 +158,30 @@ describe('access scope management boundary', () => {
       role: 'role-senior-administrator-v1:tenant-a', membership: 'membership:target',
       scope_source: 'direct', access_version: 3 } });
     expect(harness.queries.some((query) => query.includes("roleboundary.ancestor_id=role.scope_id"))).toBe(true);
-    expect(harness.calls.find(({ text }) => text.includes('insert into access.membershiprole'))?.values.slice(0, 7)).toEqual([
-      'membership:target', 'role-senior-administrator-v1:tenant-a', 'membership:manager', 'tenant', tenantA.id,
-      'organization-platform-root/tenant-a', 'direct',
+    expect(harness.calls.find(({ text }) => text.includes('access.promote_administrator('))?.values).toEqual([
+      'membership:manager', 'membership:target', 'role-senior-administrator-v1:tenant-a',
+      'mall', mallA.id, tenantA.id, 'direct', 2,
     ]);
-    expect(harness.calls.find(({ text }) => text.includes('set operator_display_name=case'))?.values)
-      .toEqual(['membership:target', '高级管理员']);
+    expect(harness.queries.some((query) => query.includes('insert into access.membershiprole'))).toBe(false);
     expect(harness.queries.some((query) => /delete from access\.membership\b/.test(query))).toBe(false);
+  });
+
+  it('promotes a senior operator without direct membership updates unavailable to the L1 identity runtime', async () => {
+    const harness = operationHarness({ scope: tenantA, targetMembershipScope: mallA, seniorRole: true,
+      targetRealm: 'realm:l1', actorRealm: 'realm:l1' });
+
+    await accessOperations(context(harness.pool)).invoke(seniorAssignmentRequest('assign', projectedOwnerAccess(mallA)));
+
+    expect(harness.queries.some((query) => /^update access\.membership\b/.test(query))).toBe(false);
+  });
+
+  it('leaves non-L1 senior assignment on its existing write path', async () => {
+    const harness = operationHarness({ scope: tenantA, targetMembershipScope: mallA, seniorRole: true });
+
+    await accessOperations(context(harness.pool)).invoke(seniorAssignmentRequest('assign', projectedOwnerAccess(mallA)));
+
+    expect(harness.queries.some((query) => query.includes('access.promote_administrator('))).toBe(false);
+    expect(harness.queries.some((query) => query.includes('insert into access.membershiprole'))).toBe(true);
   });
 
   it('lets the authoritative Owner principal demote a senior administrator and retires only its unused senior Scope', async () => {
@@ -578,6 +596,7 @@ function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipS
         if (options.targetClient === 'storefront' || options.targetStatus === 'offboarded') throw new Error('ADMINISTRATOR_NOT_ACTIVE');
         return result([{ access_version: 3, scope: options.scope ?? tenantA }]);
       }
+      if (text.includes('access.promote_administrator(')) return result([{ changed: true, access_version: 3 }]);
       if (text.includes('permission.code=any($2::text[])') && text.includes('from access.membershiprole assignment')) {
         return result([{ target_membership_id: 'membership:target', target_client: options.targetClient ?? 'operator',
           target_status: options.targetStatus ?? 'active', target_realm_id: options.targetRealm ?? 'realm:tenant-a',

@@ -243,6 +243,7 @@ const REPAIR_FILES = [
   '20260917160000_demote_operator_identity.sql',
   '20260917170000_replace_operator_display_codes.sql',
   '20260917180000_bind_l1_operator_to_home_mall.sql',
+  '20260917190000_promote_operator_identity.sql',
 ];
 
 const mode = process.argv[2];

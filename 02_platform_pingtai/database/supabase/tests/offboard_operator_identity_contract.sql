@@ -3,23 +3,35 @@ begin;
 
 insert into identity.principal(id,status,created_at,updated_at)
 values('principal:offboard-fixture','active',clock_timestamp(),clock_timestamp());
+insert into identity.principal(id,status,created_at,updated_at)
+values('principal:promote-fixture','active',clock_timestamp(),clock_timestamp());
 insert into member.profile(id,principal_id,display_name,status,created_at,updated_at)
 values('member:offboard-fixture','principal:offboard-fixture','Fixture OP','active',clock_timestamp(),clock_timestamp());
+insert into member.profile(id,principal_id,display_name,status,created_at,updated_at)
+values('member:promote-fixture','principal:promote-fixture','管理员 · 9000','active',clock_timestamp(),clock_timestamp());
 insert into identity.account(id,realm_id,legacy_principal_id,status,created_at,updated_at) values
   ('account:offboard-owner','realm:l1','principal:zhudatuan:owner:ethan:v1','active',clock_timestamp(),clock_timestamp()),
-  ('account:offboard-target','realm:l1','principal:offboard-fixture','active',clock_timestamp(),clock_timestamp());
+  ('account:offboard-target','realm:l1','principal:offboard-fixture','active',clock_timestamp(),clock_timestamp()),
+  ('account:promote-target','realm:l1','principal:promote-fixture','active',clock_timestamp(),clock_timestamp());
 insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at,realm_id,account_id) values
   ('membership:offboard-owner','member:zhudatuan:owner:ethan:v1','mall:d1708f04df2dd8a61736852c4900fb43',
     'operator','active',2,clock_timestamp(),'realm:l1','account:offboard-owner'),
   ('membership:offboard-target','member:offboard-fixture','mall:d1708f04df2dd8a61736852c4900fb43',
     'operator','active',2,clock_timestamp(),'realm:l1','account:offboard-target'),
   ('membership:offboard-member','member:offboard-fixture','mall:d1708f04df2dd8a61736852c4900fb43',
-    'storefront','active',1,clock_timestamp(),'realm:l1','account:offboard-target');
+    'storefront','active',1,clock_timestamp(),'realm:l1','account:offboard-target'),
+  ('membership:promote-target','member:promote-fixture','mall:d1708f04df2dd8a61736852c4900fb43',
+    'operator','active',2,clock_timestamp(),'realm:l1','account:promote-target'),
+  ('membership:other-shop-target','member:promote-fixture','mall-zhudatuan',
+    'operator','active',2,clock_timestamp(),'realm:l1','account:promote-target');
 insert into access.membershiprole(membership_id,role_id,effective_at)
 values('membership:offboard-target','role-senior-administrator-v1:tenant-zhudatuan',clock_timestamp()-interval '1 day');
 insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version)
 values('scope:offboard-senior','membership:offboard-target','tenant','tenant-zhudatuan',
   'organization-platform-root/tenant-zhudatuan','allow',clock_timestamp()-interval '1 day',2);
+insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version)
+values('scope:promote-home','membership:promote-target','mall','mall:d1708f04df2dd8a61736852c4900fb43',
+  'mall:d1708f04df2dd8a61736852c4900fb43','allow',clock_timestamp()-interval '1 day',2);
 update access.scopegrant set scope_kind='mall',scope_id='mall:d1708f04df2dd8a61736852c4900fb43',
   scope_path='mall:d1708f04df2dd8a61736852c4900fb43' where id='scope:offboard-senior';
 do $scope$
@@ -77,7 +89,70 @@ insert into identity.session(
 
 set role zhudatuanidentityapi;
 do $test$
+declare promoted record; demoted_version bigint;
 begin
+  select * into promoted from access.promote_administrator('membership:offboard-owner','membership:promote-target',
+    'role-senior-administrator-v1:tenant-zhudatuan',
+    'mall','mall:d1708f04df2dd8a61736852c4900fb43','tenant-zhudatuan','direct',2);
+  if not promoted.changed or promoted.access_version<>3
+    or not exists(select 1 from access.membershiprole assignment
+      where assignment.membership_id='membership:promote-target'
+        and assignment.role_id='role-senior-administrator-v1:tenant-zhudatuan'
+        and assignment.assigned_scope_id='tenant-zhudatuan' and assignment.expires_at is null)
+    or (select operator_display_name from access.membership where id='membership:promote-target')<>'高级管理员 · 9000' then
+    raise exception 'OP_PROMOTION_EFFECTS_INVALID: changed=%, version=%, role=%, name=%',
+      promoted.changed,promoted.access_version,
+      (select count(*) from access.membershiprole assignment
+        where assignment.membership_id='membership:promote-target'
+          and assignment.role_id='role-senior-administrator-v1:tenant-zhudatuan'
+          and assignment.assigned_scope_id='tenant-zhudatuan' and assignment.expires_at is null),
+      (select operator_display_name from access.membership where id='membership:promote-target');
+  end if;
+  begin
+    perform access.promote_administrator('membership:offboard-owner','membership-platform-owner-ethan-v1',
+      'role-senior-administrator-v1:tenant-zhudatuan',
+      'mall','mall:d1708f04df2dd8a61736852c4900fb43','tenant-zhudatuan','direct',14);
+    raise exception 'CROSS_REALM_PROMOTION_WAS_ACCEPTED';
+  exception when others then
+    if sqlerrm<>'MANAGEMENT_PERMISSION_REALM_MISMATCH' then raise; end if;
+  end;
+  begin
+    perform access.promote_administrator('membership:offboard-owner','membership:other-shop-target',
+      'role-senior-administrator-v1:tenant-zhudatuan',
+      'mall','mall:d1708f04df2dd8a61736852c4900fb43','tenant-zhudatuan','direct',2);
+    raise exception 'CROSS_SHOP_PROMOTION_WAS_ACCEPTED';
+  exception when others then
+    if sqlerrm<>'MANAGEMENT_PERMISSION_REALM_MISMATCH' then raise; end if;
+  end;
+  perform set_config('app.operator_promotion_membership_id','membership:promote-target',true);
+  begin
+    insert into access.membershiprole(membership_id,role_id,effective_at,delegated_by)
+    values('membership:promote-target','role-senior-administrator-v1:tenant-zhudatuan',
+      clock_timestamp(),'membership:offboard-owner');
+    raise exception 'DIRECT_PROMOTION_ROLE_WAS_ACCEPTED';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version)
+    values('scope:direct-promotion','membership:promote-target','tenant','tenant-zhudatuan',
+      'organization-platform-root/tenant-zhudatuan','allow',clock_timestamp(),4);
+    raise exception 'DIRECT_PROMOTION_SCOPE_WAS_ACCEPTED';
+  exception when insufficient_privilege then null;
+  end;
+  perform set_config('app.operator_promotion_membership_id','',true);
+  demoted_version:=access.demote_administrator('membership:offboard-owner','membership:promote-target',
+    'role-senior-administrator-v1:tenant-zhudatuan',
+    'mall','mall:d1708f04df2dd8a61736852c4900fb43',3);
+  if demoted_version<>4 or (select expires_at from access.membershiprole
+      where membership_id='membership:promote-target'
+        and role_id='role-senior-administrator-v1:tenant-zhudatuan') is null
+    or (select expires_at from access.scopegrant where id='scope:promote-home') is not null then
+    raise exception 'OP_PROMOTION_DEMOTION_ROUNDTRIP_INVALID: version=%, role_expires=%, home_expires=%',
+      demoted_version,
+      (select expires_at from access.membershiprole where membership_id='membership:promote-target'
+        and role_id='role-senior-administrator-v1:tenant-zhudatuan'),
+      (select expires_at from access.scopegrant where id='scope:promote-home');
+  end if;
   begin
     perform access.demote_administrator('membership:offboard-owner','membership:offboard-target',
       'role-senior-administrator-v1:tenant-zhudatuan',

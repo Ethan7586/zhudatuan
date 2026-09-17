@@ -13,7 +13,7 @@ import type { OwnerAction, OwnerActionProofPayload } from '../02_domain_yewu/Acc
 import { OwnerActionProof } from './OwnerActionProof';
 import { administratorSegmentWriteActions } from './AdministratorSegmentOperations';
 import { canonicalScope, numericVersion, requireExpectedVersion } from './AccessOperationValues';
-import { demoteAdministrator, offboardAdministrator } from './OperatorLifecycleOperations';
+import { demoteAdministrator, offboardAdministrator, promoteAdministrator } from './OperatorLifecycleOperations';
 
 export function accessOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
@@ -253,6 +253,10 @@ async function manageRoleAssignment(request: OperationRequest, database: Operati
     || !scopesAreRelated(targetScope, targetMembershipScope)) throw new Error('CANNOT_GRANT_UNOWNED_SCOPE');
   const currentVersion = numericVersion(target.target_access_version);
   if (currentVersion !== expectedVersion) throw new Error('VERSION_CONFLICT');
+
+  if (action === 'assign' && target.senior_role && target.target_realm_id === 'realm:l1') {
+    return promoteAdministrator(database, access, membership, role, targetScope, source, currentVersion);
+  }
 
   if (action === 'revoke') {
     const removed = await database.query<{ scope_source: string | null }>(`update access.membershiprole assignment

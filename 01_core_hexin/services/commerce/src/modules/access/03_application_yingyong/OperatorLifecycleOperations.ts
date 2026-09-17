@@ -1,3 +1,4 @@
+import type { Scope } from '@shop/authz';
 import { requireAccess, type OperationDatabase } from '../../../foundation/application/ModuleOperations';
 import type { OperationRequest } from '../../../foundation/application/OperationHandler';
 import { bodyRecord, textField } from '../../../foundation/interface/Validation';
@@ -40,4 +41,16 @@ export async function demoteAdministrator(request: OperationRequest, database: O
   if (targetScope === null || targetScope.kind !== kind) throw new Error('VALIDATION_FAILED:scope');
   return { status: 200, body: Object.freeze({ action: 'revoke', changed: true, role, membership,
     scope: targetScope, scope_source: source, access_version: numericVersion(changed.access_version) }) };
+}
+
+export async function promoteAdministrator(database: OperationDatabase, access: ReturnType<typeof requireAccess>,
+  membership: string, role: string, scope: Scope, source: 'direct' | 'inherited', expectedVersion: number):
+  Promise<Readonly<{ status: number; body: Readonly<Record<string, unknown>> }>> {
+  const result = (await database.query<{ changed: boolean; access_version: string | number }>(
+    `select promoted.changed,promoted.access_version from access.promote_administrator($1,$2,$3,$4,$5,$6,$7,$8) promoted`,
+    [access.membership.id, membership, role, access.scope.kind, access.scope.id, scope.id, source, expectedVersion],
+  )).rows[0];
+  if (result === undefined) throw new Error('VERSION_CONFLICT');
+  return { status: 200, body: Object.freeze({ action: 'assign', changed: result.changed, role, membership,
+    scope, scope_source: source, access_version: numericVersion(result.access_version) }) };
 }
