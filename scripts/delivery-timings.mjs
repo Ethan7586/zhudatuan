@@ -4,8 +4,8 @@ import { pathToFileURL } from 'node:url';
 export function githubTimings(run) {
   const jobs = run.jobs ?? [];
   const route = jobs.find((job) => job.name === 'Choose execution location');
-  const execute = jobs.find((job) => job.name?.startsWith('Execute on '))
-    ?? jobs.find((job) => job.name === 'Retry pre-core startup on GitHub Hosted');
+  const execute = jobs.find((job) => job.name === 'Retry pre-core startup on GitHub Hosted' && job.startedAt && job.conclusion !== 'skipped')
+    ?? jobs.find((job) => job.name?.startsWith('Execute on '));
   const span = (start, end) => {
     const a = Date.parse(start ?? '');
     const b = Date.parse(end ?? '');
@@ -13,7 +13,7 @@ export function githubTimings(run) {
   };
   const queueBeforeRouteMs = span(run.createdAt, route?.startedAt);
   const queueAfterRouteMs = span(route?.completedAt, execute?.startedAt);
-  const checkoutDurations = jobs.flatMap((job) => job.steps ?? [])
+  const checkoutDurations = [route, execute].filter(Boolean).flatMap((job) => job.steps ?? [])
     .filter((step) => /checkout/i.test(step.name ?? ''))
     .map((step) => span(step.startedAt, step.completedAt));
   const checkoutMs = checkoutDurations.length && checkoutDurations.every((value) => value !== null)
@@ -40,7 +40,8 @@ export function releaseLogTimings(log, commandStartedMs, operation) {
     const match = line?.match(/\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z/);
     return match ? Date.parse(match[0]) : NaN;
   };
-  const sourceStart = lines.slice(0, resultIndex < 0 ? undefined : resultIndex).findLastIndex((line) => line.includes('start-action display=Load exact source'));
+  const releaseOperation = ['release', 'retry'].includes(operation);
+  const sourceStart = releaseOperation ? lines.slice(0, resultIndex < 0 ? undefined : resultIndex).findLastIndex((line) => line.includes('start-action display=Load exact source')) : -1;
   const sourceEnd = sourceStart < 0 ? -1 : lines.findIndex((line, index) => index > sourceStart && line.includes('start-action display=Mark shared release core started'));
   const sourceCheckoutMs = sourceStart >= 0 && sourceEnd >= 0 ? at(lines[sourceEnd]) - at(lines[sourceStart]) : null;
   const commandMs = Number(commandStartedMs);

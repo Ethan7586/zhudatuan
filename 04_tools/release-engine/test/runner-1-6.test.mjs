@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { access, readFile } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import test from 'node:test';
@@ -158,6 +159,7 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
   assert.match(workflow.jobs['hosted-startup-fallback'].if, /core_started != 'true'/);
   assert.equal(action.outputs.started.value, '${{ steps.started.outputs.value }}');
   assert.ok(action.runs.steps.findIndex((step) => step.id === 'started') < action.runs.steps.findIndex((step) => String(step.run ?? '').includes('scripts/runner-1-6.sh')));
+  assert.match(action.runs.steps.find((step) => String(step.run ?? '').includes('scripts/runner-1-6.sh')).run, /bash "\$CONTROL_ROOT\/scripts\/runner-1-6\.sh"/);
   assert.doesNotMatch(workflowSource, /final.?seal|closure|runner.?lease|writer.?lease|slot.?claim|readiness.?doctor|finalizer/i);
   assert.match(workflow.on.workflow_dispatch.inputs.release_target.description, /fast exact release\/retry/);
   assert.match(workflowSource, /exact release requires both target and physical node/);
@@ -165,6 +167,25 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
   const coreSource = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
   assert.match(coreSource, /const client = simpleOssClientFromEnvironment\(\)/);
   assert.match(coreSource, /simpleDownloadEndpoint\(publicClient\.endpoint, process\.env\.ALIYUN_OSS_INTERNAL_ENDPOINT\)/);
+});
+
+test('Hosted shared action starts the checked-out control script from an empty workspace root', async () => {
+  const action = parse(await readFile(join(root, '.github/actions/runner-1-6/action.yml'), 'utf8'));
+  const script = action.runs.steps.find((step) => String(step.run ?? '').includes('scripts/runner-1-6.sh')).run
+    .replace('${{ inputs.operation }}', 'status');
+  const directory = await mkdtemp(join(tmpdir(), 'runner-hosted-action-'));
+  const controlRoot = join(directory, 'control');
+  await mkdir(join(controlRoot, 'scripts'), { recursive: true });
+  await writeFile(join(controlRoot, 'scripts/runner-1-6.sh'), '#!/usr/bin/env bash\nprintf "CONTROL_SCRIPT=%s\\n" "$1"\n');
+  try {
+    const { stdout } = await execFileAsync('bash', ['-c', script], {
+      cwd: directory,
+      env: { ...process.env, CONTROL_ROOT: controlRoot },
+    });
+    assert.match(stdout, /CONTROL_SCRIPT=status/);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 test('control-side command only dispatches and queries GitHub', async () => {
