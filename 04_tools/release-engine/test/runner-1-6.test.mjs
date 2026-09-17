@@ -92,13 +92,24 @@ test('Aliyun is selected only when a matching runner is online and idle', () => 
   assert.deepEqual(selected.runsOn, ['self-hosted', 'Linux', 'X64', 'zdt-aliyun-build', 'zdt-aliyun-build-1']);
 });
 
+test('portable self-hosted Runner is selectable while Aliyun remains first', () => {
+  const portable = { name: 'gcp-build', status: 'online', busy: false, labels: ['self-hosted', 'Linux', 'X64', 'zdt-build', 'zdt-build-2'] };
+  const aliyun = { name: 'aliyun-build', status: 'online', busy: false, labels: ['self-hosted', 'Linux', 'X64', 'zdt-aliyun-build'] };
+  const selected = selectExecutionRunner({ runners: [portable] });
+  assert.equal(selected.runnerClass, 'self-hosted');
+  assert.equal(selected.runnerName, 'gcp-build');
+  assert.deepEqual(selected.runsOn, ['self-hosted', 'Linux', 'X64', 'zdt-build', 'zdt-build-2']);
+  assert.equal(selectExecutionRunner({ runners: [portable, aliyun] }).runnerName, 'aliyun-build');
+  assert.equal(selectExecutionRunner({ runners: [{ ...aliyun, busy: true }, portable] }).runnerName, 'gcp-build');
+});
+
 for (const [name, observation, reason] of [
-  ['missing', { runners: [] }, 'aliyun-runner-missing'],
-  ['offline', { runners: [{ status: 'offline', busy: false, labels: ['zdt-aliyun-build'] }] }, 'aliyun-runner-offline'],
-  ['busy', { runners: [{ status: 'online', busy: true, labels: ['zdt-aliyun-build'] }] }, 'aliyun-runner-busy'],
-  ['unreadable', { error: 'forbidden' }, 'aliyun-status-unavailable'],
+  ['missing', { runners: [] }, 'self-hosted-runner-missing'],
+  ['offline', { runners: [{ status: 'offline', busy: false, labels: ['zdt-aliyun-build'] }] }, 'self-hosted-runner-offline'],
+  ['busy', { runners: [{ status: 'online', busy: true, labels: ['zdt-aliyun-build'] }] }, 'self-hosted-runner-busy'],
+  ['unreadable', { error: 'forbidden' }, 'self-hosted-status-unavailable'],
 ])
-  test(`GitHub Hosted is selected when Aliyun is ${name}`, () => {
+  test(`GitHub Hosted is selected when self-hosted capacity is ${name}`, () => {
     const selected = selectExecutionRunner(observation);
     assert.equal(selected.runnerClass, 'github-hosted');
     assert.equal(selected.reason, reason);
@@ -166,6 +177,7 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.operation.options, ['release', 'status', 'retry', 'rollback']);
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.execution_location.options, ['auto', 'github-hosted']);
   assert.match(workflowSource, /runs-on: \$\{\{ fromJSON\(needs\.route\.outputs\.runs_on\) \}\}/);
+  assert.match(workflowSource, /needs\.route\.outputs\.runner_class == 'self-hosted'/);
   for (const job of [workflow.jobs.execute, workflow.jobs['hosted-startup-fallback']]) {
     const cores = job.steps.filter((step) => String(step.uses ?? '').endsWith('/.github/actions/runner-1-6'));
     assert.equal(cores.length, 4);
@@ -231,7 +243,7 @@ test('control-side command only dispatches and queries GitHub', async () => {
   assert.match(dispatcher, /gh run cancel/);
   assert.match(dispatcher, /core_steps.*-eq 0/);
   assert.match(dispatcher, /-f execution_location="\$execution_location"/);
-  assert.match(dispatcher, /dispatch_run "\$aliyun_run_id" github-hosted/);
+  assert.match(dispatcher, /dispatch_run "\$self_hosted_run_id" github-hosted/);
   assert.match(dispatcher, /\^r16-\[0-9a-f\]\{40\}\$/);
   assert.match(dispatcher, /DELIVERY_COMMAND_RETURN_MS=/);
   const readme = await readFile(join(root, '02_platform_pingtai/infrastructure/github-actions-runner/README.md'), 'utf8');

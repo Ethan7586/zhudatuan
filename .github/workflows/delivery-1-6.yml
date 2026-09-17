@@ -84,7 +84,7 @@ jobs:
               ;;
           esac
           echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
-      - name: Observe Aliyun runners
+      - name: Observe self-hosted runners
         id: observe
         if: ${{ inputs.execution_location != 'github-hosted' }}
         continue-on-error: true
@@ -92,7 +92,7 @@ jobs:
           GH_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
         shell: bash
         run: gh api "repos/${GITHUB_REPOSITORY}/actions/runners" > "$RUNNER_TEMP/runners.json"
-      - name: Select Aliyun first or GitHub Hosted fallback
+      - name: Select Aliyun first, then portable or GitHub Hosted
         id: route
         shell: bash
         run: |
@@ -195,7 +195,7 @@ jobs:
   hosted-startup-fallback:
     name: Retry pre-core startup on GitHub Hosted
     needs: [route, execute]
-    if: ${{ always() && needs.route.outputs.runner_class == 'aliyun' && needs.execute.result == 'failure' && needs.execute.outputs.core_started != 'true' }}
+    if: ${{ always() && (needs.route.outputs.runner_class == 'aliyun' || needs.route.outputs.runner_class == 'self-hosted') && needs.execute.result == 'failure' && needs.execute.outputs.core_started != 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:

@@ -46,6 +46,8 @@ For a migration-plus-service batch, `DELIVERY_END_TO_END_MS` covers the whole co
 
 The three online Runner registrations can use one host with separate service directories and users; the workflow and release core do not change. The two build services share `zdt-build.slice`. `install-build-capacity-policy.sh` no longer creates a host lock or pins an ECS instance ID; when applied, it removes the retired lock file and tmpfiles entry. Its current default resource values preserve the old host's behavior; on an 8-core/16-GiB host, `ZDT_BUILD_CPU_QUOTA`, `ZDT_BUILD_MEMORY_HIGH`, and `ZDT_BUILD_MEMORY_MAX` can be set from observed L-kernel and build load. The primary release Runner is not included in the two-build-service slice. These scripts do not migrate services or restart the L-kernel by themselves.
 
+Routing also understands the cloud-neutral `zdt-build` label for a future self-hosted build Runner, with optional `zdt-build-N` slot label. Existing `zdt-aliyun-build` registrations remain preferred and keep the same behavior. Both labels use the single workflow and shared core; either self-hosted class can hand off to GitHub Hosted before the core begins. The current Aliyun installation scripts still contain Aliyun-specific service names and sing-box settings, so they are not GCP installers. This change does not register or test a GCP Runner.
+
 ## GitHub sing-box line
 
 `install-github-transport.sh` turns the sing-box installation on the Aliyun Runner host into a GitHub-only line. The Runner processes use a loopback HTTP proxy. sing-box sends `github.com`, `githubusercontent.com`, `githubassets.com`, and `ghcr.io` through the configured Shadowsocks endpoint; OSS, Aliyun metadata, production SSH, and every other destination remain direct.
