@@ -14,11 +14,11 @@ on:
         required: false
         type: string
       release_target:
-        description: Optional with physical node for fast exact release/retry; required for rollback
+        description: Optional fast exact release/retry target(s), comma-paired with physical node(s); required for rollback
         required: false
         type: string
       physical_node:
-        description: Optional with release target for fast exact release/retry; required for rollback
+        description: Optional fast exact release/retry node(s), comma-paired with target(s); required for rollback
         required: false
         type: string
       execution_location:

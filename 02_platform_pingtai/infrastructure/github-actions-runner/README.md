@@ -8,6 +8,7 @@ Normal commands:
 ./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery release <full-source-sha>
 ./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery deploy <full-source-sha>
 ./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery deploy <target> <full-source-sha> <physical-node>
+./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery release <full-source-sha> <target-1> <physical-node-1> <target-2> <physical-node-2>
 ./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery status [full-source-sha-or-r16-release-id]
 ./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery retry <r16-release-id>
 ./02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery rollback <target> <physical-node>
@@ -20,6 +21,8 @@ Normal commands:
 When Ethan asks an agent to deploy work from the current task, an already committed and pushed full Source SHA goes straight to this entry. Do not create another branch, install local dependencies, run a local production build, or repeat the Runner's full checks just to release that commit. If the task still has uncommitted changes, check only what those changes need, commit and push them, then invoke the same entry with the resulting full Source SHA. A local build may still be useful to diagnose a specific development issue, but it is not a normal release prerequisite. The user does not need to supply a SHA or perform a separate sealing step. Unrelated uncommitted changes are not included. The entry itself remains a dispatcher, not a local build or deployment tool.
 
 For one physical node, use `zdt-delivery release <full-source-sha> <target> <physical-node>` or `zdt-delivery deploy <target> <full-source-sha> <physical-node>`. If that target's immutable artifact is absent or incomplete, the same Runner builds and publishes only that target's artifact, then deploys only the named node. A cache hit skips the build. The control-side machine never builds or prepares the artifact.
+
+For a database migration followed by one service switch, append both exact target/node pairs to the same `release`, `deploy`, or `retry` command. For example, `zdt-delivery release <full-source-sha> database-migration zhudatuan-l0 identity-api hbbtzn-l1` uses one workflow and the same core. Only the named placements run; the existing target order puts the migration first. Missing artifacts share one dependency install, and a failed migration stops before the service switch. The receipt lists completed placements if a later target fails. This does not expand to L0 business services or other nodes.
 
 Normal release synchronizes the matching Agent and remote policy as one versioned pair before deploying targets, then executes that exact pair even if another release updates the default Agent entry. Unrelated process restarts, Caddy changes, a fixed free-space reserve, lifecycle-unit queries, audit writes and extra rollback-point files do not determine a target release outcome. The target's immutable artifact, current/previous pointers, service restart and health still do; a failed health check restores the previous service when available.
 
@@ -36,6 +39,8 @@ On a cache miss, the shared core installs its minimal isolated control dependenc
 For user-perceived latency, report three separate intervals when their timestamps are available: request-to-command (agent preparation, including any code fix and commit), command-to-target receipt (the Runner metric above), and receipt-to-user response. Mark an unmeasured interval unknown. The Runner metric alone is not the time from the user's request, and overlapping stage durations must not be added together.
 
 Cold builds also emit `RUNNER_1_6_PROGRESS` when each existing preflight, test, typecheck, or build command starts and completes, including the command name and duration. These lines are diagnostic only; they do not change build order or release decisions.
+
+For a migration-plus-service batch, `DELIVERY_END_TO_END_MS` covers the whole command through the service's healthy receipt, while the migration is recorded with a current pointer and `not-checked` health. It is not a separate second command or a sum of stage timings.
 
 ## GitHub sing-box line
 

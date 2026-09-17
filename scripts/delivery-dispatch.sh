@@ -9,21 +9,19 @@ physical_node=''
 case "$operation" in
   release|status)
     if [ "$operation" = release ]; then
-      { [ "$#" -eq 2 ] || [ "$#" -eq 4 ]; } || { echo 'Usage: delivery-dispatch.sh release <source-sha-or-release-id> [target physical-node]' >&2; exit 64; }
+      { [ "$#" -ge 2 ] && [ "$(( ($# - 2) % 2 ))" -eq 0 ]; } || { echo 'Usage: delivery-dispatch.sh release <source-sha-or-release-id> [target physical-node ...]' >&2; exit 64; }
     else
       { [ "$#" -eq 1 ] || [ "$#" -eq 2 ]; } || { echo 'Usage: delivery-dispatch.sh status [source-sha-or-release-id]' >&2; exit 64; }
     fi
     identifier="${2:-}"
     { [ "$operation" = status ] && [ -z "$identifier" ]; } || [[ "$identifier" =~ ^[0-9a-f]{40}$ || "$identifier" =~ ^r16-[0-9a-f]{40}$ ]] \
       || { echo "$operation requires a full lowercase Source SHA or r16 release id" >&2; exit 64; }
-    if [ "$#" -eq 4 ]; then target="$3"; physical_node="$4"; fi
     ;;
   retry)
-    { [ "$#" -eq 2 ] || [ "$#" -eq 4 ]; } || { echo 'Usage: delivery-dispatch.sh retry <r16-release-id> [target physical-node]' >&2; exit 64; }
+    { [ "$#" -ge 2 ] && [ "$(( ($# - 2) % 2 ))" -eq 0 ]; } || { echo 'Usage: delivery-dispatch.sh retry <r16-release-id> [target physical-node ...]' >&2; exit 64; }
     identifier="$2"
     [[ "$identifier" =~ ^r16-[0-9a-f]{40}$ ]] \
       || { echo 'retry requires an r16 release id' >&2; exit 64; }
-    if [ "$#" -eq 4 ]; then target="$3"; physical_node="$4"; fi
     ;;
   rollback)
     [ "$#" -eq 3 ] || { echo 'Usage: delivery-dispatch.sh rollback <target> <physical-node>' >&2; exit 64; }
@@ -32,6 +30,16 @@ case "$operation" in
     ;;
   *) echo 'Runner 1.7 operations: release, status, retry, rollback' >&2; exit 64 ;;
 esac
+
+if { [ "$operation" = release ] || [ "$operation" = retry ]; } && [ "$#" -gt 2 ]; then
+  arguments=("$@")
+  for ((index = 2; index < ${#arguments[@]}; index += 2)); do
+    [ -z "$target" ] || target+=','
+    [ -z "$physical_node" ] || physical_node+=','
+    target+="${arguments[index]}"
+    physical_node+="${arguments[index + 1]}"
+  done
+fi
 
 workflow='delivery-1-6.yml'
 previous_id="$(gh run list --workflow "$workflow" --limit 1 --json databaseId --jq '.[0].databaseId // 0')"

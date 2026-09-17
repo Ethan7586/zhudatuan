@@ -17,6 +17,8 @@ test('exact commerce targets use a Source scope that retains build and test inpu
   assert.ok(paths.includes('/01_core_hexin/apps/*/tsconfig.json'));
   assert.deepEqual(sourceCheckoutPaths('console', project.targets), []);
   assert.deepEqual(sourceCheckoutPaths('database-migration', project.targets), paths);
+  assert.deepEqual(sourceCheckoutPaths('identity-api,database-migration', project.targets), paths);
+  assert.deepEqual(sourceCheckoutPaths('identity-api,console', project.targets), []);
   assert.equal(project.targets['database-migration'].workspace, undefined);
   assert.equal(project.targets['database-migration'].buildWorkspace, '@shop/commerce');
   assert.deepEqual(sourceCheckoutPaths('', project.targets), []);
@@ -71,7 +73,7 @@ test('team entry checks out only the latest dispatch scripts', async () => {
   const origin = join(directory, 'origin.git');
   try {
     await mkdir(join(repository, 'scripts'), { recursive: true });
-    await writeFile(join(repository, 'scripts/delivery-dispatch.sh'), '#!/usr/bin/env bash\nset -euo pipefail\ntest -f scripts/delivery-timings.mjs\ntest ! -e unrelated.txt\nprintf "CONTROL_SPARSE_OK:%s\\n" "$1"\n');
+    await writeFile(join(repository, 'scripts/delivery-dispatch.sh'), '#!/usr/bin/env bash\nset -euo pipefail\ntest -f scripts/delivery-timings.mjs\ntest ! -e unrelated.txt\nprintf "CONTROL_SPARSE_OK:%s\\n" "$*"\n');
     await writeFile(join(repository, 'scripts/delivery-timings.mjs'), 'export {};\n');
     await writeFile(join(repository, 'unrelated.txt'), 'not needed by the dispatcher\n');
     execFileSync('git', ['init', '-b', 'zdt-next', repository], { stdio: 'pipe' });
@@ -88,6 +90,16 @@ test('team entry checks out only the latest dispatch scripts', async () => {
       env: { ...process.env, ZDT_GIT_ANCHOR: repository }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
     });
     assert.match(withoutSha, /CONTROL_SPARSE_OK:status/);
+    const sourceSha = 'a'.repeat(40);
+    const batch = ['identity-api', 'hbbtzn-l1', 'database-migration', 'zhudatuan-l0'];
+    const release = execFileSync('bash', [join(root, '02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery'), 'release', sourceSha, ...batch], {
+      env: { ...process.env, ZDT_GIT_ANCHOR: repository }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    const deploy = execFileSync('bash', [join(root, '02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery'), 'deploy', batch[0], sourceSha, ...batch.slice(1)], {
+      env: { ...process.env, ZDT_GIT_ANCHOR: repository }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    assert.match(release, new RegExp(`CONTROL_SPARSE_OK:release ${sourceSha} ${batch.join(' ')}`));
+    assert.match(deploy, new RegExp(`CONTROL_SPARSE_OK:release ${sourceSha} ${batch.join(' ')}`));
   } finally {
     await rm(directory, { recursive: true, force: true });
   }

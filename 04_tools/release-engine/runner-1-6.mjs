@@ -7,6 +7,7 @@ import { pathToFileURL } from 'node:url';
 import { loadAdapter, resolveDeployment } from './src/adapter.mjs';
 import { buildRelease, createReleasePlan, packageRelease } from './src/build-core-1-6.mjs';
 import { asDeliveryError, DeliveryError, invariant } from './src/errors.mjs';
+import { exactPlacements, runExactBatch } from './src/exact-batch.mjs';
 import { simpleDownloadEndpoint, simpleOssClientFromEnvironment } from './src/oss-client-1-6.mjs';
 import { runCommand } from './src/runner.mjs';
 import { runIndependent } from './src/run-independent.mjs';
@@ -14,7 +15,7 @@ import { inspectSimpleArtifact, publishSimpleArtifacts, resolveSimpleArtifact } 
 
 const SHA = /^[a-f0-9]{40}$/;
 const RELEASE_ID = /^r16-([a-f0-9]{40})$/;
-const context = { stage: 'startup', operation: null, target: null, node: null, sourceSha: null };
+const context = { stage: 'startup', operation: null, target: null, node: null, sourceSha: null, completedTargets: [] };
 const coreStartedAt = performance.now();
 
 async function main() {
@@ -63,6 +64,7 @@ async function main() {
       current: evidence.rollback?.finalCurrent ?? evidence.pointerRecovery?.finalCurrent ?? evidence.rollbackPoint?.pointers?.current ?? null,
       previous: evidence.rollbackPoint?.pointers?.previous ?? null,
       recovery: evidence.rollback ?? evidence.pointerRecovery ?? null,
+      completedTargets: context.completedTargets,
       nextAction: context.sourceSha ? `zdt-delivery status ${context.sourceSha}` : ['release', 'retry'].includes(context.operation) ? 'Provide the original full Source SHA or release id.' : 'Inspect target status and use rollback or manual recovery if needed.',
     };
     process.stderr.write(`RUNNER_1_6_RESULT=${JSON.stringify(failure)}\n`);
@@ -75,7 +77,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 async function release(adapter, controlRoot, sourceSha, target, node) {
   const exactScope = Boolean(target || node);
   invariant(!exactScope || (target && node), 'EXACT_SCOPE_INCOMPLETE', 'Fast production deployment requires both target and physical node');
-  if (exactScope) return deployExact(adapter, controlRoot, sourceSha, target, node);
+  if (exactScope) {
+    const placements = exactPlacements(target, node);
+    if (placements.length === 1) return deployExact(adapter, controlRoot, sourceSha, placements[0].target, placements[0].node);
+    return deployExactBatch(adapter, controlRoot, sourceSha, placements);
+  }
   context.stage = 'plan';
   progress('plan', { sourceSha });
   const plan = await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha });
@@ -123,14 +129,14 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
   };
 }
 
-async function buildAndPublish(adapter, controlRoot, plan, client, details) {
+async function buildAndPublish(adapter, controlRoot, plan, client, details, { dependenciesReady = false } = {}) {
   let dependenciesMs = 0;
-  if (plan.dependencyInstallRequired) {
+  if (plan.dependencyInstallRequired && !dependenciesReady) {
     context.stage = 'dependencies';
     progress('dependencies', details);
     dependenciesMs = await installDependencies(adapter, controlRoot, plan.deploymentOrder);
   } else {
-    progress('dependencies-skipped', { ...details, reason: 'no-commands' });
+    progress('dependencies-skipped', { ...details, reason: dependenciesReady ? 'shared-install' : 'no-commands' });
   }
   context.stage = 'build';
   progress('build', details);
@@ -213,6 +219,73 @@ async function deployExact(adapter, controlRoot, sourceSha, target, node) {
     exactScope: true,
     coreDurationMs,
     targets: [deployed],
+  };
+}
+
+async function deployExactBatch(adapter, controlRoot, sourceSha, placements) {
+  for (const { target, node } of placements) resolveDeployment(adapter, node, target);
+  const client = simpleOssClientFromEnvironment();
+  let productionStarted = 0;
+  const { deployments, cacheStatus, preparationTimings } = await runExactBatch(adapter, placements, {
+    inspect: async (target) => {
+      context.stage = 'artifact-lookup';
+      context.target = target;
+      context.node = placements.find((placement) => placement.target === target)?.node ?? null;
+      progress('artifact-lookup', { sourceSha, target, node: context.node });
+      return inspectSimpleArtifact(adapter, { target, sourceSha }, client);
+    },
+    prepare: async (missingTargets) => {
+      const plans = [];
+      for (const target of missingTargets) {
+        context.stage = 'plan';
+        context.target = target;
+        context.node = placements.find((placement) => placement.target === target)?.node ?? null;
+        progress('plan', { sourceSha, target, node: context.node });
+        plans.push({ target, plan: await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha, target, prepare: true }) });
+      }
+      let dependenciesMs = 0;
+      const sharedDependenciesReady = plans.some(({ plan }) => plan.dependencyInstallRequired);
+      if (sharedDependenciesReady) {
+        context.stage = 'dependencies';
+        progress('dependencies', { sourceSha, targets: missingTargets });
+        dependenciesMs = await installDependencies(adapter, controlRoot, missingTargets);
+      }
+      const targets = [];
+      for (const { target, plan } of plans) {
+        context.target = target;
+        context.node = placements.find((placement) => placement.target === target)?.node ?? null;
+        const timings = await buildAndPublish(adapter, controlRoot, plan, client, { sourceSha, target, node: context.node }, { dependenciesReady: sharedDependenciesReady });
+        targets.push({ target, ...timings });
+      }
+      return { dependenciesMs, targets };
+    },
+    sync: async () => {
+      productionStarted = performance.now();
+      return syncRemoteRuntime(adapter, controlRoot);
+    },
+    deploy: async ({ target, node }, runtimeAgent, completed, total) => {
+      context.stage = 'deploy';
+      context.target = target;
+      context.node = node;
+      progress('deploy', { sourceSha, target, node, completed, total });
+      const deployed = await deployTarget(adapter, client, { target, node, sourceSha, runtimeAgent });
+      context.completedTargets.push(deployed);
+      return deployed;
+    },
+  });
+  const coreDurationMs = Math.round(performance.now() - productionStarted);
+  progress('complete', { sourceSha, targets: deployments.map(({ target, node }) => ({ target, node })), coreDurationMs });
+  return {
+    state: deploymentState(deployments),
+    releaseId: `r16-${sourceSha}`,
+    sourceSha,
+    controlSha: process.env.CONTROL_SHA,
+    executor: executor(),
+    cacheStatus,
+    preparationTimings,
+    exactScope: true,
+    coreDurationMs,
+    targets: deployments,
   };
 }
 

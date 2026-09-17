@@ -48,9 +48,10 @@ export function releaseLogTimings(log, commandStartedMs, operation) {
   const sourceCheckoutMs = sourceStart >= 0 && sourceEnd >= 0 ? at(lines[sourceEnd]) - at(lines[sourceStart]) : null;
   const commandMs = Number(commandStartedMs);
   const targetHealthMs = ['release', 'retry'].includes(operation)
-    && result?.state === 'HEALTHY'
+    && ['HEALTHY', 'DEPLOYED'].includes(result?.state)
     && result.targets?.length > 0
-    && result.targets.every((target) => target.health?.status === 'ready')
+    && result.targets.some((target) => target.health?.status === 'ready')
+    && result.targets.every((target) => target.health?.status === 'ready' || (target.current && target.health?.status === 'not-checked'))
     ? at(resultLine) - commandMs : null;
   const targetCurrentMs = releaseOperation
     && ['HEALTHY', 'DEPLOYED'].includes(result?.state)
