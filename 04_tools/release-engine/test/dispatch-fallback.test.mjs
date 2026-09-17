@@ -32,7 +32,10 @@ if [ "$1" = workflow ] && [ "$2" = run ]; then
   if [[ " $* " == *"execution_location=github-hosted"* ]]; then echo hosted > "$MOCK_STATE"; fi
   exit 0
 fi
-if [ "$1" = run ] && [ "$2" = cancel ]; then exit 0; fi
+if [ "$1" = run ] && [ "$2" = cancel ]; then
+  if [ "$MOCK_MODE" = raced ]; then echo cancelled > "$MOCK_STATE"; fi
+  exit 0
+fi
 if [ "$1" = run ] && [ "$2" = watch ]; then exit 0; fi
 if [ "$1" = run ] && [ "$2" = view ]; then
   if [[ " $* " == *" --log"* ]]; then echo 'RUNNER_1_6_RESULT={"state":"HEALTHY"}'; exit 0; fi
@@ -46,7 +49,7 @@ if [ "$1" = run ] && [ "$2" = view ]; then
     exit 0
   fi
   if [[ " $* " == *" --json jobs"* ]]; then
-    if [ "$MOCK_MODE" = started ]; then echo 1; else echo 0; fi
+    if [ "$MOCK_MODE" = started ] || { [ "$MOCK_MODE" = raced ] && [ "$(<"$MOCK_STATE")" = cancelled ]; }; then echo 1; else echo 0; fi
     exit 0
   fi
 fi
@@ -81,6 +84,13 @@ test('an already-started Aliyun job never creates a Hosted dispatch', async () =
   assert.doesNotMatch(calls, /run cancel/);
   assert.doesNotMatch(calls, /execution_location=github-hosted/);
   assert.equal((calls.match(/workflow run /g) ?? []).length, 1);
+});
+
+test('a core that starts while cancellation is pending blocks Hosted dispatch', async () => {
+  await assert.rejects(simulate('raced'), (error) => {
+    assert.match(error.stderr, /shared core started before cancellation/);
+    return true;
+  });
 });
 
 test('GitHub timeline separates queue, routing, and checkout without counting fallback twice', () => {
