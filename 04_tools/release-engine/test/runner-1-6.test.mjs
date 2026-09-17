@@ -27,10 +27,11 @@ test('control dependencies are isolated to the small release-engine package', as
   assert.match(core, /projectRoot: engineRoot/);
 });
 
-test('source install selects only affected workspaces and falls back to full source when needed', () => {
-  const adapter = { targets: { identity: { workspace: '@shop/commerce' }, jobs: { workspace: '@shop/commerce' }, console: { workspace: '@shop/console' }, content: {} } };
+test('source install selects build workspaces without changing migration impact ownership', () => {
+  const adapter = { targets: { identity: { workspace: '@shop/commerce' }, jobs: { workspace: '@shop/commerce' }, migration: { kind: 'migration', buildWorkspace: '@shop/commerce' }, console: { workspace: '@shop/console' }, content: {} } };
   assert.deepEqual(selectedWorkspaces(adapter, ['identity']), ['@shop/commerce']);
   assert.deepEqual(selectedWorkspaces(adapter, ['identity', 'jobs', 'console']), ['@shop/commerce', '@shop/console']);
+  assert.deepEqual(selectedWorkspaces(adapter, ['migration']), ['@shop/commerce']);
   assert.deepEqual(selectedWorkspaces(adapter, ['identity', 'content']), []);
 });
 

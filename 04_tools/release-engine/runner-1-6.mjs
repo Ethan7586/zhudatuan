@@ -165,7 +165,7 @@ async function installDependencies(adapter, controlRoot, targets) {
 }
 
 export function selectedWorkspaces(adapter, targets) {
-  const workspaces = targets.map((target) => adapter.targets[target]?.workspace);
+  const workspaces = targets.map((target) => adapter.targets[target]?.buildWorkspace ?? adapter.targets[target]?.workspace);
   return workspaces.every((workspace) => typeof workspace === 'string' && workspace.length > 0) ? [...new Set(workspaces)] : [];
 }
 
