@@ -7,7 +7,7 @@ import { promisify } from 'node:util';
 import test from 'node:test';
 import { parse } from 'yaml';
 
-import { deploymentState, observationDiagnostic, observedTarget, remoteRuntimeSyncScript, selectedWorkspaces, sourceFromIdentifier } from '../runner-1-6.mjs';
+import { deploymentState, observationDiagnostic, observedTarget, remoteRuntimeSyncScript, selectedWorkspaces, sourceFromIdentifier, sourceInstallArguments } from '../runner-1-6.mjs';
 import { loadAdapter } from '../src/adapter.mjs';
 import { DeliveryError } from '../src/errors.mjs';
 import { runCommand } from '../src/runner.mjs';
@@ -34,6 +34,14 @@ test('source install selects build workspaces without changing migration impact 
   assert.deepEqual(selectedWorkspaces(adapter, ['identity', 'jobs', 'console']), ['@shop/commerce', '@shop/console']);
   assert.deepEqual(selectedWorkspaces(adapter, ['migration']), ['@shop/commerce']);
   assert.deepEqual(selectedWorkspaces(adapter, ['identity', 'content']), []);
+});
+
+test('console cold install omits unrelated root tools without changing other targets', () => {
+  const base = ['npm', 'ci', '--ignore-scripts'];
+  assert.deepEqual(sourceInstallArguments(base, ['@shop/console']), [...base, '--workspace', '@shop/console']);
+  assert.deepEqual(sourceInstallArguments(base, ['@shop/commerce']), [...base, '--workspace', '@shop/commerce', '--include-workspace-root']);
+  assert.deepEqual(sourceInstallArguments(base, ['@shop/console', '@shop/commerce']), [...base, '--workspace', '@shop/console', '--workspace', '@shop/commerce', '--include-workspace-root']);
+  assert.deepEqual(sourceInstallArguments(base, []), base);
 });
 
 test('failed release emits control identity and a useful next action', async () => {
