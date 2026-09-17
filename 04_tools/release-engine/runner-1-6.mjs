@@ -14,13 +14,16 @@ import { inspectSimpleArtifact, publishSimpleArtifacts, resolveSimpleArtifact } 
 
 const SHA = /^[a-f0-9]{40}$/;
 const RELEASE_ID = /^r16-([a-f0-9]{40})$/;
-const context = { stage: 'startup', target: null, node: null };
+const context = { stage: 'startup', operation: null, target: null, node: null, sourceSha: null };
+const coreStartedAt = performance.now();
 
 async function main() {
   try {
     const options = parse(process.argv.slice(2));
+    context.operation = options.operation;
     const controlRoot = resolve(options.controlRoot ?? process.cwd());
     const sourceSha = sourceFromIdentifier(options.identifier ?? options.sourceSha);
+    context.sourceSha = sourceSha;
     const loaded = await loadAdapter(join(controlRoot, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), controlRoot);
     const adapter = Object.freeze({
       ...bindControlPlaneModules(loaded, controlRoot),
@@ -38,14 +41,18 @@ async function main() {
       result = await rollback(adapter, controlRoot, options.target, options.node);
     } else if (options.operation === 'control-update') {
       result = await updateRemoteControl(adapter, controlRoot);
-    } else throw new DeliveryError('OPERATION_UNKNOWN', `Unknown Runner 1.6 operation: ${options.operation}`);
+    } else throw new DeliveryError('OPERATION_UNKNOWN', `Unknown Runner 1.7 operation: ${options.operation}`);
     process.stdout.write(`RUNNER_1_6_RESULT=${JSON.stringify(result)}\n`);
   } catch (unknown) {
     const error = asDeliveryError(unknown);
     const details = error.details ?? {};
+    const remoteFailure = observationDiagnostic(error).remoteFailure;
+    const evidence = remoteFailure?.details ?? details;
     const failure = {
       state: 'FAILED',
       stage: context.stage,
+      sourceSha: context.sourceSha,
+      controlSha: process.env.CONTROL_SHA ?? null,
       target: context.target,
       node: context.node,
       command: Array.isArray(details.argv) ? details.argv.join(' ') : null,
@@ -53,8 +60,12 @@ async function main() {
       error: error.message,
       code: error.code,
       output: details.outputTail ?? null,
-      serviceStatus: nested(details, ['candidateFailure', 'details', 'readiness']) ?? nested(details, ['receipt', 'readiness']) ?? null,
-      recovery: details.rollback ?? details.pointerRecovery ?? null,
+      remoteFailure,
+      serviceStatus: nested(evidence, ['candidateFailure', 'details', 'readiness']) ?? nested(evidence, ['receipt', 'readiness']) ?? null,
+      current: evidence.rollback?.finalCurrent ?? evidence.pointerRecovery?.finalCurrent ?? evidence.rollbackPoint?.pointers?.current ?? null,
+      previous: evidence.rollbackPoint?.pointers?.previous ?? null,
+      recovery: evidence.rollback ?? evidence.pointerRecovery ?? null,
+      nextAction: context.sourceSha ? `zdt-delivery status ${context.sourceSha}` : ['release', 'retry'].includes(context.operation) ? 'Provide the original full Source SHA or release id.' : 'Inspect target status and use rollback or manual recovery if needed.',
     };
     process.stderr.write(`RUNNER_1_6_RESULT=${JSON.stringify(failure)}\n`);
     process.exitCode = 1;
@@ -78,8 +89,9 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
   for (const target of plan.deploymentOrder) cache.push(await inspectSimpleArtifact(adapter, { target, sourceSha }, client));
   const needsBuild = cache.some((item) => !item.exists);
   let cacheStatus = 'reused';
+  let preparationTimings = null;
   if (needsBuild) {
-    await buildAndPublish(adapter, controlRoot, plan, client, { sourceSha, targets: plan.deploymentOrder });
+    preparationTimings = await buildAndPublish(adapter, controlRoot, plan, client, { sourceSha, targets: plan.deploymentOrder });
     cacheStatus = 'built';
   }
 
@@ -96,8 +108,8 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
       deployments.push(deployed);
     }
   }
-  const productionDurationMs = Math.round(performance.now() - productionStarted);
-  progress('complete', { sourceSha, productionDurationMs, productionSloMs: 60_000 });
+  const coreDurationMs = Math.round(performance.now() - productionStarted);
+  progress('complete', { sourceSha, coreDurationMs });
   return {
     state: 'HEALTHY',
     releaseId,
@@ -105,9 +117,9 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
     controlSha: process.env.CONTROL_SHA,
     executor: executor(),
     cacheStatus,
+    preparationTimings,
     exactScope: false,
-    productionDurationMs,
-    productionSlo: productionDurationMs <= 60_000 ? 'met' : 'missed',
+    coreDurationMs,
     targets: deployments,
   };
 }
@@ -115,30 +127,46 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
 async function buildAndPublish(adapter, controlRoot, plan, client, details) {
   context.stage = 'dependencies';
   progress('dependencies', details);
-  await installDependencies(adapter, controlRoot);
+  const dependenciesMs = await installDependencies(adapter, controlRoot, plan.deploymentOrder);
   context.stage = 'build';
   progress('build', details);
   const built = await buildRelease(adapter, plan.planPath);
   progress('build-complete', { ...details, timings: built.timings });
   context.stage = 'package';
   progress('package', details);
+  const packageStarted = performance.now();
   const packaged = await packageRelease(adapter, built.buildPath);
+  const packageMs = Math.round(performance.now() - packageStarted);
+  progress('package-complete', { ...details, durationMs: packageMs });
   context.stage = 'upload';
   progress('upload', details);
+  const uploadStarted = performance.now();
   await publishSimpleArtifacts(adapter, packaged.packagePath, client);
+  const uploadMs = Math.round(performance.now() - uploadStarted);
+  progress('upload-complete', { ...details, durationMs: uploadMs });
+  return { dependenciesMs, testsMs: built.timings.tests, typecheckMs: built.timings.typecheck, buildMs: built.timings.build, buildCoreMs: built.timings.total, packageMs, uploadMs };
 }
 
-async function installDependencies(adapter, controlRoot) {
-  const lockfile = await stat(join(controlRoot, 'package-lock.json')).then((value) => ({ present: true, bytes: value.size })).catch((error) => ({ present: false, error: error.code ?? error.message }));
+async function installDependencies(adapter, controlRoot, targets) {
+  const engineRoot = join(controlRoot, '04_tools/release-engine');
+  const lockfile = await stat(join(engineRoot, 'package-lock.json')).then((value) => ({ present: true, bytes: value.size })).catch((error) => ({ present: false, error: error.code ?? error.message }));
   process.stdout.write(`RUNNER_1_6_DIAGNOSTIC=${JSON.stringify({ stage: 'dependencies', controlRoot, controlSha: process.env.CONTROL_SHA ?? null, controlLockfile: lockfile })}\n`);
   const install = { argv: ['npm', 'ci', '--ignore-scripts', '--no-audit', '--no-fund'], timeoutMs: 20 * 60_000 };
   const started = performance.now();
-  const installs = [() => runCommand({ ...install, name: 'install-control-dependencies' }, { ...commandContext(adapter), projectRoot: controlRoot })];
-  if (resolve(controlRoot) !== resolve(adapter.projectRoot)) {
-    installs.push(() => runCommand({ ...install, name: 'install-source-dependencies' }, commandContext(adapter)));
-  }
-  const results = await runIndependent(installs);
-  process.stdout.write(`RUNNER_1_6_DIAGNOSTIC=${JSON.stringify({ stage: 'dependencies-complete', durationMs: Math.round(performance.now() - started), installs: results.map(({ name, durationMs }) => ({ name, durationMs })) })}\n`);
+  const workspaces = selectedWorkspaces(adapter, targets);
+  const sourceInstall = { ...install, argv: [...install.argv, ...workspaces.flatMap((workspace) => ['--workspace', workspace]), ...(workspaces.length ? ['--include-workspace-root'] : [])] };
+  const results = await runIndependent([
+    () => runCommand({ ...install, name: 'install-control-dependencies' }, { ...commandContext(adapter), projectRoot: engineRoot }),
+    () => runCommand({ ...sourceInstall, name: 'install-source-dependencies' }, commandContext(adapter)),
+  ]);
+  const durationMs = Math.round(performance.now() - started);
+  process.stdout.write(`RUNNER_1_6_DIAGNOSTIC=${JSON.stringify({ stage: 'dependencies-complete', durationMs, mode: workspaces.length ? 'target-workspaces' : 'full-source', workspaces, installs: results.map(({ name, durationMs }) => ({ name, durationMs })) })}\n`);
+  return durationMs;
+}
+
+export function selectedWorkspaces(adapter, targets) {
+  const workspaces = targets.map((target) => adapter.targets[target]?.workspace);
+  return workspaces.every((workspace) => typeof workspace === 'string' && workspace.length > 0) ? [...new Set(workspaces)] : [];
 }
 
 async function deployExact(adapter, controlRoot, sourceSha, target, node) {
@@ -150,19 +178,20 @@ async function deployExact(adapter, controlRoot, sourceSha, target, node) {
   progress('artifact-lookup', { sourceSha, target, node });
   const cached = await inspectSimpleArtifact(adapter, { target, sourceSha }, client);
   let cacheStatus = 'reused';
+  let preparationTimings = null;
   if (!cached.exists) {
     context.stage = 'plan';
     progress('plan', { sourceSha, target, node, cacheReason: cached.reason });
     const plan = await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha, target, prepare: true });
-    await buildAndPublish(adapter, controlRoot, plan, client, { sourceSha, target, node });
+    preparationTimings = await buildAndPublish(adapter, controlRoot, plan, client, { sourceSha, target, node });
     cacheStatus = 'built';
   }
   context.stage = 'deploy';
   const productionStarted = performance.now();
   progress('deploy', { sourceSha, target, node, completed: 0, total: 1 });
   const deployed = await deployTarget(adapter, controlRoot, client, { target, node, sourceSha });
-  const productionDurationMs = Math.round(performance.now() - productionStarted);
-  progress('complete', { sourceSha, target, node, productionDurationMs, productionSloMs: 60_000 });
+  const coreDurationMs = Math.round(performance.now() - productionStarted);
+  progress('complete', { sourceSha, target, node, coreDurationMs });
   return {
     state: 'HEALTHY',
     releaseId: `r16-${sourceSha}`,
@@ -170,9 +199,9 @@ async function deployExact(adapter, controlRoot, sourceSha, target, node) {
     controlSha: process.env.CONTROL_SHA,
     executor: executor(),
     cacheStatus,
+    preparationTimings,
     exactScope: true,
-    productionDurationMs,
-    productionSlo: productionDurationMs <= 60_000 ? 'met' : 'missed',
+    coreDurationMs,
     targets: [deployed],
   };
 }
@@ -233,6 +262,7 @@ async function deployTarget(adapter, controlRoot, publicClient, { target, node, 
     previous: remote.result?.activation?.previous ?? null,
     health: remote.result?.activation?.readiness ?? null,
     recovery: remote.result?.activation?.rollback ?? null,
+    targetTimings: remote.result?.activation?.timings ?? null,
     durationMs: result.durationMs,
   };
 }
@@ -484,7 +514,7 @@ function executor() {
   return { class: process.env.RUNNER_CLASS ?? 'unknown', name: process.env.RUNNER_NAME ?? 'unknown' };
 }
 function progress(stage, details = {}) {
-  process.stdout.write(`RUNNER_1_6_PROGRESS=${JSON.stringify({ stage, at: new Date().toISOString(), ...details })}\n`);
+  process.stdout.write(`RUNNER_1_6_PROGRESS=${JSON.stringify({ stage, at: new Date().toISOString(), elapsedMs: Math.round(performance.now() - coreStartedAt), ...details })}\n`);
 }
 function requiredEnv(name) {
   invariant(process.env[name], 'ENVIRONMENT_VALUE_REQUIRED', `${name} is required`);

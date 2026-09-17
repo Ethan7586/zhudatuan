@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared Runner 1.6 execution core. Both Aliyun and GitHub Hosted runners invoke this file.
+# Shared Runner 1.7 execution core. Both Aliyun and GitHub Hosted runners invoke this file.
 set -euo pipefail
 
 operation="${1:?operation required}"

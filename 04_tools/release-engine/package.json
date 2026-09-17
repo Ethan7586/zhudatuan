@@ -1,0 +1,10 @@
+{
+  "name": "zdt-release-engine-runtime",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@alicloud/cdn20180510": "9.2.0",
+    "@alicloud/openapi-client": "0.4.15",
+    "esbuild": "0.28.1"
+  }
+}

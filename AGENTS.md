@@ -8,9 +8,9 @@
 6. 子目录入口只能指向根 LAW，不得重新定义另一套最高规则。
 7. 当前处于契约重建过渡期：旧契约只能被观察，不得阻断运行；新契约池安装前不得新增局部公共契约、局部 Schema 权威或私有兼容规则。遇到缺口只登记并交由 Ethan 裁定。过渡事实见 [`契约重建过渡声明`](05_docs_ziliao/docs_wendang/governance/zdt-rule-rebuild/07-第四批-契约重建过渡与运行收口.md)。
 
-## Runner 1.6 发布口令
+## Runner 1.7 发布口令
 
-- 团队从任意仓库检出位置使用 `02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery release <full-source-sha>` 或 `deploy <full-source-sha>`；也可从 GitHub 的同一个 `delivery-1-6.yml` 工作流发起。指定落点时分别使用 `release <full-source-sha> <target> <physical-node>` 或 `deploy <target> <full-source-sha> <physical-node>`。两个名字调用同一个 Runner 发布核心，谁被调用就用谁，不建立优先级或第二套发布路径；状态、重试和回滚分别使用 `status`、`retry`、`rollback`。
+- 团队唯一正式入口是仓库命令 `02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery release <full-source-sha>` 或 `deploy <full-source-sha>`，可从任意仓库检出位置运行。GitHub 工作流是该入口的执行面；网页直接启动不会执行命令入口的阿里云排队超时接管，不得宣传为等价入口。指定落点时分别使用 `release <full-source-sha> <target> <physical-node>` 或 `deploy <target> <full-source-sha> <physical-node>`。两个名字调用同一个 Runner 发布核心，谁被调用就用谁，不建立优先级或第二套发布路径；状态、重试和回滚分别使用 `status`、`retry`、`rollback`。
 - 指定单个目标和物理节点时，制品缺失由同一 Runner 仅构建该目标制品、再仅发布到指定节点；缓存命中直接发布。控制端不准备制品，也不扩大到其他节点。
 - 控制端只获取最新发布控制面、派发 GitHub 工作流、查询并展示结果；不得在控制端安装依赖、构建、上传、部署或回滚。
 - 实际执行优先使用阿里云 Runner；无法接单时使用 GitHub Hosted Runner。两者调用同一个发布核心，本机不是第三执行路线。

@@ -1,4 +1,4 @@
-name: Runner 1.6 shared release core
+name: Runner 1.7 shared release core
 description: Runs the same release implementation on Aliyun or GitHub Hosted runners
 inputs:
   operation:

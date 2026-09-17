@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Control-side Runner 1.6 entry. It only loads the latest control plane and dispatches GitHub Actions.
+# Control-side Runner 1.7 entry. It only loads the latest control plane and dispatches GitHub Actions.
 set -euo pipefail
 
 operation="${1:-}"
+export ZDT_DELIVERY_STARTED_MS="$(($(date +%s) * 1000))"
 case "$operation" in
   release|retry)
     { [ "$#" -eq 2 ] || [ "$#" -eq 4 ]; } || { echo "Usage: zdt-delivery $operation <full-source-sha-or-release-id> [target physical-node]" >&2; exit 64; }
