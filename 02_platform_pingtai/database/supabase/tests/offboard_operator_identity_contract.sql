@@ -87,4 +87,57 @@ begin
 end
 $assert$;
 
+insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at,realm_id,account_id)
+values('membership:offboard-return','member:offboard-fixture','mall:d1708f04df2dd8a61736852c4900fb43',
+  'operator','active',1,clock_timestamp(),'realm:l1','account:offboard-target');
+do $reinvite$
+begin
+  if (select status from access.membership where id='membership:offboard-target')<>'left'
+    or (select status from access.membership where id='membership:offboard-return')<>'active'
+    or (select status from access.membership where id='membership:offboard-member')<>'active' then
+    raise exception 'OP_REINVITATION_IDENTITY_BOUNDARY_INVALID';
+  end if;
+  begin
+    insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at,realm_id,account_id)
+    values('membership:offboard-duplicate','member:offboard-fixture','mall:d1708f04df2dd8a61736852c4900fb43',
+      'operator','active',1,clock_timestamp(),'realm:l1','account:offboard-target');
+    raise exception 'SECOND_ACTIVE_OP_WAS_ACCEPTED';
+  exception when unique_violation then null;
+  end;
+  begin
+    insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at,realm_id,account_id)
+    values('membership:offboard-duplicate-member','member:offboard-fixture','mall:d1708f04df2dd8a61736852c4900fb43',
+      'storefront','active',1,clock_timestamp(),'realm:l1','account:offboard-target');
+    raise exception 'SECOND_MB_WAS_ACCEPTED';
+  exception when unique_violation then null;
+  end;
+end
+$reinvite$;
+
+insert into identity.principal(id,status,created_at,updated_at)
+select 'principal:import:'||encode(public.digest('mall:d1708f04df2dd8a61736852c4900fb43:op-reinvite-fixture','sha256'),'hex'),
+  'active',clock_timestamp(),clock_timestamp();
+insert into member.profile(id,principal_id,display_name,status,created_at,updated_at)
+select 'member:import:'||digest_hash,'principal:import:'||digest_hash,'Imported OP','active',
+  clock_timestamp(),clock_timestamp()
+from (select encode(public.digest('mall:d1708f04df2dd8a61736852c4900fb43:op-reinvite-fixture','sha256'),'hex') digest_hash) identity;
+set role shopjob;
+select set_config('app.workload','jobs',true);
+select set_config('app.scope_id','mall:d1708f04df2dd8a61736852c4900fb43',true);
+select access.ensure_imported_membership('membership:import:'||digest_hash||':operator',
+  'member:import:'||digest_hash,'mall:d1708f04df2dd8a61736852c4900fb43','operator','op-reinvite-fixture')
+from (select encode(public.digest('mall:d1708f04df2dd8a61736852c4900fb43:op-reinvite-fixture','sha256'),'hex') digest_hash) identity;
+select access.ensure_imported_membership('membership:import:'||digest_hash||':operator',
+  'member:import:'||digest_hash,'mall:d1708f04df2dd8a61736852c4900fb43','operator','op-reinvite-fixture')
+from (select encode(public.digest('mall:d1708f04df2dd8a61736852c4900fb43:op-reinvite-fixture','sha256'),'hex') digest_hash) identity;
+reset role;
+do $import$
+begin
+  if (select count(*) from access.membership
+    where id like 'membership:import:%:operator' and employee_no='op-reinvite-fixture')<>1 then
+    raise exception 'OP_IMPORT_IDEMPOTENCE_LOST';
+  end if;
+end
+$import$;
+
 rollback;
