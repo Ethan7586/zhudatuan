@@ -153,7 +153,7 @@ async function installDependencies(adapter, controlRoot, targets) {
   const install = { argv: ['npm', 'ci', '--ignore-scripts', '--no-audit', '--no-fund'], timeoutMs: 20 * 60_000 };
   const started = performance.now();
   const workspaces = selectedWorkspaces(adapter, targets);
-  const sourceInstall = { ...install, argv: [...install.argv, ...workspaces.flatMap((workspace) => ['--workspace', workspace]), ...(workspaces.length ? ['--include-workspace-root'] : [])] };
+  const sourceInstall = { ...install, argv: sourceInstallArguments(install.argv, workspaces) };
   const results = await runIndependent([
     () => runCommand({ ...install, name: 'install-control-dependencies' }, { ...commandContext(adapter), projectRoot: engineRoot }),
     () => runCommand({ ...sourceInstall, name: 'install-source-dependencies' }, commandContext(adapter)),
@@ -166,6 +166,11 @@ async function installDependencies(adapter, controlRoot, targets) {
 export function selectedWorkspaces(adapter, targets) {
   const workspaces = targets.map((target) => adapter.targets[target]?.buildWorkspace ?? adapter.targets[target]?.workspace);
   return workspaces.every((workspace) => typeof workspace === 'string' && workspace.length > 0) ? [...new Set(workspaces)] : [];
+}
+
+export function sourceInstallArguments(base, workspaces) {
+  // The console builds from its own workspace dependencies; other targets still use root build tools.
+  return [...base, ...workspaces.flatMap((workspace) => ['--workspace', workspace]), ...(workspaces.some((workspace) => workspace !== '@shop/console') ? ['--include-workspace-root'] : [])];
 }
 
 async function deployExact(adapter, controlRoot, sourceSha, target, node) {
