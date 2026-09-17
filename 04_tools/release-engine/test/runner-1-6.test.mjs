@@ -7,7 +7,7 @@ import { promisify } from 'node:util';
 import test from 'node:test';
 import { parse } from 'yaml';
 
-import { deploymentState, observationDiagnostic, observedTarget, remoteRuntimeSyncScript, selectedWorkspaces, sourceFromIdentifier, sourceInstallArguments } from '../runner-1-6.mjs';
+import { deploymentState, observationDiagnostic, observedTarget, remoteRuntimeSyncScript, runnerFailureReceipt, selectedWorkspaces, sourceFromIdentifier, sourceInstallArguments } from '../runner-1-6.mjs';
 import { loadAdapter } from '../src/adapter.mjs';
 import { typecheckCacheDirectory } from '../src/build-core-1-6.mjs';
 import { DeliveryError } from '../src/errors.mjs';
@@ -127,6 +127,31 @@ test('status keeps failure diagnostics without hiding remote evidence', () => {
   assert.equal(unreadable.remoteFailure, null);
   const unhealthy = observationDiagnostic(new DeliveryError('COMMAND_FAILED', 'verify failed', { exitCode: 1, outputTail: JSON.stringify({ ok: false, error: { code: 'READINESS_TIMEOUT', message: 'not ready' } }) }));
   assert.equal(unhealthy.remoteFailure.code, 'READINESS_TIMEOUT');
+});
+
+test('manual rollback failure receipt exposes the final target state', () => {
+  const remoteFailure = {
+    ok: false,
+    error: {
+      code: 'ROLLBACK_FAILED',
+      details: {
+        rollbackFailure: { code: 'READINESS_TIMEOUT' },
+        current: '/releases/previous',
+        previous: '/releases/original',
+        serviceStatus: { activeState: 'failed' },
+        nextAction: 'Run status and recover manually.',
+      },
+    },
+  };
+  const receipt = runnerFailureReceipt(
+    new DeliveryError('COMMAND_FAILED', 'rollback failed', { exitCode: 1, outputTail: JSON.stringify(remoteFailure) }),
+    { operation: 'rollback', stage: 'rollback', sourceSha: sha, target: 'app', node: 'local', completedTargets: [] },
+  );
+  assert.equal(receipt.current, '/releases/previous');
+  assert.equal(receipt.previous, '/releases/original');
+  assert.equal(receipt.serviceStatus.activeState, 'failed');
+  assert.equal(receipt.recovery.code, 'READINESS_TIMEOUT');
+  assert.equal(receipt.nextAction, 'Run status and recover manually.');
 });
 
 test('simple OSS cache is reused when complete and rebuilt when missing', async () => {
