@@ -545,10 +545,15 @@ export function observationDiagnostic(unknown) {
   const error = asDeliveryError(unknown);
   const details = error.details ?? {};
   let remoteFailure = null;
-  try {
-    const parsed = JSON.parse(String(details.outputTail ?? '').trim());
-    if (parsed?.ok === false && parsed.error) remoteFailure = parsed.error;
-  } catch {}
+  for (const line of String(details.outputTail ?? '').trim().split(/\r?\n/).reverse()) {
+    try {
+      const parsed = JSON.parse(line);
+      if (parsed?.ok === false && parsed.error) {
+        remoteFailure = parsed.error;
+        break;
+      }
+    } catch {}
+  }
   return {
     code: error.code,
     error: error.message,

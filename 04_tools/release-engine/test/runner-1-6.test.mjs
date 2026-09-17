@@ -127,6 +127,8 @@ test('status keeps failure diagnostics without hiding remote evidence', () => {
   assert.equal(unreadable.remoteFailure, null);
   const unhealthy = observationDiagnostic(new DeliveryError('COMMAND_FAILED', 'verify failed', { exitCode: 1, outputTail: JSON.stringify({ ok: false, error: { code: 'READINESS_TIMEOUT', message: 'not ready' } }) }));
   assert.equal(unhealthy.remoteFailure.code, 'READINESS_TIMEOUT');
+  const noisy = observationDiagnostic(new DeliveryError('COMMAND_FAILED', 'rollback failed', { exitCode: 1, outputTail: `ssh warning\n${JSON.stringify({ ok: false, error: { code: 'ROLLBACK_FAILED' } })}\n` }));
+  assert.equal(noisy.remoteFailure.code, 'ROLLBACK_FAILED');
 });
 
 test('manual rollback failure receipt exposes the final target state', () => {
