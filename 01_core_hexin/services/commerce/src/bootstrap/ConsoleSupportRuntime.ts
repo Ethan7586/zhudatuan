@@ -25,8 +25,8 @@ import { RecordAudit } from '../modules/audit/03_application_yingyong/command/Re
 import { PgAuditRepository } from '../modules/audit/04_adapters_shixian/persistence/PgAuditRepository';
 import { commerceTelemetry, TELEMETRY } from '../foundation/telemetry/Telemetry';
 
-export const CONSOLE_SUPPORT_SCHEMA_VERSION = '20260916123000' as const;
-export const CONSOLE_SUPPORT_SCHEMA_CHECKSUM = '566f98cc283cabf3d9327186f1f591f68b16ffb8f9326747db87f26bc2f39a24' as const;
+export const CONSOLE_SUPPORT_SCHEMA_VERSION = '20260916143000' as const;
+export const CONSOLE_SUPPORT_SCHEMA_CHECKSUM = 'bd223ecb2e04ba29dce4c4a5b5785741c01cb2e1d746466c91d4da82c46115f6' as const;
 
 interface ConsoleSupportCompatibilityRow {
   readonly current_user: string;
@@ -106,6 +106,7 @@ export async function consoleSupportRuntimeCompatibility(pool: DatabasePool): Pr
       to_regclass('support.ticket'),to_regclass('support.conversation'),to_regclass('support.message'),
       to_regclass('support.history'),to_regclass('support.evidence'),to_regclass('support.agent'),
       to_regclass('support.assignmentrule'),to_regclass('support.sla'),to_regclass('support.assignment'),
+      to_regclass('support.escalation'),
       to_regclass('runtime.job'),to_regclass('risk.policy'),
       to_regclass('risk.policyversion'),to_regclass('risk.signal'),to_regclass('risk.decision'),
       to_regclass('risk.listentry'),to_regclass('risk.case'),to_regclass('audit.record'),
@@ -146,7 +147,8 @@ export async function consoleSupportRuntimeCompatibility(pool: DatabasePool): Pr
       and has_table_privilege(current_user,'support.agent','SELECT')
       and has_table_privilege(current_user,'support.assignmentrule','SELECT')
       and has_table_privilege(current_user,'support.sla','SELECT')
-      and has_table_privilege(current_user,'support.assignment','INSERT')
+      and has_table_privilege(current_user,'support.assignment','SELECT,INSERT,UPDATE')
+      and has_table_privilege(current_user,'support.escalation','SELECT,INSERT')
       and has_table_privilege(current_user,'runtime.job','INSERT')
       and has_table_privilege(current_user,'risk.policy','SELECT')
       and has_table_privilege(current_user,'risk.policyversion','SELECT')

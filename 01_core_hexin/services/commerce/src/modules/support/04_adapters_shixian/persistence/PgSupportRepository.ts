@@ -16,7 +16,11 @@ export class PgSupportRepository implements SupportPort {
   }
 
   async assertOrder(order: string, scope: string, member: string, memberOnly: boolean): Promise<void> {
-    if (!await this.orders.execute(this.database, order, scope, member, memberOnly)) throw new Error('SUPPORT_ORDER_SCOPE_INVALID');
+    if (!await this.order(order, scope, member, memberOnly)) throw new Error('SUPPORT_ORDER_SCOPE_INVALID');
+  }
+
+  async order(order: string, scope: string, member: string, memberOnly: boolean) {
+    return this.orders.execute(this.database, order, scope, member, memberOnly);
   }
 
   async benefit(type: string, id: string, scope: string, member: string): Promise<Readonly<Record<string, unknown>>> {

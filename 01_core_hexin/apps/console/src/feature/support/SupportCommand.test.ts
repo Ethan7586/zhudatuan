@@ -2,8 +2,9 @@ import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
-import { canCreateSupportCase, canReviewSupportCase, canSendSupportMessage, canUploadSupportAttachment, createSupportCase,
-  reviewSupportPriority, sendSupportMessage, uploadSupportAttachment } from './SupportCommand';
+import { advanceSupportCase, assignSupportCase, canAdvanceSupportCase, canAssignSupportCase, canCreateSupportCase,
+  canEscalateSupportCase, canReviewSupportCase, canSendSupportMessage, canUploadSupportAttachment, createSupportCase,
+  escalateSupportCase, reviewSupportPriority, sendSupportMessage, uploadSupportAttachment } from './SupportCommand';
 
 const requests: Request[] = [];
 const bodies: unknown[] = [];
@@ -22,10 +23,29 @@ const server = setupServer(
   }),
   http.patch('*/api/v1/support/cases/:caseid', async ({ request }) => {
     requests.push(request);
-    bodies.push(await request.clone().json());
-    return HttpResponse.json({ id: 'case:one', conversation_id: 'conversation:one', priority: 'high', skill: 'general', state: 'open',
+    const body = await request.clone().json() as Record<string, unknown>;
+    bodies.push(body);
+    return HttpResponse.json({ id: 'case:one', conversation_id: 'conversation:one', priority: body.priority ?? 'high', skill: 'general',
+      state: body.escalation === 'platform' ? 'waiting' : body.state ?? 'open',
       assigned_agent_id: null, response_due_at: null, resolution_due_at: null, created_at: '2026-09-10T00:00:00.000Z',
       updated_at: '2026-09-16T00:00:00.000Z', version: 13, subject: '退款进度', order_id: null, channel: 'inapp' });
+  }),
+  http.put('*/api/v1/support/assignments/:assignmentid', async ({ request }) => {
+    requests.push(request);
+    bodies.push(await request.clone().json());
+    return HttpResponse.json({ id: 'assignment:new', ticket_id: 'case:one', agent_id: 'agent:next' });
+  }),
+  http.put('*/api/v1/support/cases/:caseid/closure', ({ request }) => {
+    requests.push(request);
+    return HttpResponse.json({ id: 'case:one', conversation_id: 'conversation:one', priority: 'high', skill: 'general', state: 'closed',
+      assigned_agent_id: 'agent:next', response_due_at: null, resolution_due_at: null, created_at: '2026-09-10T00:00:00.000Z',
+      updated_at: '2026-09-16T00:00:00.000Z', version: 14, subject: '退款进度', order_id: null, channel: 'inapp' });
+  }),
+  http.delete('*/api/v1/support/cases/:caseid/closure', ({ request }) => {
+    requests.push(request);
+    return HttpResponse.json({ id: 'case:one', conversation_id: 'conversation:one', priority: 'high', skill: 'general', state: 'open',
+      assigned_agent_id: 'agent:next', response_due_at: null, resolution_due_at: null, created_at: '2026-09-10T00:00:00.000Z',
+      updated_at: '2026-09-16T00:00:00.000Z', version: 15, subject: '退款进度', order_id: null, channel: 'inapp' });
   }),
   http.post('*/api/v1/support/cases/:caseid/attachments', async ({ request }) => {
     requests.push(request);
@@ -102,6 +122,24 @@ describe('support message command', () => {
     expect(canReviewSupportCase(context)).toBe(true);
   });
 
+  it('transfers, escalates and advances a ticket through versioned generated operations', async () => {
+    await assignSupportCase(context, 'case:one', 12, 'agent:next');
+    await escalateSupportCase(context, 'case:one', 12, 'open');
+    await advanceSupportCase(context, 'case:one', 12, 'open');
+    await advanceSupportCase(context, 'case:one', 13, 'resolved');
+    await advanceSupportCase(context, 'case:one', 14, 'closed');
+
+    expect(new URL(requests[0]!.url).pathname).toMatch(/^\/api\/v1\/support\/assignments\/assignment%3A/);
+    expect(bodies[0]).toEqual({ case: 'case:one', agent: 'agent:next', reason: 'manual-transfer' });
+    expect(bodies[1]).toEqual({ escalation: 'platform' });
+    expect(bodies[2]).toEqual({ state: 'resolved' });
+    expect(requests.map(({ method }) => method)).toEqual(['PUT', 'PATCH', 'PATCH', 'PUT', 'DELETE']);
+    expect(requests.every((request) => request.headers.get('if-match') !== null)).toBe(true);
+    expect(canAssignSupportCase(context)).toBe(true);
+    expect(canEscalateSupportCase(context, 'open')).toBe(true);
+    expect(canAdvanceSupportCase(context, 'closed')).toBe(true);
+  });
+
   it('uploads a bounded image through the attachment operation', async () => {
     const file = new File([new Uint8Array([1, 2, 3])], 'proof.png', { type: 'image/png' });
 
@@ -132,8 +170,9 @@ const context: ConsoleContext = {
     actor: 'actor:agent',
     membership: 'membership:agent',
     accessVersion: 7,
-    permissions: ['support.message.send', 'support.case.create', 'support.case.manage'],
-    capabilities: ['support.messages.send', 'support.cases.create', 'support.cases.update', 'support.attachments.create'],
+    permissions: ['support.message.send', 'support.case.create', 'support.case.manage', 'support.assignment.manage'],
+    capabilities: ['support.messages.send', 'support.cases.create', 'support.cases.update', 'support.cases.close',
+      'support.cases.reopen', 'support.attachments.create', 'support.assignments.manage'],
     assurance: { level: 2 },
     csrf: 'csrf-token-for-support',
     target: 'console',

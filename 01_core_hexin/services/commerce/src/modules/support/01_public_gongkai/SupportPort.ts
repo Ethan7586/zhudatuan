@@ -3,6 +3,7 @@ import type { OperationDatabase } from '../../../foundation/application/ModuleOp
 import type { AssignmentRule } from '../02_domain_yewu/model/AssignmentRule';
 import type { Agent } from '../02_domain_yewu/policy/AssignmentPolicy';
 import type { TicketPriority } from '../02_domain_yewu/model/Ticket';
+import type { OrderSummary } from '../../order_dingdan';
 
 export interface EncryptedMessage { readonly id: string; readonly ciphertext: string; readonly fingerprint: string; readonly keyVersion: string }
 export interface SlaPolicy { readonly response: number; readonly resolution: number }
@@ -10,6 +11,7 @@ export type MessageVisibility = 'public' | 'internal';
 
 export interface SupportPort {
   member(membership: string): Promise<string>;
+  order(order: string, scope: string, member: string, memberOnly: boolean): Promise<OrderSummary | null>;
   assertOrder(order: string, scope: string, member: string, memberOnly: boolean): Promise<void>;
   benefit(type: string, id: string, scope: string, member: string): Promise<Readonly<Record<string, unknown>>>;
   agents(scope: string): Promise<readonly Agent[]>;

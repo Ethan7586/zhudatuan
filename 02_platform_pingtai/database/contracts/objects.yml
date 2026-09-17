@@ -10196,6 +10196,22 @@ objects:
     objectType: table
     target: support.assignment
     privilege: insert
+  - id: shopconsole:table:support.assignment:select
+    kind: grant
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260916143000_enable_console_support_lifecycle_actions.sql
+    role: shopconsole
+    objectType: table
+    target: support.assignment
+    privilege: select
+  - id: shopconsole:table:support.assignment:update
+    kind: grant
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260916143000_enable_console_support_lifecycle_actions.sql
+    role: shopconsole
+    objectType: table
+    target: support.assignment
+    privilege: update
   - id: shopconsole:table:support.assignmentrule:select
     kind: grant
     owner: support
@@ -10228,6 +10244,22 @@ objects:
     objectType: table
     target: support.conversation
     privilege: update
+  - id: shopconsole:table:support.escalation:insert
+    kind: grant
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260916143000_enable_console_support_lifecycle_actions.sql
+    role: shopconsole
+    objectType: table
+    target: support.escalation
+    privilege: insert
+  - id: shopconsole:table:support.escalation:select
+    kind: grant
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260916143000_enable_console_support_lifecycle_actions.sql
+    role: shopconsole
+    objectType: table
+    target: support.escalation
+    privilege: select
   - id: shopconsole:table:support.evidence:select
     kind: grant
     owner: support
@@ -26836,6 +26868,14 @@ objects:
     kind: policy
     owner: support
     source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
+  - id: support.assignment.consolesupportassignmentselect
+    kind: policy
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260916143000_enable_console_support_lifecycle_actions.sql
+  - id: support.assignment.consolesupportassignmentupdate
+    kind: policy
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260916143000_enable_console_support_lifecycle_actions.sql
   - id: support.assignment.jobscope
     kind: policy
     owner: support
@@ -26876,6 +26916,14 @@ objects:
     kind: policy
     owner: support
     source: 02_platform_pingtai/database/supabase/migrations/20260821046000_support_lifecycle.sql
+  - id: support.escalation.consolesupportescalationinsert
+    kind: policy
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260916143000_enable_console_support_lifecycle_actions.sql
+  - id: support.escalation.consolesupportescalationselect
+    kind: policy
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260916143000_enable_console_support_lifecycle_actions.sql
   - id: support.escalation.jobscope
     kind: policy
     owner: support

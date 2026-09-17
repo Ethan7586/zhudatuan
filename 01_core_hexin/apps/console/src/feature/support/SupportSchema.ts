@@ -8,6 +8,8 @@ export const SupportCaseSchema = z.object({
   resolution_due_at: z.string().nullable(), created_at: z.string().min(1), updated_at: z.string().min(1),
   version: DatabaseIntegerSchema, subject: z.string().min(1), member_id: z.string().nullable().optional(),
   order_id: z.string().nullable(), channel: z.string().min(1),
+  order: z.object({ id: z.string().min(1), number: z.string().min(1), state: z.string().min(1), paymentState: z.string().min(1),
+    fulfillmentState: z.string().min(1), totalMinor: z.number() }).nullable().optional(),
 }).passthrough();
 const SupportCaseViewsSchema = z.object({
   handling: DatabaseIntegerSchema,
@@ -35,9 +37,15 @@ export const SupportHistorySchema = z.object({
   occurred_at: z.string().min(1),
 }).passthrough();
 export const SupportHistoryPageSchema = pageEnvelope(SupportHistorySchema);
+export const SupportAgentSchema = z.object({
+  id: z.string().min(1), membership_id: z.string().min(1), skills: z.array(z.string()).default([]),
+  capacity: DatabaseIntegerSchema, state: z.string().min(1),
+}).passthrough();
+export const SupportAgentPageSchema = pageEnvelope(SupportAgentSchema);
 export type SupportCaseView = 'handling' | 'review' | 'created' | 'all';
 export type SupportMessageVisibility = 'public' | 'internal';
 export type SupportCase = z.infer<typeof SupportCaseSchema>;
 export type SupportMessage = z.infer<typeof SupportMessageSchema>;
 export type SupportAttachment = z.infer<typeof SupportAttachmentSchema>;
 export type SupportHistory = z.infer<typeof SupportHistorySchema>;
+export type SupportAgent = z.infer<typeof SupportAgentSchema>;

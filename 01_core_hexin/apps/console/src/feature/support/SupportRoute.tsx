@@ -7,11 +7,13 @@ import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
 import { pageCursor } from '../../shared/url/PageCursor';
 import { scopePath } from '../../shared/url/ScopePath';
 import { SupportCaseRail } from './SupportCaseRail';
-import { canCreateSupportCase, canReviewSupportCase, canSendSupportMessage, canUploadSupportAttachment, createSupportCase,
-  reviewSupportPriority, sendSupportMessage, uploadSupportAttachment } from './SupportCommand';
+import { advanceSupportCase, assignSupportCase, canAdvanceSupportCase, canAssignSupportCase, canCreateSupportCase,
+  canEscalateSupportCase, canReviewSupportCase, canSendSupportMessage, canUploadSupportAttachment, createSupportCase,
+  escalateSupportCase, reviewSupportPriority, sendSupportMessage, uploadSupportAttachment } from './SupportCommand';
 import { SupportContextPanel } from './SupportContextPanel';
 import { SupportConversation } from './SupportConversation';
-import { readCases, readHistory, readMessages, supportCaseKey, supportHistoryKey, supportMessageKey } from './SupportQuery';
+import { readAgents, readCases, readHistory, readMessages, supportAgentKey, supportCaseKey, supportHistoryKey,
+  supportMessageKey } from './SupportQuery';
 import { supportRoleLabel, type SupportPriorityGrade } from './SupportPresentation';
 import { SUPPORT_PREFETCH_STALE_TIME_MS } from './SupportPrefetch';
 import type { SupportCaseView, SupportMessage, SupportMessageVisibility } from './SupportSchema';
@@ -53,6 +55,15 @@ export function Component() {
     staleTime: SUPPORT_PREFETCH_STALE_TIME_MS,
     refetchOnWindowFocus: false,
   });
+  const agentsAllowed = context.session.permissions.includes('support.agent.read')
+    && context.session.capabilities.includes('support.agents.read');
+  const agentsQuery = useQuery({
+    queryKey: supportAgentKey(context),
+    queryFn: ({ signal }) => readAgents(context, signal),
+    enabled: agentsAllowed,
+    staleTime: SUPPORT_PREFETCH_STALE_TIME_MS,
+    refetchOnWindowFocus: false,
+  });
   const [olderMessages, setOlderMessages] = useState<readonly SupportMessage[]>([]);
   const [olderCursor, setOlderCursor] = useState<string>();
   const [historyLoaded, setHistoryLoaded] = useState(false);
@@ -74,6 +85,9 @@ export function Component() {
   const sendAllowed = selectedCase !== undefined && canSendSupportMessage(context, selectedCase.state);
   const attachAllowed = selectedCase !== undefined && canUploadSupportAttachment(context, selectedCase.state);
   const reviewAllowed = canReviewSupportCase(context);
+  const assignAllowed = selectedCase !== undefined && selectedCase.state !== 'closed' && canAssignSupportCase(context);
+  const escalateAllowed = selectedCase !== undefined && canEscalateSupportCase(context, selectedCase.state);
+  const advanceAllowed = selectedCase !== undefined && canAdvanceSupportCase(context, selectedCase.state);
   const createAllowed = canCreateSupportCase(context);
   const createUnavailableReason = createAllowed ? '' : '当前身份没有新建工单权限';
   const sendUnavailableReason = selectedCase === undefined ? '工单详情尚未加载'
@@ -113,10 +127,20 @@ export function Component() {
     },
     onSuccess: async () => { await Promise.all([messagesQuery.refetch(), historyQuery.refetch()]); },
   });
+  const workflow = useMutation({
+    mutationFn: async (action: Readonly<{ kind: 'advance' | 'assign' | 'escalate'; agent?: string }>) => {
+      if (selectedCase === undefined) throw new Error('SUPPORT_CASE_NOT_LOADED');
+      if (action.kind === 'assign') return assignSupportCase(context, selectedCase.id, selectedCase.version, action.agent!);
+      if (action.kind === 'escalate') return escalateSupportCase(context, selectedCase.id, selectedCase.version, selectedCase.state);
+      return advanceSupportCase(context, selectedCase.id, selectedCase.version, selectedCase.state);
+    },
+    onSuccess: async () => { await Promise.all([casesQuery.refetch(), historyQuery.refetch(), agentsQuery.refetch()]); },
+  });
   const createError = safeQueryError(create.error);
   const sendError = safeQueryError(send.error);
   const reviewError = safeQueryError(review.error);
   const attachmentError = safeQueryError(attach.error);
+  const workflowError = safeQueryError(workflow.error);
   const scopeName = context.scope.name?.trim();
   const brandName = scopeName === undefined || scopeName.length === 0 ? '当前商城' : normalizeConsoleCopy(scopeName);
   const roleLabel = supportRoleLabel(context.session.governance?.level);
@@ -185,8 +209,14 @@ export function Component() {
           onNext={(cursor) => { void loadOlder(cursor); }} onRetry={() => { void messagesQuery.refetch(); }}
           onAttach={(file, visibility) => attach.mutateAsync({ file, visibility }).then(() => undefined)}
           onSend={(message, visibility) => send.mutateAsync({ message, visibility }).then(() => undefined)} />
-        <SupportContextPanel brandName={brandName} canReview={reviewAllowed} history={historyQuery.data?.items ?? []}
+        <SupportContextPanel brandName={brandName} agents={agentsQuery.data?.items ?? []} canAssign={assignAllowed}
+          canEscalate={escalateAllowed} canAdvance={advanceAllowed} actionPending={workflow.isPending}
+          {...(workflow.isError ? { actionError: `操作失败，请刷新工单后重试。 ${workflowError ?? 'REQUEST_FAILED'}` } : {})}
+          canReview={reviewAllowed} history={historyQuery.data?.items ?? []}
           reviewing={review.isPending} onReview={(grade) => review.mutateAsync(grade).then(() => undefined)}
+          onAssign={(agent) => workflow.mutateAsync({ kind: 'assign', agent }).then(() => undefined)}
+          onEscalate={() => workflow.mutateAsync({ kind: 'escalate' }).then(() => undefined)}
+          onAdvance={() => workflow.mutateAsync({ kind: 'advance' }).then(() => undefined)}
           {...(review.isError ? { reviewError: `定级失败，请刷新后重试。 ${reviewError ?? 'REQUEST_FAILED'}` } : {})}
           {...(selectedCase === undefined ? {} : { selectedCase })} {...(caseId === undefined ? {} : { caseId })} />
       </div>
