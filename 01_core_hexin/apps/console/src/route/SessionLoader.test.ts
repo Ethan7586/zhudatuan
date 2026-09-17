@@ -170,6 +170,19 @@ describe('console scope loader profile isolation', () => {
     expect(response.headers.get('location')).toBe('/scopes/platform/organization-platform-root/settings/profile');
   });
 
+  it('lands an L1 operator in the mall supplied by the session, not the L0 tenant', async () => {
+    const mall = { kind: 'mall' as const, id: 'mall:d1708f04df2dd8a61736852c4900fb43', name: '宏泰甄选' };
+    api.identitySessionRead.mockResolvedValue({ ...session, membership: 'membership:l1:operator',
+      scope: mall, scopes: [mall], governance: { level: 'senior_administrator', exactOwner: false,
+        organization: mall.id } });
+
+    const response = await landingLoader({
+      params: {}, request: new Request('https://console.hbbtzn.com/'),
+    } as never);
+
+    expect(response.headers.get('location')).toBe('/scopes/mall/mall%3Ad1708f04df2dd8a61736852c4900fb43/cockpit');
+  });
+
   it('does not hand a landing session to a different route', async () => {
     await landingLoader({
       params: {},

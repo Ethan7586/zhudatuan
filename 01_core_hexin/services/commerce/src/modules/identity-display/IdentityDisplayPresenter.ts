@@ -45,12 +45,12 @@ export async function resolveIdentityDisplayMembership(
       return undefined;
     }
   }
-  if (!/^OP-[2-9A-HJKMNP-Z]{4}$/i.test(code)) return undefined;
+  if (!/^OP-[2-9A-HJKMNP-Z]{6}$/i.test(code)) return undefined;
   try {
     if (!await identityDisplayRepositoryAvailable(database)) return undefined;
     const result = await database.query<{ readonly membership_id: string }>(`select membership_id
-      from identity_display.code_mapping where context_id=$1 and kind=$2 and code=$3`,
-    [contextId, kind, code.toUpperCase()]);
+      from identity_display.code_mapping where kind=$1 and code=$2`,
+    [kind, code.toUpperCase()]);
     return result.rows[0]?.membership_id;
   } catch {
     return undefined;
@@ -78,11 +78,11 @@ async function assignDisplays(
   const membershipIds = [...new Set(sources.map(({ membershipId }) => membershipId))];
   const candidates = membershipIds.flatMap((membershipId) =>
     Array.from({ length: 64 }, (_, attempt) => identityCodeCandidate(contextId, kind, membershipId, attempt)));
-  await database.query('select pg_advisory_xact_lock(hashtext($1))', [`identity-display:${contextId}:${kind}`]);
+  await database.query('select pg_advisory_xact_lock(hashtext($1))', ['identity-display:operator']);
   const stored = await database.query<StoredCode>(`select membership_id,code
     from identity_display.code_mapping
-    where context_id=$1 and kind=$2 and (membership_id=any($3::text[]) or code=any($4::text[]))`,
-  [contextId, kind, membershipIds, candidates]);
+    where kind=$1 and (membership_id=any($2::text[]) or code=any($3::text[]))`,
+  [kind, membershipIds, candidates]);
   const existing = new Map(stored.rows
     .filter(({ membership_id }) => membershipIds.includes(membership_id))
     .map(({ membership_id, code }) => [membership_id, code]));
@@ -98,8 +98,10 @@ async function assignDisplays(
       select $1,$2,membership_id,code from unnest($3::text[],$4::text[]) assigned(membership_id,code)
       on conflict do nothing`, [contextId, kind, missing, missing.map((membershipId) => assigned.get(membershipId)!) ]);
   }
+  const confirmed = await database.query<StoredCode>(`select membership_id,code
+    from identity_display.code_mapping where kind=$1 and membership_id=any($2::text[])`, [kind, membershipIds]);
   const sourceById = new Map(sources.map((source) => [source.membershipId, source]));
-  return new Map([...assigned].map(([membershipId, code]) => {
+  return new Map(confirmed.rows.map(({ membership_id: membershipId, code }) => {
     const mobile = sourceById.get(membershipId)?.maskedMobile;
     const hint: IdentityDisplayHint = { kind: 'operator', code, label: '管理身份',
       ...(mobile == null ? {} : { maskedMobile: mobile }) };

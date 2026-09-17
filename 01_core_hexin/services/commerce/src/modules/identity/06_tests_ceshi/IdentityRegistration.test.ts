@@ -881,7 +881,7 @@ describe('canonical member registration security boundary', () => {
     expect(harness.queries.some(({ text }) => text.includes('insert into access.platformowner'))).toBe(false);
     const operatorScopes = harness.queries.find(({ text, values }) => text.includes('insert into access.scopegrant')
       && values.includes('tenant-zhudatuan'));
-    expect(operatorScopes?.text).toContain("'tenant'");
+    expect(operatorScopes?.values[2]).toBe('tenant-zhudatuan');
     const membership = harness.queries.find(({ text }) => text.includes('insert into access.membership('));
     expect(membership?.text).toContain('operator_display_name');
     expect(membership?.values).toContain('测试会员');
@@ -937,7 +937,8 @@ describe('canonical member registration security boundary', () => {
     const role = harness.queries.find(({ text }) => text.includes('insert into access.membershiprole'));
     expect(role?.values).toContain('role-senior-administrator-v1:tenant-zhudatuan');
     const grant = harness.queries.find(({ text }) => text.includes('insert into access.scopegrant'));
-    expect(grant?.values).toContain('tenant-zhudatuan');
+    expect(grant?.values[2]).toBe(operatorOrganization);
+    expect(grant?.text).toContain('select kind from organization.organization where id=$3');
   });
 
   it('creates a fresh OP identity after offboarding without reviving its old code or changing MB', async () => {

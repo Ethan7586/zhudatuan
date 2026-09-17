@@ -11,7 +11,7 @@ export function identityCodeCandidate(
   membershipId: string,
   attempt = 0,
 ): IdentityCode {
-  const length = 4;
+  const length = 6;
   const digest = createHash('sha256').update(`${contextId}\0${kind}\0${membershipId}\0${attempt}`).digest();
   let value = digest.readBigUInt64BE();
   let suffix = '';

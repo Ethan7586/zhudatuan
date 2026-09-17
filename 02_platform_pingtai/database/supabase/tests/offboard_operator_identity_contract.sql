@@ -20,6 +20,40 @@ values('membership:offboard-target','role-senior-administrator-v1:tenant-zhudatu
 insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version)
 values('scope:offboard-senior','membership:offboard-target','tenant','tenant-zhudatuan',
   'organization-platform-root/tenant-zhudatuan','allow',clock_timestamp()-interval '1 day',2);
+update access.scopegrant set scope_kind='mall',scope_id='mall:d1708f04df2dd8a61736852c4900fb43',
+  scope_path='mall:d1708f04df2dd8a61736852c4900fb43' where id='scope:offboard-senior';
+do $scope$
+declare projected jsonb;
+begin
+  select grants into projected from access.resolve_membership('membership:offboard-target');
+  if not exists(select 1 from jsonb_array_elements(projected) grant_row
+    where grant_row->'scope'->>'id'='mall:d1708f04df2dd8a61736852c4900fb43'
+      and jsonb_array_length(grant_row->'permissions')>0)
+    or exists(select 1 from jsonb_array_elements(projected) grant_row
+      where grant_row->'scope'->>'id'='tenant-zhudatuan') then
+    raise exception 'L1_OPERATOR_HOME_SCOPE_PROJECTION_INVALID';
+  end if;
+end
+$scope$;
+update access.scopegrant set scope_kind='tenant',scope_id='tenant-zhudatuan',
+  scope_path='organization-platform-root/tenant-zhudatuan' where id='scope:offboard-senior';
+
+insert into identity_display.code_mapping(context_id,kind,membership_id,code)
+values('mall:l1','operator','membership:offboard-owner','OP-7K2M8Q');
+do $identity_code$
+begin
+  begin
+    insert into identity_display.code_mapping(context_id,kind,membership_id,code)
+    values('mall:l1','operator','membership:offboard-target','OP-7K2M');
+    raise exception 'FOUR_CHARACTER_OPERATOR_CODE_ACCEPTED';
+  exception when check_violation then null; end;
+  begin
+    insert into identity_display.code_mapping(context_id,kind,membership_id,code)
+    values('mall:l2','operator','membership:offboard-target','OP-7K2M8Q');
+    raise exception 'CROSS_CONTEXT_OPERATOR_CODE_COLLISION_ACCEPTED';
+  exception when unique_violation then null; end;
+end
+$identity_code$;
 insert into access.administratoridentity(
   id,membership_id,realm_id,account_id,principal_id,host_node_id,status,version,created_at
 ) values

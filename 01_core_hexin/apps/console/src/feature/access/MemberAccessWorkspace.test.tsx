@@ -130,9 +130,9 @@ describe('member directory pagination', () => {
 
   it('distinguishes administrators with the same mobile suffix and uses the code in target actions', async () => {
     const first = { ...member('first', '同名管理员'), mobile_masked: '134****7586',
-      identity_display: { kind: 'operator', code: 'OP-7K2M', label: '管理身份', maskedMobile: '134****7586' } as const };
+      identity_display: { kind: 'operator', code: 'OP-7K2M8Q', label: '管理身份', maskedMobile: '134****7586' } as const };
     const second = { ...member('second', '同名管理员'), mobile_masked: '192****7586',
-      identity_display: { kind: 'operator', code: 'OP-8R3A', label: '管理身份', maskedMobile: '192****7586' } as const };
+      identity_display: { kind: 'operator', code: 'OP-8R3A5B', label: '管理身份', maskedMobile: '192****7586' } as const };
     server.use(
       http.get('*/api/v1/members', () => HttpResponse.json({ items: [first, second], count: 2 })),
       http.get('*/api/v1/access/center', () => HttpResponse.json({
@@ -144,11 +144,11 @@ describe('member directory pagination', () => {
     const user = userEvent.setup();
     renderWorkspace(ownerContext());
 
-    expect(await screen.findByText('OP-7K2M')).toBeTruthy();
-    expect(screen.getByText('OP-8R3A')).toBeTruthy();
+    expect(await screen.findByText('OP-7K2M8Q')).toBeTruthy();
+    expect(screen.getByText('OP-8R3A5B')).toBeTruthy();
     await user.click(screen.getAllByRole('row', { name: '查看管理员 同名管理员' })[0]!);
-    expect(screen.getByRole('button', { name: '降级管理身份 OP-7K2M' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: '移除管理身份 OP-7K2M' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '降级管理身份 OP-7K2M8Q' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '移除管理身份 OP-7K2M8Q' })).toBeTruthy();
   });
 
   it('upgrades an ordinary administrator from the detail panel and verifies the authoritative reread', async () => {
@@ -268,13 +268,18 @@ describe('member directory pagination', () => {
     expect(screen.queryByRole('dialog', { name: '验证后删除管理员' })).toBeNull();
   });
 
-  it('shows the current L1 operation scope instead of the target L0 role scope in an existing verification dialog', async () => {
+  it('demotes in the current L1 scope without an extra verification dialog', async () => {
     const owner = ownerContext();
+    let requestBody: unknown;
     server.use(
       http.get('*/api/v1/members', () => HttpResponse.json({ items: [member('target', '高级管理员 · 7586')], count: 1 })),
       http.get('*/api/v1/access/center', () => HttpResponse.json({
         items: [accessMembership('membership:target', '高级管理员 · 7586', true)], count: 1, roles: [],
       })),
+      http.put('*/api/v1/access/roles/:roleid', async ({ request }) => {
+        requestBody = await request.json();
+        return HttpResponse.json({ action: 'demote', changed: true, membership: 'membership:target' });
+      }),
     );
     const user = userEvent.setup();
     renderWorkspace({ ...owner, scope: { kind: 'mall', id: 'mall:hbbtzn', name: '宏泰甄选' },
@@ -282,9 +287,8 @@ describe('member directory pagination', () => {
     await user.click(await screen.findByRole('row', { name: '查看管理员 高级管理员 · 7586' }));
     await user.click(screen.getByRole('button', { name: '降级为普通管理员' }));
 
-    expect(await screen.findByRole('dialog', { name: '验证后降级普通管理员' })).toBeTruthy();
-    expect(screen.getByText('当前范围：宏泰甄选')).toBeTruthy();
-    expect(screen.queryByText('当前范围：主打团平台')).toBeNull();
+    expect(screen.queryByRole('dialog', { name: '验证后降级普通管理员' })).toBeNull();
+    expect(requestBody).toMatchObject({ action: 'demote', membership: 'membership:target' });
   });
 
   it('lets a senior administrator remove an ordinary administrator without exposing peer-governance controls', async () => {
@@ -366,7 +370,7 @@ describe('member directory pagination', () => {
     await user.click(screen.getByRole('button', { name: '降级为普通管理员' }));
 
     expect((await screen.findAllByText('管理员 · 7586')).length).toBeGreaterThan(0);
-    expect(requestBody).toMatchObject({ action: 'revoke', membership: 'membership:target',
+    expect(requestBody).toMatchObject({ action: 'demote', membership: 'membership:target',
       scope: 'organization-platform-root', scopeSource: 'direct' });
     expect(screen.queryByRole('button', { name: '降级为普通管理员' })).toBeNull();
   });

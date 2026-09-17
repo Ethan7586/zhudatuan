@@ -241,6 +241,8 @@ const REPAIR_FILES = [
   '20260917130000_offboard_operator_identity.sql',
   '20260917140000_operator_reinvitation_lifecycle.sql',
   '20260917160000_demote_operator_identity.sql',
+  '20260917170000_replace_operator_display_codes.sql',
+  '20260917180000_bind_l1_operator_to_home_mall.sql',
 ];
 
 const mode = process.argv[2];

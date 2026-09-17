@@ -90,8 +90,10 @@ export class AccessPort {
     await database.query(`insert into access.membershiprole(membership_id,role_id,effective_at) values
       ($1,$2,transaction_timestamp()),($1,'role:self',transaction_timestamp())`, [input.operatorMembership, input.operatorRole]);
     await database.query(`insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version) values
-      ($1,$2,'tenant',$3,$3,'allow',transaction_timestamp(),1),($4,$2,'self',$5,$5,'allow',transaction_timestamp(),1)`,
-    [input.operatorScopes[0], input.operatorMembership, input.managementOrganization, input.operatorScopes[1], `self:${input.principal}`]);
+      ($1,$2,(select kind from organization.organization where id=$3),$3,$3,'allow',transaction_timestamp(),1),
+      ($4,$2,'self',$5,$5,'allow',transaction_timestamp(),1)`,
+    [input.operatorScopes[0], input.operatorMembership, input.operatorOrganization,
+      input.operatorScopes[1], `self:${input.principal}`]);
     const row = membership.rows[0];
     if (!row) throw new Error('MEMBERSHIP_CREATE_FAILED');
     return row;
