@@ -11,6 +11,7 @@ import { sovereignUpgradeAction } from './SovereignUpgradeOperation';
 import { memberImportOperations } from './MemberImportOperations';
 import { memberCustomProfileActions } from './MemberCustomProfileOperations';
 import { memberOperatorReadActions } from './MemberReadOperations';
+import { readCurrentMemberProfile } from '../04_adapters_shixian/persistence/MemberProfileRepository';
 
 export function memberOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
@@ -21,12 +22,7 @@ export function memberOperations(context: ModuleContext): ModuleOperations {
     ...memberOperatorReadActions(kms),
     'member.profile.read': async (request, database) => {
       const access = requireAccess(request);
-      return rowResult(await database.query(`select profile.id,profile.display_name,profile.status,profile.mobile_token is not null mobile_bound,
-        membership.id membership_id,membership.organization_id,organization.name organization_name,
-        membership.employee_no,membership.joined_at,membership.access_version
-        from access.membership membership join member.profile profile on profile.id=membership.member_id
-        join organization.organization organization on organization.id=membership.organization_id
-        where membership.id=$1 and membership.status='active'`, [access.membership.id]));
+      return rowResult(await readCurrentMemberProfile(database, access.membership.id));
     },
     'member.malls.open': hostedMallOpeningAction,
     'member.sovereignty.upgrade': sovereignUpgradeAction,

@@ -16,6 +16,15 @@ export async function readSecurityProfile(database: OperationDatabase, principal
   };
 }
 
+export function readCurrentMemberProfile(database: OperationDatabase, membershipId: string) {
+  return database.query(`select profile.id,profile.display_name,profile.status,profile.mobile_token is not null mobile_bound,
+        membership.id membership_id,membership.organization_id,organization.name organization_name,
+        membership.employee_no,membership.joined_at,membership.access_version
+        from access.membership membership join member.profile profile on profile.id=membership.member_id
+        join organization.organization organization on organization.id=membership.organization_id
+        where membership.id=$1 and membership.status='active'`, [membershipId]);
+}
+
 export async function createMemberProfile(database: OperationDatabase, input: MemberProfile): Promise<void> {
   await database.query(
     `insert into member.profile(id,principal_id,display_name,status,mobile_ciphertext,mobile_token,mobile_masked,created_at,updated_at)

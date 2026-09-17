@@ -2,6 +2,7 @@ import type { QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 import { MemberPort } from '../01_public_gongkai/MemberPort';
+import { readCurrentMemberProfile } from '../04_adapters_shixian/persistence/MemberProfileRepository';
 
 describe('MemberPort invitation constraints', () => {
   it('resolves a published storefront and its active registration policy without an invite', async () => {
@@ -80,6 +81,14 @@ describe('MemberPort invitation constraints', () => {
       ['member:one', 'principal:one', '张三', 'active', 'ciphertext:mobile', 'fingerprint:mobile', '138****4716']);
     expect(query).toHaveBeenCalledWith('select member.ensure_imported_profile($1,$2,$3)',
       ['member:one', 'principal:one', '张三']);
+  });
+
+  it('keeps the current membership profile scoped to its full Membership ID', async () => {
+    const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) => result([{ id: 'member:one' }]));
+    const response = await readCurrentMemberProfile({ query } as unknown as OperationDatabase, 'membership:one');
+    expect(response.rows).toEqual([{ id: 'member:one' }]);
+    expect(query).toHaveBeenCalledWith(expect.stringContaining("membership.id=$1 and membership.status='active'"),
+      ['membership:one']);
   });
 
   it('resolves only invitations that are effective, active, unexpired and not exhausted', async () => {
