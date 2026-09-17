@@ -30,10 +30,7 @@ case "$operation" in
     target="$2"
     physical_node="$3"
     ;;
-  control-update)
-    [ "$#" -eq 1 ] || { echo 'Usage: delivery-dispatch.sh control-update' >&2; exit 64; }
-    ;;
-  *) echo 'Runner 1.7 operations: release, status, retry, rollback, control-update' >&2; exit 64 ;;
+  *) echo 'Runner 1.7 operations: release, status, retry, rollback' >&2; exit 64 ;;
 esac
 
 workflow='delivery-1-6.yml'
@@ -63,7 +60,6 @@ dispatch_run() {
 dispatch_run "$previous_id" auto
 case "$operation" in
   rollback) echo "Rollback run: $run_id" ;;
-  control-update) echo "Control update run: $run_id" ;;
   *) echo "Release id: $identifier" ;;
 esac
 echo "GitHub run: $run_id"

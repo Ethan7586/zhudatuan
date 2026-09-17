@@ -79,10 +79,10 @@ test('team entry checks out only the latest dispatch scripts', async () => {
     execFileSync('git', ['-C', repository, '-c', 'user.name=Runner Test', '-c', 'user.email=runner@example.invalid', 'commit', '-m', 'fixture'], { stdio: 'pipe' });
     execFileSync('git', ['clone', '--bare', repository, origin], { stdio: 'pipe' });
     execFileSync('git', ['-C', repository, 'remote', 'add', 'origin', origin], { stdio: 'pipe' });
-    const output = execFileSync('bash', [join(root, '02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery'), 'control-update'], {
+    const output = execFileSync('bash', [join(root, '02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery'), 'status', 'a'.repeat(40)], {
       env: { ...process.env, ZDT_GIT_ANCHOR: repository }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
     });
-    assert.match(output, /CONTROL_SPARSE_OK:control-update/);
+    assert.match(output, /CONTROL_SPARSE_OK:status/);
     assert.match(output, /Delivery control: [0-9a-f]{40}/);
   } finally {
     await rm(directory, { recursive: true, force: true });

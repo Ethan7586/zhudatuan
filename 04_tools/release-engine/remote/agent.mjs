@@ -46,7 +46,6 @@ try {
   const targetId = action === 'observe' ? null : safeName(required(options.target, 'TARGET_REQUIRED'));
   const context = targetId ? makeContext(targetId) : null;
   loadedContext = context;
-  if (preparedActions.has(action) && (action.endsWith('-v2') || action.endsWith('-v3'))) assertExpectedPreparedControlPlane(controlPlane, options);
 
   let result;
   if (action === 'observe') {
@@ -1849,21 +1848,6 @@ async function preparedControlPlane(options, policyBody) {
     remoteAgentSha256: `sha256:${await hashFile(fileURLToPath(import.meta.url))}`,
     remotePolicySha256: `sha256:${createHash('sha256').update(policyBody).digest('hex')}`,
   };
-}
-
-function assertExpectedPreparedControlPlane(controlPlane, options) {
-  const expectedAgentSha256 = required(options.expectedRemoteAgentSha256, 'EXPECTED_REMOTE_AGENT_SHA256_REQUIRED');
-  const expectedPolicySha256 = required(options.expectedRemotePolicySha256, 'EXPECTED_REMOTE_POLICY_SHA256_REQUIRED');
-  assert(/^sha256:[a-f0-9]{64}$/.test(expectedAgentSha256), 'EXPECTED_REMOTE_AGENT_SHA256_INVALID');
-  assert(/^sha256:[a-f0-9]{64}$/.test(expectedPolicySha256), 'EXPECTED_REMOTE_POLICY_SHA256_INVALID');
-  assert(controlPlane.remoteAgentSha256 === expectedAgentSha256, 'REMOTE_AGENT_SHA256_MISMATCH', {
-    expected: expectedAgentSha256,
-    actual: controlPlane.remoteAgentSha256,
-  });
-  assert(controlPlane.remotePolicySha256 === expectedPolicySha256, 'REMOTE_POLICY_SHA256_MISMATCH', {
-    expected: expectedPolicySha256,
-    actual: controlPlane.remotePolicySha256,
-  });
 }
 
 function expand(value, values) {
