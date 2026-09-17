@@ -7,6 +7,7 @@
   "exports": {
     "./hosted-mall-opening": "./src/member/HostedMallOpening.ts",
     "./member-node-registration": "./src/member/MemberNodeRegistration.ts",
+    "./member-identity-code": "./src/member/MemberIdentityCode.ts",
     "./member-profile": "./src/member/MemberProfileRules.ts",
     "./node-parsing": "./src/node/NodeParsing.ts",
     "./node-topology": "./src/node/NodeTopology.ts",
