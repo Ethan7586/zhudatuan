@@ -4,7 +4,6 @@ set -euo pipefail
 
 readonly PRIMARY_SERVICE='actions.runner.Ethan7586-zhudatuan.aliyun-staging-zdt-release.service'
 readonly STANDBY_SERVICE='actions.runner.Ethan7586-zhudatuan.aliyun-staging-zdt-release-standby.service'
-readonly EXPECTED_INSTANCE_ID='i-2zeewhay0farxq8lucrc'
 
 usage() {
   echo 'Usage: switch-release-runner.sh <status|primary|standby>' >&2
@@ -13,17 +12,6 @@ usage() {
 
 [ "$(id -u)" -eq 0 ] || usage
 [ "$#" -eq 1 ] || usage
-
-metadata_token="$(curl -fsS --max-time 3 -X PUT \
-  -H 'X-aliyun-ecs-metadata-token-ttl-seconds: 60' \
-  http://100.100.100.200/latest/api/token)"
-instance_id="$(curl -fsS --max-time 3 \
-  -H "X-aliyun-ecs-metadata-token: ${metadata_token}" \
-  http://100.100.100.200/latest/meta-data/instance-id)"
-if [ "$instance_id" != "$EXPECTED_INSTANCE_ID" ]; then
-  echo "Refusing Runner switch on ${instance_id}; expected ${EXPECTED_INSTANCE_ID}." >&2
-  exit 64
-fi
 
 state() {
   if systemctl is-active --quiet "$1"; then

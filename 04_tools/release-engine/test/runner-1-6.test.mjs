@@ -92,13 +92,24 @@ test('Aliyun is selected only when a matching runner is online and idle', () => 
   assert.deepEqual(selected.runsOn, ['self-hosted', 'Linux', 'X64', 'zdt-aliyun-build', 'zdt-aliyun-build-1']);
 });
 
+test('portable self-hosted Runner is selectable while Aliyun remains first', () => {
+  const portable = { name: 'gcp-build', status: 'online', busy: false, labels: ['self-hosted', 'Linux', 'X64', 'zdt-build', 'zdt-build-2'] };
+  const aliyun = { name: 'aliyun-build', status: 'online', busy: false, labels: ['self-hosted', 'Linux', 'X64', 'zdt-aliyun-build'] };
+  const selected = selectExecutionRunner({ runners: [portable] });
+  assert.equal(selected.runnerClass, 'self-hosted');
+  assert.equal(selected.runnerName, 'gcp-build');
+  assert.deepEqual(selected.runsOn, ['self-hosted', 'Linux', 'X64', 'zdt-build', 'zdt-build-2']);
+  assert.equal(selectExecutionRunner({ runners: [portable, aliyun] }).runnerName, 'aliyun-build');
+  assert.equal(selectExecutionRunner({ runners: [{ ...aliyun, busy: true }, portable] }).runnerName, 'gcp-build');
+});
+
 for (const [name, observation, reason] of [
-  ['missing', { runners: [] }, 'aliyun-runner-missing'],
-  ['offline', { runners: [{ status: 'offline', busy: false, labels: ['zdt-aliyun-build'] }] }, 'aliyun-runner-offline'],
-  ['busy', { runners: [{ status: 'online', busy: true, labels: ['zdt-aliyun-build'] }] }, 'aliyun-runner-busy'],
-  ['unreadable', { error: 'forbidden' }, 'aliyun-status-unavailable'],
+  ['missing', { runners: [] }, 'self-hosted-runner-missing'],
+  ['offline', { runners: [{ status: 'offline', busy: false, labels: ['zdt-aliyun-build'] }] }, 'self-hosted-runner-offline'],
+  ['busy', { runners: [{ status: 'online', busy: true, labels: ['zdt-aliyun-build'] }] }, 'self-hosted-runner-busy'],
+  ['unreadable', { error: 'forbidden' }, 'self-hosted-status-unavailable'],
 ])
-  test(`GitHub Hosted is selected when Aliyun is ${name}`, () => {
+  test(`GitHub Hosted is selected when self-hosted capacity is ${name}`, () => {
     const selected = selectExecutionRunner(observation);
     assert.equal(selected.runnerClass, 'github-hosted');
     assert.equal(selected.reason, reason);
@@ -166,6 +177,7 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.operation.options, ['release', 'status', 'retry', 'rollback']);
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.execution_location.options, ['auto', 'github-hosted']);
   assert.match(workflowSource, /runs-on: \$\{\{ fromJSON\(needs\.route\.outputs\.runs_on\) \}\}/);
+  assert.match(workflowSource, /needs\.route\.outputs\.runner_class == 'self-hosted'/);
   for (const job of [workflow.jobs.execute, workflow.jobs['hosted-startup-fallback']]) {
     const cores = job.steps.filter((step) => String(step.uses ?? '').endsWith('/.github/actions/runner-1-6'));
     assert.equal(cores.length, 4);
@@ -231,7 +243,7 @@ test('control-side command only dispatches and queries GitHub', async () => {
   assert.match(dispatcher, /gh run cancel/);
   assert.match(dispatcher, /core_steps.*-eq 0/);
   assert.match(dispatcher, /-f execution_location="\$execution_location"/);
-  assert.match(dispatcher, /dispatch_run "\$aliyun_run_id" github-hosted/);
+  assert.match(dispatcher, /dispatch_run "\$self_hosted_run_id" github-hosted/);
   assert.match(dispatcher, /\^r16-\[0-9a-f\]\{40\}\$/);
   assert.match(dispatcher, /DELIVERY_COMMAND_RETURN_MS=/);
   const readme = await readFile(join(root, '02_platform_pingtai/infrastructure/github-actions-runner/README.md'), 'utf8');
@@ -503,4 +515,16 @@ test('Aliyun runners use a GitHub-only sing-box line without delivery locks', as
   assert.match(installer, /aliyun-staging-zdt-build-2\.service/);
   assert.match(installer, /pending-next-restart/);
   assert.doesNotMatch(installer, /exit 75|retry after it finishes|flock|lockRoot|\blease\b|\bclaim\b|\bseal\b/i);
+});
+
+test('Runner host scripts do not recreate the old build lock or bind installation to the old ECS', async () => {
+  const directory = join(root, '02_platform_pingtai/infrastructure/github-actions-runner');
+  const capacity = await readFile(join(directory, 'install-build-capacity-policy.sh'), 'utf8');
+  assert.match(capacity, /rm -f -- \/etc\/tmpfiles\.d\/zdt-build-lock\.conf \/run\/lock\/zdt-build\/heavy\.lock/);
+  assert.doesNotMatch(capacity, /install .*heavy\.lock|zdt-builders|SupplementaryGroups/);
+  for (const setting of ['ZDT_BUILD_CPU_QUOTA', 'ZDT_BUILD_MEMORY_HIGH', 'ZDT_BUILD_MEMORY_MAX']) assert.match(capacity, new RegExp(setting));
+  for (const name of ['install-build-capacity-policy.sh', 'install-build-slot-2.sh', 'install-release-standby.sh', 'switch-release-runner.sh']) {
+    const script = await readFile(join(directory, name), 'utf8');
+    assert.doesNotMatch(script, /i-2zeewhay0farxq8lucrc|EXPECTED_INSTANCE_ID/);
+  }
 });

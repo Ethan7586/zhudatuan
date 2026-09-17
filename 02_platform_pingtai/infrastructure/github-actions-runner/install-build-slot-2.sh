@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-# Install the second isolated build slot on the existing staging ECS.
+# Install the second isolated build slot on the Runner host.
 set -euo pipefail
 
-readonly EXPECTED_INSTANCE_ID='i-2zeewhay0farxq8lucrc'
 readonly REPOSITORY_URL='https://github.com/Ethan7586/zhudatuan'
 readonly RUNNER_VERSION='2.337.0'
 readonly RUNNER_ARCHIVE='actions-runner-linux-x64-2.337.0.tar.gz'
@@ -16,14 +15,11 @@ readonly NODE_VERSION='22.22.0'
 readonly NODE_ARCHIVE_SHA256='9aa8e9d2298ab68c600bd6fb86a6c13bce11a4eca1ba9b39d79fa021755d7c37'
 readonly NO_PROXY_VALUE='localhost,127.0.0.1,::1,100.100.100.200,123.57.62.202,123.57.232.253,172.27.70.37,.aliyuncs.com,.hbbtzn.com'
 
-[ "$(id -u)" -eq 0 ] || { echo 'Run as root on the staging ECS.' >&2; exit 64; }
+[ "$(id -u)" -eq 0 ] || { echo 'Run as root on the Runner host.' >&2; exit 64; }
 [[ "${ZDT_GITHUB_PROXY_URL:-}" =~ ^http://127\.0\.0\.1:[0-9]{2,5}$ ]] || {
   echo 'ZDT_GITHUB_PROXY_URL must be a loopback HTTP proxy.' >&2; exit 64;
 }
 [ -f "$NETWORK_ENV" ] || { echo "Install the authoritative Runner network file first: ${NETWORK_ENV}" >&2; exit 64; }
-token="$(curl -fsS --max-time 3 -X PUT -H 'X-aliyun-ecs-metadata-token-ttl-seconds: 60' http://100.100.100.200/latest/api/token)"
-instance="$(curl -fsS --max-time 3 -H "X-aliyun-ecs-metadata-token: $token" http://100.100.100.200/latest/meta-data/instance-id)"
-[ "$instance" = "$EXPECTED_INSTANCE_ID" ] || { echo "Refusing installation on $instance." >&2; exit 64; }
 if find /proc/[0-9]*/exe -lname '*/Runner.Worker' -print -quit 2>/dev/null | grep -q .; then
   echo 'A Runner job is active; retry after it finishes.' >&2; exit 75
 fi

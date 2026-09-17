@@ -84,35 +84,35 @@ for attempt in {1..30}; do
   [ -z "$execute_name" ] || break
   sleep 2
 done
-if [ "$execute_name" = 'Execute on aliyun' ]; then
+if [[ "${execute_name:-}" == 'Execute on '* && "$execute_name" != 'Execute on github-hosted' ]]; then
   for attempt in {1..30}; do
     core_steps="$(gh run view "$run_id" --json jobs --jq '[.jobs[]?.steps[]? | select(.startedAt != null and .name == "Mark shared release core started")] | length')"
     [ "${core_steps:-0}" -gt 0 ] && break
     run_status="$(gh run view "$run_id" --json status --jq .status)"
     [ "$run_status" = completed ] && break
-    started_steps="$(gh run view "$run_id" --json jobs --jq '[.jobs[]? | select(.name == "Execute on aliyun") | .steps[]? | select(.startedAt != null)] | length')"
+    started_steps="$(gh run view "$run_id" --json jobs --jq '[.jobs[]? | select(.name | startswith("Execute on ") and . != "Execute on github-hosted") | .steps[]? | select(.startedAt != null)] | length')"
     [ "$attempt" -ge 10 ] && [ "${started_steps:-0}" -eq 0 ] && break
     sleep 2
   done
 fi
 
-if [ "${execute_name:-}" = 'Execute on aliyun' ] && [ "${core_steps:-0}" -eq 0 ] && [ "${run_status:-}" != completed ]; then
-  aliyun_failed="$(gh run view "$run_id" --json jobs --jq '[.jobs[]? | select(.name == "Execute on aliyun" and .conclusion == "failure")] | length')"
-  if [ "${aliyun_failed:-0}" -gt 0 ]; then
-    echo '阿里云任务已失败；等待同一次 GitHub 运行中的 Hosted 接管。'
+if [[ "${execute_name:-}" == 'Execute on '* && "$execute_name" != 'Execute on github-hosted' ]] && [ "${core_steps:-0}" -eq 0 ] && [ "${run_status:-}" != completed ]; then
+  self_hosted_failed="$(gh run view "$run_id" --json jobs --jq '[.jobs[]? | select((.name | startswith("Execute on ") and . != "Execute on github-hosted") and .conclusion == "failure")] | length')"
+  if [ "${self_hosted_failed:-0}" -gt 0 ]; then
+    echo '自建 Runner 任务已失败；等待同一次 GitHub 运行中的 Hosted 接管。'
   else
-    aliyun_run_id="$run_id"
-    echo '阿里云执行器未及时进入发布核心；仅取消尚未开始核心的运行。'
-    gh run cancel "$aliyun_run_id" >/dev/null
+    self_hosted_run_id="$run_id"
+    echo '自建 Runner 未及时进入发布核心；仅取消尚未开始核心的运行。'
+    gh run cancel "$self_hosted_run_id" >/dev/null
     for attempt in {1..30}; do
-      run_status="$(gh run view "$aliyun_run_id" --json status --jq .status)"
+      run_status="$(gh run view "$self_hosted_run_id" --json status --jq .status)"
       [ "$run_status" = completed ] && break
       sleep 1
     done
-    [ "${run_status:-}" = completed ] || { echo 'Aliyun run cancellation was not confirmed; Hosted fallback was not started.' >&2; exit 1; }
-    core_steps="$(gh run view "$aliyun_run_id" --json jobs --jq '[.jobs[].steps[]? | select(.startedAt != null and .name == "Mark shared release core started")] | length')"
+    [ "${run_status:-}" = completed ] || { echo 'Self-hosted run cancellation was not confirmed; Hosted fallback was not started.' >&2; exit 1; }
+    core_steps="$(gh run view "$self_hosted_run_id" --json jobs --jq '[.jobs[].steps[]? | select(.startedAt != null and .name == "Mark shared release core started")] | length')"
     [ "${core_steps:-0}" -eq 0 ] || { echo 'The shared core started before cancellation; Hosted fallback was not started.' >&2; exit 1; }
-    dispatch_run "$aliyun_run_id" github-hosted
+    dispatch_run "$self_hosted_run_id" github-hosted
     echo "Hosted fallback run: $run_id"
   fi
 fi

@@ -1,24 +1,34 @@
 const ALIYUN_LABEL = 'zdt-aliyun-build';
+const PORTABLE_LABEL = 'zdt-build';
 
 export function selectExecutionRunner(observation) {
-  if (!observation || observation.error) return hosted('aliyun-status-unavailable');
+  if (!observation || observation.error) return hosted('self-hosted-status-unavailable');
   const runners = Array.isArray(observation.runners) ? observation.runners : [];
-  const candidates = runners.filter((runner) => runnerLabels(runner).some((label) => label.toLowerCase() === ALIYUN_LABEL));
+  const aliyun = runners.filter((runner) => hasLabel(runner, ALIYUN_LABEL));
+  const portable = runners.filter((runner) => hasLabel(runner, PORTABLE_LABEL) && !hasLabel(runner, ALIYUN_LABEL));
+  const candidates = [...aliyun, ...portable];
   const available = candidates.find((runner) => runner.status === 'online' && runner.busy !== true);
   if (!available) {
-    const reason = candidates.length === 0 ? 'aliyun-runner-missing' : candidates.some((runner) => runner.status !== 'online') ? 'aliyun-runner-offline' : 'aliyun-runner-busy';
+    const reason = candidates.length === 0 ? 'self-hosted-runner-missing' : candidates.some((runner) => runner.status !== 'online') ? 'self-hosted-runner-offline' : 'self-hosted-runner-busy';
     return hosted(reason);
   }
   const labels = runnerLabels(available);
-  const slot = labels.find((label) => /^zdt-aliyun-build-[1-9][0-9]*$/i.test(label));
+  const legacy = hasLabel(available, ALIYUN_LABEL);
+  const routeLabel = legacy ? ALIYUN_LABEL : PORTABLE_LABEL;
+  const slotPattern = legacy ? /^zdt-aliyun-build-[1-9][0-9]*$/i : /^zdt-build-[1-9][0-9]*$/i;
+  const slot = labels.find((label) => slotPattern.test(label));
   const linux = labels.find((label) => label.toLowerCase() === 'linux') ?? 'linux';
   const x64 = labels.find((label) => label.toLowerCase() === 'x64') ?? 'x64';
   return {
-    runnerClass: 'aliyun',
+    runnerClass: legacy ? 'aliyun' : 'self-hosted',
     runnerName: available.name,
-    reason: 'aliyun-ready',
-    runsOn: ['self-hosted', linux, x64, ALIYUN_LABEL, ...(slot ? [slot] : [])],
+    reason: legacy ? 'aliyun-ready' : 'self-hosted-ready',
+    runsOn: ['self-hosted', linux, x64, routeLabel, ...(slot ? [slot] : [])],
   };
+}
+
+function hasLabel(runner, expected) {
+  return runnerLabels(runner).some((label) => label.toLowerCase() === expected);
 }
 
 function runnerLabels(runner) {

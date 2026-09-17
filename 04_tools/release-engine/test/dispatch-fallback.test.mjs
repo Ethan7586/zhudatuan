@@ -12,7 +12,7 @@ const root = resolve(new URL('../../..', import.meta.url).pathname);
 const dispatcher = join(root, 'scripts/delivery-dispatch.sh');
 const sourceSha = 'a'.repeat(40);
 
-async function simulate(mode, argumentsForDelivery = ['release', sourceSha, 'identity-api', 'hbbtzn-l1']) {
+async function simulate(mode, argumentsForDelivery = ['release', sourceSha, 'identity-api', 'hbbtzn-l1'], executeName = 'Execute on aliyun') {
   const directory = await mkdtemp(join(tmpdir(), 'runner-dispatch-'));
   const log = join(directory, 'calls.log');
   const state = join(directory, 'state');
@@ -50,8 +50,8 @@ if [ "$1" = run ] && [ "$2" = view ]; then
     if [ "$(<"$MOCK_STATE")" = cancelled ]; then echo completed; else echo in_progress; fi
     exit 0
   fi
-  if [[ " $* " == *"startswith("* ]]; then
-    if [ "$(<"$MOCK_STATE")" = hosted ]; then echo 'Execute on github-hosted'; else echo 'Execute on aliyun'; fi
+  if [[ " $* " == *" | .name"* ]]; then
+    if [ "$(<"$MOCK_STATE")" = hosted ]; then echo 'Execute on github-hosted'; else echo "$MOCK_EXECUTE_NAME"; fi
     exit 0
   fi
   if [[ " $* " == *" --json jobs"* ]]; then
@@ -73,7 +73,7 @@ exit 1
   try {
     const result = await execFileAsync('bash', [dispatcher, ...argumentsForDelivery], {
       cwd: root,
-      env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, MOCK_LOG: log, MOCK_STATE: state, MOCK_MODE: mode, ZDT_DELIVERY_STARTED_MS: String(Math.floor(Date.now() / 1000) * 1000) },
+      env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, MOCK_LOG: log, MOCK_STATE: state, MOCK_MODE: mode, MOCK_EXECUTE_NAME: executeName, ZDT_DELIVERY_STARTED_MS: String(Math.floor(Date.now() / 1000) * 1000) },
     });
     return { output: result.stdout, calls: await readFile(log, 'utf8') };
   } finally {
@@ -89,6 +89,18 @@ test('an unstarted Aliyun job is cancelled before one Hosted dispatch', async ()
   assert.match(output, /Hosted fallback run: 102/);
   assert.match(output, /DELIVERY_COMMAND_RETURN_MS=\d+/);
   assert.match(output, /DELIVERY_PRE_CORE_TIMINGS=/);
+});
+
+test('an unstarted portable Runner job uses the same Hosted takeover', async () => {
+  const { output, calls } = await simulate('queued', ['release', sourceSha, 'identity-api', 'hbbtzn-l1'], 'Execute on self-hosted');
+  assert.match(calls, /run cancel 101/);
+  assert.match(calls, /execution_location=github-hosted/);
+  assert.match(output, /Hosted fallback run: 102/);
+});
+
+test('a portable Runner that entered the core is not cancelled', async () => {
+  const { calls } = await simulate('started', ['release', sourceSha, 'identity-api', 'hbbtzn-l1'], 'Execute on self-hosted');
+  assert.doesNotMatch(calls, /run cancel|execution_location=github-hosted/);
 });
 
 test('dispatch uses the exact returned run URL without searching same-title runs', async () => {
