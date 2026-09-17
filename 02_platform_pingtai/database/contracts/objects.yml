@@ -19740,6 +19740,134 @@ objects:
     objectType: table
     target: member.profile
     privilege: update
+  - id: zhudatuanidentityapi:table:member.storefrontcustomfield:delete
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: member.storefrontcustomfield
+    privilege: delete
+  - id: zhudatuanidentityapi:table:member.storefrontcustomfield:insert
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: member.storefrontcustomfield
+    privilege: insert
+  - id: zhudatuanidentityapi:table:member.storefrontcustomfield:select
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: member.storefrontcustomfield
+    privilege: select
+  - id: zhudatuanidentityapi:table:member.storefrontcustomfield:update
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: member.storefrontcustomfield
+    privilege: update
+  - id: zhudatuanidentityapi:table:member.storefrontcustomtag:delete
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: member.storefrontcustomtag
+    privilege: delete
+  - id: zhudatuanidentityapi:table:member.storefrontcustomtag:insert
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: member.storefrontcustomtag
+    privilege: insert
+  - id: zhudatuanidentityapi:table:member.storefrontcustomtag:select
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: member.storefrontcustomtag
+    privilege: select
+  - id: zhudatuanidentityapi:table:member.storefrontcustomtag:update
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: member.storefrontcustomtag
+    privilege: update
+  - id: zhudatuanidentityapi:table:member.storefrontmemberfieldvalue:delete
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: member.storefrontmemberfieldvalue
+    privilege: delete
+  - id: zhudatuanidentityapi:table:member.storefrontmemberfieldvalue:insert
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: member.storefrontmemberfieldvalue
+    privilege: insert
+  - id: zhudatuanidentityapi:table:member.storefrontmemberfieldvalue:select
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: member.storefrontmemberfieldvalue
+    privilege: select
+  - id: zhudatuanidentityapi:table:member.storefrontmemberfieldvalue:update
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: member.storefrontmemberfieldvalue
+    privilege: update
+  - id: zhudatuanidentityapi:table:member.storefrontmembertag:delete
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: member.storefrontmembertag
+    privilege: delete
+  - id: zhudatuanidentityapi:table:member.storefrontmembertag:insert
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: member.storefrontmembertag
+    privilege: insert
+  - id: zhudatuanidentityapi:table:member.storefrontmembertag:select
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: member.storefrontmembertag
+    privilege: select
+  - id: zhudatuanidentityapi:table:member.storefrontmembertag:update
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: member.storefrontmembertag
+    privilege: update
   - id: zhudatuanidentityapi:table:notification.announcement:select
     kind: grant
     owner: notification
@@ -25436,18 +25564,34 @@ objects:
     kind: policy
     owner: member
     source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+  - id: member.storefrontcustomfield.identityapimall
+    kind: policy
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
   - id: member.storefrontcustomtag.appscope
     kind: policy
     owner: member
     source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+  - id: member.storefrontcustomtag.identityapimall
+    kind: policy
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
   - id: member.storefrontmemberfieldvalue.appscope
     kind: policy
     owner: member
     source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+  - id: member.storefrontmemberfieldvalue.identityapimall
+    kind: policy
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
   - id: member.storefrontmembertag.appscope
     kind: policy
     owner: member
     source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+  - id: member.storefrontmembertag.identityapimall
+    kind: policy
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260917110000_restore_storefront_custom_profile_acl.sql
   - id: notification.announcement.appscope
     kind: policy
     owner: notification
