@@ -35,6 +35,8 @@ On a cache miss, the shared core installs its minimal isolated control dependenc
 
 For user-perceived latency, report three separate intervals when their timestamps are available: request-to-command (agent preparation, including any code fix and commit), command-to-target receipt (the Runner metric above), and receipt-to-user response. Mark an unmeasured interval unknown. The Runner metric alone is not the time from the user's request, and overlapping stage durations must not be added together.
 
+Cold builds also emit `RUNNER_1_6_PROGRESS` when each existing preflight, test, typecheck, or build command starts and completes, including the command name and duration. These lines are diagnostic only; they do not change build order or release decisions.
+
 ## GitHub sing-box line
 
 `install-github-transport.sh` turns the sing-box installation on the Aliyun Runner host into a GitHub-only line. The Runner processes use a loopback HTTP proxy. sing-box sends `github.com`, `githubusercontent.com`, `githubassets.com`, and `ghcr.io` through the configured Shadowsocks endpoint; OSS, Aliyun metadata, production SSH, and every other destination remain direct.

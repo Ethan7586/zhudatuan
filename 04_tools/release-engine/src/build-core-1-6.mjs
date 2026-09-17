@@ -16,7 +16,7 @@ export async function createReleasePlan(adapter, options) {
   return { ...plan, runId: run.runId, planPath: join(run.directory, 'plan.json') };
 }
 
-export async function buildRelease(adapter, planPath) {
+export async function buildRelease(adapter, planPath, onCommand = () => {}) {
   const started = performance.now();
   const plan = await readJson(planPath);
   invariant(plan.project === adapter.project, 'BUILD_PROJECT_MISMATCH', 'Plan belongs to another project');
@@ -27,9 +27,11 @@ export async function buildRelease(adapter, planPath) {
   const runPhase = async (phase) => {
     let index = 0;
     for (const command of plan.actions[phase]) {
+      onCommand({ phase, event: 'start', name: command.name, target: command.target ?? null });
       const result = await runCommand(command, commandContext(adapter, plan, runDirectory, command.target, `${phase}-${index++}-${command.name}`));
       phases[phase].push(result);
       timings[phase] += result.durationMs;
+      onCommand({ phase, event: 'complete', name: command.name, target: command.target ?? null, durationMs: result.durationMs });
     }
   };
   await runPhase('preflight');

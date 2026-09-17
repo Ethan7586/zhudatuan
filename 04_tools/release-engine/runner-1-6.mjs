@@ -129,7 +129,7 @@ async function buildAndPublish(adapter, controlRoot, plan, client, details) {
   const dependenciesMs = await installDependencies(adapter, controlRoot, plan.deploymentOrder);
   context.stage = 'build';
   progress('build', details);
-  const built = await buildRelease(adapter, plan.planPath);
+  const built = await buildRelease(adapter, plan.planPath, ({ target: commandTarget, ...command }) => progress('build-command', { ...details, ...command, commandTarget }));
   progress('build-complete', { ...details, timings: built.timings });
   context.stage = 'package';
   progress('package', details);

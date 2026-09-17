@@ -38,10 +38,18 @@ test('runs tests and typecheck together, then builds after both finish', async (
   };
   try {
     await writeFile(planPath, JSON.stringify(plan));
-    const result = await buildRelease({ project: 'fixture', projectRoot }, planPath);
+    const events = [];
+    const result = await buildRelease({ project: 'fixture', projectRoot }, planPath, (event) => events.push(event));
     assert.equal(result.phases.tests.length, 1);
     assert.equal(result.phases.typecheck.length, 1);
     assert.equal(result.phases.build.length, 1);
+    for (const phase of ['tests', 'typecheck', 'build']) {
+      assert.ok(events.some((event) => event.phase === phase && event.event === 'start'));
+      assert.ok(events.some((event) => event.phase === phase && event.event === 'complete' && event.durationMs >= 0));
+    }
+    const buildStarted = events.findIndex((event) => event.phase === 'build' && event.event === 'start');
+    assert.ok(buildStarted > events.findIndex((event) => event.phase === 'tests' && event.event === 'complete'));
+    assert.ok(buildStarted > events.findIndex((event) => event.phase === 'typecheck' && event.event === 'complete'));
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
