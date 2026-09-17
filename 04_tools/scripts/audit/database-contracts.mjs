@@ -235,6 +235,7 @@ const REPAIR_FILES = [
   '20260915090000_restore_l1_supplier_trial_inventory.sql',
   '20260916123000_enable_console_support_review_attachments.sql',
   '20260916150000_add_identity_display_code_mapping.sql',
+  '20260917100000_restore_storefront_member_order_read.sql',
 ];
 
 const mode = process.argv[2];
