@@ -137,6 +137,18 @@ test('direct explicit scope always builds the requested target without validatio
   assert.equal(plan.productionApproval.required, false);
 });
 
+test('content-only release does not need dependency installation', async () => {
+  const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD']);
+  const options = { from: 'HEAD^', to: stdout.trim(), prepare: true, files: ['AI-DELIVERY.md'] };
+  const media = await createPlan(real, { ...options, target: 'catalog-media' });
+  const service = await createPlan(real, { ...options, target: 'identity-api' });
+  assert.equal(media.deployRequired, true);
+  assert.deepEqual(media.actions.build, []);
+  assert.equal(media.dependencyInstallRequired, false);
+  assert.equal(service.dependencyInstallRequired, true);
+});
+
 test('Prepare Artifact forces one exact target while retaining its validation and build actions', async () => {
   const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
   const { stdout: currentSha } = await execFileAsync('git', ['rev-parse', 'HEAD']);

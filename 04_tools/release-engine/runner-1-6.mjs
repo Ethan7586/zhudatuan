@@ -124,9 +124,14 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
 }
 
 async function buildAndPublish(adapter, controlRoot, plan, client, details) {
-  context.stage = 'dependencies';
-  progress('dependencies', details);
-  const dependenciesMs = await installDependencies(adapter, controlRoot, plan.deploymentOrder);
+  let dependenciesMs = 0;
+  if (plan.dependencyInstallRequired) {
+    context.stage = 'dependencies';
+    progress('dependencies', details);
+    dependenciesMs = await installDependencies(adapter, controlRoot, plan.deploymentOrder);
+  } else {
+    progress('dependencies-skipped', { ...details, reason: 'no-commands' });
+  }
   context.stage = 'build';
   progress('build', details);
   const built = await buildRelease(adapter, plan.planPath, ({ target: commandTarget, ...command }) => progress('build-command', { ...details, ...command, commandTarget }));
