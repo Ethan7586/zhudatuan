@@ -82,11 +82,6 @@ export function RoleAccessWorkspace() {
                 新建角色
               </Button>
             ) : null}
-            {section === 'invitations' && invitationEnabled ? (
-              <Button tone="primary" onPress={() => setInvitationOpen(true)}>
-                邀请新成员
-              </Button>
-            ) : null}
           </>
         }
       />

@@ -527,6 +527,8 @@ describe('custom identity and permission directory', () => {
     ];
     renderWorkspace(context, '/scopes/tenant/tenant%3Aone/settings/access?section=invitations');
     expect(screen.getByRole('heading', { name: '邀请记录' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '生成管理员邀请码' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: '邀请新成员' })).toBeNull();
     const table = await screen.findByRole('table', { name: '邀请记录，共 3 条' });
     expect(
       within(table)
