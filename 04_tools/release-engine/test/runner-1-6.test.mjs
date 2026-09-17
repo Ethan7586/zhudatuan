@@ -6,7 +6,7 @@ import { promisify } from 'node:util';
 import test from 'node:test';
 import { parse } from 'yaml';
 
-import { aggregateStatus, observationDiagnostic, observedTarget, sourceFromIdentifier } from '../runner-1-6.mjs';
+import { aggregateStatus, observationDiagnostic, observedTarget, selectedWorkspaces, sourceFromIdentifier } from '../runner-1-6.mjs';
 import { DeliveryError } from '../src/errors.mjs';
 import { runCommand } from '../src/runner.mjs';
 import { selectExecutionRunner } from '../src/runner-selection-1-6.mjs';
@@ -16,6 +16,39 @@ import { digest, prettyStableJson, sha256 } from '../src/stable.mjs';
 const root = resolve(new URL('../../..', import.meta.url).pathname);
 const sha = 'a'.repeat(40);
 const execFileAsync = promisify(execFile);
+
+test('control dependencies are isolated to the small release-engine package', async () => {
+  const engine = JSON.parse(await readFile(join(root, '04_tools/release-engine/package.json')));
+  const lock = JSON.parse(await readFile(join(root, '04_tools/release-engine/package-lock.json')));
+  assert.deepEqual(Object.keys(engine.dependencies).sort(), ['@alicloud/cdn20180510', '@alicloud/openapi-client', 'esbuild']);
+  assert.deepEqual(lock.packages[''].dependencies, engine.dependencies);
+  const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
+  assert.match(core, /projectRoot: engineRoot/);
+});
+
+test('source install selects only affected workspaces and falls back to full source when needed', () => {
+  const adapter = { targets: { identity: { workspace: '@shop/commerce' }, jobs: { workspace: '@shop/commerce' }, console: { workspace: '@shop/console' }, content: {} } };
+  assert.deepEqual(selectedWorkspaces(adapter, ['identity']), ['@shop/commerce']);
+  assert.deepEqual(selectedWorkspaces(adapter, ['identity', 'jobs', 'console']), ['@shop/commerce', '@shop/console']);
+  assert.deepEqual(selectedWorkspaces(adapter, ['identity', 'content']), []);
+});
+
+test('failed release emits control identity and a useful next action', async () => {
+  await assert.rejects(
+    execFileAsync(process.execPath, [join(root, '04_tools/release-engine/runner-1-6.mjs'), 'release', '--identifier', 'invalid', '--control-root', root], {
+      env: { ...process.env, CONTROL_SHA: 'f'.repeat(40) },
+    }),
+    (error) => {
+      const line = error.stderr.split('\n').find((item) => item.startsWith('RUNNER_1_6_RESULT='));
+      const result = JSON.parse(line.slice('RUNNER_1_6_RESULT='.length));
+      assert.equal(result.state, 'FAILED');
+      assert.equal(result.controlSha, 'f'.repeat(40));
+      assert.equal(result.code, 'SOURCE_SHA_REQUIRED');
+      assert.match(result.nextAction, /full Source SHA/);
+      return true;
+    }
+  );
+});
 
 test('Aliyun is selected only when a matching runner is online and idle', () => {
   const selected = selectExecutionRunner({
@@ -105,6 +138,7 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
   const workflowSource = await readFile(join(root, '.github/workflows/delivery-1-6.yml'), 'utf8');
   const workflow = parse(workflowSource);
   const action = parse(await readFile(join(root, '.github/actions/runner-1-6/action.yml'), 'utf8'));
+  assert.equal(workflow.name, 'Delivery Control 1.7');
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.operation.options, ['release', 'status', 'retry', 'rollback', 'control-update']);
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.execution_location.options, ['auto', 'github-hosted']);
   assert.match(workflowSource, /runs-on: \$\{\{ fromJSON\(needs\.route\.outputs\.runs_on\) \}\}/);
@@ -115,6 +149,11 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
       './.runner-1-6/control-release/.github/actions/runner-1-6',
       './.runner-1-6/status-control/.github/actions/runner-1-6',
     ]));
+    assert.equal(job.env.ALIYUN_OSS_ENDPOINT, '${{ secrets.ALIYUN_OSS_ENDPOINT }}');
+    assert.equal(job.env.ZDT_RELEASE_SSH_KEY, '${{ secrets.ZDT_RELEASE_SSH_KEY }}');
+    assert.equal(job.env.CONTROL_SHA, '${{ github.sha }}');
+    const releaseCheckout = job.steps.find((step) => step.with?.path === '.runner-1-6/control-release');
+    assert.match(releaseCheckout.with['sparse-checkout'], /04_tools\/release-engine/);
   }
   assert.match(workflow.jobs['hosted-startup-fallback'].if, /core_started != 'true'/);
   assert.equal(action.outputs.started.value, '${{ steps.started.outputs.value }}');
@@ -123,6 +162,9 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
   assert.match(workflow.on.workflow_dispatch.inputs.release_target.description, /fast exact release\/retry/);
   assert.match(workflowSource, /exact release requires both target and physical node/);
   assert.match(workflowSource, /exact retry requires both target and physical node/);
+  const coreSource = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
+  assert.match(coreSource, /const client = simpleOssClientFromEnvironment\(\)/);
+  assert.match(coreSource, /simpleDownloadEndpoint\(publicClient\.endpoint, process\.env\.ALIYUN_OSS_INTERNAL_ENDPOINT\)/);
 });
 
 test('control-side command only dispatches and queries GitHub', async () => {
@@ -135,6 +177,9 @@ test('control-side command only dispatches and queries GitHub', async () => {
   assert.match(dispatcher, /-f execution_location="\$execution_location"/);
   assert.match(dispatcher, /dispatch_run "\$aliyun_run_id" github-hosted/);
   assert.match(dispatcher, /\^r16-\[0-9a-f\]\{40\}\$/);
+  assert.match(dispatcher, /DELIVERY_END_TO_END_MS=/);
+  const readme = await readFile(join(root, '02_platform_pingtai/infrastructure/github-actions-runner/README.md'), 'utf8');
+  assert.match(readme, /Direct dispatch from GitHub's Actions page bypasses/);
   assert.doesNotMatch(`${dispatcher}\n${controller}`, /npm ci|npm run|\bssh\b|\bscp\b|runner-1-6\.mjs/);
 });
 
@@ -195,8 +240,8 @@ test('exact release builds only a missing target artifact before deploying one n
   assert.ok(exactSource.indexOf('await buildAndPublish') < exactSource.indexOf('await deployTarget'));
   assert.match(exactSource, /cacheStatus: 'reused'|let cacheStatus = 'reused'/);
   assert.doesNotMatch(exactSource, /physicalPlacements\(adapter/);
-  assert.match(exactSource, /productionSloMs: 60_000/);
-  assert.match(exactSource, /productionDurationMs <= 60_000/);
+  assert.match(exactSource, /coreDurationMs/);
+  assert.doesNotMatch(exactSource, /productionSlo/);
 });
 
 test('control update uses the shared core and changes no business pointer or service', async () => {
@@ -226,7 +271,10 @@ test('release installs dependencies only when a cache miss requires a build', as
   assert.ok(sharedBuild.indexOf('await packageRelease') < sharedBuild.indexOf('await publishSimpleArtifacts'));
   assert.match(core, /name: 'install-control-dependencies'/);
   assert.match(core, /name: 'install-source-dependencies'/);
-  assert.match(core, /resolve\(controlRoot\) !== resolve\(adapter\.projectRoot\)/);
+  assert.match(core, /engineRoot = join\(controlRoot, '04_tools\/release-engine'\)/);
+  assert.match(core, /mode: workspaces\.length \? 'target-workspaces' : 'full-source'/);
+  assert.match(core, /'--include-workspace-root'/);
+  assert.match(core, /preparationTimings/);
   const serviceImpact = await readFile(join(root, '04_tools/release-engine/adapters/zdt-next/service-impact.mjs'), 'utf8');
   const workspaceImpact = await readFile(join(root, '04_tools/release-engine/adapters/zdt-next/workspace-impact.mjs'), 'utf8');
   assert.doesNotMatch(serviceImpact + workspaceImpact, /from ['"](?:esbuild|typescript|yaml)['"]/);

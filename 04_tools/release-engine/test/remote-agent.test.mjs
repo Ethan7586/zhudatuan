@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFile, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { chmod, lstat, mkdir, mkdtemp, readFile, readlink, symlink, writeFile } from 'node:fs/promises';
+import { access, chmod, lstat, mkdir, mkdtemp, readFile, readlink, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { promisify } from 'node:util';
@@ -63,6 +63,47 @@ test('stages, activates, rolls back and reports status with immutable releases',
   assert.equal(observed.result.targets[0].target, 'app');
   assert.equal(observed.result.targets[0].status.current, firstCurrent);
   assert.equal(observed.result.targets[0].verification.readiness.status, 'ready');
+});
+
+test('a killed activation leaves current, previous, status and manual rollback usable', async () => {
+  const fixture = await createFixture();
+  const baseline = await createArtifact(fixture, 'healthy', '1'.repeat(40));
+  await invoke(fixture, 'stage', baseline);
+  await invoke(fixture, 'activate', baseline);
+  const baselineCurrent = await readlink(join(fixture.pointerRoot, 'current'));
+
+  const marker = join(fixture.root, 'candidate-health-started');
+  fixture.policy.nodes.local.deployments.app.healthChecks = [{
+    argv: [process.execPath, '-e', "const fs=require('node:fs');if(fs.readFileSync(process.argv[1],'utf8').trim()==='candidate'){fs.writeFileSync(process.argv[2],'started');setTimeout(()=>process.exit(0),2000)}", '{{currentDir}}/app.txt', marker],
+  }];
+  await writePolicy(fixture);
+  const candidate = await createArtifact(fixture, 'candidate', '2'.repeat(40));
+  await invoke(fixture, 'stage', candidate);
+  const child = spawn(process.execPath, [agent, 'activate', '--project', 'fixture', '--node', 'local', '--target', 'app', '--approval', `fixture:${candidate.sourceSha}`, '--expected-current', baselineCurrent], {
+    env: { ...process.env, AI_DELIVERY_POLICY_ROOT: fixture.policyRoot },
+    stdio: 'ignore',
+  });
+  const deadline = Date.now() + 2_000;
+  let reachedHealth = false;
+  while (Date.now() < deadline) {
+    reachedHealth = await access(marker).then(() => true, () => false);
+    if (reachedHealth) break;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  if (!reachedHealth) child.kill('SIGKILL');
+  assert.equal(reachedHealth, true, 'activation did not reach candidate health');
+  assert.equal(child.exitCode, null, 'activation exited before interruption');
+  const exited = new Promise((resolve) => child.once('exit', resolve));
+  child.kill('SIGKILL');
+  await exited;
+
+  const status = await invoke(fixture, 'status', candidate);
+  assert.match(status.result.current, new RegExp(candidate.treeDigest.slice(7)));
+  assert.equal(status.result.previous, baselineCurrent);
+  assert.equal('locks' in status.result, false);
+  const rolledBack = await invoke(fixture, 'rollback', candidate);
+  assert.equal(rolledBack.result.current, baselineCurrent);
+  assert.equal(rolledBack.result.readiness.status, 'ready');
 });
 
 test('OSS direct mode checks health and automatically restores the immutable previous release', async () => {

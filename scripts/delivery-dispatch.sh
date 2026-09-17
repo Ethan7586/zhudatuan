@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Runner 1.6 control-side dispatcher. No build, package, upload, deploy, or rollback runs here.
+# Runner 1.7 control-side dispatcher. No build, package, upload, deploy, or rollback runs here.
 set -euo pipefail
-export PATH=/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin
 
 operation="${1:-}"
 identifier=''
@@ -34,15 +33,15 @@ case "$operation" in
   control-update)
     [ "$#" -eq 1 ] || { echo 'Usage: delivery-dispatch.sh control-update' >&2; exit 64; }
     ;;
-  *) echo 'Runner 1.6 operations: release, status, retry, rollback, control-update' >&2; exit 64 ;;
+  *) echo 'Runner 1.7 operations: release, status, retry, rollback, control-update' >&2; exit 64 ;;
 esac
 
 workflow='delivery-1-6.yml'
 gh workflow view "$workflow" --ref zdt-next --yaml >/dev/null \
-  || { echo 'Runner 1.6 workflow is unavailable on zdt-next.' >&2; exit 1; }
+  || { echo 'Runner 1.7 workflow is unavailable on zdt-next.' >&2; exit 1; }
 previous_id="$(gh run list --workflow "$workflow" --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
-echo "Runner 1.6 ${operation}: ${identifier:-${physical_node}/${target}}"
-expected_title="Runner 1.6 ${operation} ${identifier} ${target} ${physical_node}"
+echo "Runner 1.7 ${operation}: ${identifier:-${physical_node}/${target}}"
+expected_title="Runner 1.7 ${operation} ${identifier} ${target} ${physical_node}"
 run_id=''
 dispatch_run() {
   local after_id="$1"
@@ -70,18 +69,20 @@ esac
 echo "GitHub run: $run_id"
 echo '状态：RUNNING'
 
-# Runner availability can change after routing. If Aliyun has not started any
-# step within 20 seconds, cancel that run first, prove the shared core never
-# started, then dispatch the same workflow/core on GitHub Hosted.
-for attempt in {1..10}; do
+# Runner availability can change after routing. First wait for the route to
+# exist; the 20-second Aliyun startup clock begins only then.
+for attempt in {1..30}; do
   execute_name="$(gh run view "$run_id" --json jobs --jq '.jobs[]? | select(.name | startswith("Execute on ")) | .name' | head -1)"
-  [ "$execute_name" = 'Execute on github-hosted' ] && break
-  if [ "$execute_name" = 'Execute on aliyun' ]; then
-    started_steps="$(gh run view "$run_id" --json jobs --jq '[.jobs[]? | select(.name == "Execute on aliyun") | .steps[]?] | length')"
-    [ "${started_steps:-0}" -gt 0 ] && break
-  fi
+  [ -z "$execute_name" ] || break
   sleep 2
 done
+if [ "$execute_name" = 'Execute on aliyun' ]; then
+  for attempt in {1..10}; do
+    started_steps="$(gh run view "$run_id" --json jobs --jq '[.jobs[]? | select(.name == "Execute on aliyun") | .steps[]? | select(.startedAt != null)] | length')"
+    [ "${started_steps:-0}" -gt 0 ] && break
+    sleep 2
+  done
+fi
 
 if [ "${execute_name:-}" = 'Execute on aliyun' ] && [ "${started_steps:-0}" -eq 0 ]; then
   aliyun_run_id="$run_id"
@@ -93,11 +94,17 @@ if [ "${execute_name:-}" = 'Execute on aliyun' ] && [ "${started_steps:-0}" -eq 
     sleep 1
   done
   [ "${run_status:-}" = completed ] || { echo 'Aliyun run cancellation was not confirmed; Hosted fallback was not started.' >&2; exit 1; }
-  core_steps="$(gh run view "$aliyun_run_id" --json jobs --jq '[.jobs[].steps[]? | select(.name | test("shared release core"; "i"))] | length')"
+  core_steps="$(gh run view "$aliyun_run_id" --json jobs --jq '[.jobs[].steps[]? | select(.startedAt != null and (.name | test("shared release core"; "i")))] | length')"
   [ "${core_steps:-0}" -eq 0 ] || { echo 'The shared core started before cancellation; Hosted fallback was not started.' >&2; exit 1; }
   dispatch_run "$aliyun_run_id" github-hosted
   echo "Hosted fallback run: $run_id"
 fi
 
-gh run watch "$run_id" --exit-status
-gh run view "$run_id" --log | sed -n '/RUNNER_1_6_RESULT=/p' | tail -1
+watch_status=0
+gh run watch "$run_id" --exit-status || watch_status=$?
+gh run view "$run_id" --log | sed -n '/RUNNER_1_6_RESULT=/p' | tail -1 || true
+gh run view "$run_id" --json createdAt,jobs | node scripts/delivery-timings.mjs || echo 'DELIVERY_PRE_CORE_TIMINGS=unavailable'
+finished_ms="$(($(date +%s) * 1000))"
+end_to_end_ms="$((finished_ms - ${ZDT_DELIVERY_STARTED_MS:-finished_ms}))"
+printf 'DELIVERY_END_TO_END_MS=%s\n' "$end_to_end_ms"
+exit "$watch_status"

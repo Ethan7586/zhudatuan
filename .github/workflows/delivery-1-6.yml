@@ -1,11 +1,11 @@
-name: Delivery Control 1.6
-run-name: Runner 1.6 ${{ inputs.operation }} ${{ inputs.identifier }} ${{ inputs.release_target }} ${{ inputs.physical_node }}
+name: Delivery Control 1.7
+run-name: Runner 1.7 ${{ inputs.operation }} ${{ inputs.identifier }} ${{ inputs.release_target }} ${{ inputs.physical_node }}
 
 on:
   workflow_dispatch:
     inputs:
       operation:
-        description: One Runner 1.6 operation
+        description: One Runner 1.7 operation; use zdt-delivery for queued-Aliyun fallback
         required: true
         type: choice
         options: [release, status, retry, rollback, control-update]
@@ -145,6 +145,13 @@ jobs:
           ref: ${{ github.sha }}
           path: .runner-1-6/control-release
           fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/actions/runner-1-6/
+            /02_platform_pingtai/infrastructure/release/
+            /04_tools/release-engine/
+            /scripts/runner-1-6.sh
       - name: Run shared release core
         id: release
         if: ${{ inputs.operation != 'status' }}
@@ -203,6 +210,13 @@ jobs:
           ref: ${{ github.sha }}
           path: .runner-1-6/control-release
           fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /.github/actions/runner-1-6/
+            /02_platform_pingtai/infrastructure/release/
+            /04_tools/release-engine/
+            /scripts/runner-1-6.sh
       - name: Run the same release core after Aliyun startup failure
         if: ${{ inputs.operation != 'status' }}
         uses: ./.runner-1-6/control-release/.github/actions/runner-1-6
