@@ -1,5 +1,5 @@
 name: Delivery Control 1.7
-run-name: Runner 1.7 ${{ inputs.operation }} ${{ inputs.identifier }} ${{ inputs.release_target }} ${{ inputs.physical_node }}
+run-name: Runner 1.7 ${{ inputs.operation }} ${{ inputs.identifier || 'none' }} ${{ inputs.release_target || 'none' }} ${{ inputs.physical_node || 'none' }}
 
 on:
   workflow_dispatch:
@@ -65,7 +65,8 @@ jobs:
             release|status)
               if [[ "$IDENTIFIER" =~ ^[0-9a-f]{40}$ ]]; then source_sha="$IDENTIFIER"
               elif [[ "$IDENTIFIER" =~ ^r16-([0-9a-f]{40})$ ]]; then source_sha="${BASH_REMATCH[1]}"
-              else echo 'release/status requires a full Source SHA or r16 release id' >&2; exit 64; fi
+              elif [ "$OPERATION" = status ] && [ -z "$IDENTIFIER" ]; then source_sha=''
+              else echo 'release requires a full Source SHA or r16 release id; status accepts an optional identity' >&2; exit 64; fi
               if [ "$OPERATION" = release ] && { [ -n "$RELEASE_TARGET" ] || [ -n "$PHYSICAL_NODE" ]; }; then
                 [ -n "$RELEASE_TARGET" ] && [ -n "$PHYSICAL_NODE" ] || { echo 'exact release requires both target and physical node' >&2; exit 64; }
               fi

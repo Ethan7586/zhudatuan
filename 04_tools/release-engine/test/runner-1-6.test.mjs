@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { execFile } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import { access, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -7,7 +7,8 @@ import { promisify } from 'node:util';
 import test from 'node:test';
 import { parse } from 'yaml';
 
-import { deploymentState, observationDiagnostic, observedTarget, selectedWorkspaces, sourceFromIdentifier } from '../runner-1-6.mjs';
+import { deploymentState, observationDiagnostic, observedTarget, remoteRuntimeSyncScript, selectedWorkspaces, sourceFromIdentifier } from '../runner-1-6.mjs';
+import { loadAdapter } from '../src/adapter.mjs';
 import { DeliveryError } from '../src/errors.mjs';
 import { runCommand } from '../src/runner.mjs';
 import { selectExecutionRunner } from '../src/runner-selection-1-6.mjs';
@@ -294,12 +295,31 @@ test('remote runtime sync is internal to release and changes no business pointer
   const update = core.slice(updateStart, updateEnd);
   assert.match(update, /progress\('remote-sync-complete'/);
   assert.match(update, /remoteRuntimeSyncScript/);
+  assert.match(update, /return `\/usr\/local\/lib\/ai-delivery\/versions\/\$\{agentSha256\}-\$\{policySha256\}\/agent\.mjs`/);
   assert.match(update, /node --check/);
-  assert.match(update, /mktemp --suffix=\.mjs/);
+  assert.match(update, /versions\/\.stage/);
+  assert.match(update, /mv -Tf "\$agent_link"/);
   assert.doesNotMatch(update, /\b(?:current|previous|restart|systemctl|lock|lease|seal)\b/i);
   assert.doesNotMatch(core, /options\.operation === 'control-update'|expected-remote-agent-sha256|expected-remote-policy-sha256/);
   const agent = await readFile(join(root, '04_tools/release-engine/remote/agent.mjs'), 'utf8');
   assert.doesNotMatch(agent, /assertExpectedPreparedControlPlane|REMOTE_AGENT_SHA256_MISMATCH|REMOTE_POLICY_SHA256_MISMATCH/);
+});
+
+test('remote runtime sync stages a matching Agent/policy pair before one atomic entry switch', () => {
+  const script = remoteRuntimeSyncScript({ agent: Buffer.from('export {};').toString('base64'), policy: Buffer.from('{"schema":"ai.delivery.remote-policy.v1","project":"zdt-next"}').toString('base64'), agentSha256: 'a'.repeat(64), policySha256: 'b'.repeat(64) });
+  execFileSync('bash', ['-n'], { input: script });
+  assert.match(script, /versions\/a{64}-b{64}/);
+  assert.match(script, /sha256sum "\$version_dir\/agent\.mjs"/);
+  assert.match(script, /sha256sum "\$version_dir\/zdt-next\.json"/);
+  assert.match(script, /mv -Tf "\$agent_link" \/usr\/local\/lib\/ai-delivery\/agent\.mjs/);
+  assert.doesNotMatch(script, /mv -f "\$policy_tmp"/);
+});
+
+test('independent recovery verifies the active versioned Agent and its adjacent policy', async () => {
+  const installer = await readFile(join(root, '02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh'), 'utf8');
+  assert.match(installer, /readlink -f "\$installed_agent"/);
+  assert.match(installer, /dirname "\$installed_agent"\)\/zdt-next\.json/);
+  assert.match(installer, /else\n    cmp -s "\$agent_source" "\$installed_agent"\n    cmp -s "\$policy_source" \/etc\/ai-delivery\/projects\/zdt-next\.json/);
 });
 
 test('remote policy contains no lock or unlock authority', async () => {
@@ -349,8 +369,23 @@ test('status observes configured physical nodes without source checkout or a rel
   assert.doesNotMatch(impact, /(?:from|require\()['"]esbuild['"]/);
 });
 
+test('status and rollback can load target placements despite unrelated build configuration damage', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'runner-observation-adapter-'));
+  try {
+    const path = join(directory, 'adapter.json');
+    await writeFile(path, JSON.stringify({ schema: 'ai.delivery.project.v1', project: 'fixture', targets: { app: { tests: 'broken-unrelated-build-shape' } }, nodes: { local: { deployments: { app: { pointerRoot: '/opt/app', service: 'app.service' } } } } }));
+    const observed = await loadAdapter(path, directory, { observationOrRecovery: true });
+    assert.equal(observed.nodes.local.deployments.app.pointerRoot, '/opt/app');
+    await assert.rejects(loadAdapter(path, directory), /stateDirectory/);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 test('live observation distinguishes current, previous and unrelated source without calling them failures', () => {
   const observation = (current, previous) => ({ status: { currentArtifact: { sourceSha: current }, previousArtifact: { sourceSha: previous } }, verification: { readiness: { status: 'ready' } } });
+  assert.equal(observedTarget(null, 'identity-api', 'hbbtzn-l1', observation(sha, 'b'.repeat(40))).state, 'HEALTHY');
+  assert.equal(observedTarget(null, 'identity-api', 'hbbtzn-l1', observation(sha, 'b'.repeat(40))).currentSourceSha, sha);
   assert.equal(observedTarget(sha, 'identity-api', 'hbbtzn-l1', observation(sha, 'b'.repeat(40))).state, 'HEALTHY');
   const unchecked = { ...observation(sha, 'b'.repeat(40)), verification: { readiness: { status: 'not-checked', checks: [] } } };
   assert.equal(observedTarget(sha, 'console', 'zhudatuan-l0', unchecked).state, 'CURRENT');

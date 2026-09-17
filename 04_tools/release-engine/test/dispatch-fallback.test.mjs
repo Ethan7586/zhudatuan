@@ -12,7 +12,7 @@ const root = resolve(new URL('../../..', import.meta.url).pathname);
 const dispatcher = join(root, 'scripts/delivery-dispatch.sh');
 const sourceSha = 'a'.repeat(40);
 
-async function simulate(mode) {
+async function simulate(mode, argumentsForDelivery = ['release', sourceSha, 'identity-api', 'hbbtzn-l1']) {
   const directory = await mkdtemp(join(tmpdir(), 'runner-dispatch-'));
   const log = join(directory, 'calls.log');
   const state = join(directory, 'state');
@@ -33,7 +33,7 @@ if [ "$1" = workflow ] && [ "$2" = run ]; then
   exit 0
 fi
 if [ "$1" = run ] && [ "$2" = cancel ]; then
-  if [ "$MOCK_MODE" = raced ]; then echo cancelled > "$MOCK_STATE"; fi
+  echo cancelled > "$MOCK_STATE"
   exit 0
 fi
 if [ "$1" = run ] && [ "$2" = watch ]; then exit 0; fi
@@ -43,13 +43,18 @@ if [ "$1" = run ] && [ "$2" = view ]; then
     echo '{"createdAt":"2026-09-16T00:00:00Z","jobs":[{"name":"Choose execution location","startedAt":"2026-09-16T00:00:02Z","completedAt":"2026-09-16T00:00:06Z","steps":[{"name":"Run actions/checkout@v6","startedAt":"2026-09-16T00:00:02Z","completedAt":"2026-09-16T00:00:03Z"}]},{"name":"Execute on aliyun","startedAt":"2026-09-16T00:00:09Z","steps":[{"name":"Run actions/checkout@v6","startedAt":"2026-09-16T00:00:09Z","completedAt":"2026-09-16T00:00:11Z"}]}]}'
     exit 0
   fi
-  if [[ " $* " == *" --json status"* ]]; then echo completed; exit 0; fi
+  if [[ " $* " == *" --json status"* ]]; then
+    if [ "$(<"$MOCK_STATE")" = cancelled ]; then echo completed; else echo in_progress; fi
+    exit 0
+  fi
   if [[ " $* " == *"startswith("* ]]; then
     if [ "$(<"$MOCK_STATE")" = hosted ]; then echo 'Execute on github-hosted'; else echo 'Execute on aliyun'; fi
     exit 0
   fi
   if [[ " $* " == *" --json jobs"* ]]; then
-    if [ "$MOCK_MODE" = started ] || { [ "$MOCK_MODE" = raced ] && [ "$(<"$MOCK_STATE")" = cancelled ]; }; then echo 1; else echo 0; fi
+    if [[ " $* " == *"shared release core"* ]]; then
+      if [ "$MOCK_MODE" = started ] || { [ "$MOCK_MODE" = raced ] && [ "$(<"$MOCK_STATE")" = cancelled ]; }; then echo 1; else echo 0; fi
+    elif [ "$MOCK_MODE" = precore ] || [ "$MOCK_MODE" = started ]; then echo 1; else echo 0; fi
     exit 0
   fi
 fi
@@ -59,7 +64,7 @@ exit 1
   await writeFile(sleep, '#!/usr/bin/env bash\nexit 0\n');
   await Promise.all([chmod(gh, 0o755), chmod(sleep, 0o755)]);
   try {
-    const result = await execFileAsync('bash', [dispatcher, 'release', sourceSha, 'identity-api', 'hbbtzn-l1'], {
+    const result = await execFileAsync('bash', [dispatcher, ...argumentsForDelivery], {
       cwd: root,
       env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, MOCK_LOG: log, MOCK_STATE: state, MOCK_MODE: mode, ZDT_DELIVERY_STARTED_MS: String(Math.floor(Date.now() / 1000) * 1000) },
     });
@@ -84,6 +89,18 @@ test('an already-started Aliyun job never creates a Hosted dispatch', async () =
   assert.doesNotMatch(calls, /run cancel/);
   assert.doesNotMatch(calls, /execution_location=github-hosted/);
   assert.equal((calls.match(/workflow run /g) ?? []).length, 1);
+});
+
+test('a stalled pre-core checkout is cancelled before Hosted takes over', async () => {
+  const { calls } = await simulate('precore');
+  assert.match(calls, /run cancel 101/);
+  assert.match(calls, /execution_location=github-hosted/);
+});
+
+test('live status dispatches without requiring a Source SHA', async () => {
+  const { calls, output } = await simulate('started', ['status']);
+  assert.match(calls, /workflow run delivery-1-6.yml --ref zdt-next -f operation=status -f identifier=/);
+  assert.match(output, /Runner 1.7 status/);
 });
 
 test('a core that starts while cancellation is pending blocks Hosted dispatch', async () => {

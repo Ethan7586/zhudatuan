@@ -11,10 +11,10 @@ case "$operation" in
     if [ "$operation" = release ]; then
       { [ "$#" -eq 2 ] || [ "$#" -eq 4 ]; } || { echo 'Usage: delivery-dispatch.sh release <source-sha-or-release-id> [target physical-node]' >&2; exit 64; }
     else
-      [ "$#" -eq 2 ] || { echo 'Usage: delivery-dispatch.sh status <source-sha-or-release-id>' >&2; exit 64; }
+      { [ "$#" -eq 1 ] || [ "$#" -eq 2 ]; } || { echo 'Usage: delivery-dispatch.sh status [source-sha-or-release-id]' >&2; exit 64; }
     fi
-    identifier="$2"
-    [[ "$identifier" =~ ^[0-9a-f]{40}$ || "$identifier" =~ ^r16-[0-9a-f]{40}$ ]] \
+    identifier="${2:-}"
+    { [ "$operation" = status ] && [ -z "$identifier" ]; } || [[ "$identifier" =~ ^[0-9a-f]{40}$ || "$identifier" =~ ^r16-[0-9a-f]{40}$ ]] \
       || { echo "$operation requires a full lowercase Source SHA or r16 release id" >&2; exit 64; }
     if [ "$#" -eq 4 ]; then target="$3"; physical_node="$4"; fi
     ;;
@@ -34,11 +34,9 @@ case "$operation" in
 esac
 
 workflow='delivery-1-6.yml'
-gh workflow view "$workflow" --ref zdt-next --yaml >/dev/null \
-  || { echo 'Runner 1.7 workflow is unavailable on zdt-next.' >&2; exit 1; }
 previous_id="$(gh run list --workflow "$workflow" --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
 echo "Runner 1.7 ${operation}: ${identifier:-${physical_node}/${target}}"
-expected_title="Runner 1.7 ${operation} ${identifier} ${target} ${physical_node}"
+expected_title="Runner 1.7 ${operation} ${identifier:-none} ${target:-none} ${physical_node:-none}"
 run_id=''
 dispatch_run() {
   local after_id="$1"
@@ -66,23 +64,27 @@ echo "GitHub run: $run_id"
 echo '状态：RUNNING'
 
 # Runner availability can change after routing. First wait for the route to
-# exist; the 20-second Aliyun startup clock begins only then.
+# exist; then bound both queue wait and pre-core setup wait.
 for attempt in {1..30}; do
   execute_name="$(gh run view "$run_id" --json jobs --jq '.jobs[]? | select(.name | startswith("Execute on ")) | .name' | head -1)"
   [ -z "$execute_name" ] || break
   sleep 2
 done
 if [ "$execute_name" = 'Execute on aliyun' ]; then
-  for attempt in {1..10}; do
+  for attempt in {1..30}; do
+    core_steps="$(gh run view "$run_id" --json jobs --jq '[.jobs[]? | select(.name == "Execute on aliyun") | .steps[]? | select(.startedAt != null and (.name | test("shared release core"; "i")))] | length')"
+    [ "${core_steps:-0}" -gt 0 ] && break
+    run_status="$(gh run view "$run_id" --json status --jq .status)"
+    [ "$run_status" = completed ] && break
     started_steps="$(gh run view "$run_id" --json jobs --jq '[.jobs[]? | select(.name == "Execute on aliyun") | .steps[]? | select(.startedAt != null)] | length')"
-    [ "${started_steps:-0}" -gt 0 ] && break
+    [ "$attempt" -ge 10 ] && [ "${started_steps:-0}" -eq 0 ] && break
     sleep 2
   done
 fi
 
-if [ "${execute_name:-}" = 'Execute on aliyun' ] && [ "${started_steps:-0}" -eq 0 ]; then
+if [ "${execute_name:-}" = 'Execute on aliyun' ] && [ "${core_steps:-0}" -eq 0 ] && [ "${run_status:-}" != completed ]; then
   aliyun_run_id="$run_id"
-  echo '阿里云执行器 20 秒内未启动；仅取消尚未开始核心的运行。'
+  echo '阿里云执行器未及时进入发布核心；仅取消尚未开始核心的运行。'
   gh run cancel "$aliyun_run_id" >/dev/null
   for attempt in {1..30}; do
     run_status="$(gh run view "$aliyun_run_id" --json status --jq .status)"

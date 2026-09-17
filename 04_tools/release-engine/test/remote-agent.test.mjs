@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFile, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { access, chmod, lstat, mkdir, mkdtemp, readFile, readlink, symlink, writeFile } from 'node:fs/promises';
+import { access, chmod, copyFile, lstat, mkdir, mkdtemp, readFile, readlink, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { promisify } from 'node:util';
@@ -27,7 +27,7 @@ test('stages, activates, rolls back and reports status with immutable releases',
   assert.ok(staged.result.timings.total >= 0);
   assert.equal((await lstat(staged.result.release)).mode & 0o777, 0o755);
   const preflight = await invoke(fixture, 'preflight', first);
-  assert.equal(preflight.result.capacity.status, 'passed');
+  assert.equal(preflight.result.capacity.status, 'observed');
   assert.equal(preflight.result.artifact.sourceSha, first.sourceSha);
   assert.equal(preflight.result.rollbackPoint.pointers.current, null);
   const activated = await invoke(fixture, 'activate', first);
@@ -36,9 +36,12 @@ test('stages, activates, rolls back and reports status with immutable releases',
   assert.equal(activated.result.restart.commandCount, 0);
   assert.equal(activated.result.receipt.schema, 'ai.delivery.receipt.v1');
   assert.equal(activated.result.receipt.finalStatus, 'success');
-  assert.equal(activated.result.receipt.nonTargetProcesses.unchanged, true);
-  assert.equal(activated.result.receipt.capacity.status, 'passed');
-  assert.ok(activated.result.receipt.rollbackPoint.directory.startsWith(fixture.pointerRoot));
+  assert.equal(activated.result.receipt.nonTargetProcesses.unchanged, null);
+  assert.equal(activated.result.receipt.caddySemantic.unchanged, null);
+  assert.equal(activated.result.receipt.automaticCleanup.status, 'not-observed-by-target-release');
+  assert.equal(activated.result.receipt.capacity.status, 'observed');
+  assert.equal(activated.result.receipt.rollbackPoint.status, 'pointer-based');
+  assert.equal(activated.result.receipt.rollbackPoint.pointers.current, null);
   const firstCurrent = await readlink(join(fixture.pointerRoot, 'current'));
   assert.match(firstCurrent, new RegExp(first.treeDigest.slice(7)));
 
@@ -63,6 +66,55 @@ test('stages, activates, rolls back and reports status with immutable releases',
   assert.equal(observed.result.targets[0].target, 'app');
   assert.equal(observed.result.targets[0].status.current, firstCurrent);
   assert.equal(observed.result.targets[0].verification.readiness.status, 'ready');
+});
+
+test('a versioned Agent symlink reads the policy bundled beside its actual code', async () => {
+  const fixture = await createFixture();
+  const version = join(fixture.root, 'version');
+  await mkdir(version);
+  await copyFile(agent, join(version, 'agent.mjs'));
+  await writeFile(join(version, 'fixture.json'), JSON.stringify(fixture.policy));
+  const entry = join(fixture.root, 'agent-link.mjs');
+  await symlink(join(version, 'agent.mjs'), entry);
+  const output = await execFileAsync(process.execPath, [entry, 'status', '--project', 'fixture', '--node', 'local', '--target', 'app'], { env: { ...process.env, AI_DELIVERY_POLICY_ROOT: join(fixture.root, 'obsolete-policy-root') } });
+  assert.equal(JSON.parse(output.stdout).ok, true);
+});
+
+test('unrelated policy damage and obsolete advisory checks do not block status or rollback', async () => {
+  const fixture = await createFixture();
+  const first = await createArtifact(fixture, 'first', 'a'.repeat(40));
+  await invoke(fixture, 'stage', first);
+  await invoke(fixture, 'activate', first);
+  const second = await createArtifact(fixture, 'second', 'b'.repeat(40));
+  await invoke(fixture, 'stage', second);
+  await invoke(fixture, 'activate', second);
+  fixture.policy.nodes.peer.deployments.app.pointerRoot = 'broken-unrelated-path';
+  fixture.policy.minimumFreeBytes = Number.MAX_SAFE_INTEGER;
+  fixture.policy.caddyConfig = join(fixture.root, 'missing-Caddyfile');
+  fixture.policy.lifecycleUnits = ['missing-fixture.timer'];
+  await writePolicy(fixture);
+  const observed = await invoke(fixture, 'status', second);
+  assert.match(observed.result.current, new RegExp(second.treeDigest.slice(7)));
+  const rolledBack = await invoke(fixture, 'rollback', second);
+  assert.equal(rolledBack.result.readiness.status, 'ready');
+  assert.match(rolledBack.result.current, new RegExp(first.treeDigest.slice(7)));
+});
+
+test('unwritable audit and obsolete capacity/Caddy checks cannot turn a healthy cutover into failure', async () => {
+  const fixture = await createFixture();
+  const auditFile = join(fixture.root, 'audit-is-a-file');
+  await writeFile(auditFile, 'not-a-directory');
+  fixture.policy.auditRoot = auditFile;
+  fixture.policy.minimumFreeBytes = Number.MAX_SAFE_INTEGER;
+  fixture.policy.caddyConfig = join(fixture.root, 'missing-Caddyfile');
+  fixture.policy.lifecycleUnits = ['missing-fixture.timer'];
+  await writePolicy(fixture);
+  const artifact = await createArtifact(fixture, 'healthy', 'c'.repeat(40));
+  await invoke(fixture, 'stage', artifact);
+  const activated = await invoke(fixture, 'activate', artifact);
+  assert.equal(activated.result.readiness.status, 'ready');
+  assert.equal(activated.result.receipt.capacity.status, 'observed');
+  assert.match(activated.result.current, new RegExp(artifact.treeDigest.slice(7)));
 });
 
 test('targets without configured health checks report not-checked without blocking activation or status', async () => {
@@ -548,7 +600,7 @@ test('readiness timeout restores both current and runtime before reporting rollb
   assert.equal(await readlink(join(fixture.pointerRoot, 'runtime')), oldLayer);
 });
 
-test('fails with the exact protected service name when a non-target PID changes', async () => {
+test('an unrelated service PID change does not roll back a healthy target', async () => {
   const fixture = await createFixture();
   const bin = join(fixture.root, 'protected-change-bin');
   const targetPid = join(fixture.root, 'target.pid');
@@ -601,11 +653,10 @@ esac
   const candidate = await createArtifact(fixture, 'protected-candidate', '8'.repeat(40));
   await invoke(fixture, 'stage', candidate);
   await writeFile(mutateProtected, '1\n');
-  const failed = await captureAgentFailure(() => invoke(fixture, 'activate', candidate));
-  assert.equal(failed.code, 'CUTOVER_FAILED_ROLLBACK_UNHEALTHY');
-  assert.equal(failed.details.candidateFailure.code, 'PROTECTED_PROCESS_CHANGED');
-  assert.equal(failed.details.candidateFailure.details.process, 'systemd:sentinel.service');
-  assert.equal(failed.details.restartCommands.total, 2);
+  const activated = await invoke(fixture, 'activate', candidate);
+  assert.equal(activated.result.readiness.status, 'ready');
+  assert.equal(activated.result.receipt.nonTargetProcesses.unchanged, false);
+  assert.match(await readlink(join(fixture.pointerRoot, 'current')), new RegExp(candidate.treeDigest.slice(7)));
 });
 
 test('rollback waits for the previous service to become ready', async () => {

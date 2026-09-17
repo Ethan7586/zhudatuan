@@ -84,6 +84,10 @@ test('team entry checks out only the latest dispatch scripts', async () => {
     });
     assert.match(output, /CONTROL_SPARSE_OK:status/);
     assert.match(output, /Delivery control: [0-9a-f]{40}/);
+    const withoutSha = execFileSync('bash', [join(root, '02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery'), 'status'], {
+      env: { ...process.env, ZDT_GIT_ANCHOR: repository }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    assert.match(withoutSha, /CONTROL_SPARSE_OK:status/);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
