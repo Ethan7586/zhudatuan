@@ -6,6 +6,7 @@
   "sideEffects": false,
   "exports": {
     "./hosted-mall-opening": "./src/member/HostedMallOpening.ts",
+    "./hosted-node-provisioning": "./src/node/HostedNodeProvisioning.ts",
     "./member-node-registration": "./src/member/MemberNodeRegistration.ts",
     "./member-identity-code": "./src/member/MemberIdentityCode.ts",
     "./member-profile": "./src/member/MemberProfileRules.ts",
