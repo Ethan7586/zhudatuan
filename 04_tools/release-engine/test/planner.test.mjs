@@ -238,14 +238,14 @@ test('workspace lock diff follows an added internal dependency only to Console',
   }
 });
 
-test('E04 documentation, tests and database fixtures never create a candidate', async () => {
+test('E04 documentation, tests and database fixtures create neither a candidate nor release-time validation', async () => {
   const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
   const plan = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: ['05_docs_ziliao/docs_wendang/e04.md', '01_core_hexin/apps/console/src/feature/e04/E04.test.tsx', '03_quality_ceshi/tests/fixtures/e04-database.fixture.sql'] });
   assert.equal(plan.deployRequired, false);
   assert.deepEqual(plan.targets, []);
   assert.deepEqual(plan.artifacts, []);
   assert.equal(plan.actions.deployments.length, 0);
-  assert.ok(plan.requiredValidations.length > 0);
+  assert.deepEqual(plan.requiredValidations, []);
 });
 
 test('L1 identity control-plane changes require focused validation without rebuilding service code', async () => {
@@ -259,11 +259,13 @@ test('L1 identity control-plane changes require focused validation without rebui
   );
 });
 
-test('database migrations are independent and ordered before actual consumers', async () => {
+test('database migrations are independent, ordered, and do not replay history during release', async () => {
   const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
   const migrationOnly = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: ['02_platform_pingtai/database/supabase/migrations/20990101000000_example.sql'], nodes: ['hbbtzn-l1', 'zhudatuan-l0'] });
   assert.deepEqual(migrationOnly.targets, ['database-migration']);
   assert.deepEqual(migrationOnly.deploymentOrder, ['database-migration']);
+  assert.deepEqual(migrationOnly.actions.tests, []);
+  assert.deepEqual(migrationOnly.requiredValidations, []);
   assert.equal(migrationOnly.actions.deployments.length, 1);
   assert.equal(migrationOnly.actions.deployments[0].service, 'none');
   assert.equal(migrationOnly.actions.deployments[0].restart, 'none');
@@ -271,11 +273,13 @@ test('database migrations are independent and ordered before actual consumers', 
   const withConsumer = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: ['02_platform_pingtai/database/supabase/migrations/20990101000000_example.sql', '01_core_hexin/services/commerce/src/entry/WebBusinessApiMain.ts'] });
   assert.deepEqual(withConsumer.targets, ['database-migration', 'web-api']);
   assert.deepEqual(withConsumer.deploymentOrder, ['database-migration', 'web-api']);
+  assert.ok(withConsumer.actions.tests.every((command) => command.name !== 'database-migration-ledger'));
 
   for (const file of ['02_platform_pingtai/database/supabase/tests/example.sql', '02_platform_pingtai/database/supabase/fixtures/example.sql', '05_docs_ziliao/docs_wendang/example.sql']) {
     const validationOnly = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: [file] });
     assert.deepEqual(validationOnly.targets, [], file);
     assert.equal(validationOnly.deployRequired, false, file);
+    assert.deepEqual(validationOnly.requiredValidations, [], file);
   }
 });
 

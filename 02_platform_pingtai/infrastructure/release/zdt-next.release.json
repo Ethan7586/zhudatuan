@@ -367,9 +367,7 @@
       "kind": "migration",
       "estimateSeconds": 300,
       "unknownImpact": false,
-      "tests": [
-        {"name":"database-migration-ledger","argv":["npm","run","check:migrations"],"timeoutMs":600000}
-      ],
+      "tests": [],
       "typecheck": [],
       "build": [
         {"name":"database-migration-executor-build","argv":["node","04_tools/release-engine/adapters/zdt-next/build-database-migration.mjs"],"timeoutMs":300000}
@@ -428,16 +426,6 @@
       "reason": "changed files require validation but are not production artifacts"
     },
     {
-      "id": "database-validation",
-      "validationOnly": true,
-      "targets": [],
-      "include": ["02_platform_pingtai/database/**/tests/**","02_platform_pingtai/database/**/*fixture*","03_quality_ceshi/**"],
-      "validations": [
-        {"name":"database-migration-ledger","argv":["npm","run","check:migrations"],"timeoutMs":600000}
-      ],
-      "reason": "database tests and fixtures validate without producing a production migration"
-    },
-    {
       "id": "workspace-dependencies",
       "targets": [],
       "include": ["package.json","package-lock.json","01_core_hexin/**/package.json","04_tools/tools/*/package.json"],
@@ -450,10 +438,7 @@
       "targets": ["database-migration"],
       "include": ["02_platform_pingtai/database/**/migrations/*.sql"],
       "touches": ["database"],
-      "reason": "production database migration",
-      "validations": [
-        {"name":"database-migration-ledger","argv":["npm","run","check:migrations"],"timeoutMs":600000}
-      ]
+      "reason": "production database migration"
     },
     {
       "id": "database-migration-runtime",
@@ -465,10 +450,7 @@
         "04_tools/release-engine/adapters/zdt-next/database-migration-executor.mjs"
       ],
       "touches": ["database"],
-      "reason": "production database migration runtime",
-      "validations": [
-        {"name":"database-migration-ledger","argv":["npm","run","check:migrations"],"timeoutMs":600000}
-      ]
+      "reason": "production database migration runtime"
     },
     {
       "id": "caddy",
