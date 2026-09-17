@@ -365,6 +365,7 @@
     "database-migration": {
       "id": "database-migration",
       "kind": "migration",
+      "buildWorkspace": "@shop/commerce",
       "estimateSeconds": 300,
       "unknownImpact": false,
       "tests": [],

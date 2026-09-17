@@ -55,7 +55,9 @@ cleanup() {
 trap cleanup EXIT
 git -C "$repository_root" fetch origin zdt-next --quiet
 control_sha="$(git -C "$repository_root" rev-parse origin/zdt-next)"
-git -C "$repository_root" worktree add --detach "$control_root" "$control_sha" --quiet
+git -C "$repository_root" worktree add --detach --no-checkout "$control_root" "$control_sha" --quiet
 added=true
+git -C "$control_root" sparse-checkout set --no-cone /scripts/delivery-dispatch.sh /scripts/delivery-timings.mjs
+git -C "$control_root" checkout --quiet "$control_sha"
 printf 'Delivery control: %s\n' "$control_sha"
 (cd "$control_root" && bash scripts/delivery-dispatch.sh "$@")

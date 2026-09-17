@@ -16,7 +16,9 @@ test('exact commerce targets use a Source scope that retains build and test inpu
   for (const path of ['/package-lock.json', '/L-kernel/', '/01_core_hexin/services/commerce/', '/01_core_hexin/extensions/', '/02_platform_pingtai/', '/04_tools/release-engine/']) assert.ok(paths.includes(path));
   assert.ok(paths.includes('/01_core_hexin/apps/*/tsconfig.json'));
   assert.deepEqual(sourceCheckoutPaths('console', project.targets), []);
-  assert.deepEqual(sourceCheckoutPaths('database-migration', project.targets), []);
+  assert.deepEqual(sourceCheckoutPaths('database-migration', project.targets), paths);
+  assert.equal(project.targets['database-migration'].workspace, undefined);
+  assert.equal(project.targets['database-migration'].buildWorkspace, '@shop/commerce');
   assert.deepEqual(sourceCheckoutPaths('', project.targets), []);
 });
 
@@ -60,5 +62,29 @@ test('full Source recovery materializes a file hidden by a reused sparse index',
     assert.match(git('ls-files', '-v', '04_tools/scripts/audit/database-contracts.mjs').toString(), /^H /);
   } finally {
     await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test('team entry checks out only the latest dispatch scripts', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'runner-control-entry-'));
+  const repository = join(directory, 'repository');
+  const origin = join(directory, 'origin.git');
+  try {
+    await mkdir(join(repository, 'scripts'), { recursive: true });
+    await writeFile(join(repository, 'scripts/delivery-dispatch.sh'), '#!/usr/bin/env bash\nset -euo pipefail\ntest -f scripts/delivery-timings.mjs\ntest ! -e unrelated.txt\nprintf "CONTROL_SPARSE_OK:%s\\n" "$1"\n');
+    await writeFile(join(repository, 'scripts/delivery-timings.mjs'), 'export {};\n');
+    await writeFile(join(repository, 'unrelated.txt'), 'not needed by the dispatcher\n');
+    execFileSync('git', ['init', '-b', 'zdt-next', repository], { stdio: 'pipe' });
+    execFileSync('git', ['-C', repository, 'add', '.'], { stdio: 'pipe' });
+    execFileSync('git', ['-C', repository, '-c', 'user.name=Runner Test', '-c', 'user.email=runner@example.invalid', 'commit', '-m', 'fixture'], { stdio: 'pipe' });
+    execFileSync('git', ['clone', '--bare', repository, origin], { stdio: 'pipe' });
+    execFileSync('git', ['-C', repository, 'remote', 'add', 'origin', origin], { stdio: 'pipe' });
+    const output = execFileSync('bash', [join(root, '02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery'), 'control-update'], {
+      env: { ...process.env, ZDT_GIT_ANCHOR: repository }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    assert.match(output, /CONTROL_SPARSE_OK:control-update/);
+    assert.match(output, /Delivery control: [0-9a-f]{40}/);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
   }
 });

@@ -8,6 +8,16 @@ import test from 'node:test';
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const adapterRoot = join(projectRoot, '04_tools/release-engine/adapters/zdt-next');
 
+test('migration build workspace does not make commerce source changes select a migration', async () => {
+  const { resolveImpact } = await import(pathToFileURL(join(adapterRoot, 'workspace-impact.mjs')).href);
+  const result = await resolveImpact({
+    adapter: { projectRoot, targets: { identity: { workspace: '@shop/commerce' }, 'database-migration': { kind: 'migration', buildWorkspace: '@shop/commerce' } } },
+    changes: [{ path: '01_core_hexin/services/commerce/src/foundation/infrastructure/MigrationRunner.ts' }],
+    refs: {},
+  });
+  assert.deepEqual(result.targets, ['identity']);
+});
+
 test('isolated release control resolves esbuild from the exact source project', async () => {
   const controlRoot = await mkdtemp(join(tmpdir(), 'zdt-control-impact-'));
   try {
