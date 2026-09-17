@@ -18836,6 +18836,14 @@ objects:
     objectType: schema
     target: organization
     privilege: usage
+  - id: zhudatuanidentityapi:schema:ordering:usage
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260917100000_restore_storefront_member_order_read.sql
+    role: zhudatuanidentityapi
+    objectType: schema
+    target: ordering
+    privilege: usage
   - id: zhudatuanidentityapi:schema:pricing:usage
     kind: grant
     owner: pricing
@@ -25548,6 +25556,10 @@ objects:
     kind: policy
     owner: ordering
     source: 02_platform_pingtai/database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: ordering.orderrecord.zhudatuanidentityapi_member_read
+    kind: policy
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260917100000_restore_storefront_member_order_read.sql
   - id: ordering.orderrecord.zhudatuanpurchaseapiinsert
     kind: policy
     owner: ordering
