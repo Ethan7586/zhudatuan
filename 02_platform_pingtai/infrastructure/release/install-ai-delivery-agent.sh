@@ -39,8 +39,15 @@ if [[ "$mode" == agent-candidate ]]; then
 fi
 
 if [[ "$mode" == verify ]]; then
-  cmp -s "$agent_source" /usr/local/lib/ai-delivery/agent.mjs
-  cmp -s "$policy_source" /etc/ai-delivery/projects/zdt-next.json
+  installed_agent=/usr/local/lib/ai-delivery/agent.mjs
+  if [[ -L "$installed_agent" ]]; then
+    installed_agent="$(readlink -f "$installed_agent")"
+    cmp -s "$agent_source" "$installed_agent"
+    cmp -s "$policy_source" "$(dirname "$installed_agent")/zdt-next.json"
+  else
+    cmp -s "$agent_source" "$installed_agent"
+    cmp -s "$policy_source" /etc/ai-delivery/projects/zdt-next.json
+  fi
   printf 'AI delivery agent verified: project=zdt-next\n'
   exit 0
 fi

@@ -315,6 +315,13 @@ test('remote runtime sync stages a matching Agent/policy pair before one atomic 
   assert.doesNotMatch(script, /mv -f "\$policy_tmp"/);
 });
 
+test('independent recovery verifies the active versioned Agent and its adjacent policy', async () => {
+  const installer = await readFile(join(root, '02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh'), 'utf8');
+  assert.match(installer, /readlink -f "\$installed_agent"/);
+  assert.match(installer, /dirname "\$installed_agent"\)\/zdt-next\.json/);
+  assert.match(installer, /else\n    cmp -s "\$agent_source" "\$installed_agent"\n    cmp -s "\$policy_source" \/etc\/ai-delivery\/projects\/zdt-next\.json/);
+});
+
 test('remote policy contains no lock or unlock authority', async () => {
   const policy = await readFile(join(root, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8');
   assert.doesNotMatch(policy, /lockRoot|staleLockSeconds|owner\.json/i);
