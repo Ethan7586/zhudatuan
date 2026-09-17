@@ -203,6 +203,7 @@ test('source checkout timing survives the top-level core-start marker', () => {
   const log = [
     'Execute on aliyun\tPrepare shared release core\t2026-09-16T23:17:27.917Z ##[start-action display=Load exact source;id=release.checkout]',
     'Execute on aliyun\tMark shared release core started\t2026-09-16T23:17:37.842Z ##[group]Run echo value=true',
+    'Execute on aliyun\tRun shared release core\t2026-09-16T23:17:38.100Z ##[start-action display=Load exact source;id=skipped.checkout]',
     'Execute on aliyun\tRun shared release core\t2026-09-16T23:17:38.842Z RUNNER_1_6_RESULT={"state":"DEPLOYED","targets":[]}',
   ].join('\n');
   assert.equal(releaseLogTimings(log, Date.parse('2026-09-16T23:16:47Z'), 'release').sourceCheckoutMs, 9_925);
