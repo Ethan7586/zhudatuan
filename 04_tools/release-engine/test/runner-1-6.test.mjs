@@ -504,3 +504,15 @@ test('Aliyun runners use a GitHub-only sing-box line without delivery locks', as
   assert.match(installer, /pending-next-restart/);
   assert.doesNotMatch(installer, /exit 75|retry after it finishes|flock|lockRoot|\blease\b|\bclaim\b|\bseal\b/i);
 });
+
+test('Runner host scripts do not recreate the old build lock or bind installation to the old ECS', async () => {
+  const directory = join(root, '02_platform_pingtai/infrastructure/github-actions-runner');
+  const capacity = await readFile(join(directory, 'install-build-capacity-policy.sh'), 'utf8');
+  assert.match(capacity, /rm -f -- \/etc\/tmpfiles\.d\/zdt-build-lock\.conf \/run\/lock\/zdt-build\/heavy\.lock/);
+  assert.doesNotMatch(capacity, /install .*heavy\.lock|zdt-builders|SupplementaryGroups/);
+  for (const setting of ['ZDT_BUILD_CPU_QUOTA', 'ZDT_BUILD_MEMORY_HIGH', 'ZDT_BUILD_MEMORY_MAX']) assert.match(capacity, new RegExp(setting));
+  for (const name of ['install-build-capacity-policy.sh', 'install-build-slot-2.sh', 'install-release-standby.sh', 'switch-release-runner.sh']) {
+    const script = await readFile(join(directory, name), 'utf8');
+    assert.doesNotMatch(script, /i-2zeewhay0farxq8lucrc|EXPECTED_INSTANCE_ID/);
+  }
+});

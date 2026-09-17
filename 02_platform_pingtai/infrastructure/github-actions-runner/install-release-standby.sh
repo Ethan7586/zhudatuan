@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
-# Install one cold release Runner on the dedicated staging ECS.
+# Install one cold release Runner on the Runner host.
 # The Runner is registered with GitHub but left stopped and disabled.
 set -euo pipefail
 
-readonly EXPECTED_INSTANCE_ID='i-2zeewhay0farxq8lucrc'
 readonly REPOSITORY_URL='https://github.com/Ethan7586/zhudatuan'
 readonly RUNNER_VERSION='2.337.0'
 readonly RUNNER_ARCHIVE='actions-runner-linux-x64-2.337.0.tar.gz'
@@ -14,22 +13,11 @@ readonly RUNNER_USER='zdt-release-standby'
 readonly RUNNER_ROOT='/opt/actions-runner-release-standby'
 
 if [ "$(id -u)" -ne 0 ]; then
-  echo 'Run this installer as root on the staging ECS.' >&2
+  echo 'Run this installer as root on the Runner host.' >&2
   exit 64
 fi
 if [ "$(uname -s)" != 'Linux' ] || [ "$(uname -m)" != 'x86_64' ]; then
   echo 'The standby Runner requires Linux x64.' >&2
-  exit 64
-fi
-
-metadata_token="$(curl -fsS --max-time 3 -X PUT \
-  -H 'X-aliyun-ecs-metadata-token-ttl-seconds: 60' \
-  http://100.100.100.200/latest/api/token)"
-instance_id="$(curl -fsS --max-time 3 \
-  -H "X-aliyun-ecs-metadata-token: ${metadata_token}" \
-  http://100.100.100.200/latest/meta-data/instance-id)"
-if [ "$instance_id" != "$EXPECTED_INSTANCE_ID" ]; then
-  echo "Refusing Runner installation on ${instance_id}; expected ${EXPECTED_INSTANCE_ID}." >&2
   exit 64
 fi
 
