@@ -1,12 +1,12 @@
-import { signedLevelNumber, type SignedLevel } from './SignedLevel';
+import { signedLevelNumber, type SignedLevel } from './SignedLevel.ts';
 import {
   canonicalText, exactRecord, parseCanonicalTimestamp, parseNodeProfile, parseNullableText,
   parseSignedLevel, type NodeProfile,
-} from './NodeParsing';
+} from './NodeParsing.ts';
 import {
   NODE_RECORD_KEYS, NODE_RELATION_KEYS, parseNodeRecord, parseNodeRelationRecord,
   type ResolvedNodeRecord,
-} from './NodeTopology';
+} from './NodeTopology.ts';
 
 export interface HostedNodeProvisioningRequest {
   readonly idempotency_key: string;

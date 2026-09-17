@@ -1,4 +1,4 @@
-import { signedLevelNumber, type SignedLevel } from './SignedLevel';
+import { signedLevelNumber, type SignedLevel } from './SignedLevel.ts';
 import {
   assertRegistryIdentifierUnique,
   canonicalText,
@@ -12,7 +12,7 @@ import {
   requiredArray,
   type NodeLifecycleStatus,
   type NodeProfile,
-} from './NodeParsing';
+} from './NodeParsing.ts';
 
 export const SFL_NODE_TOPOLOGY_SCHEMA_VERSION = 'sfl.node-topology.v1' as const;
 export type SovereigntyTier = 'sovereign' | 'hosted';

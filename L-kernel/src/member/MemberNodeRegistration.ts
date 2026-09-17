@@ -1,5 +1,5 @@
-import { canonicalText, exactRecord, parseCanonicalTimestamp, parseNullableText, parseSignedLevel } from '../node/NodeParsing';
-import type { SignedLevel } from '../node/SignedLevel';
+import { canonicalText, exactRecord, parseCanonicalTimestamp, parseNullableText, parseSignedLevel } from '../node/NodeParsing.ts';
+import type { SignedLevel } from '../node/SignedLevel.ts';
 
 export type MemberNodeRegistrationOrigin = 'direct' | 'invitation';
 export type MemberNodeRegistrationOutcome = 'registered' | 'level_boundary';

@@ -1,8 +1,8 @@
-import type { SignedLevel } from '../node/SignedLevel';
+import type { SignedLevel } from '../node/SignedLevel.ts';
 import {
   canonicalText, exactRecord, parseCanonicalTimestamp, parseNodeProfile, parseNullableText,
   parseSignedLevel, requiredArray, type NodeProfile,
-} from '../node/NodeParsing';
+} from '../node/NodeParsing.ts';
 
 /** Business-only request. Node, Realm, lineage and Membership authority come from the active server session. */
 export interface HostedMallOpeningRequest {

@@ -1,5 +1,5 @@
-import { parseCanonicalTimestamp } from '../node/NodeParsing';
-import { parseSflNodeTopology, type NodeRelationRecord, type SflNodeTopology } from '../node/NodeTopology';
+import { parseCanonicalTimestamp } from '../node/NodeParsing.ts';
+import { parseSflNodeTopology, type NodeRelationRecord, type SflNodeTopology } from '../node/NodeTopology.ts';
 
 /** New ST references an existing MB lineage; neither the MB nor its relations are rewritten. */
 export interface MemberStoreLineageReference {

@@ -1,4 +1,4 @@
-import { signedLevelNumber, type SignedLevel } from './SignedLevel';
+import { signedLevelNumber, type SignedLevel } from './SignedLevel.ts';
 
 export type NodeProfile = 'operating_mall' | 'consumer';
 export type NodeLifecycleStatus = 'provisioning' | 'active' | 'suspended' | 'retired';

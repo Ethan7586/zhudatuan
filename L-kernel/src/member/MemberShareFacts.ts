@@ -1,4 +1,4 @@
-import { parseCanonicalTimestamp } from '../node/NodeParsing';
+import { parseCanonicalTimestamp } from '../node/NodeParsing.ts';
 
 /** One explicitly selected MB identity shared from its owning ST; no future MB is implied. */
 export interface MemberShareFact {
