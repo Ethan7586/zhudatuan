@@ -48,6 +48,10 @@ runs:
         fetch-depth: 2
         sparse-checkout-cone-mode: false
         sparse-checkout: ${{ steps.source_scope.outputs.paths }}
+    - name: Materialize full Source after reused sparse checkout
+      if: inputs.source-sha != '' && (inputs.operation == 'release' || inputs.operation == 'retry') && steps.source_scope.outputs.paths == ''
+      shell: bash
+      run: git -C "$GITHUB_WORKSPACE/.runner-1-6/source" sparse-checkout disable
     - name: Mark shared release core started
       id: started
       shell: bash
