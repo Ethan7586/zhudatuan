@@ -5,7 +5,10 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    "./member-profile": "./src/member/MemberProfileRules.ts"
+    "./member-node-registration": "./src/member/MemberNodeRegistration.ts",
+    "./member-profile": "./src/member/MemberProfileRules.ts",
+    "./node-parsing": "./src/node/NodeParsing.ts",
+    "./signed-level": "./src/node/SignedLevel.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
