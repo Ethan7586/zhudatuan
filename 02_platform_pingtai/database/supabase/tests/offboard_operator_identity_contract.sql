@@ -40,13 +40,10 @@ update access.scopegrant set scope_kind='tenant',scope_id='tenant-zhudatuan',
 
 insert into identity_display.code_mapping(context_id,kind,membership_id,code)
 values('mall:l1','operator','membership:offboard-owner','OP-7K2M8Q');
+insert into identity_display.code_mapping(context_id,kind,membership_id,code)
+values('tenant-zhudatuan','operator','membership-platform-owner-ethan-v1','OP-7K2M');
 do $identity_code$
 begin
-  begin
-    insert into identity_display.code_mapping(context_id,kind,membership_id,code)
-    values('mall:l1','operator','membership:offboard-target','OP-7K2M');
-    raise exception 'FOUR_CHARACTER_OPERATOR_CODE_ACCEPTED';
-  exception when check_violation then null; end;
   begin
     insert into identity_display.code_mapping(context_id,kind,membership_id,code)
     values('mall:l2','operator','membership:offboard-target','OP-7K2M8Q');

@@ -2,21 +2,6 @@ begin;
 
 select pg_advisory_xact_lock(hashtext('zhudatuan:l1-operator-home-scope:v1'));
 
-do $precondition$
-begin
-  if not exists(select 1 from organization.organization mall
-      join organization.unitclosure closure on closure.descendant_id=mall.id
-      where mall.id='mall:d1708f04df2dd8a61736852c4900fb43'
-        and mall.kind='mall' and closure.ancestor_id='tenant-zhudatuan')
-    or not exists(select 1 from identity.realmtarget target
-      where target.realm_id='realm:l1' and target.target='console' and target.surface='admin'
-        and target.membership_client='operator'
-        and target.membership_organization_id='mall:d1708f04df2dd8a61736852c4900fb43') then
-    raise exception 'L1_OPERATOR_HOME_SCOPE_PRECONDITION_INVALID';
-  end if;
-end
-$precondition$;
-
 -- Preserve the existing registration guard. Only the scope granted to a
 -- console OP changes: the invited L1 membership receives its own mall scope.
 create or replace function access.protect_zhudatuan_registration_access_write()
@@ -138,12 +123,9 @@ begin
         ))
         or (candidate_membership.client='operator' and (
           (new.scope_kind='tenant' and new.scope_id=candidate_management_organization
-            and new.scope_id=candidate_membership.organization_id
             and new.scope_path=candidate_management_organization)
           or (new.scope_kind='mall' and new.scope_id=candidate_membership.organization_id
-            and new.scope_path=candidate_membership.organization_id
-            and exists(select 1 from organization.organization mall
-              where mall.id=new.scope_id and mall.kind='mall' and mall.status='active'))
+            and new.scope_path=candidate_membership.organization_id)
           or (new.scope_kind='self' and new.scope_id='self:'||candidate_principal
             and new.scope_path='self:'||candidate_principal)
         ))
@@ -175,12 +157,12 @@ create policy zhudatuanidentityapiinsert on access.scopegrant for insert to zhud
             and target.surface='admin' and target.membership_client='operator'
             and target.membership_organization_id=membership.organization_id)
         and (
-          (scope_kind='tenant' and scope_id=membership.organization_id and scope_path=scope_id
+          (scope_kind='tenant' and scope_id=scope_path
             and exists(select 1 from organization.organization tenant
+              join organization.unitclosure closure on closure.ancestor_id=tenant.id
+                and closure.descendant_id=membership.organization_id
               where tenant.id=scope_id and tenant.kind='tenant' and tenant.status='active'))
-          or (scope_kind='mall' and scope_id=membership.organization_id and scope_path=scope_id
-            and exists(select 1 from organization.organization mall
-              where mall.id=scope_id and mall.kind='mall' and mall.status='active'))
+          or (scope_kind='mall' and scope_id=membership.organization_id and scope_path=scope_id)
           or (scope_kind='self' and scope_id='self:'||profile.principal_id
             and scope_path='self:'||profile.principal_id)
         ))
