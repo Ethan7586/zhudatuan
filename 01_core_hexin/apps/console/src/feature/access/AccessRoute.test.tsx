@@ -534,7 +534,7 @@ describe('custom identity and permission directory', () => {
       within(table)
         .getAllByRole('columnheader')
         .map(({ textContent }) => textContent)
-    ).toEqual(['被邀请人', '邀请人', '管理员级别', '状态', '创建时间', '接受时间']);
+    ).toEqual(['被邀请人', '邀请人', '管理员级别', '状态', '创建时间', '接受时间', '操作']);
     expect(within(table).getAllByRole('row')).toHaveLength(4);
     const liRow = within(table).getByText('李厚亿 · 134****7586').closest('tr');
     expect(liRow).not.toBeNull();
@@ -583,6 +583,47 @@ describe('custom identity and permission directory', () => {
     expect(within(table).getByText('138****0000')).toBeTruthy();
     expect(within(table).getByText('小白管理员')).toBeTruthy();
     expect(screen.queryByText('无权读取邀请记录')).toBeNull();
+  });
+
+  it('deletes only an unused invitation through the existing revoke operation and refreshes its history', async () => {
+    invitationRecords = [{
+      id: 'invite:unused', scope: 'tenant:one', scope_name: '主打团商户', label: '138****0000',
+      governance_level: 'administrator', created_by: 'membership:owner', created_by_name: 'Ethan',
+      accepted_membership_id: null, invitee_name: null, destination_masked: '138****0000',
+      max_uses: 1, use_count: 0, starts_at: '2026-09-17T08:00:00.000Z',
+      expires_at: '2026-09-24T08:00:00.000Z', accepted_at: null, status: 'active',
+      created_at: '2026-09-17T08:00:00.000Z', version: '0',
+    }, {
+      id: 'invite:used', scope: 'tenant:one', scope_name: '主打团商户', label: '139****0000',
+      governance_level: 'administrator', created_by: 'membership:owner', created_by_name: 'Ethan',
+      accepted_membership_id: 'membership:used', invitee_name: null, destination_masked: '139****0000',
+      max_uses: 1, use_count: 1, starts_at: '2026-09-17T08:00:00.000Z',
+      expires_at: '2026-09-24T08:00:00.000Z', accepted_at: '2026-09-17T09:00:00.000Z', status: 'used',
+      created_at: '2026-09-17T08:00:00.000Z', version: '1',
+    }];
+    const deleted: Array<{ id: string; version: string | null; reason: string }> = [];
+    server.use(http.delete('*/api/v1/identity/invitations/:invitationId', async ({ request, params }) => {
+      const body = await request.json() as { reason: string };
+      deleted.push({ id: String(params.invitationId), version: request.headers.get('if-match'), reason: body.reason });
+      invitationRecords = invitationRecords.map((record) => record.id === params.invitationId
+        ? { ...record, status: 'revoked', version: '1' } : record);
+      return HttpResponse.json({ id: String(params.invitationId), status: 'disabled', version: 1 });
+    }));
+    const withRevoke = { ...context, session: { ...context.session,
+      capabilities: [...context.session.capabilities, 'identity.invitations.revoke'],
+    } };
+    const user = userEvent.setup();
+    renderWorkspace(withRevoke, '/scopes/tenant/tenant%3Aone/settings/access?section=invitations');
+    const table = await screen.findByRole('table', { name: '邀请记录，共 2 条' });
+    expect(within(table).getByRole('button', { name: '删除邀请码 138****0000' })).toBeTruthy();
+    expect(within(table).queryByRole('button', { name: '删除邀请码 139****0000' })).toBeNull();
+
+    await user.click(within(table).getByRole('button', { name: '删除邀请码 138****0000' }));
+
+    expect(await screen.findByText('邀请码已作废，历史记录仍保留。')).toBeTruthy();
+    await waitFor(() => expect(within(table).getByText('已作废')).toBeTruthy());
+    expect(deleted).toEqual([{ id: 'invite:unused', version: '"0"', reason: '管理员删除未使用邀请码' }]);
+    expect(within(table).queryByRole('button', { name: '删除邀请码 138****0000' })).toBeNull();
   });
 
   it('refreshes invitation records after a successful administrator invitation', async () => {

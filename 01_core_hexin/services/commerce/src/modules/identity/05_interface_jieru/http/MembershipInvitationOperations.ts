@@ -160,27 +160,33 @@ export function membershipInvitationOperations(runtime: RealmOperationContext): 
         return { status: 201, body: { ...saved, code, ...(governanceLevel === null ? {} : { governanceLevel }) }, headers: { etag: '"0"' } };
       },
       'identity.invitations.revoke': async (request, database) => {
-        const { invitationAuthority } = requireInvitationManager(request);
+        const { access, invitationAuthority } = requireInvitationManager(request);
         const body = bodyRecord(request);
         const reason = textField(body, 'reason', 1000);
         if (reason.length < 4) throw new Error('CHANGE_REASON_REQUIRED');
         const id = request.input.path.invitationid!;
+        const storefront = access.scope.kind === 'mall' ? access.scope.id : null;
+        if (storefront !== null && access.scope.tenant !== undefined) {
+          await database.query("select set_config('app.scope_id',$1,true)", [access.scope.tenant]);
+        }
         const result = await database.query(
           `update member.invite set status='disabled',version=version+1
         where id=$1 and access.scope_allowed(organization_id)
           and (not $3::boolean or (target_client='operator' and organization_id='tenant-zhudatuan'))
           and (target_client<>'operator' or $4::boolean)
+          and ($5::text is null or storefront_organization_id=$5)
           and status='active' and ($2::bigint is null or version=$2)
         returning id,label,target_client,max_uses,use_count,effective_at starts_at,expires_at,status,created_at,version`,
-          [id, request.input.expectedVersion ?? null, registrationOnly, invitationAuthority]
+          [id, request.input.expectedVersion ?? null, registrationOnly, invitationAuthority, storefront]
         );
         if (result.rows[0]) return rowResult(result);
         const current = await database.query<{ status: string; version: number }>(
           `select status,version from member.invite
         where id=$1 and access.scope_allowed(organization_id)
           and (not $2::boolean or (target_client='operator' and organization_id='tenant-zhudatuan'))
-          and (target_client<>'operator' or $3::boolean)`,
-          [id, registrationOnly, invitationAuthority]
+          and (target_client<>'operator' or $3::boolean)
+          and ($4::text is null or storefront_organization_id=$4)`,
+          [id, registrationOnly, invitationAuthority, storefront]
         );
         if (!current.rows[0]) throw new Error('INVITATION_NOT_FOUND');
         if (request.input.expectedVersion !== undefined && current.rows[0].version !== request.input.expectedVersion) throw new Error('VERSION_CONFLICT');

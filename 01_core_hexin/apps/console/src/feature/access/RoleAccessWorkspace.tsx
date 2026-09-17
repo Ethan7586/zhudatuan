@@ -6,7 +6,7 @@ import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { safeQueryError } from '../../shared/api/QueryState';
 import { scopePath } from '../../shared/url/ScopePath';
 import { MemberInvitationDialog } from '../member/MemberInvitationDialog';
-import { memberInvitationAvailable } from '../member/MemberInvitationCommand';
+import { memberInvitationAvailable, revokeMemberInvitation } from '../member/MemberInvitationCommand';
 import { ACCESS_QUERY_STALE_TIME_MS, accessKey, readAccess } from './AccessQuery';
 import type { AccessRole } from './AccessSchema';
 import { roleCommandAvailable } from './AccessRoleCommand';
@@ -28,11 +28,14 @@ export function RoleAccessWorkspace() {
   const [filter, setFilter] = useState('');
   const [notice, setNotice] = useState<string>();
   const [invitationOpen, setInvitationOpen] = useState(false);
+  const [deletingInvitation, setDeletingInvitation] = useState<string>();
+  const [invitationMessage, setInvitationMessage] = useState<Readonly<{ error: boolean; text: string }>>();
   const section = search.get('section') === 'invitations' ? 'invitations' : 'roles';
   const canRead = context.session.permissions.includes('access.center.read');
   const canWrite = roleCommandAvailable(context);
   const invitationEnabled = memberInvitationAvailable(context);
   const invitationRecordsEnabled = invitationRecordsAvailable(context);
+  const invitationDeleteEnabled = invitationEnabled && context.session.capabilities.includes('identity.invitations.revoke');
   const query = useQuery({
     queryKey: accessKey(context),
     queryFn: ({ signal }) => readAccess(context, undefined, signal),
@@ -69,6 +72,20 @@ export function RoleAccessWorkspace() {
     return result.data;
   };
 
+  const deleteInvitation = async (record: InvitationRecord) => {
+    setDeletingInvitation(record.id);
+    setInvitationMessage(undefined);
+    try {
+      await revokeMemberInvitation(context, record);
+      setInvitationMessage({ error: false, text: '邀请码已作废，历史记录仍保留。' });
+      await queryClient.invalidateQueries({ queryKey: invitationRecordsKey(context) });
+    } catch (error) {
+      setInvitationMessage({ error: true, text: safeQueryError(error instanceof Error ? error : null) ?? 'REQUEST_FAILED' });
+    } finally {
+      setDeletingInvitation(undefined);
+    }
+  };
+
   return (
     <section className="roleaccessworkspace" aria-label="自定义身份与权限工作台">
       <WorkspaceHero
@@ -91,12 +108,16 @@ export function RoleAccessWorkspace() {
         <InvitationRecordsPanel
           available={invitationEnabled}
           readable={invitationRecordsEnabled}
+          deletable={invitationDeleteEnabled}
           records={invitationRecords}
+          deleting={deletingInvitation}
+          message={invitationMessage}
           pending={invitationRecordsQuery.isPending}
           fetchingMore={invitationRecordsQuery.isFetchingNextPage}
           hasMore={invitationRecordsQuery.hasNextPage}
           error={invitationRecordsQuery.error}
           onInvite={() => setInvitationOpen(true)}
+          onDelete={(record) => void deleteInvitation(record)}
           onRetry={() => void invitationRecordsQuery.refetch()}
           onMore={() => void invitationRecordsQuery.fetchNextPage()}
         />
@@ -263,23 +284,31 @@ function RoleAvatar({ role }: Readonly<{ role: AccessRole }>) {
 function InvitationRecordsPanel({
   available,
   readable,
+  deletable,
   records,
+  deleting,
+  message,
   pending,
   fetchingMore,
   hasMore,
   error,
   onInvite,
+  onDelete,
   onRetry,
   onMore,
 }: Readonly<{
   available: boolean;
   readable: boolean;
+  deletable: boolean;
   records: readonly InvitationRecord[];
+  deleting: string | undefined;
+  message: Readonly<{ error: boolean; text: string }> | undefined;
   pending: boolean;
   fetchingMore: boolean;
   hasMore: boolean;
   error: Error | null;
   onInvite: () => void;
+  onDelete: (record: InvitationRecord) => void;
   onRetry: () => void;
   onMore: () => void;
 }>) {
@@ -297,6 +326,7 @@ function InvitationRecordsPanel({
           </Button>
         ) : null}
       </header>
+      {message === undefined ? null : <p role={message.error ? 'alert' : 'status'}>{message.text}</p>}
       {!readable ? (
         <InvitationRecordsState title="无权读取邀请记录" detail="当前身份没有邀请管理权限。" />
       ) : pending ? (
@@ -317,11 +347,12 @@ function InvitationRecordsPanel({
                   <th scope="col">状态</th>
                   <th scope="col">创建时间</th>
                   <th scope="col">接受时间</th>
+                  <th scope="col">操作</th>
                 </tr>
               </thead>
               <tbody>
                 {records.map((record) => (
-                  <InvitationRecordRow key={record.id} record={record} />
+                  <InvitationRecordRow key={record.id} record={record} deletable={deletable} deleting={deleting} onDelete={onDelete} />
                 ))}
               </tbody>
             </table>
@@ -339,7 +370,12 @@ function InvitationRecordsPanel({
   );
 }
 
-function InvitationRecordRow({ record }: Readonly<{ record: InvitationRecord }>) {
+function InvitationRecordRow({ record, deletable, deleting, onDelete }: Readonly<{
+  record: InvitationRecord;
+  deletable: boolean;
+  deleting: string | undefined;
+  onDelete: (record: InvitationRecord) => void;
+}>) {
   return (
     <tr>
       <td className="invitationrecordstarget">
@@ -352,6 +388,12 @@ function InvitationRecordRow({ record }: Readonly<{ record: InvitationRecord }>)
       </td>
       <td>{formatInvitationDate(record.created_at)}</td>
       <td>{record.accepted_at === null ? '—' : formatInvitationDate(record.accepted_at)}</td>
+      <td>{deletable && record.status === 'active' ? (
+        <Button tone="danger" isDisabled={deleting !== undefined} isPending={deleting === record.id}
+          onPress={() => onDelete(record)} aria-label={`删除邀请码 ${invitationTarget(record)}`}>
+          删除
+        </Button>
+      ) : '—'}</td>
     </tr>
   );
 }

@@ -73,16 +73,33 @@ export async function replaceMemberInvitation(
   active: ActiveMemberInvitation,
   signal?: AbortSignal,
 ) {
+  await revokeInvitation(context, active, '重新生成未使用管理员邀请码', signal);
+  return createMemberInvitation(context, draft, signal);
+}
+
+export async function revokeMemberInvitation(
+  context: ConsoleContext,
+  invitation: Readonly<{ id: string; version: number }>,
+  signal?: AbortSignal,
+) {
+  return revokeInvitation(context, invitation, '管理员删除未使用邀请码', signal);
+}
+
+function revokeInvitation(
+  context: ConsoleContext,
+  invitation: Readonly<{ id: string; version: number }>,
+  reason: string,
+  signal?: AbortSignal,
+) {
   const csrfToken = context.session.csrf;
   if (csrfToken === undefined) throw new Error('INVITATION_CSRF_MISSING');
-  await invitationsRevoke(
-    { path: { invitationid: active.id }, body: { reason: '重新生成未使用管理员邀请码' } },
+  return invitationsRevoke(
+    { path: { invitationid: invitation.id }, body: { reason } },
     consoleCommand(context.scope, {
       accessVersion: context.session.accessVersion,
       csrfToken,
-      expectedVersion: active.version,
+      expectedVersion: invitation.version,
       ...(signal === undefined ? {} : { signal }),
     }),
   );
-  return createMemberInvitation(context, draft, signal);
 }

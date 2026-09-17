@@ -279,6 +279,22 @@ describe('operator invitation security boundary', () => {
     expect(updated?.values[2]).toBe(false);
   });
 
+  it('revokes an L1 mall invitation through its tenant record without selecting a sibling storefront', async () => {
+    const harness = invitationHarness({ revokeRows: [{ id: 'invite:storefront', status: 'disabled', version: 1 }] });
+    const access = managerAccess({ capabilities: ['identity.invitations.revoke'], scope: mallScope() });
+
+    const response = await identityOperations(context(harness.pool)).invoke(revokeRequest(access));
+
+    expect(response).toMatchObject({ status: 200, body: { status: 'disabled' } });
+    const contextQuery = harness.queries.findIndex(({ text }) => text === "select set_config('app.scope_id',$1,true)");
+    const updateQuery = harness.queries.findIndex(({ text }) => text.includes("update member.invite set status='disabled'"));
+    expect(contextQuery).toBeGreaterThanOrEqual(0);
+    expect(contextQuery).toBeLessThan(updateQuery);
+    expect(harness.queries[contextQuery]?.values).toEqual(['tenant-zhudatuan']);
+    expect(harness.queries[updateQuery]?.text).toContain('storefront_organization_id=$5');
+    expect(harness.queries[updateQuery]?.values[4]).toBe('mall-zhudatuan');
+  });
+
   it('does not fake success when a scoped storefront invitation was not updated', async () => {
     const harness = invitationHarness({ currentRows: [{ status: 'active', version: 0 }] });
     const access = managerAccess({ capabilities: ['identity.invitations.revoke'], scope: mallScope() });
