@@ -1,0 +1,41 @@
+name: Diagnose release OSS reads
+
+on:
+  workflow_dispatch:
+    inputs:
+      known_source_sha:
+        description: Source SHA with an existing identity-api release object
+        required: true
+        type: string
+      failed_source_sha:
+        description: Source SHA that failed artifact lookup
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: zdt-next
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /04_tools/release-engine/
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.22.0
+      - name: Read three release descriptors without deploying
+        env:
+          KNOWN_SOURCE_SHA: ${{ inputs.known_source_sha }}
+          FAILED_SOURCE_SHA: ${{ inputs.failed_source_sha }}
+          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+          ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+        run: node 04_tools/release-engine/diagnose-oss-read.mjs
