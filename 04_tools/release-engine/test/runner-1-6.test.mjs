@@ -23,7 +23,7 @@ const execFileAsync = promisify(execFile);
 test('control dependencies are isolated to the small release-engine package', async () => {
   const engine = JSON.parse(await readFile(join(root, '04_tools/release-engine/package.json')));
   const lock = JSON.parse(await readFile(join(root, '04_tools/release-engine/package-lock.json')));
-  assert.deepEqual(Object.keys(engine.dependencies).sort(), ['@alicloud/cdn20180510', '@alicloud/openapi-client', 'esbuild']);
+  assert.deepEqual(Object.keys(engine.dependencies).sort(), ['@alicloud/cdn20180510', '@alicloud/openapi-client', '@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner', 'esbuild']);
   assert.deepEqual(lock.packages[''].dependencies, engine.dependencies);
   const core = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
   assert.match(core, /projectRoot: engineRoot/);
@@ -238,6 +238,9 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
     assert.ok(marker > job.steps.findIndex((step) => step.with?.phase === 'prepare'));
     assert.ok(marker < job.steps.findIndex((step) => step.with?.phase === 'run'));
     assert.equal(job.env.ALIYUN_OSS_ENDPOINT, '${{ secrets.ALIYUN_OSS_ENDPOINT }}');
+    assert.equal(job.env.ZDT_ARTIFACT_STORE, "${{ vars.ZDT_ARTIFACT_STORE || 'aliyun' }}");
+    assert.equal(job.env.CLOUDFLARE_R2_ACCESS_KEY_ID, '${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}');
+    assert.equal(job.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY, '${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}');
     assert.equal(job.env.ZDT_RELEASE_SSH_KEY, '${{ secrets.ZDT_RELEASE_SSH_KEY }}');
     assert.equal(job.env.CONTROL_SHA, '${{ github.sha }}');
     const releaseCheckout = job.steps.find((step) => step.with?.path === '.runner-1-6/control-release');
@@ -247,13 +250,14 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
   assert.equal(workflow.jobs.execute.outputs.core_started, '${{ steps.started.outputs.value }}');
   assert.match(action.runs.steps.find((step) => String(step.run ?? '').includes('scripts/runner-1-6.sh')).if, /inputs.phase == 'run'/);
   assert.match(action.runs.steps.find((step) => String(step.run ?? '').includes('scripts/runner-1-6.sh')).run, /bash "\$CONTROL_ROOT\/scripts\/runner-1-6\.sh"/);
+  assert.match(action.runs.steps.find((step) => step.name === 'Load R2 client dependencies').if, /ZDT_ARTIFACT_STORE == 'r2'/);
   assert.doesNotMatch(workflowSource, /final.?seal|closure|runner.?lease|writer.?lease|slot.?claim|readiness.?doctor|finalizer/i);
   assert.match(workflow.on.workflow_dispatch.inputs.release_target.description, /fast exact release\/retry/);
   assert.match(workflowSource, /exact release requires both target and physical node/);
   assert.match(workflowSource, /exact retry requires both target and physical node/);
   const coreSource = await readFile(join(root, '04_tools/release-engine/runner-1-6.mjs'), 'utf8');
-  assert.match(coreSource, /const client = simpleOssClientFromEnvironment\(\)/);
-  assert.match(coreSource, /simpleDownloadEndpoint\(publicClient\.endpoint, process\.env\.ALIYUN_OSS_INTERNAL_ENDPOINT\)/);
+  assert.match(coreSource, /const client = await artifactClientFromEnvironment\(\)/);
+  assert.match(coreSource, /artifactDownloadClientFromEnvironment\(publicClient\)/);
 });
 
 test('Hosted shared action starts the checked-out control script from an empty workspace root', async () => {
