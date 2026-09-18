@@ -5,6 +5,8 @@
   "dependencies": {
     "@alicloud/cdn20180510": "9.2.0",
     "@alicloud/openapi-client": "0.4.15",
+    "@aws-sdk/client-s3": "3.1135.0",
+    "@aws-sdk/s3-request-presigner": "3.1135.0",
     "esbuild": "0.28.1"
   }
 }

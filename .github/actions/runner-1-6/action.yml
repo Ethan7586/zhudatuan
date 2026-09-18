@@ -32,6 +32,12 @@ runs:
       uses: actions/setup-node@v6
       with:
         node-version: 22.22.0
+    - name: Load R2 client dependencies
+      if: inputs.phase == 'prepare' && (inputs.operation == 'release' || inputs.operation == 'retry') && env.ZDT_ARTIFACT_STORE == 'r2'
+      shell: bash
+      env:
+        CONTROL_ROOT: ${{ inputs.control-root != '' && inputs.control-root || github.workspace }}
+      run: npm ci --prefix "$CONTROL_ROOT/04_tools/release-engine" --ignore-scripts --no-audit --no-fund
     - name: Select exact Source checkout paths
       id: source_scope
       if: inputs.phase == 'prepare' && inputs.source-sha != '' && (inputs.operation == 'release' || inputs.operation == 'retry')

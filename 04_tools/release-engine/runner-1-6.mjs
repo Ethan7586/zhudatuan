@@ -8,7 +8,7 @@ import { loadAdapter, resolveDeployment } from './src/adapter.mjs';
 import { buildRelease, createReleasePlan, packageRelease } from './src/build-core-1-6.mjs';
 import { asDeliveryError, DeliveryError, invariant } from './src/errors.mjs';
 import { exactPlacements, runExactBatch } from './src/exact-batch.mjs';
-import { simpleDownloadEndpoint, simpleOssClientFromEnvironment } from './src/oss-client-1-6.mjs';
+import { artifactClientFromEnvironment, artifactDownloadClientFromEnvironment } from './src/artifact-client-1-6.mjs';
 import { runCommand } from './src/runner.mjs';
 import { runIndependent } from './src/run-independent.mjs';
 import { inspectSimpleArtifact, publishSimpleArtifacts, resolveSimpleArtifact } from './src/simple-artifact-store.mjs';
@@ -91,7 +91,7 @@ async function release(adapter, controlRoot, sourceSha, target, node) {
   const plan = await createReleasePlan(adapter, { from: `${sourceSha}^`, to: sourceSha });
   const releaseId = `r16-${sourceSha}`;
   if (!plan.deployRequired) return { state: 'NO_CHANGE', releaseId, sourceSha, executor: executor(), targets: [], message: 'No runtime target changed.' };
-  const client = simpleOssClientFromEnvironment();
+  const client = await artifactClientFromEnvironment();
   const cache = [];
   progress('artifact-lookup', { sourceSha, targets: plan.deploymentOrder });
   for (const target of plan.deploymentOrder) cache.push(await inspectSimpleArtifact(adapter, { target, sourceSha }, client));
@@ -193,7 +193,7 @@ async function deployExact(adapter, controlRoot, sourceSha, target, node) {
   context.target = target;
   context.node = node;
   resolveDeployment(adapter, node, target);
-  const client = simpleOssClientFromEnvironment();
+  const client = await artifactClientFromEnvironment();
   progress('artifact-lookup', { sourceSha, target, node });
   const cached = await inspectSimpleArtifact(adapter, { target, sourceSha }, client);
   let cacheStatus = 'reused';
@@ -228,7 +228,7 @@ async function deployExact(adapter, controlRoot, sourceSha, target, node) {
 
 async function deployExactBatch(adapter, controlRoot, sourceSha, placements) {
   for (const { target, node } of placements) resolveDeployment(adapter, node, target);
-  const client = simpleOssClientFromEnvironment();
+  const client = await artifactClientFromEnvironment();
   let productionStarted = 0;
   const { deployments, cacheStatus, preparationTimings } = await runExactBatch(adapter, placements, {
     inspect: async (target) => {
@@ -299,7 +299,7 @@ async function deployTarget(adapter, publicClient, { target, node, sourceSha, ru
   const transport = deployment.node.transport ?? adapter.transport;
   const host = process.env[transport.hostEnv ?? 'AI_DELIVERY_SSH_HOST'] ?? transport.host;
   invariant(host, 'DEPLOY_SSH_HOST_MISSING', `SSH host missing for ${node}`);
-  const downloadClient = simpleOssClientFromEnvironment(simpleDownloadEndpoint(publicClient.endpoint, process.env.ALIYUN_OSS_INTERNAL_ENDPOINT));
+  const downloadClient = artifactDownloadClientFromEnvironment(publicClient);
   const artifact = resolved.release.artifact;
   const runtimeManifest = resolved.release.runtimeManifest;
   const result = await runCommand(
@@ -329,7 +329,7 @@ async function deployTarget(adapter, publicClient, { target, node, sourceSha, ru
         '--github-run-attempt',
         requiredEnv('GITHUB_RUN_ATTEMPT'),
       ]),
-      input: `${JSON.stringify({ artifactUrl: downloadClient.signGet(artifact.object), manifestUrl: downloadClient.signGet(runtimeManifest.object) })}\n`,
+      input: `${JSON.stringify({ artifactUrl: await downloadClient.signGet(artifact.object), manifestUrl: await downloadClient.signGet(runtimeManifest.object) })}\n`,
       timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
     },
     commandContext(adapter)
