@@ -8,7 +8,8 @@ export interface ArchConnection {
 
 /** Node-scoped interface wiring. The caller keeps the route and the owner keeps the data. */
 export class ArchBoard {
-  private readonly connections = new Map<string, boolean>();
+  // null is an explicit removal; an untouched key remains a legacy pass-through.
+  private readonly connections = new Map<string, boolean | null>();
 
   mount(nodeId: string, interfaceId: string): void {
     this.connections.set(key(nodeId, interfaceId), true);
@@ -17,20 +18,21 @@ export class ArchBoard {
   mountAll(nodeIds: readonly string[], interfaceIds: readonly string[]): void {
     for (const nodeId of nodeIds)
       for (const interfaceId of interfaceIds)
-        if (this.state(nodeId, interfaceId) === 'unmounted') this.mount(nodeId, interfaceId);
+        if (!this.connections.has(key(nodeId, interfaceId))) this.mount(nodeId, interfaceId);
   }
 
   unmount(nodeId: string, interfaceId: string): void {
-    this.connections.delete(key(nodeId, interfaceId));
+    this.connections.set(key(nodeId, interfaceId), null);
   }
 
   setConnected(nodeId: string, interfaceId: string, connected: boolean): void {
-    if (this.connections.has(key(nodeId, interfaceId))) this.connections.set(key(nodeId, interfaceId), connected);
+    const connection = this.connections.get(key(nodeId, interfaceId));
+    if (connection !== undefined && connection !== null) this.connections.set(key(nodeId, interfaceId), connected);
   }
 
   state(nodeId: string, interfaceId: string): ArchConnectionState {
     const connected = this.connections.get(key(nodeId, interfaceId));
-    return connected === undefined ? 'unmounted' : connected ? 'connected' : 'disconnected';
+    return connected === undefined || connected === null ? 'unmounted' : connected ? 'connected' : 'disconnected';
   }
 
   inspect(nodeId: string, interfaceIds: readonly string[]): readonly ArchConnection[] {
@@ -45,7 +47,8 @@ export class ArchBoard {
     input: Input,
     recipient: (input: Input) => Promise<Output>,
   ): Promise<Readonly<{ connected: true; output: Output } | { connected: false }>> {
-    if (this.state(nodeId, interfaceId) === 'disconnected') return { connected: false };
+    const connection = this.connections.get(key(nodeId, interfaceId));
+    if (connection === false || connection === null) return { connected: false };
     return { connected: true, output: await recipient(input) };
   }
 }

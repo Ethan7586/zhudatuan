@@ -6,11 +6,11 @@ Arch 主板实现在 `src/arch/ArchBoard.ts`，与 `src/member` 同属 `@shop/l-
 
 `bootstrapApi` 为 HTTP 运行实例提供 `arch`，从现有节点清单与已注册路由自动接入当前实例的全部接口；`HttpApp` 在现有 `RouteRegistry` 命中路由后查询该节点该接口的接线状态：
 
-- `unmounted`：直接调用原 handler，表示系统尚未安装到 Arch。
+- `unmounted`：从未安装的接口沿用原 handler；若曾明确调用 `unmount`，则阻断该接口，不调用原 handler，只有显式 `mount` 才能恢复。
 - `connected`：经 `arch.exchange` 将原请求交给原 handler，原响应原样返回。
 - `disconnected`：仅该节点该接口返回原有的 404 格式；不调用原 handler。
 
-其他 L 运行实例只需沿用 `@shop/l-kernel/arch`，向 `arch.mountAll(nodeIds, interfaceIds)` 交出自己已有的节点 ID 与接口 ID；不复制主板，也不向主板提交域名、业务模块或数据库。重复安装不会重置已断开的接口。安装后可用 `arch.setConnected(nodeId, operationId, false/true)` 独立接断，用 `arch.unmount(nodeId, operationId)` 卸下。`arch.inspect(nodeId, operationIds)` 可查看状态；HTTP 接口列表取自 `bootstrapApi` 返回的 `routes.catalog()`，不用手写第二份清单。开关是当前进程内的连接状态，重启不会保留；持久化管理方式尚未定义。
+其他 L 运行实例只需沿用 `@shop/l-kernel/arch`，向 `arch.mountAll(nodeIds, interfaceIds)` 交出自己已有的节点 ID 与接口 ID；不复制主板，也不向主板提交域名、业务模块或数据库。重复安装不会重置已断开或已明确卸下的接口。安装后可用 `arch.setConnected(nodeId, operationId, false/true)` 独立接断，用 `arch.unmount(nodeId, operationId)` 卸下；卸下后须显式 `mount` 才能重接。`arch.inspect(nodeId, operationIds)` 可查看状态；HTTP 接口列表取自 `bootstrapApi` 返回的 `routes.catalog()`，不用手写第二份清单。开关是当前进程内的连接状态，重启不会保留；持久化管理方式尚未定义。
 
 ## 现有接入
 

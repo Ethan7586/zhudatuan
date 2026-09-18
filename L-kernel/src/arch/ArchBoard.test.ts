@@ -25,6 +25,10 @@ describe('ArchBoard', () => {
     expect(arch.state('node:hbbtzn:l1', 'member.read')).toBe('connected');
     arch.unmount('node:hbbtzn:l1', 'member.read');
     expect(arch.state('node:hbbtzn:l1', 'member.read')).toBe('unmounted');
+    expect(await arch.exchange('node:hbbtzn:l1', 'member.read', { value: 6 }, owner))
+      .toEqual({ connected: false });
+    arch.setConnected('node:hbbtzn:l1', 'member.read', true);
+    expect(arch.state('node:hbbtzn:l1', 'member.read')).toBe('unmounted');
     expect(owner).toHaveBeenCalledTimes(3);
   });
 
@@ -37,5 +41,22 @@ describe('ArchBoard', () => {
     expect(arch.state('node:l0', 'order.read')).toBe('connected');
     expect(arch.state('node:l2', 'member.read')).toBe('connected');
     expect(arch.state('node:l2', 'other.read')).toBe('unmounted');
+  });
+
+  it('keeps an explicitly removed interface closed across repeated installs until explicitly mounted', async () => {
+    const arch = new ArchBoard();
+    const owner = vi.fn(async () => 'ok');
+    arch.mountAll(['node:l0', 'node:l1'], ['member.read', 'order.read']);
+    arch.unmount('node:l1', 'member.read');
+    arch.mountAll(['node:l0', 'node:l1'], ['member.read', 'order.read']);
+    expect(arch.inspect('node:l1', ['member.read', 'order.read'])).toEqual([
+      { nodeId: 'node:l1', interfaceId: 'member.read', state: 'unmounted' },
+      { nodeId: 'node:l1', interfaceId: 'order.read', state: 'connected' },
+    ]);
+    expect(await arch.exchange('node:l1', 'member.read', null, owner)).toEqual({ connected: false });
+    expect(await arch.exchange('node:l0', 'member.read', null, owner)).toEqual({ connected: true, output: 'ok' });
+    arch.mount('node:l1', 'member.read');
+    expect(await arch.exchange('node:l1', 'member.read', null, owner)).toEqual({ connected: true, output: 'ok' });
+    expect(owner).toHaveBeenCalledTimes(2);
   });
 });
