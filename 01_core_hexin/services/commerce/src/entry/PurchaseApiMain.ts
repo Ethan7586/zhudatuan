@@ -17,6 +17,7 @@ const bootstrapped = await bootstrapApi({
   configure: runtime.configure,
   allowedOrigins: purchaseApiAllowedOrigins(environment),
   telemetry: runtime.telemetry,
+  runtimeNodeIds: [runtime.manifest.node_id],
 });
 const server = listen(bootstrapped.app, purchaseApiPort(environment), '127.0.0.1', bootstrapped.nodeContextResolver);
 

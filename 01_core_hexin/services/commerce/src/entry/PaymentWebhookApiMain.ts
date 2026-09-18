@@ -16,6 +16,7 @@ const bootstrapped = await bootstrapApi({
   configure: runtime.configure,
   allowedOrigins: [],
   telemetry: runtime.telemetry,
+  runtimeNodeIds: [runtime.manifest.node_id],
 });
 const server = listen(bootstrapped.app, paymentWebhookApiPort(environment), '127.0.0.1', bootstrapped.nodeContextResolver);
 

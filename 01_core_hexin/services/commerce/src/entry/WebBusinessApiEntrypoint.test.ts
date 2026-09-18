@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, normalize } from 'node:path';
 import type { OperationId } from '@shop/contract';
 import { describe, expect, it } from 'vitest';
-import { bootstrapApi } from '../bootstrap/ApiBootstrap';
+import { bootstrapApi, SERVER_NODE_MANIFEST_REGISTRY } from '../bootstrap/ApiBootstrap';
 import { ExtensionRegistry } from '../bootstrap/ExtensionRegistry';
 import type { OperationHandler } from '../foundation/application/OperationHandler';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
@@ -13,7 +13,7 @@ import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import { WebBusinessRuntimeModule } from '../modules/runtime/WebBusinessRuntimeModule';
 import { WEB_BUSINESS_RUNTIME_OPERATION_IDS } from '../modules/runtime/WebBusinessRuntimeOperations';
 import { WEB_BUSINESS_MODULES } from '../modules/webbusiness/WebBusinessModules';
-import { WEB_BUSINESS_OPERATION_IDS } from '../modules/webbusiness/WebBusinessOperationIds';
+import { WEB_BUSINESS_OPERATION_IDS, WEB_MEMBER_OPERATION_IDS } from '../modules/webbusiness/WebBusinessOperationIds';
 
 const APPROVED_BUSINESS_OPERATIONS = [
   'organization.layers.read',
@@ -55,6 +55,8 @@ describe('web business API entrypoint', () => {
     const bootstrapped = await bootstrapApi({
       modules: [WebBusinessRuntimeModule, ...WEB_BUSINESS_MODULES],
       operationIds,
+      nodeManifestRegistry: SERVER_NODE_MANIFEST_REGISTRY,
+      runtimeNodeIds: ['node:hbbtzn:l1'],
       extensions,
       allowedOrigins: ['https://console.zhudatuan.com', 'https://zhudatuan.com'],
       telemetry: commerceTelemetry(),
@@ -67,6 +69,9 @@ describe('web business API entrypoint', () => {
       },
     });
     expect(bootstrapped.routes.catalog().map(({ operation }) => operation)).toEqual(operationIds);
+    expect(WEB_MEMBER_OPERATION_IDS.every((operation) =>
+      bootstrapped.arch.state('node:hbbtzn:l1', operation) === 'connected')).toBe(true);
+    expect(bootstrapped.arch.state('node:zhudatuan:l0', WEB_MEMBER_OPERATION_IDS[0]!)).toBe('unmounted');
     expect(bootstrapped.routes.match('GET', '/api/v1/members/me')?.operation).toBe('member.profile.read');
     expect(bootstrapped.routes.match('POST', '/api/v1/members/me/mall')?.operation).toBe('member.malls.open');
     expect(bootstrapped.routes.match('POST', '/api/v1/members/me/sovereignty')?.operation).toBe('member.sovereignty.upgrade');
@@ -80,6 +85,8 @@ describe('web business API entrypoint', () => {
   it('places the public catalog adapter before the canonical HTTP application', () => {
     const source = readFileSync(join(import.meta.dirname, 'WebBusinessApiMain.ts'), 'utf8');
     expect(source).toContain('new PublicCatalogHttpHandler(');
+    expect(source).toContain('bootstrapped.arch.mount(runtime.manifest.node_id, PUBLIC_CATALOG_INTERFACE)');
+    expect(source).toContain('webBusinessApiPublicMallHostMappings(environment), bootstrapped.arch, runtime.manifest.node_id');
     expect(source).toContain('webBusinessApiPublicMallSlug(environment)');
     expect(source).toContain('listen(app,');
     expect(source).toContain('bootstrapped.nodeContextResolver');

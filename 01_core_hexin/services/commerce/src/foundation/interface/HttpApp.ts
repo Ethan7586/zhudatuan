@@ -8,6 +8,7 @@ import { bindRequestNodeContext, requestNodeContext } from '../security/AccessCo
 import { AUTH_TARGET_CONTEXT_HEADER, authTargetForSurface, requestCsrfCookie, requestSessionCookie } from '../security/AuthSessionCookies';
 import type { GateEngine } from '../security/gate_menjin';
 import type { OperationMetrics } from '../telemetry/OperationMetrics';
+import type { ArchBoard } from '@shop/l-kernel/arch';
 import { ErrorMapper } from './ErrorMapper';
 
 const MAX_BODY_BYTES = 2 * 1024 * 1024;
@@ -25,7 +26,8 @@ export class HttpApp {
   private readonly origins: ReadonlySet<string>;
   constructor(private readonly routes: RouteRegistry, origins: readonly string[], private readonly errors = new ErrorMapper(),
     private readonly deadlineMilliseconds: number = RUNTIME_LIMITS.http.totalDeadlineMilliseconds, private readonly metrics?: OperationMetrics,
-    private readonly gateEngine?: GateEngine, private readonly nodeContexts?: NodeContextResolver) {
+    private readonly gateEngine?: GateEngine, private readonly nodeContexts?: NodeContextResolver,
+    private readonly arch?: ArchBoard) {
     if (!Number.isSafeInteger(deadlineMilliseconds) || deadlineMilliseconds < 1) throw new Error('HTTP_DEADLINE_INVALID');
     this.origins = new Set(origins);
   }
@@ -71,8 +73,19 @@ export class HttpApp {
       observedPhase = 'gate';
       await observeOperationGates(this.gateEngine, operation.id, operation.gates, requestId, traceId);
       observedPhase = 'handler';
-      const result = await deadline.run((signal) => route.handler({ method: request.method, path: url.pathname, headers, parameters: route.parameters,
-        query: url.searchParams, body: payload.body, rawBody: payload.raw, deadline: deadline.expiresAt, signal }));
+      const exchanged = await deadline.run((signal) => {
+        const input = { method: request.method, path: url.pathname, headers, parameters: route.parameters,
+          query: url.searchParams, body: payload.body, rawBody: payload.raw, deadline: deadline.expiresAt, signal };
+        return this.arch === undefined
+          ? route.handler(input).then((output) => ({ connected: true as const, output }))
+          : this.arch.exchange(nodeContext?.node_id ?? 'unresolved', operation.id, input, route.handler);
+      });
+      if (!exchanged.connected) {
+        observedStatus = 404;
+        observedError = 'NOT_FOUND';
+        return secure(404, { code: 'NOT_FOUND', message: 'NOT_FOUND', requestId }, requestId, origin);
+      }
+      const result = exchanged.output;
       observedStatus = result.status;
       observedError = result.status >= 400 ? bodyCode(result.body) : undefined;
       if (result.status < 400) observedPhase = 'complete';

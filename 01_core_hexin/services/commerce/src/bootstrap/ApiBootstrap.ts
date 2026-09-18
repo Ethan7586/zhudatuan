@@ -20,6 +20,8 @@ import { ModuleRegistry } from './ModuleRegistry';
 import { RouteRegistry } from './RouteRegistry';
 import type { OperationId } from '@shop/contract';
 import type { GateEngine } from '../foundation/security/gate_menjin';
+import { ArchBoard } from '@shop/l-kernel/arch';
+import { ARCH_BOARD } from './ArchOperationAdapter';
 
 export const NODE_MANIFEST_REGISTRY = token<NodeManifestRegistry>('foundation.node-manifest-registry');
 export const SERVER_NODE_MANIFEST_REGISTRY = await materializeNodeManifestRegistryDeclaration(
@@ -65,12 +67,15 @@ export interface ApiBootstrapOptions {
   readonly operationIds?: readonly OperationId[];
   readonly gateEngine?: GateEngine;
   readonly nodeManifestRegistry?: NodeManifestRegistry;
+  readonly arch?: ArchBoard;
+  readonly runtimeNodeIds?: readonly string[];
 }
 
 export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readonly<{
   app: HttpApp;
   modules: readonly string[];
   routes: RouteRegistry;
+  arch: ArchBoard;
   nodeContextResolver: NodeContextResolver | undefined;
 }>> {
   const container = new Container();
@@ -78,6 +83,8 @@ export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readon
   const commands = new CommandBus();
   const queries = new QueryBus();
   const routes = new RouteRegistry(options.operationIds);
+  const arch = options.arch ?? new ArchBoard();
+  container.bind(ARCH_BOARD, arch);
   const jobs = new JobRegistry();
   const modules = new ModuleRegistry();
   for (const module of options.modules) modules.add(module);
@@ -89,14 +96,36 @@ export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readon
   options.extensions.freeze();
   const nodeManifestRegistry = options.nodeManifestRegistry
     ?? (container.has(NODE_MANIFEST_REGISTRY) ? container.get(NODE_MANIFEST_REGISTRY) : undefined);
+  if (nodeManifestRegistry !== undefined) arch.mountAll(
+    nodeManifestRegistry.manifests
+      .filter((candidate) => options.runtimeNodeIds === undefined || options.runtimeNodeIds.includes(candidate.node_id))
+      .map((manifest) => manifest.node_id),
+    routes.catalog().map(({ operation }) => operation),
+  );
+  // Health routes have no request NodeContext; APIs without a node registry use the same exchange key.
+  arch.mountAll(['unresolved'], routes.catalog().map(({ operation }) => operation));
   container.freeze();
-  const nodeContextResolver = nodeManifestRegistry === undefined ? undefined : createNodeContextResolver(nodeManifestRegistry);
+  const nodeContextResolver = nodeManifestRegistry === undefined ? undefined
+    : restrictRuntimeNodes(createNodeContextResolver(nodeManifestRegistry), options.runtimeNodeIds);
   const allowedOrigins = nodeManifestRegistry === undefined
     ? options.allowedOrigins
     : expandRuntimeOrigins(options.allowedOrigins, nodeManifestRegistry, options.allowedOriginSurfaces ?? []);
   return Object.freeze({ app: new HttpApp(routes, allowedOrigins, undefined, undefined, new OperationMetrics(options.telemetry),
-    options.gateEngine, nodeContextResolver),
-    modules: modules.catalog(), routes, nodeContextResolver });
+    options.gateEngine, nodeContextResolver, arch),
+    modules: modules.catalog(), routes, arch, nodeContextResolver });
+}
+
+function restrictRuntimeNodes(resolver: NodeContextResolver, nodeIds: readonly string[] | undefined): NodeContextResolver {
+  if (nodeIds === undefined) return resolver;
+  const allowed = new Set(nodeIds);
+  return Object.freeze({
+    registry: resolver.registry,
+    resolve(host: string) {
+      const context = resolver.resolve(host);
+      if (!allowed.has(context.node_id)) throw new Error('SFL_NODE_MANIFEST_HOST_RUNTIME_MISMATCH');
+      return context;
+    },
+  });
 }
 
 function expandRuntimeOrigins(

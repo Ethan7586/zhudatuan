@@ -27,6 +27,7 @@ const bootstrapped = await bootstrapApi({
   configure: runtime.configure,
   allowedOrigins: catalogOperatorApiAllowedOrigins(environment),
   telemetry: runtime.telemetry,
+  runtimeNodeIds: [runtime.manifest.node_id],
 });
 const server = listen(
   bootstrapped.app,

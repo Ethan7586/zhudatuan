@@ -1,7 +1,10 @@
 import type { PoolClient, QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
+import { ArchBoard } from '@shop/l-kernel/arch';
 import type { DatabasePool } from '../../foundation/persistence/Pool';
-import { PublicCatalogHttpHandler } from './PublicCatalogHttpHandler';
+import { PUBLIC_CATALOG_INTERFACE, PublicCatalogHttpHandler } from './PublicCatalogHttpHandler';
+
+const NODE_ID = 'node:hbbtzn:l1';
 
 describe('public catalog HTTP handler', () => {
   it('returns published products without a session and keeps purchasing locked until login', async () => {
@@ -10,7 +13,7 @@ describe('public catalog HTTP handler', () => {
       cover_url: null, amount_minor: '1', compare_minor: null, available_stock: '10', supplier_name: '平台自营', is_test: false,
     }]));
     const next = { handle: vi.fn(async () => new Response(null, { status: 404 })) };
-    const handler = new PublicCatalogHttpHandler(next, pool(query), 'zdt-l1-verify', ['https://hbbtzn.com']);
+    const handler = new PublicCatalogHttpHandler(next, pool(query), 'zdt-l1-verify', ['https://hbbtzn.com'], {}, connectedArch(), NODE_ID);
 
     const response = await handler.handle(new Request('https://hbbtzn.com/api/v1/catalog/public/products', {
       headers: { origin: 'https://hbbtzn.com' },
@@ -29,7 +32,7 @@ describe('public catalog HTTP handler', () => {
 
   it('delegates every non-public route to the canonical application', async () => {
     const next = { handle: vi.fn(async () => new Response(null, { status: 418 })) };
-    const handler = new PublicCatalogHttpHandler(next, pool(vi.fn()), 'zdt-l1-verify', []);
+    const handler = new PublicCatalogHttpHandler(next, pool(vi.fn()), 'zdt-l1-verify', [], {}, connectedArch(), NODE_ID);
     const response = await handler.handle(new Request('https://api.zhudatuan.com/api/v1/catalog/listings'));
     expect(response.status).toBe(418);
     expect(next.handle).toHaveBeenCalledOnce();
@@ -42,6 +45,7 @@ describe('public catalog HTTP handler', () => {
       pool(query),
       'zdt-l1-verify',
       ['https://hbbtzn.com'],
+      {}, connectedArch(), NODE_ID,
     );
 
     const crossNode = await handler.handle(new Request(
@@ -68,6 +72,7 @@ describe('public catalog HTTP handler', () => {
       'zhudatuan-storefront',
       ['https://hbbtzn.com'],
       { 'hbbtzn.com': 'zdt-l1-verify' },
+      connectedArch(), NODE_ID,
     );
 
     const response = await handler.handle(new Request(
@@ -88,6 +93,7 @@ describe('public catalog HTTP handler', () => {
       'zdt-l1-verify',
       ['https://h6.hbbtzn.com'],
       { 'h6.hbbtzn.com': 'zdt-l1-verify' },
+      connectedArch(), NODE_ID,
     );
 
     const response = await handler.handle(new Request(
@@ -99,7 +105,31 @@ describe('public catalog HTTP handler', () => {
     expect(query).toHaveBeenCalledWith('select * from catalog.public_storefront_catalog($1,$2,$3,$4)',
       ['h6', 24, 0, null]);
   });
+
+  it('does not query the catalog when its Arch connection is disconnected', async () => {
+    const query = vi.fn(async () => result([]));
+    const next = { handle: vi.fn(async () => new Response(null, { status: 404 })) };
+    const arch = connectedArch();
+    arch.setConnected(NODE_ID, PUBLIC_CATALOG_INTERFACE, false);
+    const handler = new PublicCatalogHttpHandler(next, pool(query), 'zdt-l1-verify', [], {}, arch, NODE_ID);
+
+    const disconnected = await handler.handle(new Request('https://hbbtzn.com/api/v1/catalog/public/products'));
+    expect(disconnected.status).toBe(404);
+    expect(query).not.toHaveBeenCalled();
+    expect(next.handle).not.toHaveBeenCalled();
+
+    arch.setConnected(NODE_ID, PUBLIC_CATALOG_INTERFACE, true);
+    const connected = await handler.handle(new Request('https://hbbtzn.com/api/v1/catalog/public/products'));
+    expect(connected.status).toBe(200);
+    expect(query).toHaveBeenCalledOnce();
+  });
 });
+
+function connectedArch(): ArchBoard {
+  const arch = new ArchBoard();
+  arch.mount(NODE_ID, PUBLIC_CATALOG_INTERFACE);
+  return arch;
+}
 
 function pool(query: ReturnType<typeof vi.fn>): DatabasePool {
   const value = {
