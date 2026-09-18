@@ -716,6 +716,37 @@ test('rollback waits for the previous service to become ready', async () => {
   assert.ok(failed.details.rollback.readinessMs > 0);
 });
 
+test('manual rollback failure reports the actual pointers and service without switching back', async () => {
+  const fixture = await createFixture();
+  const first = await createArtifact(fixture, 'previous-unhealthy', '5'.repeat(40));
+  await invoke(fixture, 'stage', first);
+  await invoke(fixture, 'activate', first);
+  const second = await createArtifact(fixture, 'current-healthy', '6'.repeat(40));
+  await invoke(fixture, 'stage', second);
+  await invoke(fixture, 'activate', second);
+  const originalCurrent = await readlink(join(fixture.pointerRoot, 'current'));
+  const attemptedCurrent = await readlink(join(fixture.pointerRoot, 'previous'));
+  fixture.policy.nodes.local.deployments.app.healthChecks = [{
+    argv: [process.execPath, '-e', `process.exit(process.argv[1].includes('${first.sourceSha}') ? 7 : 0)`, '{{currentDir}}'],
+  }];
+  fixture.policy.readiness.timeoutMs = 150;
+  await writePolicy(fixture);
+
+  const failed = await captureAgentFailure(() => invoke(fixture, 'rollback', second));
+  assert.equal(failed.code, 'ROLLBACK_FAILED');
+  assert.equal(failed.details.rollbackFailure.code, 'READINESS_TIMEOUT');
+  assert.equal(failed.details.originalCurrent, originalCurrent);
+  assert.equal(failed.details.attemptedCurrent, attemptedCurrent);
+  assert.equal(failed.details.current, attemptedCurrent);
+  assert.equal(failed.details.previous, originalCurrent);
+  assert.equal(failed.details.serviceStatus.activeState, 'unmonitored');
+  assert.match(failed.details.nextAction, /Do not repeat rollback blindly/);
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), attemptedCurrent);
+  const status = await invoke(fixture, 'status', second);
+  assert.equal(status.result.current, attemptedCurrent);
+  assert.equal(status.result.previous, originalCurrent);
+});
+
 test('preserves candidate and rollback failure evidence when the previous service stays unhealthy', async () => {
   const fixture = await createFixture();
   const first = await createArtifact(fixture, 'rollback-failure-baseline', '3'.repeat(40));

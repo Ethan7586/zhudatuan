@@ -1030,22 +1030,41 @@ async function rollback(context) {
   const started = performance.now();
   const timings = { pointer: 0, restart: 0, readiness: 0, isolation: 0, total: 0 };
   await chmod(previous, 0o755);
-  const pointerStarted = performance.now();
-  await atomicPointer(join(root, 'current'), previous);
-  if (current) await atomicPointer(join(root, 'previous'), current);
-  await restoreOptionalPointer(join(root, 'runtime'), previousRuntime);
-  await restoreOptionalPointer(join(root, 'previous-runtime'), currentRuntime);
-  timings.pointer = elapsedMs(pointerStarted);
-  const restartStarted = performance.now();
-  const restartOperation = await restart(context.deployment.restart);
-  timings.restart = elapsedMs(restartStarted);
-  const readiness = await waitForReadiness(context, { candidateDir: previous, currentDir: previous, ...contextSummary(context) });
-  timings.readiness = readiness.durationMs;
-  const isolationStarted = performance.now();
-  const protectedAfter = await assertProtectedUnchanged(context, protectedBefore);
-  timings.isolation = elapsedMs(isolationStarted);
-  timings.total = elapsedMs(started);
-  return { current: previous, previous: current, runtime: previousRuntime, restart: restartOperation, readiness, timings, rollbackMs: timings.total, protectedProcesses: { before: protectedBefore, after: protectedAfter } };
+  try {
+    const pointerStarted = performance.now();
+    await atomicPointer(join(root, 'current'), previous);
+    if (current) await atomicPointer(join(root, 'previous'), current);
+    await restoreOptionalPointer(join(root, 'runtime'), previousRuntime);
+    await restoreOptionalPointer(join(root, 'previous-runtime'), currentRuntime);
+    timings.pointer = elapsedMs(pointerStarted);
+    const restartStarted = performance.now();
+    const restartOperation = await restart(context.deployment.restart);
+    timings.restart = elapsedMs(restartStarted);
+    const readiness = await waitForReadiness(context, { candidateDir: previous, currentDir: previous, ...contextSummary(context) });
+    timings.readiness = readiness.durationMs;
+    const isolationStarted = performance.now();
+    const protectedAfter = await assertProtectedUnchanged(context, protectedBefore);
+    timings.isolation = elapsedMs(isolationStarted);
+    timings.total = elapsedMs(started);
+    return { current: previous, previous: current, runtime: previousRuntime, restart: restartOperation, readiness, timings, rollbackMs: timings.total, protectedProcesses: { before: protectedBefore, after: protectedAfter } };
+  } catch (error) {
+    const observations = await Promise.allSettled([
+      pointer(root, 'current'), pointer(root, 'previous'), pointer(root, 'runtime'), pointer(root, 'previous-runtime'), processState(context.deployment.restart),
+    ]);
+    const observed = (index) => observations[index].status === 'fulfilled' ? observations[index].value : { error: errorEvidence(observations[index].reason) };
+    throw failure('ROLLBACK_FAILED', {
+      rollbackFailure: errorEvidence(error),
+      originalCurrent: current,
+      attemptedCurrent: previous,
+      current: observed(0),
+      previous: observed(1),
+      runtime: observed(2),
+      previousRuntime: observed(3),
+      serviceStatus: observed(4),
+      timings: { ...timings, total: elapsedMs(started) },
+      nextAction: 'Run status and inspect the service. Do not repeat rollback blindly: current and previous may already have swapped. Recover the intended version manually.',
+    });
+  }
 }
 
 async function status(context) {

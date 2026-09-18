@@ -43,36 +43,40 @@ async function main() {
     } else throw new DeliveryError('OPERATION_UNKNOWN', `Unknown Runner 1.7 operation: ${options.operation}`);
     process.stdout.write(`RUNNER_1_6_RESULT=${JSON.stringify(result)}\n`);
   } catch (unknown) {
-    const error = asDeliveryError(unknown);
-    const details = error.details ?? {};
-    const remoteFailure = observationDiagnostic(error).remoteFailure;
-    const evidence = remoteFailure?.details ?? details;
-    const failure = {
-      state: 'FAILED',
-      stage: context.stage,
-      sourceSha: context.sourceSha,
-      controlSha: process.env.CONTROL_SHA ?? null,
-      target: context.target,
-      node: context.node,
-      command: Array.isArray(details.argv) ? details.argv.join(' ') : null,
-      exitCode: details.exitCode ?? null,
-      error: error.message,
-      code: error.code,
-      output: details.outputTail ?? null,
-      remoteFailure,
-      serviceStatus: nested(evidence, ['candidateFailure', 'details', 'readiness']) ?? nested(evidence, ['receipt', 'readiness']) ?? null,
-      current: evidence.rollback?.finalCurrent ?? evidence.pointerRecovery?.finalCurrent ?? evidence.rollbackPoint?.pointers?.current ?? null,
-      previous: evidence.rollbackPoint?.pointers?.previous ?? null,
-      recovery: evidence.rollback ?? evidence.pointerRecovery ?? null,
-      completedTargets: context.completedTargets,
-      nextAction: context.sourceSha ? `zdt-delivery status ${context.sourceSha}` : ['release', 'retry'].includes(context.operation) ? 'Provide the original full Source SHA or release id.' : 'Inspect target status and use rollback or manual recovery if needed.',
-    };
+    const failure = runnerFailureReceipt(unknown, context);
     process.stderr.write(`RUNNER_1_6_RESULT=${JSON.stringify(failure)}\n`);
     process.exitCode = 1;
   }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();
+
+export function runnerFailureReceipt(unknown, context) {
+  const error = asDeliveryError(unknown);
+  const details = error.details ?? {};
+  const remoteFailure = observationDiagnostic(error).remoteFailure;
+  const evidence = remoteFailure?.details ?? details;
+  return {
+    state: 'FAILED',
+    stage: context.stage,
+    sourceSha: context.sourceSha,
+    controlSha: process.env.CONTROL_SHA ?? null,
+    target: context.target,
+    node: context.node,
+    command: Array.isArray(details.argv) ? details.argv.join(' ') : null,
+    exitCode: details.exitCode ?? null,
+    error: error.message,
+    code: error.code,
+    output: details.outputTail ?? null,
+    remoteFailure,
+    serviceStatus: evidence.serviceStatus ?? nested(evidence, ['candidateFailure', 'details', 'readiness']) ?? nested(evidence, ['receipt', 'readiness']) ?? null,
+    current: evidence.current ?? evidence.rollback?.finalCurrent ?? evidence.pointerRecovery?.finalCurrent ?? evidence.rollbackPoint?.pointers?.current ?? null,
+    previous: evidence.previous ?? evidence.rollbackPoint?.pointers?.previous ?? null,
+    recovery: evidence.rollback ?? evidence.pointerRecovery ?? (remoteFailure?.code === 'ROLLBACK_FAILED' ? evidence.rollbackFailure : null),
+    completedTargets: context.completedTargets,
+    nextAction: evidence.nextAction ?? (context.sourceSha ? `zdt-delivery status ${context.sourceSha}` : ['release', 'retry'].includes(context.operation) ? 'Provide the original full Source SHA or release id.' : 'Inspect target status and use rollback or manual recovery if needed.'),
+  };
+}
 
 async function release(adapter, controlRoot, sourceSha, target, node) {
   const exactScope = Boolean(target || node);
@@ -541,10 +545,15 @@ export function observationDiagnostic(unknown) {
   const error = asDeliveryError(unknown);
   const details = error.details ?? {};
   let remoteFailure = null;
-  try {
-    const parsed = JSON.parse(String(details.outputTail ?? '').trim());
-    if (parsed?.ok === false && parsed.error) remoteFailure = parsed.error;
-  } catch {}
+  for (const line of String(details.outputTail ?? '').trim().split(/\r?\n/).reverse()) {
+    try {
+      const parsed = JSON.parse(line);
+      if (parsed?.ok === false && parsed.error) {
+        remoteFailure = parsed.error;
+        break;
+      }
+    } catch {}
+  }
   return {
     code: error.code,
     error: error.message,
