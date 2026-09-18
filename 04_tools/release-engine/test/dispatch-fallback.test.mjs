@@ -54,6 +54,13 @@ if [ "$1" = run ] && [ "$2" = view ]; then
     echo '{"createdAt":"2026-09-16T00:00:00Z","jobs":[{"name":"Choose execution location","startedAt":"2026-09-16T00:00:02Z","completedAt":"2026-09-16T00:00:06Z","steps":[{"name":"Run actions/checkout@v6","startedAt":"2026-09-16T00:00:02Z","completedAt":"2026-09-16T00:00:03Z"}]},{"name":"Execute on aliyun","startedAt":"2026-09-16T00:00:09Z","steps":[{"name":"Run actions/checkout@v6","startedAt":"2026-09-16T00:00:09Z","completedAt":"2026-09-16T00:00:11Z"}]}]}'
     exit 0
   fi
+  if [[ " $* " == *" --json status,jobs"* ]]; then
+    if [ "$(<"$MOCK_STATE")" = cancelled ]; then status=completed; else status=in_progress; fi
+    if [[ "$MOCK_MODE" == started* ]] || [ "$MOCK_MODE" = hosted-core ] || { [ "$MOCK_MODE" = raced ] && [ "$status" = completed ]; }; then core_steps=1; else core_steps=0; fi
+    if [ "$MOCK_MODE" = precore ] || [ "$MOCK_MODE" = hosted-precore ] || [[ "$MOCK_MODE" == started* ]]; then started_steps=1; else started_steps=0; fi
+    printf '%s\\t%s\\t%s\\n' "$status" "$core_steps" "$started_steps"
+    exit 0
+  fi
   if [[ " $* " == *" --json status"* ]]; then
     if [ "$(<"$MOCK_STATE")" = cancelled ]; then echo completed; else echo in_progress; fi
     exit 0
@@ -100,7 +107,8 @@ test('an unstarted Aliyun job is cancelled before one Hosted dispatch', async ()
   assert.match(calls, /run cancel 101/);
   assert.match(calls, /execution_location=github-hosted/);
   assert.equal((calls.match(/workflow run /g) ?? []).length, 2);
-  assert.ok((calls.match(/Mark shared release core started/g) ?? []).length <= 3, 'queue timeout should not depend on ten slow API polls');
+  assert.equal((calls.match(/run view 101 --json status,jobs/g) ?? []).length, 1, 'one observation covers status, core start, and queued steps');
+  assert.ok((calls.match(/Mark shared release core started/g) ?? []).length <= 2, 'queue timeout should not depend on repeated API polls');
   assert.match(output, /Hosted fallback run: 102/);
   assert.match(output, /DELIVERY_COMMAND_RETURN_MS=\d+/);
   assert.match(output, /DELIVERY_PRE_CORE_TIMINGS=/);
