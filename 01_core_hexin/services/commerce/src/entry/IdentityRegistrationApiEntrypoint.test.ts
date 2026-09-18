@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join, normalize } from 'node:path';
 import type { OperationId } from '@shop/contract';
 import { describe, expect, it } from 'vitest';
-import { bootstrapApi } from '../bootstrap/ApiBootstrap';
+import { bootstrapApi, SERVER_NODE_MANIFEST_REGISTRY } from '../bootstrap/ApiBootstrap';
 import { ExtensionRegistry } from '../bootstrap/ExtensionRegistry';
 import type { OperationHandler } from '../foundation/application/OperationHandler';
 import { AUDIT_SINK } from '../foundation/application/AuditSink';
@@ -182,6 +182,8 @@ describe('identity registration API entrypoint', () => {
         IdentityOperatorQualificationModule,
       ],
       operationIds,
+      nodeManifestRegistry: SERVER_NODE_MANIFEST_REGISTRY,
+      archMountNodeIds: ['node:hbbtzn:l1'],
       extensions,
       allowedOrigins: ['https://accounts.zhudatuan.com'],
       telemetry: commerceTelemetry(),
@@ -214,6 +216,10 @@ describe('identity registration API entrypoint', () => {
       },
     });
     expect(bootstrapped.routes.catalog().map(({ operation }) => operation)).toEqual(operationIds);
+    expect(MEMBER_OPERATOR_READ_OPERATION_IDS.map((operation) =>
+      bootstrapped.arch.state('node:hbbtzn:l1', operation)))
+      .toEqual(MEMBER_OPERATOR_READ_OPERATION_IDS.map(() => 'connected'));
+    expect(bootstrapped.arch.state('node:zhudatuan:l0', MEMBER_OPERATOR_READ_OPERATION_IDS[0]!)).toBe('unmounted');
     expect(bootstrapped.routes.match('POST', '/api/v1/identity/sessions')?.operation).toBe('identity.sessions.create');
     expect(bootstrapped.routes.match('POST', '/api/v1/identity/password/reset')?.operation).toBe('identity.password.reset');
     expect(bootstrapped.routes.match('POST', '/api/v1/identity/password/verify')?.operation).toBe('identity.password.verify');

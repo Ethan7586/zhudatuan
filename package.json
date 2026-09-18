@@ -7,6 +7,7 @@
     "node": ">=22.22.0"
   },
   "workspaces": [
+    "L-kernel",
     "01_core_hexin/apps/*",
     "01_core_hexin/services/*",
     "01_core_hexin/packages/*",
