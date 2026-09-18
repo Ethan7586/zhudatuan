@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import type { OperationId } from '@shop/contract';
 import { parseNodeManifest } from '@shop/config/server';
 import { describe, expect, it } from 'vitest';
-import { bootstrapApi } from '../bootstrap/ApiBootstrap';
+import { bootstrapApi, bindServerNodeManifestRegistry, runtimeNodeManifestRegistry } from '../bootstrap/ApiBootstrap';
 import { ExtensionRegistry } from '../bootstrap/ExtensionRegistry';
 import { NODE_DATABASE_ROLE, NODE_MANIFEST } from '../bootstrap/NodeRuntime';
 import type { OperationHandler } from '../foundation/application/OperationHandler';
@@ -28,7 +28,9 @@ describe('catalog operator API entrypoint', () => {
       extensions: new ExtensionRegistry({ verify: async () => false }),
       allowedOrigins: ['https://console.hbbtzn.com'],
       telemetry: commerceTelemetry(),
+      runtimeNodeIds: [manifest.node_id],
       configure(container) {
+        bindServerNodeManifestRegistry(container, runtimeNodeManifestRegistry(manifest));
         container.bind(OPERATION_HANDLERS, new Map<OperationId, OperationHandler>());
         container.bind(OPERATION_AUTHORIZER, { authorize: async () => { throw new Error('AUTHORIZATION_NOT_CALLED'); } });
         container.bind(DATABASE_POOL, pool);
@@ -51,5 +53,10 @@ describe('catalog operator API entrypoint', () => {
     expect(bootstrapped.routes.match('POST', '/api/v1/catalog/listings/batches')?.operation).toBe('catalog.listings.batch');
     expect(bootstrapped.routes.match('POST', '/api/v1/identity/sessions')).toBeNull();
     expect(bootstrapped.routes.match('GET', '/api/v1/members')).toBeNull();
+    expect(bootstrapped.arch.inspect(manifest.node_id, bootstrapped.routes.catalog().map(({ operation }) => operation))
+      .every(({ state }) => state === 'connected')).toBe(true);
+    expect(bootstrapped.arch.state('node:zhudatuan:l0', CATALOG_OPERATOR_OPERATION_IDS[0]!)).toBe('unmounted');
+    expect(() => bootstrapped.nodeContextResolver?.resolve('api.fufu.wang'))
+      .toThrow('SFL_NODE_MANIFEST_HOST_RUNTIME_MISMATCH');
   });
 });

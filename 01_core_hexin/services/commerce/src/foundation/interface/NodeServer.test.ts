@@ -79,9 +79,12 @@ describe('NodeServer NodeContext ingress', () => {
     }
   });
 
-  it('rejects a known but foreign node Host before a single-node outer handler runs', async () => {
+  it.each([
+    ['node:hbbtzn:l1', 'accounts.hbbtzn.com', 'api.fufu.wang'],
+    ['node:zhudatuan:l0', 'api.fufu.wang', 'accounts.hbbtzn.com'],
+  ] as const)('rejects a foreign Host for %s before a single-node outer handler runs', async (nodeId, ownHost, foreignHost) => {
     const bootstrapped = await bootstrapApi({
-      modules: [], operationIds: [], runtimeNodeIds: ['node:hbbtzn:l1'],
+      modules: [], operationIds: [], runtimeNodeIds: [nodeId],
       extensions: new ExtensionRegistry({ verify: async () => true } as never),
       configure: bindServerNodeManifestRegistry, allowedOrigins: [], telemetry: commerceTelemetry(),
     });
@@ -92,11 +95,11 @@ describe('NodeServer NodeContext ingress', () => {
     } }, 0, '127.0.0.1', bootstrapped.nodeContextResolver);
     await server.ready;
     try {
-      expect((await nodeRequest(server.port(), 'accounts.hbbtzn.com')).status).toBe(204);
-      const foreign = await nodeRequest(server.port(), 'api.fufu.wang');
+      expect((await nodeRequest(server.port(), ownHost)).status).toBe(204);
+      const foreign = await nodeRequest(server.port(), foreignHost);
       expect(foreign.status).toBe(421);
       expect(foreign.body).toContain('NODE_BOUNDARY_HOST_MISMATCH');
-      expect((await nodeRequest(server.port(), 'api.fufu.wang', '/api/v1/catalog/public/products', 'GET')).status).toBe(421);
+      expect((await nodeRequest(server.port(), foreignHost, '/api/v1/catalog/public/products', 'GET')).status).toBe(421);
       expect(handled).toBe(1);
     } finally {
       await server.close();
