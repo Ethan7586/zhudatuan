@@ -76,7 +76,7 @@ export class HttpApp {
       const exchanged = await deadline.run((signal) => {
         const input = { method: request.method, path: url.pathname, headers, parameters: route.parameters,
           query: url.searchParams, body: payload.body, rawBody: payload.raw, deadline: deadline.expiresAt, signal };
-        return this.arch === undefined
+        return this.arch === undefined || operation.id.startsWith('runtime.health.')
           ? route.handler(input).then((output) => ({ connected: true as const, output }))
           : this.arch.exchange(nodeContext?.node_id ?? 'unresolved', operation.id, input, route.handler);
       });

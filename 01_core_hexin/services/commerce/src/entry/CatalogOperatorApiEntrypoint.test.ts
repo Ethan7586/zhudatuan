@@ -53,8 +53,10 @@ describe('catalog operator API entrypoint', () => {
     expect(bootstrapped.routes.match('POST', '/api/v1/catalog/listings/batches')?.operation).toBe('catalog.listings.batch');
     expect(bootstrapped.routes.match('POST', '/api/v1/identity/sessions')).toBeNull();
     expect(bootstrapped.routes.match('GET', '/api/v1/members')).toBeNull();
-    expect(bootstrapped.arch.inspect(manifest.node_id, bootstrapped.routes.catalog().map(({ operation }) => operation))
+    expect(bootstrapped.arch.inspect(manifest.node_id, bootstrapped.routes.catalog()
+      .map(({ operation }) => operation).filter((operation) => !operation.startsWith('runtime.health.')))
       .every(({ state }) => state === 'connected')).toBe(true);
+    expect(bootstrapped.arch.state(manifest.node_id, 'runtime.health.ready')).toBe('unmounted');
     expect(bootstrapped.arch.state('node:zhudatuan:l0', CATALOG_OPERATOR_OPERATION_IDS[0]!)).toBe('unmounted');
     expect(() => bootstrapped.nodeContextResolver?.resolve('api.fufu.wang'))
       .toThrow('SFL_NODE_MANIFEST_HOST_RUNTIME_MISMATCH');

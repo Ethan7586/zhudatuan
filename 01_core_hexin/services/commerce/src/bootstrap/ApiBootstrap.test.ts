@@ -8,7 +8,7 @@ import { ExtensionRegistry } from './ExtensionRegistry';
 import type { CommerceModule } from './ModuleRegistry';
 
 describe('API bootstrap SFL NodeContext assembly', () => {
-  it('connects routes without a request node, including health, through Arch', async () => {
+  it('keeps runtime health outside Arch', async () => {
     let called = 0;
     const module: CommerceModule = {
       id: 'arch-health-install-test', dependencies: [],
@@ -26,12 +26,9 @@ describe('API bootstrap SFL NodeContext assembly', () => {
       operationIds: ['runtime.health.ready'],
     });
     const request = () => bootstrapped.app.handle(new Request('http://127.0.0.1/health/ready'));
-    expect(bootstrapped.arch.state('unresolved', 'runtime.health.ready')).toBe('connected');
+    expect(bootstrapped.arch.state('unresolved', 'runtime.health.ready')).toBe('unmounted');
     expect((await request()).status).toBe(200);
-    bootstrapped.arch.setConnected('unresolved', 'runtime.health.ready', false);
-    expect((await request()).status).toBe(404);
     expect(called).toBe(1);
-    bootstrapped.arch.setConnected('unresolved', 'runtime.health.ready', true);
     expect((await request()).status).toBe(200);
     expect(called).toBe(2);
   });
