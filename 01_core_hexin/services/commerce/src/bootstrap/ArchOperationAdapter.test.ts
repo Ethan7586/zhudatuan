@@ -71,6 +71,7 @@ describe('hosted L Arch operation adapter', () => {
     await expect(response.json()).resolves.toEqual({ owner: 'member' });
     expect(invoke).toHaveBeenCalledOnce();
     arch.unmount('node:hosted:l2', 'member.profile.read');
+    expect(arch.state('node:hosted:l2', 'member.profile.read')).toBe('removed');
     expect((await send()).status).toBe(404);
     expect(arch.state('node:hbbtzn:l1', 'member.profile.read')).toBe('connected');
     expect(invoke).toHaveBeenCalledOnce();

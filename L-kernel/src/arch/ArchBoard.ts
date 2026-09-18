@@ -1,4 +1,4 @@
-export type ArchConnectionState = 'unmounted' | 'connected' | 'disconnected';
+export type ArchConnectionState = 'unmounted' | 'connected' | 'disconnected' | 'removed';
 
 export interface ArchConnection {
   readonly nodeId: string;
@@ -32,7 +32,7 @@ export class ArchBoard {
 
   state(nodeId: string, interfaceId: string): ArchConnectionState {
     const connected = this.connections.get(key(nodeId, interfaceId));
-    return connected === undefined || connected === null ? 'unmounted' : connected ? 'connected' : 'disconnected';
+    return connected === undefined ? 'unmounted' : connected === null ? 'removed' : connected ? 'connected' : 'disconnected';
   }
 
   inspect(nodeId: string, interfaceIds: readonly string[]): readonly ArchConnection[] {
