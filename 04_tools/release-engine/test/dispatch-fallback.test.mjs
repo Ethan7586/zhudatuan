@@ -73,7 +73,7 @@ exit 1
   try {
     const result = await execFileAsync('bash', [dispatcher, ...argumentsForDelivery], {
       cwd: root,
-      env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, MOCK_LOG: log, MOCK_STATE: state, MOCK_MODE: mode, MOCK_EXECUTE_NAME: executeName, ZDT_DELIVERY_STARTED_MS: String(Math.floor(Date.now() / 1000) * 1000) },
+      env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, MOCK_LOG: log, MOCK_STATE: state, MOCK_MODE: mode, MOCK_EXECUTE_NAME: executeName, ZDT_DELIVERY_STARTED_MS: String(Math.floor(Date.now() / 1000) * 1000), ZDT_DELIVERY_QUEUE_WAIT_SECONDS: '0' },
     });
     return { output: result.stdout, calls: await readFile(log, 'utf8') };
   } finally {
@@ -86,6 +86,7 @@ test('an unstarted Aliyun job is cancelled before one Hosted dispatch', async ()
   assert.match(calls, /run cancel 101/);
   assert.match(calls, /execution_location=github-hosted/);
   assert.equal((calls.match(/workflow run /g) ?? []).length, 2);
+  assert.ok((calls.match(/Mark shared release core started/g) ?? []).length <= 3, 'queue timeout should not depend on ten slow API polls');
   assert.match(output, /Hosted fallback run: 102/);
   assert.match(output, /DELIVERY_COMMAND_RETURN_MS=\d+/);
   assert.match(output, /DELIVERY_PRE_CORE_TIMINGS=/);

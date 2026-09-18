@@ -85,13 +85,14 @@ for attempt in {1..30}; do
   sleep 2
 done
 if [[ "${execute_name:-}" == 'Execute on '* && "$execute_name" != 'Execute on github-hosted' ]]; then
+  queue_wait_started="$SECONDS"
   for attempt in {1..30}; do
     core_steps="$(gh run view "$run_id" --json jobs --jq '[.jobs[]?.steps[]? | select(.startedAt != null and .name == "Mark shared release core started")] | length')"
     [ "${core_steps:-0}" -gt 0 ] && break
     run_status="$(gh run view "$run_id" --json status --jq .status)"
     [ "$run_status" = completed ] && break
     started_steps="$(gh run view "$run_id" --json jobs --jq '[.jobs[]? | select(.name | startswith("Execute on ") and . != "Execute on github-hosted") | .steps[]? | select(.startedAt != null)] | length')"
-    [ "$attempt" -ge 10 ] && [ "${started_steps:-0}" -eq 0 ] && break
+    [ "${started_steps:-0}" -eq 0 ] && [ "$((SECONDS - queue_wait_started))" -ge "${ZDT_DELIVERY_QUEUE_WAIT_SECONDS:-20}" ] && break
     sleep 2
   done
 fi
