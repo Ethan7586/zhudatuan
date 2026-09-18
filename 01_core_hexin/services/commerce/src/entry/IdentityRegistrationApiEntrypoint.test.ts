@@ -183,7 +183,7 @@ describe('identity registration API entrypoint', () => {
       ],
       operationIds,
       nodeManifestRegistry: SERVER_NODE_MANIFEST_REGISTRY,
-      archMountNodeIds: ['node:hbbtzn:l1'],
+      runtimeNodeIds: ['node:hbbtzn:l1'],
       extensions,
       allowedOrigins: ['https://accounts.zhudatuan.com'],
       telemetry: commerceTelemetry(),

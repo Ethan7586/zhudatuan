@@ -56,7 +56,7 @@ describe('web business API entrypoint', () => {
       modules: [WebBusinessRuntimeModule, ...WEB_BUSINESS_MODULES],
       operationIds,
       nodeManifestRegistry: SERVER_NODE_MANIFEST_REGISTRY,
-      archMountNodeIds: ['node:hbbtzn:l1'],
+      runtimeNodeIds: ['node:hbbtzn:l1'],
       extensions,
       allowedOrigins: ['https://console.zhudatuan.com', 'https://zhudatuan.com'],
       telemetry: commerceTelemetry(),

@@ -31,7 +31,7 @@ const bootstrapped = await bootstrapApi({
   allowedOrigins,
   telemetry: runtime.telemetry,
   gateEngine: runtime.gateEngine,
-  archMountNodeIds: [runtime.manifest.node_id],
+  runtimeNodeIds: [runtime.manifest.node_id],
 });
 const app = new PublicCatalogHttpHandler(
   bootstrapped.app, runtime.pool, webBusinessApiPublicMallSlug(environment), allowedOrigins,
