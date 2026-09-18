@@ -89,7 +89,20 @@ test('Aliyun is selected only when a matching runner is online and idle', () => 
     ],
   });
   assert.equal(selected.runnerClass, 'aliyun');
-  assert.deepEqual(selected.runsOn, ['self-hosted', 'Linux', 'X64', 'zdt-aliyun-build', 'zdt-aliyun-build-1']);
+  assert.deepEqual(selected.runsOn, ['self-hosted', 'Linux', 'X64', 'zdt-aliyun-build']);
+});
+
+test('concurrent Aliyun routes share the build pool instead of pinning one slot', () => {
+  const runners = [1, 2].map((slot) => ({
+    name: `aliyun-${slot}`,
+    status: 'online',
+    busy: false,
+    labels: ['self-hosted', 'Linux', 'X64', 'zdt-aliyun-build', `zdt-aliyun-build-${slot}`],
+  }));
+  const first = selectExecutionRunner({ runners });
+  const second = selectExecutionRunner({ runners });
+  assert.deepEqual(first.runsOn, ['self-hosted', 'Linux', 'X64', 'zdt-aliyun-build']);
+  assert.deepEqual(second.runsOn, first.runsOn);
 });
 
 test('portable self-hosted Runner is selectable while Aliyun remains first', () => {
@@ -98,7 +111,7 @@ test('portable self-hosted Runner is selectable while Aliyun remains first', () 
   const selected = selectExecutionRunner({ runners: [portable] });
   assert.equal(selected.runnerClass, 'self-hosted');
   assert.equal(selected.runnerName, 'gcp-build');
-  assert.deepEqual(selected.runsOn, ['self-hosted', 'Linux', 'X64', 'zdt-build', 'zdt-build-2']);
+  assert.deepEqual(selected.runsOn, ['self-hosted', 'Linux', 'X64', 'zdt-build']);
   assert.equal(selectExecutionRunner({ runners: [portable, aliyun] }).runnerName, 'aliyun-build');
   assert.equal(selectExecutionRunner({ runners: [{ ...aliyun, busy: true }, portable] }).runnerName, 'gcp-build');
 });
