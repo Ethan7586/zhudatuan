@@ -12,7 +12,7 @@ export interface StorefrontPresentationIdentity {
 }
 
 export function hbbtznH5Application(hostname: string): string | undefined {
-  const level = /^h([6-9]|\d\d+)\.hbbtzn\.com$/i.exec(hostname.trim())?.[1];
+  const level = /^h([6-9]|\d\d+)\.fufuwang\.com\.cn$/i.exec(hostname.trim())?.[1];
   return level && `h${Number(level)}`;
 }
 
@@ -43,7 +43,7 @@ export function resolveStorefrontNode(
   const node = identityNodeForStorefrontHost(registry, selectedHostname)
     ?? (hbbtznH5Application(selectedHostname) === undefined
       ? null
-      : identityNodeForStorefrontHost(registry, 'hbbtzn.com'));
+      : identityNodeForStorefrontHost(registry, 'fufuwang.com.cn'));
   if (node === null) throw new Error('商城身份节点无效');
   return node;
 }

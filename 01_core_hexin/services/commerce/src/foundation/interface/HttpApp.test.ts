@@ -36,7 +36,7 @@ describe('HttpApp contract handshake', () => {
       return { status: 200, body: { node: observed.node_id } };
     }), [], undefined, undefined, undefined, undefined, resolver);
 
-    const response = await app.handle(new Request('https://api.hbbtzn.com/api/v1/identity/sessions', {
+    const response = await app.handle(new Request('https://api.fufuwang.com.cn/api/v1/identity/sessions', {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
       body: '{}',
@@ -118,13 +118,13 @@ describe('HttpApp contract handshake', () => {
       observedBody = request.body;
       observedHeaders = request.headers;
       return { status: 200, body: { accepted: true } };
-    }), ['https://accounts.hbbtzn.com']);
-    const response = await app.handle(new Request('https://api.hbbtzn.com/api/v1/identity/sessions', {
+    }), ['https://accounts.fufuwang.com.cn']);
+    const response = await app.handle(new Request('https://api.fufuwang.com.cn/api/v1/identity/sessions', {
       method: 'POST',
       headers: {
         'content-type': 'text/plain;charset=UTF-8',
         cookie: 'shop_session=stale-session; shop_csrf=stale-csrf',
-        origin: 'https://accounts.hbbtzn.com',
+        origin: 'https://accounts.fufuwang.com.cn',
       },
       body: JSON.stringify({
         provider: 'password',
@@ -154,17 +154,17 @@ describe('HttpApp contract handshake', () => {
         handler: async () => ({ status: 200, body: { accepted: true } }),
       }),
     } as unknown as RouteRegistry;
-    const request = (csrf: string) => new Request('https://api.hbbtzn.com/api/v1/access/roles/role:one', {
+    const request = (csrf: string) => new Request('https://api.fufuwang.com.cn/api/v1/access/roles/role:one', {
       method: 'PUT',
       headers: {
         'content-type': 'application/json',
-        origin: 'https://console.hbbtzn.com',
+        origin: 'https://console.fufuwang.com.cn',
         cookie: 'shop_console_session=console-session; shop_console_csrf=console-csrf; shop_storefront_session=storefront-session; shop_storefront_csrf=storefront-csrf',
         'x-csrf-token': csrf,
       },
       body: '{}',
     });
-    const app = new HttpApp(accessRoutes, ['https://console.hbbtzn.com'], undefined, undefined, undefined, undefined, resolver);
+    const app = new HttpApp(accessRoutes, ['https://console.fufuwang.com.cn'], undefined, undefined, undefined, undefined, resolver);
 
     await expect(app.handle(request('console-csrf'))).resolves.toMatchObject({ status: 200 });
     await expect(app.handle(request('storefront-csrf'))).resolves.toMatchObject({ status: 403 });
@@ -174,9 +174,9 @@ describe('HttpApp contract handshake', () => {
     const challengeRoutes = {
       match: () => ({ operation: 'identity.challenges.create', parameters: {}, handler: async () => ({ status: 200, body: {} }) }),
     } as unknown as RouteRegistry;
-    const response = await new HttpApp(challengeRoutes, ['https://accounts.hbbtzn.com'])
-      .handle(new Request('https://api.hbbtzn.com/api/v1/identity/challenges', {
-        method: 'POST', headers: { 'content-type': 'text/plain', origin: 'https://accounts.hbbtzn.com' }, body: '{}',
+    const response = await new HttpApp(challengeRoutes, ['https://accounts.fufuwang.com.cn'])
+      .handle(new Request('https://api.fufuwang.com.cn/api/v1/identity/challenges', {
+        method: 'POST', headers: { 'content-type': 'text/plain', origin: 'https://accounts.fufuwang.com.cn' }, body: '{}',
       }));
 
     expect(response.status).toBe(415);
@@ -206,13 +206,13 @@ describe('HttpApp contract handshake', () => {
   it('records the identity node, realm, operation, version and failing phase without request secrets', async () => {
     const records: Readonly<Record<string, unknown>>[] = [];
     const metrics = new OperationMetrics(createTelemetry((record) => { records.push(record); }));
-    const response = await new HttpApp(routes(), ['https://accounts.hbbtzn.com'], undefined, undefined, metrics)
-      .handle(new Request('https://api.hbbtzn.com/api/v1/identity/sessions', {
+    const response = await new HttpApp(routes(), ['https://accounts.fufuwang.com.cn'], undefined, undefined, metrics)
+      .handle(new Request('https://api.fufuwang.com.cn/api/v1/identity/sessions', {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
           cookie: 'shop_session=private-session; shop_csrf=private-csrf',
-          origin: 'https://accounts.hbbtzn.com',
+          origin: 'https://accounts.fufuwang.com.cn',
           authorization: 'Bearer private-bearer-token',
           'x-contract-version': CONTRACT_VERSION,
         },

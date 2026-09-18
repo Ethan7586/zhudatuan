@@ -41,9 +41,9 @@ describe('Auth build-time origin policy', () => {
 describe('canonical identity return origin policy', () => {
   it('preserves the approved admin and storefront origins after leaving the legacy auth module', () => {
     expect(resolveAdminLoginOrigin()).toBe('https://console.fufu.wang');
-    expect(resolveAdminLoginOrigin('https://console.hbbtzn.com')).toBe('https://console.hbbtzn.com');
+    expect(resolveAdminLoginOrigin('https://console.fufuwang.com.cn')).toBe('https://console.fufuwang.com.cn');
     expect(resolveStorefrontLoginOrigin()).toBe('https://fufu.wang');
-    expect(resolveStorefrontLoginOrigin('https://hbbtzn.com')).toBe('https://hbbtzn.com');
+    expect(resolveStorefrontLoginOrigin('https://fufuwang.com.cn')).toBe('https://fufuwang.com.cn');
   });
 
   it('keeps canonical identity physically disconnected from the legacy auth and static origin modules', () => {

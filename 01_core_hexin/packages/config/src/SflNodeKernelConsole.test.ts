@@ -37,8 +37,8 @@ describe('SFL Console runtime adapter', () => {
     const resolver = createNodeContextResolver(artifact.node_manifest_registry);
     const l0Console = resolver.resolve('console.fufu.wang');
     const l0Api = resolver.resolve('api.fufu.wang');
-    const l1Console = resolver.resolve('console.hbbtzn.com');
-    const l1Api = resolver.resolve('api.hbbtzn.com');
+    const l1Console = resolver.resolve('console.fufuwang.com.cn');
+    const l1Api = resolver.resolve('api.fufuwang.com.cn');
 
     expect(l0Console).toMatchObject({
       line_id: 'line:zhudatuan:commerce:v1',
@@ -55,7 +55,7 @@ describe('SFL Console runtime adapter', () => {
       parent_node_id: 'node:zhudatuan:l0',
       signed_level: 'L1',
       mall_id: 'mall:d1708f04df2dd8a61736852c4900fb43',
-      host: 'console.hbbtzn.com',
+      host: 'console.fufuwang.com.cn',
       surface: 'surface:console',
       scope: { ref: 'mall:d1708f04df2dd8a61736852c4900fb43', version: '1' },
     });
@@ -66,8 +66,8 @@ describe('SFL Console runtime adapter', () => {
     expect(l1Api.manifest_digest).toBe(l1Console.manifest_digest);
     expect(l1Api.surface).toBe('surface:api');
     expect(l1Api.manifest_digest).not.toBe(l0Api.manifest_digest);
-    expect(() => resolver.resolve('api.hbbtzn.com.evil')).toThrow('SFL_NODE_MANIFEST_HOST_UNKNOWN');
-    expect(() => resolver.resolve('api.hbbtzn.com:443')).toThrow('SFL_NODE_MANIFEST_HOST_INVALID');
+    expect(() => resolver.resolve('api.fufuwang.com.cn.evil')).toThrow('SFL_NODE_MANIFEST_HOST_UNKNOWN');
+    expect(() => resolver.resolve('api.fufuwang.com.cn:443')).toThrow('SFL_NODE_MANIFEST_HOST_INVALID');
   });
 
   it('materializes a deterministic verified server registry from the shared declaration', async () => {
@@ -154,7 +154,7 @@ describe('SFL Console runtime adapter', () => {
 
   it('resolves L0 and L1 by exact Console Host with independent API, Identity, Scope, and NodeContext', () => {
     const l0 = resolveConsoleAppConfig(artifact, 'console.fufu.wang');
-    const l1 = resolveConsoleAppConfig(artifact, 'console.hbbtzn.com');
+    const l1 = resolveConsoleAppConfig(artifact, 'console.fufuwang.com.cn');
 
     expect(l0).toMatchObject({
       apiBaseUrl: 'https://api.fufu.wang',
@@ -168,8 +168,8 @@ describe('SFL Console runtime adapter', () => {
       },
     });
     expect(l1).toMatchObject({
-      apiBaseUrl: 'https://api.hbbtzn.com',
-      identityEntryUrl: 'https://accounts.hbbtzn.com/?target=console',
+      apiBaseUrl: 'https://api.fufuwang.com.cn',
+      identityEntryUrl: 'https://accounts.fufuwang.com.cn/?target=console',
       scope: { kind: 'mall', id: 'mall:d1708f04df2dd8a61736852c4900fb43' },
       nodeContext: {
         line_id: 'line:zhudatuan:commerce:v1',
@@ -186,10 +186,10 @@ describe('SFL Console runtime adapter', () => {
   it('fails unknown, suffix-derived, and non-Console Hosts without fallback', () => {
     expect(() => resolveConsoleAppConfig(artifact, 'console.unknown.example'))
       .toThrow('SFL_NODE_MANIFEST_HOST_UNKNOWN:console.unknown.example');
-    expect(() => resolveConsoleAppConfig(artifact, 'console.hbbtzn.com.example'))
-      .toThrow('SFL_NODE_MANIFEST_HOST_UNKNOWN:console.hbbtzn.com.example');
-    expect(() => resolveConsoleAppConfig(artifact, 'api.hbbtzn.com'))
-      .toThrow('SFL_CONSOLE_HOST_SURFACE_INVALID:api.hbbtzn.com');
+    expect(() => resolveConsoleAppConfig(artifact, 'console.fufuwang.com.cn.example'))
+      .toThrow('SFL_NODE_MANIFEST_HOST_UNKNOWN:console.fufuwang.com.cn.example');
+    expect(() => resolveConsoleAppConfig(artifact, 'api.fufuwang.com.cn'))
+      .toThrow('SFL_CONSOLE_HOST_SURFACE_INVALID:api.fufuwang.com.cn');
   });
 
   it('rejects ambiguous Hosts and tampered generic manifest digests', async () => {

@@ -11,7 +11,7 @@ readonly NETWORK_ENV_ROOT='/etc/zdt-runner'
 readonly NETWORK_ENV_PATH="$NETWORK_ENV_ROOT/github-network.env"
 readonly PROXY_PORT="${ZDT_GITHUB_LINE_LISTEN_PORT:-7890}"
 readonly PROXY_URL="http://127.0.0.1:${PROXY_PORT}"
-readonly NO_PROXY_VALUE='localhost,127.0.0.1,::1,100.100.100.200,123.57.62.202,123.57.232.253,172.27.70.37,.aliyuncs.com,.hbbtzn.com'
+readonly NO_PROXY_VALUE='localhost,127.0.0.1,::1,100.100.100.200,123.57.62.202,123.57.232.253,172.27.70.37,.aliyuncs.com,.fufuwang.com.cn'
 readonly RUNNER_SERVICES=(
   'actions.runner.Ethan7586-zhudatuan.aliyun-staging-zdt-build.service'
   'actions.runner.Ethan7586-zhudatuan.aliyun-staging-zdt-build-2.service'

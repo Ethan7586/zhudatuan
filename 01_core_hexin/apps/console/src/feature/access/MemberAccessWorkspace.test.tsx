@@ -154,7 +154,7 @@ describe('member directory pagination', () => {
   it('upgrades an ordinary administrator from the detail panel and verifies the authoritative reread', async () => {
     let senior = false;
     let requestBody: unknown;
-    const tenantScope: ConsoleScope = { kind: 'tenant', id: 'tenant-zhudatuan', name: '宏泰甄选' };
+    const tenantScope: ConsoleScope = { kind: 'tenant', id: 'tenant-zhudatuan', name: '福福网' };
     const target = { ...member('target', '李厚亿'), mobile: '19287247586' };
     const seniorRole = () => ({ id: 'role-senior-administrator-v1:tenant-zhudatuan', name: '高级管理员', status: 'active' as const,
       version: 1, permissions: ['member.members.read'], member_count: senior ? 1 : 0, governance: true,

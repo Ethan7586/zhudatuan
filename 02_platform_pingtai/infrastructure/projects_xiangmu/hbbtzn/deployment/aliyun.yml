@@ -12,15 +12,15 @@ node:
   manifest: ../../../../config/node-manifests/hbbtzn-l1.json
 
 domains:
-  storefront: hbbtzn.com
+  storefront: fufuwang.com.cn
   storefrontAliases:
-    - www.hbbtzn.com
-    - h5.hbbtzn.com
-    - h6.hbbtzn.com
-    - mall.hbbtzn.com
-  console: console.hbbtzn.com
-  accounts: accounts.hbbtzn.com
-  api: api.hbbtzn.com
+    - www.fufuwang.com.cn
+    - h5.fufuwang.com.cn
+    - h6.fufuwang.com.cn
+    - mall.fufuwang.com.cn
+  console: console.fufuwang.com.cn
+  accounts: accounts.fufuwang.com.cn
+  api: api.fufuwang.com.cn
 
 isolation:
   dataScope: realm-and-mall-scoped
@@ -73,7 +73,7 @@ runtime:
 
 targetEdge:
   standard: SFL-1.6
-  publicHostname: api.hbbtzn.com
+  publicHostname: api.fufuwang.com.cn
   tunnelCredential: /opt/sfl/nodes/hbbtzn-l1/tunnel/credentials.json
   tunnelConfiguration: /opt/sfl/nodes/hbbtzn-l1/runtime/cloudflared.yml
   origin: https://127.0.0.1:4430

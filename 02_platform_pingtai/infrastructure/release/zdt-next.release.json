@@ -15,7 +15,7 @@
   },
   "productionAcceptance": {
     "timeoutMs": 12000,
-    "domains": ["accounts.zhudatuan.com","api.zhudatuan.com","console.zhudatuan.com","www.zhudatuan.com","zhudatuan.com","hbbtzn.com","www.hbbtzn.com","console.hbbtzn.com"]
+    "domains": ["accounts.zhudatuan.com","api.zhudatuan.com","console.zhudatuan.com","www.zhudatuan.com","zhudatuan.com","fufuwang.com.cn","www.fufuwang.com.cn","console.fufuwang.com.cn"]
   },
   "channels": {
     "h6-cdn": {
@@ -91,7 +91,7 @@
         {"name":"console-typecheck","argv":["npm","run","typecheck","--workspace","@shop/console","--","--incremental","--tsBuildInfoFile","{{typecheckCacheDirectory}}/console.tsbuildinfo"],"timeoutMs":300000}
       ],
       "build": [
-        {"name":"console-production-build","argv":["npm","run","build:console"],"environment":{"VITE_API_BASE_URL":"https://api.hbbtzn.com","VITE_AUTH_BASE_URL":"https://accounts.hbbtzn.com","VITE_CLIENT_VERSION":"0.0.0-g{{sourceSha}}"},"timeoutMs":300000}
+        {"name":"console-production-build","argv":["npm","run","build:console"],"environment":{"VITE_API_BASE_URL":"https://api.fufuwang.com.cn","VITE_AUTH_BASE_URL":"https://accounts.fufuwang.com.cn","VITE_CLIENT_VERSION":"0.0.0-g{{sourceSha}}"},"timeoutMs":300000}
       ],
       "artifactInputs": [
         {"source":"01_core_hexin/apps/console/dist","destination":"static"}

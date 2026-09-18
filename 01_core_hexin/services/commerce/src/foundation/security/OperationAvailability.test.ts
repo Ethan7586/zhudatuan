@@ -16,7 +16,7 @@ describe('node operation availability', () => {
   });
 
   it('requires every mapped feature declared by the server-resolved node manifest', async () => {
-    const context = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
+    const context = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.fufuwang.com.cn');
     const resolver = new NodeOperationAvailabilityResolver();
 
     await expect(resolver.resolveFeature(actor(context), 'member.profile.read')).resolves.toMatchObject({
@@ -38,7 +38,7 @@ describe('node operation availability', () => {
   });
 
   it('consults resource readiness for the same node and Operation', async () => {
-    const context = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
+    const context = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.fufuwang.com.cn');
     const ready = vi.fn(async () => false);
     const resolver = new NodeOperationAvailabilityResolver({ ready });
 

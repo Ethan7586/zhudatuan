@@ -49,13 +49,13 @@ describe('WeChat application-scoped identity gateway', () => {
     });
     const gateway = new WechatIdentityGateway(applications, configuration, fetcher);
 
-    const signed = await gateway.jsSdkConfiguration('https://hbbtzn.com/?from=wechat#/address');
-    await gateway.jsSdkConfiguration('https://hbbtzn.com/?from=wechat#/address');
+    const signed = await gateway.jsSdkConfiguration('https://fufuwang.com.cn/?from=wechat#/address');
+    await gateway.jsSdkConfiguration('https://fufuwang.com.cn/?from=wechat#/address');
 
     expect(signed.appId).toBe(applications.get('jsapi').appId);
     expect(signed.jsApiList).toEqual(['openAddress']);
     expect(signed.signature).toBe(createHash('sha1').update(
-      `jsapi_ticket=official-jsapi-ticket&noncestr=${signed.nonceStr}&timestamp=${signed.timestamp}&url=https://hbbtzn.com/?from=wechat`,
+      `jsapi_ticket=official-jsapi-ticket&noncestr=${signed.nonceStr}&timestamp=${signed.timestamp}&url=https://fufuwang.com.cn/?from=wechat`,
     ).digest('hex'));
     expect(fetcher).toHaveBeenCalledTimes(2);
     expect(new URL(String(fetcher.mock.calls[1]?.[0])).searchParams.get('type')).toBe('jsapi');

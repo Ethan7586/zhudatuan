@@ -35,8 +35,8 @@ describe('showcase host boundary', () => {
     expect(isStorefrontRuntimeConfigurationAllowed('retired-preview.example', 'development', 'development')).toBe(false);
     expect(isStorefrontRuntimeConfigurationAllowed('127.0.0.1', undefined, undefined)).toBe(true);
     expect(isStorefrontRuntimeConfigurationAllowed('127.0.0.1', 'production', 'membership')).toBe(false);
-    expect(isStorefrontRuntimeConfigurationAllowed('hbbtzn.com', 'production', 'membership')).toBe(true);
-    expect(isStorefrontRuntimeConfigurationAllowed('smart.hbbtzn.com', 'production', 'membership')).toBe(false);
+    expect(isStorefrontRuntimeConfigurationAllowed('fufuwang.com.cn', 'production', 'membership')).toBe(true);
+    expect(isStorefrontRuntimeConfigurationAllowed('smart.fufuwang.com.cn', 'production', 'membership')).toBe(false);
     expect(isStorefrontRuntimeConfigurationAllowed('attacker.example', 'production', 'membership')).toBe(false);
   });
 });

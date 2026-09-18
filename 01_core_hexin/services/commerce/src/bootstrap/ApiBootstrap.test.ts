@@ -51,8 +51,8 @@ describe('API bootstrap SFL NodeContext assembly', () => {
       operationIds: [],
     });
 
-    for (const origin of ['https://console.fufu.wang', 'https://console.hbbtzn.com']) {
-      const response = await bootstrapped.app.handle(new Request('https://api.hbbtzn.com/api/v1/support/cases', {
+    for (const origin of ['https://console.fufu.wang', 'https://console.fufuwang.com.cn']) {
+      const response = await bootstrapped.app.handle(new Request('https://api.fufuwang.com.cn/api/v1/support/cases', {
         method: 'OPTIONS',
         headers: { origin, 'access-control-request-method': 'POST' },
       }));
@@ -60,7 +60,7 @@ describe('API bootstrap SFL NodeContext assembly', () => {
       expect(response.headers.get('access-control-allow-origin')).toBe(origin);
     }
 
-    const denied = await bootstrapped.app.handle(new Request('https://api.hbbtzn.com/api/v1/support/cases', {
+    const denied = await bootstrapped.app.handle(new Request('https://api.fufuwang.com.cn/api/v1/support/cases', {
       method: 'OPTIONS',
       headers: { origin: 'https://console.example.com', 'access-control-request-method': 'POST' },
     }));

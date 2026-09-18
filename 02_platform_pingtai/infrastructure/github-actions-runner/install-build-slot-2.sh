@@ -13,7 +13,7 @@ readonly RUNNER_ROOT='/opt/actions-runner-build-2'
 readonly NETWORK_ENV='/etc/zdt-runner/github-network.env'
 readonly NODE_VERSION='22.22.0'
 readonly NODE_ARCHIVE_SHA256='9aa8e9d2298ab68c600bd6fb86a6c13bce11a4eca1ba9b39d79fa021755d7c37'
-readonly NO_PROXY_VALUE='localhost,127.0.0.1,::1,100.100.100.200,123.57.62.202,123.57.232.253,172.27.70.37,.aliyuncs.com,.hbbtzn.com'
+readonly NO_PROXY_VALUE='localhost,127.0.0.1,::1,100.100.100.200,123.57.62.202,123.57.232.253,172.27.70.37,.aliyuncs.com,.fufuwang.com.cn'
 
 [ "$(id -u)" -eq 0 ] || { echo 'Run as root on the Runner host.' >&2; exit 64; }
 [[ "${ZDT_GITHUB_PROXY_URL:-}" =~ ^http://127\.0\.0\.1:[0-9]{2,5}$ ]] || {

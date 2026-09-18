@@ -24,7 +24,7 @@ const PROFILE = {
   mobile_bound: true,
   membership_id: 'membership:one',
   organization_id: 'mall:one',
-  organization_name: '宏泰甄选',
+  organization_name: '福福网',
   access_version: 7,
 };
 
@@ -51,7 +51,7 @@ afterEach(() => {
 });
 
 describe('canonical storefront production API', () => {
-  it('loads identity, profile, benefits, ledgers and orders from api.hbbtzn.com with cookie credentials', async () => {
+  it('loads identity, profile, benefits, ledgers and orders from api.fufuwang.com.cn with cookie credentials', async () => {
     const fetcher = apiFetch();
     vi.stubGlobal('fetch', fetcher);
     const { productionApi } = await import('./productionApi');
@@ -60,9 +60,9 @@ describe('canonical storefront production API', () => {
     await productionApi.logout();
 
     expect(snapshot.bootstrap.actor).toMatchObject({ userId: 'member:one', displayName: 'Ethan', phoneMasked: '138****0000' });
-    expect(snapshot.bootstrap.scope.mallName).toBe('宏泰甄选');
+    expect(snapshot.bootstrap.scope.mallName).toBe('福福网');
     expect(snapshot.accounts.items.map((item) => item.balanceCents)).toEqual([20_000, 5_000]);
-    expect(fetcher).toHaveBeenCalledWith('https://api.hbbtzn.com/api/v1/identity/session', expect.objectContaining({ credentials: 'include', redirect: 'error' }));
+    expect(fetcher).toHaveBeenCalledWith('https://api.fufuwang.com.cn/api/v1/identity/session', expect.objectContaining({ credentials: 'include', redirect: 'error' }));
     const headers = requestHeaders(fetcher, '/api/v1/identity/session');
     expect(headers).toMatchObject({
       'x-client-version': process.env.NEXT_PUBLIC_CLIENT_VERSION ?? '0.0.0',
@@ -87,7 +87,7 @@ describe('canonical storefront production API', () => {
     const { productionApi } = await import('./productionApi');
 
     const session = await productionApi.getSession();
-    expect(session.bootstrap.scope).toMatchObject({ mallName: '宏泰甄选', brandName: '宏泰甄选' });
+    expect(session.bootstrap.scope).toMatchObject({ mallName: '福福网', brandName: '福福网' });
     expect(requestPaths(fetcher)).toEqual(['/api/v1/identity/session', '/api/v1/members/me']);
 
     await productionApi.getHomeSnapshot(session.bootstrap);
@@ -135,8 +135,8 @@ describe('canonical storefront production API', () => {
   it('loads the public catalog without waiting for an authenticated session', async () => {
     const fetcher = vi.fn(async () => json({
       items: [{
-        id: 'listing:public', skuId: 'sku:public', name: '宏泰甄选礼包', subtitle: '企业福利', categoryCode: 'gift', coverUrl: null,
-        priceCents: 9_900, marketPriceCents: 10_900, availableStock: 20, supplierName: '宏泰甄选', isTest: false, purchasable: true,
+        id: 'listing:public', skuId: 'sku:public', name: '福福网礼包', subtitle: '企业福利', categoryCode: 'gift', coverUrl: null,
+        priceCents: 9_900, marketPriceCents: 10_900, availableStock: 20, supplierName: '福福网', isTest: false, purchasable: true,
         qualification: { visible: true, purchasable: true, visibilityReason: 'PUBLIC_CATALOG', purchaseReason: 'QUALIFIED' },
       }],
       pagination: { nextCursor: null },
@@ -146,7 +146,7 @@ describe('canonical storefront production API', () => {
 
     const page = await productionApi.listPublicProducts();
 
-    expect(page.items).toMatchObject([{ id: 'listing:public', skuId: 'sku:public', name: '宏泰甄选礼包' }]);
+    expect(page.items).toMatchObject([{ id: 'listing:public', skuId: 'sku:public', name: '福福网礼包' }]);
     expect(fetcher).toHaveBeenCalledWith('/api/v1/catalog/public/products?limit=100', expect.objectContaining({ credentials: 'omit', method: 'GET' }));
   });
 
@@ -249,7 +249,7 @@ describe('canonical storefront production API', () => {
     const { requestH5WechatJsSdkConfiguration } = await import('./h5WechatIdentity');
     await productionApi.getHomeSnapshot();
 
-    await expect(requestH5WechatJsSdkConfiguration('https://hbbtzn.com/?source=wechat')).resolves.toEqual({
+    await expect(requestH5WechatJsSdkConfiguration('https://fufuwang.com.cn/?source=wechat')).resolves.toEqual({
       appId: 'wx4df4137881a1d2bd',
       timestamp: 1_788_800_000,
       nonceStr: 'nonce-one',
@@ -258,7 +258,7 @@ describe('canonical storefront production API', () => {
     });
     const request = requestInit(fetcher, '/api/v1/identity/wechat/sessions', 'POST');
     expect(JSON.parse(String(request.body))).toMatchObject({
-      scene: 'jsapi', action: 'jssdk_config', url: 'https://hbbtzn.com/?source=wechat',
+      scene: 'jsapi', action: 'jssdk_config', url: 'https://fufuwang.com.cn/?source=wechat',
     });
   });
 

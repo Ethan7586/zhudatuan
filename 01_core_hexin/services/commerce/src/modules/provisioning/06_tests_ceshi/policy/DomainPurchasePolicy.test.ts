@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { DomainPurchaseApproval, DomainPurchaseOwner, PurchasableDomainQuote } from '@shop/contract';
 import { DomainPurchasePolicy, type DomainPurchaseIntent } from '../../02_domain_yewu/policy/DomainPurchasePolicy';
 
-const policy = new DomainPurchasePolicy(['zhudatuan.com', 'hbbtzn.com']);
+const policy = new DomainPurchasePolicy(['zhudatuan.com', 'fufuwang.com.cn']);
 const owner: DomainPurchaseOwner = {
   organizationId: 'organization:mall-one',
   mallId: 'mall:one',
@@ -74,7 +74,7 @@ describe('DomainPurchasePolicy', () => {
     ['https://example.com', 'DOMAIN_PURCHASE_NAME_INVALID'],
     ['*.example.com', 'DOMAIN_PURCHASE_NAME_INVALID'],
     ['api.zhudatuan.com', 'DOMAIN_PURCHASE_PLATFORM_ZONE_FORBIDDEN'],
-    ['shop.hbbtzn.com', 'DOMAIN_PURCHASE_PLATFORM_ZONE_FORBIDDEN'],
+    ['shop.fufuwang.com.cn', 'DOMAIN_PURCHASE_PLATFORM_ZONE_FORBIDDEN'],
   ])('rejects an unsafe purchase candidate %s', (requestedDomain, code) => {
     expect(() => policy.quoteRequest({ ...intent, requestedDomain })).toThrow(code);
   });

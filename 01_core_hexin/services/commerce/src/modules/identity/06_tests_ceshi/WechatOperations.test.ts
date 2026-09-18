@@ -22,10 +22,10 @@ describe('wechat identity session', () => {
     }, {} as KmsClient, {} as AuditSink, 'identity-key', 'session-key', {} as PgAuthTicket);
     const base = request();
     const input: OperationRequest = { ...base, input: { ...base.input,
-      body: { scene: 'jsapi', action: 'jssdk_config', url: 'https://hbbtzn.com/?from=wechat' } } };
+      body: { scene: 'jsapi', action: 'jssdk_config', url: 'https://fufuwang.com.cn/?from=wechat' } } };
 
     await expect(operation.invoke(input)).resolves.toMatchObject({ status: 200, body: { jsApiList: ['openAddress'] } });
-    expect(jsSdkConfiguration).toHaveBeenCalledWith('https://hbbtzn.com/?from=wechat');
+    expect(jsSdkConfiguration).toHaveBeenCalledWith('https://fufuwang.com.cn/?from=wechat');
   });
 
   it('locks identity-owned rows without requiring membership update privilege', async () => {

@@ -12,10 +12,10 @@ describe('catalog operator API runtime', () => {
   it('binds the catalog surface to the exact console origin and active production manifest', async () => {
     const path = new URL('../../../../../02_platform_pingtai/config/node-manifests/hbbtzn-l1.json', import.meta.url);
     const manifest = await parseNodeManifest(JSON.parse(await readFile(path, 'utf8')));
-    expect(() => assertCatalogNodeManifest(manifest, ['https://console.hbbtzn.com'], 'test')).not.toThrow();
+    expect(() => assertCatalogNodeManifest(manifest, ['https://console.fufuwang.com.cn'], 'test')).not.toThrow();
     expect(() => assertCatalogNodeManifest(manifest, ['https://console.zhudatuan.com'], 'test'))
       .toThrow('CATALOG_NODE_ORIGIN_MISMATCH');
-    expect(() => assertCatalogNodeManifest(manifest, ['https://console.hbbtzn.com'], 'production')).not.toThrow();
+    expect(() => assertCatalogNodeManifest(manifest, ['https://console.fufuwang.com.cn'], 'production')).not.toThrow();
   });
 
   it('installs the loaded L1 manifest as the request node-context source', async () => {
@@ -24,7 +24,7 @@ describe('catalog operator API runtime', () => {
     const container = new Container();
     bindCatalogOperatorNodeManifest(container, manifest);
 
-    const context = createNodeContextResolver(container.get(NODE_MANIFEST_REGISTRY)).resolve('api.hbbtzn.com');
+    const context = createNodeContextResolver(container.get(NODE_MANIFEST_REGISTRY)).resolve('api.fufuwang.com.cn');
     expect(context.node_id).toBe('node:hbbtzn:l1');
     expect(context.manifest_digest).toBe(manifest.manifest_digest);
   });

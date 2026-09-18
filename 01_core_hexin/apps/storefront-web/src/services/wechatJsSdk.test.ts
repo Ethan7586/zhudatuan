@@ -30,7 +30,7 @@ describe('WeChat JS-SDK address bootstrap', () => {
     };
     vi.stubGlobal('navigator', { userAgent: 'MicroMessenger/8.0.50' });
     vi.stubGlobal('window', {
-      location: { href: 'https://hbbtzn.com/?source=wechat#/address' },
+      location: { href: 'https://fufuwang.com.cn/?source=wechat#/address' },
       setTimeout: globalThis.setTimeout.bind(globalThis),
       clearTimeout: globalThis.clearTimeout.bind(globalThis),
       wx: sdk,
@@ -42,7 +42,7 @@ describe('WeChat JS-SDK address bootstrap', () => {
     await ensureWechatAddressJsSdk();
 
     expect(requestConfiguration).toHaveBeenCalledOnce();
-    expect(requestConfiguration).toHaveBeenCalledWith('https://hbbtzn.com/?source=wechat');
+    expect(requestConfiguration).toHaveBeenCalledWith('https://fufuwang.com.cn/?source=wechat');
     expect(sdk.config).toHaveBeenCalledWith(expect.objectContaining({ debug: false, jsApiList: ['openAddress'] }));
     expect(getWechatAddressDiagnostics().map(({ stage, status }) => `${stage}:${status}`)).toEqual([
       'sdk-load:succeeded',
@@ -65,7 +65,7 @@ describe('WeChat JS-SDK address bootstrap', () => {
     };
     vi.stubGlobal('navigator', { userAgent: 'MicroMessenger/8.0.50' });
     vi.stubGlobal('window', {
-      location: { href: 'https://hbbtzn.com/address' },
+      location: { href: 'https://fufuwang.com.cn/address' },
       setTimeout: globalThis.setTimeout.bind(globalThis),
       clearTimeout: globalThis.clearTimeout.bind(globalThis),
       wx: sdk,

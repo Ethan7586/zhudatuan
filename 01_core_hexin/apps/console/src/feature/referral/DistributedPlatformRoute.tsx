@@ -517,7 +517,7 @@ function Entry({ host, label }: Readonly<{ host: string | undefined; label: stri
 }
 
 function platformName(nodeId: string): string {
-  if (nodeId === 'node:hbbtzn:l1') return '宏泰甄选';
+  if (nodeId === 'node:hbbtzn:l1') return '福福网';
   if (nodeId === 'node:zhudatuan:l0') return '主打团';
   return nodeId.split(':').slice(1, -1).join(' · ') || nodeId;
 }

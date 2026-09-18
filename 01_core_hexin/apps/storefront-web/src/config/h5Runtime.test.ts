@@ -8,7 +8,7 @@ describe('H5 storefront runtime request', () => {
     expect(resolved.url).toBe('https://h5.fufu.wang/h5?from=miniapp');
   });
 
-  it.each(['h5.hbbtzn.com', 'h6.hbbtzn.com', 'h27.hbbtzn.com'])('serves %s through the H5 page', (hostname) => {
+  it.each(['h5.fufuwang.com.cn', 'h6.fufuwang.com.cn', 'h27.fufuwang.com.cn'])('serves %s through the H5 page', (hostname) => {
     const resolved = resolveH5RuntimeRequest(new Request(`https://${hostname}/products`));
 
     expect(resolved.url).toBe(`https://${hostname}/h5`);

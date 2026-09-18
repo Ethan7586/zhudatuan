@@ -96,19 +96,19 @@ describe('Commerce application workspace', () => {
     expect((within(dialog).getByRole('combobox', { name: '所属上级' }) as HTMLSelectElement).value).toBe('enterprise:hongtai');
     await user.type(within(dialog).getByRole('textbox', { name: '商城名称' }), '主打团甄选商城');
     await user.type(within(dialog).getByRole('textbox', { name: '商城代码' }), 'ZDT_SELECT');
-    expect(within(dialog).getByText('h6.hbbtzn.com 起')).toBeTruthy();
+    expect(within(dialog).getByText('h6.fufuwang.com.cn 起')).toBeTruthy();
     await user.click(within(dialog).getByRole('button', { name: '下一步' }));
     await user.type(within(dialog).getByRole('textbox', { name: '企业／主体名称' }), '主打团科技有限公司');
     await user.click(within(dialog).getByRole('button', { name: '下一步' }));
     await user.click(within(dialog).getByRole('button', { name: '下一步' }));
-    expect(within(dialog).getByText(/h6\.hbbtzn\.com → h7\.hbbtzn\.com/)).toBeTruthy();
+    expect(within(dialog).getByText(/h6\.fufuwang\.com\.cn → h7\.fufuwang\.com\.cn/)).toBeTruthy();
     await user.click(within(dialog).getByRole('button', { name: '下一步' }));
     await user.selectOptions(within(dialog).getAllByRole('combobox', { name: '接入方式' })[0]!, 'authorize');
     await user.type(within(dialog).getByRole('textbox', { name: '小程序 AppID' }), 'wx1234567890');
     await user.click(within(dialog).getByRole('button', { name: '下一步' }));
     await user.click(within(dialog).getByRole('button', { name: '下一步' }));
     expect(within(dialog).getByText('主打团科技有限公司')).toBeTruthy();
-    expect(within(dialog).getByText('h6.hbbtzn.com 起自动顺序分配')).toBeTruthy();
+    expect(within(dialog).getByText('h6.fufuwang.com.cn 起自动顺序分配')).toBeTruthy();
     await user.click(within(dialog).getByRole('button', { name: '确认创建' }));
 
     dialog = await screen.findByRole('dialog', { name: '验证后创建商城' });

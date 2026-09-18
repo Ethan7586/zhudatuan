@@ -60,9 +60,9 @@ describe('production synchronization recovery', () => {
       actor: {} as never,
       scope: {
         tenantId: 'tenant:one', enterpriseId: 'enterprise:one', mallId: 'mall:one', mallCode: 'HONGTAI',
-        mallName: '宏泰甄选', brandName: '宏泰甄选', enterpriseName: '已授权企业',
+        mallName: '福福网', brandName: '福福网', enterpriseName: '已授权企业',
       },
-    })).toMatchObject({ mallName: '宏泰甄选', logoText: '宏泰甄选', id: 'mall:one' });
+    })).toMatchObject({ mallName: '福福网', logoText: '福福网', id: 'mall:one' });
   });
 
   it('loads extra catalog pages only when the caller explicitly requests them', async () => {

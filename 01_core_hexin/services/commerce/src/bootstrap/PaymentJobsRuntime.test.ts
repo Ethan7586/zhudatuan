@@ -26,8 +26,8 @@ describe('payment-only Jobs runtime', () => {
       ...environment, DATABASE_JOB_CONNECTION_REF: 'zhudatuan/nodes/l0/database/payment-jobs',
     })).toThrow('PAYMENT_JOBS_NODE_SECRET_BINDING_MISMATCH');
     const configuration = {
-      notifyUrl: 'https://api.hbbtzn.com/api/v1/webhooks/wechat/payment',
-      notifyUrlsByScope: { [manifest.data_scope_ref.ref]: 'https://api.hbbtzn.com/api/v1/webhooks/wechat/payment' },
+      notifyUrl: 'https://api.fufuwang.com.cn/api/v1/webhooks/wechat/payment',
+      notifyUrlsByScope: { [manifest.data_scope_ref.ref]: 'https://api.fufuwang.com.cn/api/v1/webhooks/wechat/payment' },
     } as unknown as WechatPayConfig;
     expect(() => assertPaymentJobsConfiguration(manifest, configuration)).not.toThrow();
     expect(() => assertPaymentJobsConfiguration(manifest, {

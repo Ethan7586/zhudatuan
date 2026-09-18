@@ -392,7 +392,7 @@ describe('identity challenge notification queue', () => {
       input: {
         path: {},
         query: {},
-        headers: { host: 'api.hbbtzn.com' },
+        headers: { host: 'api.fufuwang.com.cn' },
         body: { destination: '+8613800138000', invite: 'invitation-secret', purpose: 'registration' },
         rawBody: '',
         deadline: Date.now() + 1_000,

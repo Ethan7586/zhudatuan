@@ -38,7 +38,7 @@ function setWindowSearch(search: string): void {
 
 describe('canonical storefront session', () => {
   it('deduplicates concurrent authoritative session reads', async () => {
-    setWindowHostname('accounts.hbbtzn.com');
+    setWindowHostname('accounts.fufuwang.com.cn');
     let resolve!: (response: Response) => void;
     const fetchMock = vi.fn<typeof fetch>(() => new Promise<Response>((done) => {
       resolve = done;
@@ -57,7 +57,7 @@ describe('canonical storefront session', () => {
   });
 
   it('recognizes the already signed-in L1 before reopening consumer registration', async () => {
-    setWindowHostname('accounts.hbbtzn.com');
+    setWindowHostname('accounts.fufuwang.com.cn');
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
       target: 'storefront',
       governance: { organization: 'mall:l1-hongtai' },
@@ -68,7 +68,7 @@ describe('canonical storefront session', () => {
     await expect(currentCanonicalStorefrontOrganization()).resolves.toBe('mall:l1-hongtai');
 
     const [url, init] = fetchMock.mock.calls[0];
-    expect(String(url)).toBe('https://api.hbbtzn.com/api/v1/identity/session');
+    expect(String(url)).toBe('https://api.fufuwang.com.cn/api/v1/identity/session');
     expect(init).toMatchObject({ method: 'GET', credentials: 'include', redirect: 'error' });
   });
 
@@ -232,31 +232,31 @@ describe('canonical console identity', () => {
   });
 
   it('requests and accepts only the Hongtai Console return target', async () => {
-    setWindowHostname('accounts.hbbtzn.com');
+    setWindowHostname('accounts.fufuwang.com.cn');
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse(sessionCreated('console', 'membership:hongtai:operator')))
-      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://console.hbbtzn.com/')));
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://console.fufuwang.com.cn/')));
     vi.stubGlobal('fetch', fetchMock);
 
     const result = await loginCanonicalConsole('13424327586', 'Original!Password1', undefined, undefined, {
-      target: 'console', expectedOrigin: 'https://console.hbbtzn.com',
+      target: 'console', expectedOrigin: 'https://console.fufuwang.com.cn',
     });
 
     expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({ target: 'console' });
-    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://api.hbbtzn.com/api/v1/identity/sessions');
-    expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://api.hbbtzn.com/api/v1/identity/tickets/exchange');
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://api.fufuwang.com.cn/api/v1/identity/sessions');
+    expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://api.fufuwang.com.cn/api/v1/identity/tickets/exchange');
     expect(result).toMatchObject({
-      kind: 'authenticated', membership: 'membership:hongtai:operator', redirectUrl: 'https://console.hbbtzn.com/',
+      kind: 'authenticated', membership: 'membership:hongtai:operator', redirectUrl: 'https://console.fufuwang.com.cn/',
     });
   });
 
   it('does not let a cross-node admin_origin override the accounts host', async () => {
-    setWindowHostname('accounts.hbbtzn.com');
+    setWindowHostname('accounts.fufuwang.com.cn');
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse(sessionCreated('console', 'membership:hongtai:operator')))
-      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://console.hbbtzn.com/')));
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://console.fufuwang.com.cn/')));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(loginCanonicalConsole('13424327586', 'Original!Password1', undefined, undefined, {
@@ -344,13 +344,13 @@ describe('canonical console identity', () => {
   });
 
   it('binds a storefront entry login to the requested application', async () => {
-    setWindowHostname('accounts.hbbtzn.com');
+    setWindowHostname('accounts.fufuwang.com.cn');
     const loginIntent = 'i'.repeat(64);
     setWindowSearch(`?login_intent=${loginIntent}`);
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:hongtai')))
-      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://hbbtzn.com/orders?source=login')));
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://fufuwang.com.cn/orders?source=login')));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(loginCanonicalStorefrontEntry(
@@ -359,7 +359,7 @@ describe('canonical console identity', () => {
       'zdt-l1-verify',
     )).resolves.toEqual({
       membership: 'membership:hongtai',
-      redirectUrl: 'https://hbbtzn.com/orders?source=login',
+      redirectUrl: 'https://fufuwang.com.cn/orders?source=login',
     });
 
     const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
@@ -371,8 +371,8 @@ describe('canonical console identity', () => {
       loginIntent,
     });
     expect(body).not.toHaveProperty('membership');
-    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://api.hbbtzn.com/api/v1/identity/sessions');
-    expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://api.hbbtzn.com/api/v1/identity/tickets/exchange');
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://api.fufuwang.com.cn/api/v1/identity/sessions');
+    expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://api.fufuwang.com.cn/api/v1/identity/tickets/exchange');
   });
 
   it('keeps the L0 identity host on its own storefront when sharing the same auth build', async () => {
@@ -398,7 +398,7 @@ describe('canonical console identity', () => {
   });
 
   it('rejects an L0 return ticket on the L1 identity host instead of rewriting it', async () => {
-    setWindowHostname('accounts.hbbtzn.com');
+    setWindowHostname('accounts.fufuwang.com.cn');
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:hongtai')))
@@ -415,7 +415,7 @@ describe('canonical console identity', () => {
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:zhudatuan')))
-      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://hbbtzn.com/orders')));
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://fufuwang.com.cn/orders')));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(loginCanonicalStorefrontEntry(

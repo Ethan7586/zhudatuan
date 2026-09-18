@@ -92,7 +92,7 @@ function input() {
     scope,
     amountMinor: 100,
     currency: 'CNY',
-    mallName: '宏泰甄选',
+    mallName: '福福网',
     cartFingerprint: 'cart-one',
     cartItemIds: ['cart:one'],
   };

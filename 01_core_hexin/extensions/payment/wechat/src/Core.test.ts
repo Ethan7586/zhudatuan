@@ -64,7 +64,7 @@ describe('WeChat Pay configuration', () => {
   });
 
   it('rejects a public URL that does not match the canonical webhook contract', () => {
-    expect(() => loadWechatPayConfig({ ...keys.config, notifyUrl: 'https://hbbtzn.com/api/v1/payments/wechat/notify' }))
+    expect(() => loadWechatPayConfig({ ...keys.config, notifyUrl: 'https://fufuwang.com.cn/api/v1/payments/wechat/notify' }))
       .toThrowError(expect.objectContaining({ code: 'WECHAT_PAY_NOTIFY_URL_INVALID' }));
   });
 
@@ -73,11 +73,11 @@ describe('WeChat Pay configuration', () => {
       ...keys.config,
       notifyUrlsByScope: {
         'mall-zhudatuan': 'https://api.zhudatuan.com/api/v1/webhooks/wechat/payment',
-        'mall:hongtai': 'https://api.hbbtzn.com/api/v1/webhooks/wechat/payment',
+        'mall:hongtai': 'https://api.fufuwang.com.cn/api/v1/webhooks/wechat/payment',
       },
     });
     expect(resolveWechatPayNotifyUrl(config, 'mall-zhudatuan')).toBe('https://api.zhudatuan.com/api/v1/webhooks/wechat/payment');
-    expect(resolveWechatPayNotifyUrl(config, 'mall:hongtai')).toBe('https://api.hbbtzn.com/api/v1/webhooks/wechat/payment');
+    expect(resolveWechatPayNotifyUrl(config, 'mall:hongtai')).toBe('https://api.fufuwang.com.cn/api/v1/webhooks/wechat/payment');
     expect(() => resolveWechatPayNotifyUrl(config, 'mall:unconfigured'))
       .toThrowError(expect.objectContaining({ code: 'WECHAT_PAY_NOTIFY_URL_SCOPE_MISSING' }));
   });

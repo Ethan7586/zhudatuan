@@ -13,7 +13,7 @@ const product: Product = {
   priceWelfare: 80,
   categoryId: 'category:one',
   categoryName: '福利品',
-  brand: '宏泰甄选',
+  brand: '福福网',
   tags: [],
   supplierId: 'supplier:one',
   supplierName: '供应商',

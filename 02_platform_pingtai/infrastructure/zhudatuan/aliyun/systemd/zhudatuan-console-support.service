@@ -16,7 +16,7 @@ Environment=NODE_ENV=production
 Environment=APP_ENV=production
 Environment=AUTH_MODE=membership
 Environment=API_PORT=4324
-Environment=API_ALLOWED_ORIGINS=https://console.zhudatuan.com,https://console.hbbtzn.com
+Environment=API_ALLOWED_ORIGINS=https://console.zhudatuan.com,https://console.fufuwang.com.cn
 ExecStart=/usr/bin/node service/ConsoleSupportMain.js
 ExecStartPost=/usr/bin/curl --fail --silent --show-error --retry 20 --retry-connrefused --retry-delay 1 --max-time 30 http://127.0.0.1:4324/health/ready
 Restart=on-failure

@@ -71,7 +71,7 @@ export class PublicCatalogHttpHandler implements HttpRequestHandler {
 }
 
 function hbbtznH5Application(hostname: string): string | undefined {
-  const match = /^h([0-9]+)\.hbbtzn\.com$/i.exec(hostname.trim());
+  const match = /^h([0-9]+)\.fufuwang\.com\.cn$/i.exec(hostname.trim());
   if (!match || Number(match[1]) < 6) return undefined;
   return `h${Number(match[1])}`;
 }

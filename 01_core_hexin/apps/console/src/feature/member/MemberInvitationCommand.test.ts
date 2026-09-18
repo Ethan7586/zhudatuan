@@ -74,7 +74,7 @@ describe('member invitation command', () => {
     server.use(http.post('*/api/v1/identity/invitations', () => HttpResponse.json({
       ...receipt(),
       destination_masked: '138 **** 8000',
-      scope_name: '宏泰甄选',
+      scope_name: '福福网',
       server_extension: { delivery: 'ready' },
     }, { status: 201 })));
 
@@ -89,7 +89,7 @@ describe('member invitation command', () => {
     server.use(http.post('*/api/v1/identity/invitations', () => HttpResponse.json({
       ...receipt(),
       destination_masked: '138 **** 8000',
-      scope_name: '宏泰甄选',
+      scope_name: '福福网',
       server_extension: { delivery: 'ready' },
     }, { status: 201 })));
 

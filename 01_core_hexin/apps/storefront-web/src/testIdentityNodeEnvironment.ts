@@ -15,4 +15,4 @@ process.env.NEXT_PUBLIC_IDENTITY_NODE_REGISTRY ??= JSON.stringify({
   ],
 });
 
-process.env.NEXT_PUBLIC_STOREFRONT_HOSTNAME ??= 'hbbtzn.com';
+process.env.NEXT_PUBLIC_STOREFRONT_HOSTNAME ??= 'fufuwang.com.cn';

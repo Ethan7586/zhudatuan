@@ -36,8 +36,8 @@ afterEach(() => {
 
 describe('canonical registration', () => {
   it('routes the L1 accounts host to its own L1 API even when a local build value leaked in', () => {
-    expect(resolveCanonicalRegistrationApiOrigin('accounts.hbbtzn.com'))
-      .toBe('https://api.hbbtzn.com');
+    expect(resolveCanonicalRegistrationApiOrigin('accounts.fufuwang.com.cn'))
+      .toBe('https://api.fufuwang.com.cn');
   });
 
   it('routes the L0 accounts host to its own L0 API even when an L1 build value leaked in', () => {
@@ -58,7 +58,7 @@ describe('canonical registration', () => {
       applicationId: 'application:zdt-l1-verify',
       applicationSlug: 'zdt-l1-verify',
       organizationId: 'mall:l1-hongtai',
-      organizationName: '宏泰甄选',
+      organizationName: '福福网',
       target: 'storefront',
     });
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe('http://127.0.0.1:3001/api/v1/identity/storefronts/resolve');
@@ -209,7 +209,7 @@ describe('canonical registration', () => {
   });
 
   it('uses the registration OTP to establish and exchange the new storefront session immediately', async () => {
-    setWindowHostname('accounts.hbbtzn.com');
+    setWindowHostname('accounts.fufuwang.com.cn');
     const loginIntent = 'r'.repeat(64);
     setWindowSearch(`?login_intent=${loginIntent}`);
     const fetchMock = vi.fn<typeof fetch>(async (input, init) => {
@@ -231,7 +231,7 @@ describe('canonical registration', () => {
       }
       return jsonResponse({
         returnTarget: {
-          url: 'https://hbbtzn.com/',
+          url: 'https://fufuwang.com.cn/',
           proof: 'signed-return-target-proof',
           expiresAt: '2099-01-01T00:00:00.000Z',
           route_class: 'storefront',
@@ -257,10 +257,10 @@ describe('canonical registration', () => {
     expect(result).toMatchObject({
       membership: 'membership:storefront-one',
       target: 'storefront',
-      redirectUrl: 'https://hbbtzn.com/',
+      redirectUrl: 'https://fufuwang.com.cn/',
     });
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://api.hbbtzn.com/api/v1/identity/members');
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://api.fufuwang.com.cn/api/v1/identity/members');
     expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ credentials: 'include' });
     expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
       subject: '+8613800138000',
@@ -270,7 +270,7 @@ describe('canonical registration', () => {
       loginIntent,
       authorization: { state: expect.any(String), nonce: expect.any(String), challenge: expect.any(String) },
     });
-    expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://api.hbbtzn.com/api/v1/identity/tickets/exchange');
+    expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://api.fufuwang.com.cn/api/v1/identity/tickets/exchange');
     expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({ credentials: 'include' });
   });
 
@@ -447,7 +447,7 @@ function storefrontRegistration(): Readonly<Record<string, unknown>> {
     application_id: 'application:zdt-l1-verify',
     application_slug: 'zdt-l1-verify',
     organization_id: 'mall:l1-hongtai',
-    organization_name: '宏泰甄选',
+    organization_name: '福福网',
     target_client: 'storefront',
   };
 }

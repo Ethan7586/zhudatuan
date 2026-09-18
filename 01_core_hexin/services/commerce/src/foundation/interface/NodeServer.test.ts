@@ -41,7 +41,7 @@ describe('NodeServer NodeContext ingress', () => {
     await server.ready;
     try {
       const response = await nodeRequest(server.port(), 'api.fufu.wang', '/api/v1/identity/sessions', 'POST', {
-        'x-zdt-identity-entry-host': 'api.hbbtzn.com',
+        'x-zdt-identity-entry-host': 'api.fufuwang.com.cn',
         'x-sfl-node-id': 'node:hbbtzn:l1',
         'x-sfl-node-manifest-id': 'manifest:hbbtzn:l1:v1',
       });

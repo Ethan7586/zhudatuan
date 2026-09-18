@@ -2,12 +2,12 @@
   "schema": "zdt.edge-channel.v1",
   "id": "h6-cdn",
   "node": "hbbtzn-l1",
-  "domain": "h6.hbbtzn.com",
+  "domain": "h6.fufuwang.com.cn",
   "origin": {
     "type": "ipaddr",
     "content": "123.57.232.253",
     "port": 4480,
-    "host": "h6-origin.hbbtzn.com",
+    "host": "h6-origin.fufuwang.com.cn",
     "probePaths": ["/", "/h5", "/api/v1/catalog/public/products?limit=1"]
   },
   "aliyun": {
@@ -23,7 +23,7 @@
     "functions": [
       {
         "functionName": "set_req_host_header",
-        "functionArgs": [{"argName": "domain_name", "argValue": "h6-origin.hbbtzn.com"}]
+        "functionArgs": [{"argName": "domain_name", "argValue": "h6-origin.fufuwang.com.cn"}]
       },
       {
         "functionName": "ali_origin_port_scheme",

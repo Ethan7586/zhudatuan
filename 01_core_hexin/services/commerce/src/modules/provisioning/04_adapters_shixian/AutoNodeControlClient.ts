@@ -125,10 +125,10 @@ function activationRequest(
       node_slug: slug,
       display_name: mall.name,
       domains: {
-        api: `api.${slug}.hbbtzn.com`,
-        console: `console.${slug}.hbbtzn.com`,
-        identity: `accounts.${slug}.hbbtzn.com`,
-        storefront: `${slug}.hbbtzn.com`,
+        api: `api.${slug}.fufuwang.com.cn`,
+        console: `console.${slug}.fufuwang.com.cn`,
+        identity: `accounts.${slug}.fufuwang.com.cn`,
+        storefront: `${slug}.fufuwang.com.cn`,
       },
       business: {
         scope_id: mall.scopeId,
@@ -161,7 +161,7 @@ function activationRequest(
       binding_sources: {
         domains: {
           mode: 'OWN',
-          base_domain: 'hbbtzn.com',
+          base_domain: 'fufuwang.com.cn',
           source_binding_ref: `domain-set:node:${slug}:${level.toLowerCase()}`,
         },
         wechat_identity: {

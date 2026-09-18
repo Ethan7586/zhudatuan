@@ -23,7 +23,7 @@ const member = {
 
 function renderMarkup(status: 'checking' | 'guest' | 'authenticated') {
   return renderToStaticMarkup(React.createElement(MPAuthStatusCard, {
-    authHref: 'https://accounts.hbbtzn.com/',
+    authHref: 'https://accounts.fufuwang.com.cn/',
     sessionStatus: status,
     user: member,
   }));
@@ -31,7 +31,7 @@ function renderMarkup(status: 'checking' | 'guest' | 'authenticated') {
 
 function renderCardDom(status: 'checking' | 'guest' | 'authenticated') {
   return renderDom(React.createElement(MPAuthStatusCard, {
-    authHref: 'https://accounts.hbbtzn.com/',
+    authHref: 'https://accounts.fufuwang.com.cn/',
     sessionStatus: status,
     user: member,
   }));
@@ -61,7 +61,7 @@ describe('mini-program authentication shell', () => {
   it('shows a recoverable network state without exposing the login action', () => {
     const onRetry = vi.fn();
     const { container, getByText, queryByText } = renderDom(React.createElement(MPAuthStatusCard, {
-      authHref: 'https://accounts.hbbtzn.com/',
+      authHref: 'https://accounts.fufuwang.com.cn/',
       onRetry,
       sessionError: '网络波动，请点击重试',
       sessionStatus: 'checking',

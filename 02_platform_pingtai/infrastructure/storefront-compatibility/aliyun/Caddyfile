@@ -8,7 +8,7 @@
   }
 }
 
-zhudatuan.com, www.zhudatuan.com, hbbtzn.com, www.hbbtzn.com {
+zhudatuan.com, www.zhudatuan.com, fufuwang.com.cn, www.fufuwang.com.cn {
   encode gzip
 
   # 统一登录是独立前端，只挂载在 /login；员工商城根路径仍由 storefront 提供。
@@ -27,7 +27,7 @@ zhudatuan.com, www.zhudatuan.com, hbbtzn.com, www.hbbtzn.com {
   }
 }
 
-console.zhudatuan.com, console.hbbtzn.com {
+console.zhudatuan.com, console.fufuwang.com.cn {
   encode gzip
 
   # 运营后台页面由 admin-web 服务，但身份、会话与交易 API 必须统一经过

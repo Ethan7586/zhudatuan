@@ -32,7 +32,7 @@ beforeEach(() => {
     addresses: [],
     cart: [item],
     checkoutSelectedCart: vi.fn(),
-    currentMall: { mallName: '宏泰甄选' },
+    currentMall: { mallName: '福福网' },
     isSubmittingOrder: false,
     removeCartItem: vi.fn(),
     setMpPage: vi.fn(),

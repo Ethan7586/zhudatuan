@@ -7,14 +7,14 @@ edge:
   staticOrigin: oss
 routes:
   api:
-    host: api.hbbtzn.com
+    host: api.fufuwang.com.cn
     service: shop-api
     paths: [/api/v1, /health]
-  storefront: { host: hbbtzn.com, artifact: storefront }
-  auth: { host: auth.hbbtzn.com, artifact: auth }
-  console: { host: console.hbbtzn.com, artifact: console }
-  store: { host: store.hbbtzn.com, artifact: store }
-  supplier: { host: supplier.hbbtzn.com, artifact: supplier }
+  storefront: { host: fufuwang.com.cn, artifact: storefront }
+  auth: { host: auth.fufuwang.com.cn, artifact: auth }
+  console: { host: console.fufuwang.com.cn, artifact: console }
+  store: { host: store.fufuwang.com.cn, artifact: store }
+  supplier: { host: supplier.fufuwang.com.cn, artifact: supplier }
   miniapp: { appid: wx4df4137881a1d2bc, artifact: miniapp }
 release:
   staticPrefix: releases/{releaseId}/{client}

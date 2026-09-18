@@ -23,7 +23,7 @@ describe('payment webhook API runtime', () => {
       ...environment, WECHAT_PAYMENT_CONFIG_REF: 'zhudatuan/nodes/l0/payment/wechat',
     })).toThrow('PAYMENT_WEBHOOK_NODE_PAYMENT_BINDING_MISMATCH');
     const configuration = {
-      notifyUrl: 'https://api.hbbtzn.com/api/v1/webhooks/wechat/payment', notifyUrlsByScope: {},
+      notifyUrl: 'https://api.fufuwang.com.cn/api/v1/webhooks/wechat/payment', notifyUrlsByScope: {},
     } as unknown as WechatPayConfig;
     expect(() => assertPaymentWebhookConfiguration(manifest, configuration)).not.toThrow();
     expect(() => assertPaymentWebhookConfiguration(manifest, {

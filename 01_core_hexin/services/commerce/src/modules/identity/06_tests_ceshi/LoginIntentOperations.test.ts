@@ -9,10 +9,10 @@ describe('active cross-node login intent', () => {
   it('uses an authenticated source node and enters the target node own accounts domain', async () => {
     const query = vi.fn().mockResolvedValue(result([{
       target_realm_id: 'realm:hbbtzn:l1',
-      target_accounts_host: 'accounts.hbbtzn.com',
+      target_accounts_host: 'accounts.fufuwang.com.cn',
       target_target: 'storefront',
       target_application: 'zdt-l1-verify',
-      target_return_origin: 'https://hbbtzn.com',
+      target_return_origin: 'https://fufuwang.com.cn',
     }]));
 
     const response = await action()(request({
@@ -29,12 +29,12 @@ describe('active cross-node login intent', () => {
         targetNode: 'node:hbbtzn:l1',
         targetRealm: 'realm:hbbtzn:l1',
         targetSurface: 'consumer',
-        returnOrigin: 'https://hbbtzn.com',
+        returnOrigin: 'https://fufuwang.com.cn',
         expiresIn: 300,
       },
     });
     const loginUrl = new URL(String((response.body as { loginUrl: string }).loginUrl));
-    expect(loginUrl.origin).toBe('https://accounts.hbbtzn.com');
+    expect(loginUrl.origin).toBe('https://accounts.fufuwang.com.cn');
     expect(loginUrl.searchParams.get('target')).toBe('storefront');
     expect(loginUrl.searchParams.get('application')).toBe('zdt-l1-verify');
     expect(loginUrl.searchParams.get('login_intent')).toMatch(/^[A-Za-z0-9_-]{64}$/);

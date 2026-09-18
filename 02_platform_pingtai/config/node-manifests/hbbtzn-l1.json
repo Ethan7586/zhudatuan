@@ -2,7 +2,7 @@
   "schema_version": "sfl.node-manifest.v1",
   "manifest_id": "manifest:hbbtzn:l1:v1",
   "manifest_version": "1.0.1",
-  "manifest_digest": "sha256:eb600abbdcef18c8eb2d3a647f3cd8cc50bf641ccdf511ec1e0a339bd2d20425",
+  "manifest_digest": "sha256:653428bdd1ddbb5ffca20ea94ac347576b55027a71c6c92c492f2e88fa6f9e13",
   "generated_at": "2026-09-09T12:30:00.000Z",
   "lifecycle_status": "active",
   "line_id": "line:zhudatuan:commerce:v1",
@@ -14,7 +14,7 @@
   "host_node_id": null,
   "domain_bindings": [
     {
-      "host": "accounts.hbbtzn.com",
+      "host": "accounts.fufuwang.com.cn",
       "binding_ref": {
         "ref": "domain:hbbtzn:l1:identity",
         "version": "1"
@@ -23,7 +23,7 @@
       "surface_ref": "surface:identity"
     },
     {
-      "host": "api.hbbtzn.com",
+      "host": "api.fufuwang.com.cn",
       "binding_ref": {
         "ref": "domain:hbbtzn:l1:api",
         "version": "1"
@@ -32,7 +32,7 @@
       "surface_ref": "surface:api"
     },
     {
-      "host": "console.hbbtzn.com",
+      "host": "console.fufuwang.com.cn",
       "binding_ref": {
         "ref": "domain:hbbtzn:l1:console",
         "version": "1"
@@ -41,25 +41,7 @@
       "surface_ref": "surface:console"
     },
     {
-      "host": "h5.hbbtzn.com",
-      "binding_ref": {
-        "ref": "domain:hbbtzn:l1:storefront:h5",
-        "version": "1"
-      },
-      "application_ref": "application:efea797b2469a1280086d3d9f1fe1355",
-      "surface_ref": "surface:storefront"
-    },
-    {
-      "host": "h6.hbbtzn.com",
-      "binding_ref": {
-        "ref": "domain:hbbtzn:l1:storefront:h6",
-        "version": "1"
-      },
-      "application_ref": "application:fa37de9da4b13b3a18882ece23d6bee2",
-      "surface_ref": "surface:storefront"
-    },
-    {
-      "host": "hbbtzn.com",
+      "host": "fufuwang.com.cn",
       "binding_ref": {
         "ref": "domain:hbbtzn:l1:storefront",
         "version": "1"
@@ -68,7 +50,25 @@
       "surface_ref": "surface:storefront"
     },
     {
-      "host": "mall.hbbtzn.com",
+      "host": "h5.fufuwang.com.cn",
+      "binding_ref": {
+        "ref": "domain:hbbtzn:l1:storefront:h5",
+        "version": "1"
+      },
+      "application_ref": "application:efea797b2469a1280086d3d9f1fe1355",
+      "surface_ref": "surface:storefront"
+    },
+    {
+      "host": "h6.fufuwang.com.cn",
+      "binding_ref": {
+        "ref": "domain:hbbtzn:l1:storefront:h6",
+        "version": "1"
+      },
+      "application_ref": "application:fa37de9da4b13b3a18882ece23d6bee2",
+      "surface_ref": "surface:storefront"
+    },
+    {
+      "host": "mall.fufuwang.com.cn",
       "binding_ref": {
         "ref": "domain:hbbtzn:l1:storefront:mall",
         "version": "1"
@@ -77,7 +77,7 @@
       "surface_ref": "surface:storefront"
     },
     {
-      "host": "www.hbbtzn.com",
+      "host": "www.fufuwang.com.cn",
       "binding_ref": {
         "ref": "domain:hbbtzn:l1:storefront:www",
         "version": "1"
@@ -194,9 +194,9 @@
   "release_pointer_ref": {
     "ref": "/opt/sfl/nodes/hbbtzn-l1/current",
     "version": "1",
-    "source_sha": "aaecd175515484d21dcfa2089035532c10baa5a94be0c43a3b5bfad6794daf71",
-    "build_id": "node-manifest-declaration:aaecd175515484d21dcfa2089035532c10baa5a94be0c43a3b5bfad6794daf71",
+    "source_sha": "5c2be010912c68a210c2fd0bbf2ee9df903d04174984873b5709d99b6dfead3c",
+    "build_id": "node-manifest-declaration:5c2be010912c68a210c2fd0bbf2ee9df903d04174984873b5709d99b6dfead3c",
     "build_count": 1,
-    "immutable_artifact_digest": "sha256:aaecd175515484d21dcfa2089035532c10baa5a94be0c43a3b5bfad6794daf71"
+    "immutable_artifact_digest": "sha256:5c2be010912c68a210c2fd0bbf2ee9df903d04174984873b5709d99b6dfead3c"
   }
 }

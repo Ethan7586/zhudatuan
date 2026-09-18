@@ -122,49 +122,49 @@
       "host_node_id": null,
       "domain_bindings": [
         {
-          "host": "accounts.hbbtzn.com",
+          "host": "accounts.fufuwang.com.cn",
           "binding_ref": { "ref": "domain:hbbtzn:l1:identity", "version": "1" },
           "application_ref": "application:identity",
           "surface_ref": "surface:identity"
         },
         {
-          "host": "api.hbbtzn.com",
+          "host": "api.fufuwang.com.cn",
           "binding_ref": { "ref": "domain:hbbtzn:l1:api", "version": "1" },
           "application_ref": "application:commerce-api",
           "surface_ref": "surface:api"
         },
         {
-          "host": "console.hbbtzn.com",
+          "host": "console.fufuwang.com.cn",
           "binding_ref": { "ref": "domain:hbbtzn:l1:console", "version": "1" },
           "application_ref": "application:console",
           "surface_ref": "surface:console"
         },
         {
-          "host": "hbbtzn.com",
+          "host": "fufuwang.com.cn",
           "binding_ref": { "ref": "domain:hbbtzn:l1:storefront", "version": "1" },
           "application_ref": "application:efea797b2469a1280086d3d9f1fe1355",
           "surface_ref": "surface:storefront"
         },
         {
-          "host": "www.hbbtzn.com",
+          "host": "www.fufuwang.com.cn",
           "binding_ref": { "ref": "domain:hbbtzn:l1:storefront:www", "version": "1" },
           "application_ref": "application:efea797b2469a1280086d3d9f1fe1355",
           "surface_ref": "surface:storefront"
         },
         {
-          "host": "h5.hbbtzn.com",
+          "host": "h5.fufuwang.com.cn",
           "binding_ref": { "ref": "domain:hbbtzn:l1:storefront:h5", "version": "1" },
           "application_ref": "application:efea797b2469a1280086d3d9f1fe1355",
           "surface_ref": "surface:storefront"
         },
         {
-          "host": "h6.hbbtzn.com",
+          "host": "h6.fufuwang.com.cn",
           "binding_ref": { "ref": "domain:hbbtzn:l1:storefront:h6", "version": "1" },
           "application_ref": "application:fa37de9da4b13b3a18882ece23d6bee2",
           "surface_ref": "surface:storefront"
         },
         {
-          "host": "mall.hbbtzn.com",
+          "host": "mall.fufuwang.com.cn",
           "binding_ref": { "ref": "domain:hbbtzn:l1:storefront:mall", "version": "1" },
           "application_ref": "application:efea797b2469a1280086d3d9f1fe1355",
           "surface_ref": "surface:storefront"
@@ -274,9 +274,9 @@
     {
       "node_id": "node:hbbtzn:l1",
       "runtime_manifest_file": "hbbtzn-l1.json",
-      "display_name": "宏泰甄选运营后台",
-      "mall_name": "宏泰甄选",
-      "brand_name": "宏泰甄选",
+      "display_name": "福福网运营后台",
+      "mall_name": "福福网",
+      "brand_name": "福福网",
       "primary_storefront_binding_ref": "domain:hbbtzn:l1:storefront",
       "consumer_api_binding_ref": "domain:hbbtzn:l1:api",
       "purchase_origin_binding_refs": [
