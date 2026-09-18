@@ -5,16 +5,7 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    "./arch": "./src/arch/ArchBoard.ts",
-    "./hosted-mall-opening": "./src/member/HostedMallOpening.ts",
-    "./hosted-node-provisioning": "./src/node/HostedNodeProvisioning.ts",
-    "./member-node-registration": "./src/member/MemberNodeRegistration.ts",
-    "./member-profile": "./src/member/MemberProfileRules.ts",
-    "./member-share-facts": "./src/member/MemberShareFacts.ts",
-    "./member-store-lineage": "./src/member/MemberStoreLineage.ts",
-    "./node-parsing": "./src/node/NodeParsing.ts",
-    "./node-topology": "./src/node/NodeTopology.ts",
-    "./signed-level": "./src/node/SignedLevel.ts"
+    "./arch": "./src/arch/ArchBoard.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

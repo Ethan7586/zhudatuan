@@ -1,6 +1,6 @@
 # Arch｜星准接线板
 
-Arch 主板实现在 `src/arch/ArchBoard.ts`，与 `src/member` 同属 `@shop/l-kernel`。它只做节点和接口的接线、单接口接断、把输入交给原处理者并返回原结果。接口 ID 沿用现有 Operation ID；节点 ID 沿用现有请求节点上下文。Arch 不生成另一份路由、Realm、权限或业务事实。
+Arch 主板实现在 `src/arch/ArchBoard.ts`，属于 `@shop/l-kernel`。它只做节点和接口的接线、单接口接断、把输入交给原处理者并返回原结果。接口 ID 沿用现有 Operation ID；节点 ID 沿用现有请求节点上下文。Arch 不生成另一份路由、Realm、权限或业务事实。
 
 ## 接线
 
