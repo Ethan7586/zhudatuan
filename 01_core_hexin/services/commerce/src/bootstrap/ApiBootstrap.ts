@@ -102,6 +102,8 @@ export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readon
       .map((manifest) => manifest.node_id),
     routes.catalog().map(({ operation }) => operation),
   );
+  // Health routes have no request NodeContext; APIs without a node registry use the same exchange key.
+  arch.mountAll(['unresolved'], routes.catalog().map(({ operation }) => operation));
   container.freeze();
   const nodeContextResolver = nodeManifestRegistry === undefined ? undefined
     : restrictRuntimeNodes(createNodeContextResolver(nodeManifestRegistry), options.runtimeNodeIds);

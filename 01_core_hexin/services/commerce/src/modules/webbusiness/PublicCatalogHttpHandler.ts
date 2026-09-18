@@ -1,7 +1,9 @@
 import { randomUUID } from 'node:crypto';
+import type { ArchBoard } from '@shop/l-kernel/arch';
 import type { DatabasePool } from '../../foundation/persistence/Pool';
 
 const PUBLIC_CATALOG_PATH = '/api/v1/catalog/public/products';
+export const PUBLIC_CATALOG_INTERFACE = `GET ${PUBLIC_CATALOG_PATH}`;
 
 interface CatalogRow {
   readonly id: string;
@@ -29,7 +31,9 @@ export class PublicCatalogHttpHandler implements HttpRequestHandler {
     private readonly pool: DatabasePool,
     private readonly defaultApplicationSlug: string,
     allowedOrigins: readonly string[],
-    private readonly applicationSlugByHost: Readonly<Record<string, string>> = {},
+    private readonly applicationSlugByHost: Readonly<Record<string, string>>,
+    private readonly arch: ArchBoard,
+    private readonly nodeId: string,
   ) {
     this.origins = new Set(allowedOrigins);
   }
@@ -39,6 +43,14 @@ export class PublicCatalogHttpHandler implements HttpRequestHandler {
     if (request.method !== 'GET' || url.pathname !== PUBLIC_CATALOG_PATH) return this.next.handle(request);
 
     const requestId = request.headers.get('x-request-id') ?? randomUUID();
+    const exchanged = await this.arch.exchange(this.nodeId, PUBLIC_CATALOG_INTERFACE, request,
+      (input) => this.handlePublic(input, requestId));
+    if (!exchanged.connected) return response(404, { code: 'NOT_FOUND', requestId }, requestId, request.headers.get('origin'));
+    return exchanged.output;
+  }
+
+  private async handlePublic(request: Request, requestId: string): Promise<Response> {
+    const url = new URL(request.url);
     const origin = request.headers.get('origin');
     if (origin && !this.origins.has(origin)) return response(403, { code: 'ORIGIN_DENIED', requestId }, requestId);
     const hostApplicationSlug = hbbtznH5Application(url.hostname)

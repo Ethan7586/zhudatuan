@@ -8,6 +8,34 @@ import { ExtensionRegistry } from './ExtensionRegistry';
 import type { CommerceModule } from './ModuleRegistry';
 
 describe('API bootstrap SFL NodeContext assembly', () => {
+  it('connects routes without a request node, including health, through Arch', async () => {
+    let called = 0;
+    const module: CommerceModule = {
+      id: 'arch-health-install-test', dependencies: [],
+      register({ routes }) {
+        routes.register({ operation: 'runtime.health.ready', handler: async () => {
+          called += 1;
+          return { status: 200, body: { status: 'ready' } };
+        } });
+      },
+    };
+    const bootstrapped = await bootstrapApi({
+      modules: [module],
+      extensions: new ExtensionRegistry({ verify: async () => true } as never),
+      allowedOrigins: [], telemetry: commerceTelemetry(),
+      operationIds: ['runtime.health.ready'],
+    });
+    const request = () => bootstrapped.app.handle(new Request('http://127.0.0.1/health/ready'));
+    expect(bootstrapped.arch.state('unresolved', 'runtime.health.ready')).toBe('connected');
+    expect((await request()).status).toBe(200);
+    bootstrapped.arch.setConnected('unresolved', 'runtime.health.ready', false);
+    expect((await request()).status).toBe(404);
+    expect(called).toBe(1);
+    bootstrapped.arch.setConnected('unresolved', 'runtime.health.ready', true);
+    expect((await request()).status).toBe(200);
+    expect(called).toBe(2);
+  });
+
   it('keeps a single-node runtime from resolving another node through the shared registry', async () => {
     const bootstrapped = await bootstrapApi({
       modules: [],

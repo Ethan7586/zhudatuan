@@ -85,6 +85,8 @@ describe('web business API entrypoint', () => {
   it('places the public catalog adapter before the canonical HTTP application', () => {
     const source = readFileSync(join(import.meta.dirname, 'WebBusinessApiMain.ts'), 'utf8');
     expect(source).toContain('new PublicCatalogHttpHandler(');
+    expect(source).toContain('bootstrapped.arch.mount(runtime.manifest.node_id, PUBLIC_CATALOG_INTERFACE)');
+    expect(source).toContain('webBusinessApiPublicMallHostMappings(environment), bootstrapped.arch, runtime.manifest.node_id');
     expect(source).toContain('webBusinessApiPublicMallSlug(environment)');
     expect(source).toContain('listen(app,');
     expect(source).toContain('bootstrapped.nodeContextResolver');
