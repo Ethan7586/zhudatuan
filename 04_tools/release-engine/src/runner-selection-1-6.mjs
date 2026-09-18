@@ -15,15 +15,13 @@ export function selectExecutionRunner(observation) {
   const labels = runnerLabels(available);
   const legacy = hasLabel(available, ALIYUN_LABEL);
   const routeLabel = legacy ? ALIYUN_LABEL : PORTABLE_LABEL;
-  const slotPattern = legacy ? /^zdt-aliyun-build-[1-9][0-9]*$/i : /^zdt-build-[1-9][0-9]*$/i;
-  const slot = labels.find((label) => slotPattern.test(label));
   const linux = labels.find((label) => label.toLowerCase() === 'linux') ?? 'linux';
   const x64 = labels.find((label) => label.toLowerCase() === 'x64') ?? 'x64';
   return {
     runnerClass: legacy ? 'aliyun' : 'self-hosted',
     runnerName: available.name,
     reason: legacy ? 'aliyun-ready' : 'self-hosted-ready',
-    runsOn: ['self-hosted', linux, x64, routeLabel, ...(slot ? [slot] : [])],
+    runsOn: ['self-hosted', linux, x64, routeLabel],
   };
 }
 
