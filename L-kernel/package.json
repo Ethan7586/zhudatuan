@@ -5,6 +5,7 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
+    "./arch": "./src/arch/ArchBoard.ts",
     "./hosted-mall-opening": "./src/member/HostedMallOpening.ts",
     "./hosted-node-provisioning": "./src/node/HostedNodeProvisioning.ts",
     "./member-node-registration": "./src/member/MemberNodeRegistration.ts",
