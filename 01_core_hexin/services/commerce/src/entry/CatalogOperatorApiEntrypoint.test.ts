@@ -26,7 +26,7 @@ describe('catalog operator API entrypoint', () => {
       modules: [CatalogOperatorRuntimeModule, CatalogOperatorModule],
       operationIds,
       extensions: new ExtensionRegistry({ verify: async () => false }),
-      allowedOrigins: ['https://console.hbbtzn.com'],
+      allowedOrigins: ['https://console.fufuwang.com.cn'],
       telemetry: commerceTelemetry(),
       configure(container) {
         container.bind(OPERATION_HANDLERS, new Map<OperationId, OperationHandler>());

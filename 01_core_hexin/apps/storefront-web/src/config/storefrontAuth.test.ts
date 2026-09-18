@@ -10,11 +10,11 @@ describe('storefront auth origin boundary', () => {
   });
 
   it('uses only the account origin owned by the selected production node', () => {
-    const l1 = resolveStorefrontNode('hbbtzn.com');
-    expect(resolveStorefrontAuthOrigin(undefined, 'production', l1)).toBe('https://accounts.hbbtzn.com');
-    expect(resolveStorefrontAuthOrigin('https://accounts.hbbtzn.com', 'production', l1)).toBe('https://accounts.hbbtzn.com');
-    expect(resolveStorefrontAuthOrigin('http://127.0.0.1:3002', 'production', l1)).toBe('https://accounts.hbbtzn.com');
-    expect(resolveStorefrontAuthOrigin('https://accounts.fufu.wang', 'production', l1)).toBe('https://accounts.hbbtzn.com');
+    const l1 = resolveStorefrontNode('fufuwang.com.cn');
+    expect(resolveStorefrontAuthOrigin(undefined, 'production', l1)).toBe('https://accounts.fufuwang.com.cn');
+    expect(resolveStorefrontAuthOrigin('https://accounts.fufuwang.com.cn', 'production', l1)).toBe('https://accounts.fufuwang.com.cn');
+    expect(resolveStorefrontAuthOrigin('http://127.0.0.1:3002', 'production', l1)).toBe('https://accounts.fufuwang.com.cn');
+    expect(resolveStorefrontAuthOrigin('https://accounts.fufu.wang', 'production', l1)).toBe('https://accounts.fufuwang.com.cn');
   });
 
   it('allows only the configured local account center during development', () => {
@@ -37,17 +37,17 @@ describe('storefront auth origin boundary', () => {
     expect(resolveStorefrontApplication('fufu.wang')).toBe('zhudatuan-storefront');
     expect(resolveStorefrontApplication('internal.fufu.wang')).toBe('zhudatuan-storefront');
     expect(resolveStorefrontApplication('beta.fufu.wang')).toBe('zhudatuan-storefront');
-    expect(resolveStorefrontApplication('mall.hbbtzn.com')).toBe('zdt-l1-verify');
-    expect(resolveStorefrontApplication('h5.hbbtzn.com')).toBe('zdt-l1-verify');
-    expect(resolveStorefrontApplication('h6.hbbtzn.com')).toBe('h6');
-    expect(resolveStorefrontApplication('h27.hbbtzn.com')).toBe('h27');
+    expect(resolveStorefrontApplication('mall.fufuwang.com.cn')).toBe('zdt-l1-verify');
+    expect(resolveStorefrontApplication('h5.fufuwang.com.cn')).toBe('zdt-l1-verify');
+    expect(resolveStorefrontApplication('h6.fufuwang.com.cn')).toBe('h6');
+    expect(resolveStorefrontApplication('h27.fufuwang.com.cn')).toBe('h27');
     const zhudatuan = new URL(storefrontAuthHref('fufu.wang'));
-    const hongtai = new URL(storefrontAuthHref('hbbtzn.com'));
+    const hongtai = new URL(storefrontAuthHref('fufuwang.com.cn'));
     expect(zhudatuan.origin).toBe('https://accounts.fufu.wang');
     expect(zhudatuan.searchParams.get('target')).toBe('storefront');
-    expect(hongtai.origin).toBe('https://accounts.hbbtzn.com');
+    expect(hongtai.origin).toBe('https://accounts.fufuwang.com.cn');
     expect(hongtai.searchParams.get('target')).toBe('storefront');
-    expect(resolveStorefrontPresentationIdentity('hbbtzn.com')).toEqual({ mallName: '宏泰甄选', brandName: '宏泰甄选' });
+    expect(resolveStorefrontPresentationIdentity('fufuwang.com.cn')).toEqual({ mallName: '福福网', brandName: '福福网' });
     expect(resolveStorefrontPresentationIdentity('fufu.wang')).toEqual({ mallName: '筑大团商城', brandName: '筑大团' });
   });
 

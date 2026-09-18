@@ -51,7 +51,7 @@ function paymentResult(state: ApiPaymentResultState): ApiPaymentResult {
 function paymentSession(stage: PaymentRecoveryRecord['stage']): PaymentRecoveryRecord {
   return {
     schema: 'storefront.payment-recovery.v1', scope: 'member:one:mall:one', orderId: 'order:one', paymentId: 'intent:one',
-    amountMinor: 100, currency: 'CNY', mallName: '宏泰甄选', createdAt: '2026-09-09T05:00:00.000Z', updatedAt: '2026-09-09T05:00:00.000Z',
+    amountMinor: 100, currency: 'CNY', mallName: '福福网', createdAt: '2026-09-09T05:00:00.000Z', updatedAt: '2026-09-09T05:00:00.000Z',
     idempotencyKey: 'checkout:one', cartFingerprint: 'cart:one', cartItemIds: ['cart:one'], stage, retryCount: 0,
   };
 }

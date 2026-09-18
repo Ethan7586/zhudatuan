@@ -10,7 +10,7 @@ const catalogState = vi.hoisted(() => ({
 vi.mock('../../context/MallContext', () => ({
   useMall: () => ({
     addToCart: vi.fn(),
-    currentMall: { id: 'mall:one', mallName: '宏泰甄选' },
+    currentMall: { id: 'mall:one', mallName: '福福网' },
     malls: [],
     presentationCategories: catalogState.categories,
     presentationProducts: catalogState.products,

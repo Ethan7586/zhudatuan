@@ -200,7 +200,7 @@ if [[ "$node_scope" == hbbtzn-l1 ]]; then
       gateway_ready=false
       for _ in $(seq 1 30); do
         if systemctl is-active --quiet "$gateway_unit" \
-          && curl --noproxy '*' -kfsS --max-time 2 --resolve api.hbbtzn.com:4430:127.0.0.1 https://api.hbbtzn.com:4430/health/gateway >/dev/null; then
+          && curl --noproxy '*' -kfsS --max-time 2 --resolve api.fufuwang.com.cn:4430:127.0.0.1 https://api.fufuwang.com.cn:4430/health/gateway >/dev/null; then
           gateway_ready=true
           break
         fi
@@ -239,7 +239,7 @@ if [[ "$node_scope" == hbbtzn-l1 ]]; then
         printf 'gateway cutover failed: active semantic config does not match candidate\n' >&2
         exit 1
       }
-      identity_status="$(curl --noproxy '*' -ksS -o /dev/null -w '%{http_code}' --max-time 5 --resolve api.hbbtzn.com:4430:127.0.0.1 https://api.hbbtzn.com:4430/api/v1/identity/session)"
+      identity_status="$(curl --noproxy '*' -ksS -o /dev/null -w '%{http_code}' --max-time 5 --resolve api.fufuwang.com.cn:4430:127.0.0.1 https://api.fufuwang.com.cn:4430/api/v1/identity/session)"
       [[ "$identity_status" == 401 ]] || { printf 'gateway Identity route returned %s instead of 401\n' "$identity_status" >&2; exit 1; }
       printf 'Gateway runtime activated: status=success beforeDigest=sha256:%s afterDigest=sha256:%s oldPID=%s newPID=%s tunnelOldPID=%s tunnelNewPID=%s rollback=%s backupSha256=sha256:%s identityStatus=%s nonTrafficProcesses=unchanged\n' \
         "$before_digest" "$candidate_digest" "$old_gateway_pid" "$new_gateway_pid" "$old_companion_pid" "$new_companion_pid" "$rollback_dir" "$backup_digest" "$identity_status"

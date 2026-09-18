@@ -76,7 +76,7 @@ describe.runIf(endpointAvailable)('L0 owner creates an L1 Mall Core through form
       ownerMembershipId: provisioned.plan.ownerMembership,
       ownerMemberId: fixture.member,
       ownerPrincipalId: fixture.principal,
-      name: '宏泰甄选',
+      name: '福福网',
       state: 'ready',
       publicationState: 'draft',
     });
@@ -316,7 +316,7 @@ async function createL1MallFixture(app: Awaited<ReturnType<typeof bootstrapApi>>
   readonly idempotencyKey: string;
 }> {
   const idempotencyKey = `prov001:${fixture.testBatchId}:create-l1`;
-  const body = { parentId: fixture.l0, code: fixture.code, publicSlug: fixture.slug, name: '宏泰甄选' };
+  const body = { parentId: fixture.l0, code: fixture.code, publicSlug: fixture.slug, name: '福福网' };
   const first = await createMallRequest(app, body, idempotencyKey);
   const serialReplay = await createMallRequest(app, body, idempotencyKey);
   const concurrentReplays = await Promise.all([
@@ -338,7 +338,7 @@ async function createL1MallFixture(app: Awaited<ReturnType<typeof bootstrapApi>>
     parent: fixture.l0,
     code: fixture.code,
     publicSlug: fixture.slug,
-    name: '宏泰甄选',
+    name: '福福网',
     actor: fixture.principal,
     actorMembership: fixture.l0Membership,
   });

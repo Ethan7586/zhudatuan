@@ -2,7 +2,7 @@
   "schema_version": "sfl.node-manifest.v1",
   "manifest_id": "manifest:zhudatuan:l0:v1",
   "manifest_version": "1.0.2",
-  "manifest_digest": "sha256:e26e245b6156a5544c2a114d96c8a358a6f11e5644df7ee48c8e30fc6a44a8f9",
+  "manifest_digest": "sha256:612e5933fd4674673c3478660153cecc74a242684ccca5fc558d2e8e93df6738",
   "generated_at": "2026-09-09T12:30:00.000Z",
   "lifecycle_status": "active",
   "line_id": "line:zhudatuan:commerce:v1",
@@ -199,9 +199,9 @@
   "release_pointer_ref": {
     "ref": "/opt/sfl/nodes/zhudatuan-l0/current",
     "version": "1",
-    "source_sha": "aaecd175515484d21dcfa2089035532c10baa5a94be0c43a3b5bfad6794daf71",
-    "build_id": "node-manifest-declaration:aaecd175515484d21dcfa2089035532c10baa5a94be0c43a3b5bfad6794daf71",
+    "source_sha": "5c2be010912c68a210c2fd0bbf2ee9df903d04174984873b5709d99b6dfead3c",
+    "build_id": "node-manifest-declaration:5c2be010912c68a210c2fd0bbf2ee9df903d04174984873b5709d99b6dfead3c",
     "build_count": 1,
-    "immutable_artifact_digest": "sha256:aaecd175515484d21dcfa2089035532c10baa5a94be0c43a3b5bfad6794daf71"
+    "immutable_artifact_digest": "sha256:5c2be010912c68a210c2fd0bbf2ee9df903d04174984873b5709d99b6dfead3c"
   }
 }

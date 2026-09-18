@@ -48,7 +48,7 @@ export const ConsumerIdentityPage: React.FC<{
     void resolveCanonicalStorefrontRegistration(application, controller.signal)
       .then((resolved) => {
         setContext(resolved);
-        document.title = `${resolved.organizationName}会员登录｜${brand === 'hongtai' ? '宏泰甄选' : 'MORVIA'}`;
+        document.title = `${resolved.organizationName}会员登录｜${brand === 'hongtai' ? '福福网' : 'MORVIA'}`;
       })
       .catch((error: unknown) => {
         if (!controller.signal.aborted) setContextError(messageOf(error));
@@ -167,7 +167,7 @@ export const ConsumerIdentityPage: React.FC<{
     );
   };
 
-  const organizationName = context?.organizationName ?? '宏泰甄选';
+  const organizationName = context?.organizationName ?? '福福网';
   const submitting = identityActions.isBusy(mode === 'login' ? 'consumer-login' : mode === 'register' ? 'consumer-register' : 'consumer-reset');
   const resetCodeBusy = identityActions.isBusy('consumer-reset-code');
   const maskedMobile = maskMobile(mobile);
@@ -192,7 +192,7 @@ export const ConsumerIdentityPage: React.FC<{
           ? `验证码已发送至 ${maskedMobile}，请完成身份验证`
           : recoveryStep === 'password'
             ? '手机号验证成功，请为会员账号设置一个新密码'
-            : '现在可以使用新密码登录宏泰甄选';
+            : '现在可以使用新密码登录福福网';
   const busyLabel = mode === 'login' ? '正在登录…' : mode === 'register' ? '正在创建账号…' : '正在重置密码…';
 
   return (

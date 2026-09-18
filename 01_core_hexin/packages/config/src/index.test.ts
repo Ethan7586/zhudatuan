@@ -50,7 +50,7 @@ describe('runtime configuration schema', () => {
       API_BIND_HOST: '127.0.0.1',
       APP_ENV: 'production',
       SERVICE_VERSION: '1.0.0',
-      API_ALLOWED_ORIGINS: 'https://console.hbbtzn.com',
+      API_ALLOWED_ORIGINS: 'https://console.fufuwang.com.cn',
       DATABASE_API_CONNECTION_REF: 'hbbtzn/nodes/l1/database/catalog-api',
       DATABASE_API_ROLE: 'hbbtzncatalogapi',
       OBJECT_STORE_ENDPOINT: 'https://127.0.0.1:8655',
@@ -66,9 +66,9 @@ describe('runtime configuration schema', () => {
       NODE_RELEASE_POINTER_REF: '/opt/hbbtzn/nodes/l1/current',
       NODE_EXTRA_CA_CERTS: '/opt/zhudatuan/shared/tls/internal-ca.crt',
     };
-    expect(catalogOperatorApiEnvironment(catalog).API_ALLOWED_ORIGINS).toBe('https://console.hbbtzn.com');
+    expect(catalogOperatorApiEnvironment(catalog).API_ALLOWED_ORIGINS).toBe('https://console.fufuwang.com.cn');
     expect(() => catalogOperatorApiEnvironment({ ...catalog,
-      API_ALLOWED_ORIGINS: 'https://console.hbbtzn.com,https://console.fufu.wang' }))
+      API_ALLOWED_ORIGINS: 'https://console.fufuwang.com.cn,https://console.fufu.wang' }))
       .toThrow('CATALOG_OPERATOR_API_ORIGINS_INVALID');
     expect(() => catalogOperatorApiEnvironment({ ...catalog, SESSION_KEY_REF: 'shared/session' }))
       .toThrow('CATALOG_OPERATOR_API_KEY_FORBIDDEN:SESSION_KEY_REF');
@@ -370,10 +370,10 @@ describe('runtime configuration schema', () => {
     expect(clientEnvironment(client).clientVersion).toBe('2.4.1');
     const productionClient = { ...client, APP_ENV: 'production', VITE_API_BASE_URL: 'https://api.fufu.wang', VITE_AUTH_BASE_URL: 'https://accounts.fufu.wang' };
     expect(clientEnvironment(productionClient).apiBaseUrl).toBe('https://api.fufu.wang');
-    expect(clientEnvironment({ ...productionClient, VITE_API_BASE_URL: 'https://api.hbbtzn.com', VITE_AUTH_BASE_URL: 'https://accounts.hbbtzn.com' }).apiBaseUrl)
-      .toBe('https://api.hbbtzn.com');
-    expect(() => clientEnvironment({ ...productionClient, VITE_API_BASE_URL: 'https://api.hbbtzn.com' })).toThrow('CLIENT_NODE_BINDING_INVALID');
-    expect(() => clientEnvironment({ ...productionClient, VITE_AUTH_BASE_URL: 'https://accounts.hbbtzn.com' })).toThrow('CLIENT_NODE_BINDING_INVALID');
+    expect(clientEnvironment({ ...productionClient, VITE_API_BASE_URL: 'https://api.fufuwang.com.cn', VITE_AUTH_BASE_URL: 'https://accounts.fufuwang.com.cn' }).apiBaseUrl)
+      .toBe('https://api.fufuwang.com.cn');
+    expect(() => clientEnvironment({ ...productionClient, VITE_API_BASE_URL: 'https://api.fufuwang.com.cn' })).toThrow('CLIENT_NODE_BINDING_INVALID');
+    expect(() => clientEnvironment({ ...productionClient, VITE_AUTH_BASE_URL: 'https://accounts.fufuwang.com.cn' })).toThrow('CLIENT_NODE_BINDING_INVALID');
     expect(() => clientEnvironment({ ...client, VITE_CLIENT_VERSION: '' })).toThrow('CLIENT_VERSION_MISSING');
     expect(() => clientEnvironment({ NEXT_PUBLIC_API_BASE_URL: 'https://api.example.com', NEXT_PUBLIC_AUTH_BASE_URL: 'https://auth.example.com', NEXT_PUBLIC_CLIENT_VERSION: '2.4.1' })).toThrow('CLIENT_API_BASE_URL_MISSING');
     expect(() => miniappEnvironment({ apiBaseUrl: 'https://api.example.com', mallId: '', clientVersion: '2.4.1' })).toThrow('MINIAPP_MALL_ID_INVALID');

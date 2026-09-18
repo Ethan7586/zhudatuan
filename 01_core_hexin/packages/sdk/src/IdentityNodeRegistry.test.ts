@@ -20,7 +20,7 @@ describe('identity node registry', () => {
         adminTarget: 'console', consumerTarget: 'storefront',
       },
       {
-        nodeId: 'node:hbbtzn:l1', nodeProfile: 'operating_mall', accountsHost: 'accounts.hbbtzn.com',
+        nodeId: 'node:hbbtzn:l1', nodeProfile: 'operating_mall', accountsHost: 'accounts.fufuwang.com.cn',
         adminTarget: 'console', consumerTarget: 'storefront',
       },
     ]);

@@ -1,5 +1,5 @@
 	# Insert inside the zhudatuan.com route block before its display-only fallback.
-	# The Worker supplies these node headers only for hbbtzn.com catalog media.
+	# The Worker supplies these node headers only for fufuwang.com.cn catalog media.
 	@hbbtznL1CatalogMedia {
 		method GET HEAD
 		header X-SFL-Node-ID node:hbbtzn:l1

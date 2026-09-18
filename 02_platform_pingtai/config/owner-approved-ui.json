@@ -112,7 +112,7 @@
       "financeBoundary": "finance-upgrade-is-separate-and-not-yet-owner-frozen",
       "requiredBuildEnvironment": ["VITE_CLIENT_VERSION=<release-version>", "VITE_ZHUDIAN_SOLUTION_ORIGIN=<approved-origin>"],
       "runtimeNodeManifest": "02_platform_pingtai/config/sfl-node-registry.declaration.json",
-      "immutableArtifactHosts": ["console.fufu.wang", "console.hbbtzn.com"],
+      "immutableArtifactHosts": ["console.fufu.wang", "console.fufuwang.com.cn"],
       "lockedFiles": {
         "01_core_hexin/apps/console/src/main.tsx": "4f04593399d41dc0de2a2505fcb553b510bd895df789756d9919c0074fd63c5b",
         "01_core_hexin/apps/console/index.html": "aa305c27cb531cc2daa987194751b7991d81db280c8d20a725a061df8d568b55",

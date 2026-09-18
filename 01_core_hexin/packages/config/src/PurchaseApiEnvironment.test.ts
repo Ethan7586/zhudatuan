@@ -68,7 +68,7 @@ describe('purchase API environment', () => {
     const environment = purchaseApiEnvironment({
       ...valid(),
       API_PORT: '4434',
-      API_ALLOWED_ORIGINS: 'https://h5.hbbtzn.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com',
+      API_ALLOWED_ORIGINS: 'https://h5.fufuwang.com.cn,https://fufuwang.com.cn,https://mall.fufuwang.com.cn,https://www.fufuwang.com.cn',
       DATABASE_API_CONNECTION_REF: 'hbbtzn/nodes/l1/database/purchase-api',
       QUOTE_KEY_REF: 'hbbtzn/nodes/l1/purchase/checkout/quote',
       WECHAT_APPLICATION_CONFIG_REF: 'hbbtzn/nodes/l1/payment/wechat-applications',

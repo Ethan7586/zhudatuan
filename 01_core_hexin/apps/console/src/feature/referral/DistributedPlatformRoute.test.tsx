@@ -131,7 +131,7 @@ describe('Distributed platform workspace', () => {
     await user.click(screen.getByRole('button', { name: '确认创建' }));
 
     expect(await screen.findByText('独立节点已激活')).toBeTruthy();
-    expect(screen.getByText('https://h6.hbbtzn.com')).toBeTruthy();
+    expect(screen.getByText('https://h6.fufuwang.com.cn')).toBeTruthy();
     expect(createdBody).toEqual({
       enterpriseId: 'mall:benefits',
       name: '华中甄选平台',
@@ -166,8 +166,8 @@ describe('Distributed platform workspace', () => {
     );
     expect(await screen.findByText('已完成')).toBeTruthy();
     expect(screen.getByText('manifest:h6:l1')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'H5 · https://h6.hbbtzn.com' }).getAttribute('href'))
-      .toBe('https://h6.hbbtzn.com');
+    expect(screen.getByRole('link', { name: 'H5 · https://h6.fufuwang.com.cn' }).getAttribute('href'))
+      .toBe('https://h6.fufuwang.com.cn');
   });
 
   it('restores a persisted failed task and retries the same task chain once', async () => {
@@ -284,7 +284,7 @@ function taskReceipt(status: TaskStatus, progress: number, options: Readonly<{
     platform: { mall_id: options.mallId ?? 'mall:huazhong', application_id: null,
       name: options.mallId === 'mall:benefits' ? '鸿泰惠民通' : '华中甄选平台', public_slug: 'h6' },
     result: succeeded ? { manifest_id: 'manifest:h6:l1', access_entries: [
-      { surface_ref: 'surface:storefront', url: 'https://h6.hbbtzn.com' },
+      { surface_ref: 'surface:storefront', url: 'https://h6.fufuwang.com.cn' },
     ] } : null,
     events: [{ phase: succeeded ? 'ACTIVE' : status === 'FAILED_RETRYABLE' ? 'FAILED' : status,
       message: options.lastError ?? (succeeded ? '独立平台已经完成首次激活' : '平台创建任务已进入执行队列'),

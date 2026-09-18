@@ -36,7 +36,7 @@ describe('PostgreSQL access NodeContext continuity', () => {
     const headers = bindRequestNodeContext(Object.freeze({
       cookie: `shop_storefront_session=${'s'.repeat(32)}; shop_console_session=${'c'.repeat(32)}; shop_session=${'l'.repeat(32)}`,
       [AUTH_TARGET_CONTEXT_HEADER]: 'console',
-    }), resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com'));
+    }), resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.fufuwang.com.cn'));
 
     await expect(new PgSessionResolver({ query } as never).resolve(headers))
       .resolves.toMatchObject({ session: 'session:console', target: 'console' });
@@ -44,7 +44,7 @@ describe('PostgreSQL access NodeContext continuity', () => {
   });
 
   it('reuses the request context for session realm, actor, access, and data scope', async () => {
-    const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
+    const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.fufuwang.com.cn');
     const headers = bindRequestNodeContext(Object.freeze({ authorization: `Bearer ${'a'.repeat(32)}` }), nodeContext);
     const sessionQuery = vi.fn().mockResolvedValue({
       rows: [{
@@ -86,7 +86,7 @@ describe('PostgreSQL access NodeContext continuity', () => {
 
 describe('PgSessionResolver realm account projection', () => {
   it('rejects the legacy session projection instead of consuming an unbound permission context', async () => {
-    const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
+    const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.fufuwang.com.cn');
     const missingColumn = Object.assign(new Error('column "entry_realm_id" does not exist'), { code: '42703' });
     const query = vi.fn().mockRejectedValueOnce(missingColumn);
     const headers = bindRequestNodeContext(Object.freeze({ authorization: `Bearer ${'l'.repeat(32)}` }), nodeContext);
@@ -96,7 +96,7 @@ describe('PgSessionResolver realm account projection', () => {
   });
 
   it('activates the hosted Membership node while retaining the server-resolved entry host', async () => {
-    const entryContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
+    const entryContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.fufuwang.com.cn');
     const query = vi.fn().mockResolvedValue({ rows: [{
       actor_id: 'principal:shared', account_id: 'account:member-a', realm_id: 'realm:member-a',
       session_id: 'session:member-a', membership_id: 'membership:member-a', credential_version: 2,
@@ -123,7 +123,7 @@ describe('PgSessionResolver realm account projection', () => {
   });
 
   it('projects the account and realm selected by the database session boundary', async () => {
-    const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
+    const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.fufuwang.com.cn');
     const query = vi.fn().mockResolvedValue({ rows: [{
       actor_id: 'principal:shared', account_id: 'account:l1', realm_id: 'realm:l1',
       session_id: 'session:l1', membership_id: 'membership:l1', credential_version: 7,
@@ -139,11 +139,11 @@ describe('PgSessionResolver realm account projection', () => {
     });
     expect(query.mock.calls[0]?.[0]).toContain('actor_id,account_id,realm_id,session_id');
     expect(query.mock.calls[0]?.[0]).toContain('identity.resolve_session($1,$2)');
-    expect(query.mock.calls[0]?.[1]?.[1]).toBe('api.hbbtzn.com');
+    expect(query.mock.calls[0]?.[1]?.[1]).toBe('api.fufuwang.com.cn');
   });
 
   it('shares one concurrent session lookup without retaining an authorization cache', async () => {
-    const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
+    const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.fufuwang.com.cn');
     let release: (() => void) | undefined;
     const blocked = new Promise<void>((resolve) => { release = resolve; });
     const row = {
@@ -173,7 +173,7 @@ describe('PgSessionResolver realm account projection', () => {
   });
 
   it('rejects a database session from a different realm than the resolved request node', async () => {
-    const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
+    const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.fufuwang.com.cn');
     const query = vi.fn().mockResolvedValue({ rows: [{
       actor_id: 'principal:shared', account_id: 'account:l0', realm_id: 'realm:l0',
       session_id: 'session:l0', membership_id: 'membership:l0', credential_version: 1,
@@ -215,14 +215,14 @@ describe('PgSessionResolver realm account projection', () => {
     const cookie = `shop_session=${'t'.repeat(32)}`;
 
     await expect(resolver.resolve(bindRequestNodeContext(
-      Object.freeze({ cookie }), resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com'),
+      Object.freeze({ cookie }), resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.fufuwang.com.cn'),
     )))
       .rejects.toThrow('AUTHENTICATION_REQUIRED');
     await expect(resolver.resolve(bindRequestNodeContext(
       Object.freeze({ cookie }), resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.fufu.wang'),
     )))
       .resolves.toMatchObject({ account: 'account:l0', realm: 'realm:l0', session: 'session:l0' });
-    expect(query.mock.calls.map((call) => call[1]?.[1])).toEqual(['api.hbbtzn.com', 'api.fufu.wang']);
+    expect(query.mock.calls.map((call) => call[1]?.[1])).toEqual(['api.fufuwang.com.cn', 'api.fufu.wang']);
     expect(query.mock.calls.every((call) => call[0].trimStart().startsWith('select '))).toBe(true);
   });
 });

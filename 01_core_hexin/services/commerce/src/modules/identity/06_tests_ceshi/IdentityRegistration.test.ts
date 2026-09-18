@@ -359,11 +359,11 @@ describe('canonical member registration security boundary', () => {
       membership: 'membership:l0:consumer', responseTarget: 'storefront', ticketTarget: 'storefront',
     },
     {
-      name: 'L1_ADMIN', host: 'api.hbbtzn.com', target: 'console', application: undefined,
+      name: 'L1_ADMIN', host: 'api.fufuwang.com.cn', target: 'console', application: undefined,
       membership: 'membership:l1:admin', responseTarget: 'console', ticketTarget: 'console',
     },
     {
-      name: 'L1_CONSUMER', host: 'hbbtzn.com', target: 'storefront', application: 'zdt-l1-verify',
+      name: 'L1_CONSUMER', host: 'fufuwang.com.cn', target: 'storefront', application: 'zdt-l1-verify',
       membership: 'membership:l1:consumer', responseTarget: 'storefront', ticketTarget: 'storefront',
     },
   ])('keeps $name inside its host-bound realm when one phone has every membership', async ({
@@ -408,7 +408,7 @@ describe('canonical member registration security boundary', () => {
 
     const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
       target: 'storefront', application: 'zdt-l1-verify',
-    }, 'hbbtzn.com'));
+    }, 'fufuwang.com.cn'));
 
     expect(response).toMatchObject({ status: 201, body: {
       membership: 'membership:member-hongtai',
@@ -423,7 +423,7 @@ describe('canonical member registration security boundary', () => {
 
   it.each([
     ['api.zhudatuan.com', 'storefront', 'zdt-l1-verify'],
-    ['hbbtzn.com', 'storefront', 'zhudatuan-storefront'],
+    ['fufuwang.com.cn', 'storefront', 'zhudatuan-storefront'],
   ])('rejects cross-realm parameters before credential lookup on %s', async (host, target, application) => {
     const harness = registrationHarness({ challengeAccepted: false, subjectExists: false });
 
@@ -444,7 +444,7 @@ describe('canonical member registration security boundary', () => {
 
     const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
       target: 'console',
-    }, 'api.hbbtzn.com'));
+    }, 'api.fufuwang.com.cn'));
 
     expect(response).toEqual({ status: 403, body: { code: 'REALM_MEMBERSHIP_NOT_FOUND' } });
     expect(harness.queries.some(({ text }) => text.includes('insert into identity.session'))).toBe(false);
@@ -461,7 +461,7 @@ describe('canonical member registration security boundary', () => {
 
     const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
       target: 'console',
-    }, 'api.hbbtzn.com'));
+    }, 'api.fufuwang.com.cn'));
 
     expect(response).toMatchObject({ status: 201, body: { membership: 'membership:hongtai:operator', target: 'console' } });
     const ticket = harness.queries.find(({ text }) => text.includes('insert into identity.authticket'));
@@ -478,11 +478,11 @@ describe('canonical member registration security boundary', () => {
 
     const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
       target: 'console',
-    }, 'api.hbbtzn.com', true));
+    }, 'api.fufuwang.com.cn', true));
 
     expect(response).toMatchObject({ status: 201, body: {
       membership: 'membership:hongtai:operator', target: 'console',
-      exchange: { returnTarget: { url: 'https://console.hbbtzn.com/' }, expiresIn: expect.any(Number) },
+      exchange: { returnTarget: { url: 'https://console.fufuwang.com.cn/' }, expiresIn: expect.any(Number) },
     } });
     expect(harness.queries.some(({ text }) => text.includes('update identity.authticket ticket set consumed_at'))).toBe(true);
   });
@@ -500,7 +500,7 @@ describe('canonical member registration security boundary', () => {
 
     const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
       target: 'storefront', application: 'zdt-l1-verify',
-    }, 'hbbtzn.com'));
+    }, 'fufuwang.com.cn'));
 
     expect(response).toMatchObject({ status: 200, body: { memberships: [
       { id: 'membership:hongtai:one', client: 'storefront' },
@@ -532,7 +532,7 @@ describe('canonical member registration security boundary', () => {
       body: {
         application_slug: 'zdt-l1-verify',
         organization_id: 'mall:l1-hongtai',
-        organization_name: '宏泰甄选',
+        organization_name: '福福网',
         target_client: 'storefront',
         terms_hash: 'f'.repeat(64),
       },
@@ -907,7 +907,7 @@ describe('canonical member registration security boundary', () => {
       ...base,
       input: {
         ...base.input,
-        headers: { ...base.input.headers, host: 'api.hbbtzn.com' },
+        headers: { ...base.input.headers, host: 'api.fufuwang.com.cn' },
         body,
       },
     });
@@ -952,7 +952,7 @@ describe('canonical member registration security boundary', () => {
 
     const response = await identityRegistrationOperations(context(harness.pool)).invoke({
       ...base,
-      input: { ...base.input, headers: { ...base.input.headers, host: 'api.hbbtzn.com' }, body },
+      input: { ...base.input, headers: { ...base.input.headers, host: 'api.fufuwang.com.cn' }, body },
     });
 
     expect(response).toMatchObject({ status: 201, body: { id: 'membership:existing-operator', client: 'operator',
@@ -997,7 +997,7 @@ function storefrontRegistrationRequest(idempotency: string): OperationRequest {
     input: {
       path: {},
       query: {},
-      headers: { host: 'api.hbbtzn.com', 'x-device-id': 'device:storefront-registration-test' },
+      headers: { host: 'api.fufuwang.com.cn', 'x-device-id': 'device:storefront-registration-test' },
       body: {
         subject: SUBJECT,
         password: '654321',
@@ -1023,7 +1023,7 @@ function storefrontPasswordRegistrationRequest(idempotency: string): OperationRe
     input: {
       path: {},
       query: {},
-      headers: { host: 'api.hbbtzn.com', 'x-device-id': 'device:storefront-registration-test' },
+      headers: { host: 'api.fufuwang.com.cn', 'x-device-id': 'device:storefront-registration-test' },
       body: {
         subject: SUBJECT,
         password: 'Automatic!Password1',
@@ -1076,7 +1076,7 @@ function challengeRequest(body: Readonly<Record<string, unknown>>): OperationReq
     input: {
       path: {},
       query: {},
-      headers: { host: body.application === 'zdt-l1-verify' ? 'api.hbbtzn.com' : 'api.zhudatuan.com',
+      headers: { host: body.application === 'zdt-l1-verify' ? 'api.fufuwang.com.cn' : 'api.zhudatuan.com',
         'x-device-id': 'device:registration-test' },
       body,
       rawBody: '',
@@ -1225,7 +1225,7 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       if (text.includes('from identity.realmtarget target join identity.realm realm')) {
         const l1 = values[0] === 'realm:l1';
         return result([{
-          node_id: l1 ? 'node:hbbtzn:l1' : 'node:zhudatuan:l0', entry_host: l1 ? 'api.hbbtzn.com' : 'api.zhudatuan.com',
+          node_id: l1 ? 'node:hbbtzn:l1' : 'node:zhudatuan:l0', entry_host: l1 ? 'api.fufuwang.com.cn' : 'api.zhudatuan.com',
           target: 'storefront', surface: 'consumer', membership_client: 'storefront',
           membership_organization_id: l1 ? input.storefrontOrganizationId ?? 'mall:l1-hongtai' : 'mall-zhudatuan',
           application_slug: String(values[1]),
@@ -1239,7 +1239,7 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
       if (text.includes("update runtime.idempotency set state='completed'")) return { rows: [], rowCount: 1 } as unknown as QueryResult;
       if (text.includes('update identity.authticket ticket set consumed_at')) {
-        return result([{ target: 'console', return_origin: 'https://console.hbbtzn.com/', expires_at: new Date(Date.now() + 3_600_000) }]);
+        return result([{ target: 'console', return_origin: 'https://console.fufuwang.com.cn/', expires_at: new Date(Date.now() + 3_600_000) }]);
       }
       if (text.startsWith('select request_hash,state,response')) {
         return result([{ request_hash: requestHash, state: 'started', response: null }]);
@@ -1257,7 +1257,7 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
         return result(input.storefrontAvailable ? [{
           application_id: l6 ? 'application:l6-storefront' : l1 ? 'application:zdt-l1-verify' : 'application:zhudatuan-storefront',
           application_slug: l6 ? 'l6-storefront' : l1 ? 'zdt-l1-verify' : 'zhudatuan-storefront',
-          organization_id: l1 ? l1Organization : 'mall-zhudatuan', organization_name: l1 ? '宏泰甄选' : '主打团',
+          organization_id: l1 ? l1Organization : 'mall-zhudatuan', organization_name: l1 ? '福福网' : '主打团',
           role_id: l1 ? `role-zhudatuan-storefront-member:${l1Organization}` : 'role-zhudatuan-storefront-member',
           terms_title: '主打团用户服务协议', terms_body: '服务协议正文',
           privacy_title: '主打团隐私政策', privacy_body: '隐私政策正文', terms_hash: 'f'.repeat(64),

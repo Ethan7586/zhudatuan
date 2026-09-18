@@ -18,7 +18,7 @@ describe('purchase API runtime', () => {
     const manifest = await parseNodeManifest(JSON.parse(await readFile(path, 'utf8')));
     const environment = {
       APP_ENV: 'production',
-      API_ALLOWED_ORIGINS: 'https://h5.hbbtzn.com,https://h6.hbbtzn.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com',
+      API_ALLOWED_ORIGINS: 'https://h5.fufuwang.com.cn,https://h6.fufuwang.com.cn,https://fufuwang.com.cn,https://mall.fufuwang.com.cn,https://www.fufuwang.com.cn',
       DATABASE_API_CONNECTION_REF: 'hbbtzn/nodes/l1/database/purchase-api',
       QUOTE_KEY_REF: 'hbbtzn/nodes/l1/purchase/checkout/quote',
       KMS_ENDPOINT: 'https://127.0.0.1:8544',
@@ -34,8 +34,8 @@ describe('purchase API runtime', () => {
       ...environment, WECHAT_PAYMENT_CONFIG_REF: 'zhudatuan/nodes/l0/payment/wechat',
     })).toThrow('PURCHASE_NODE_PAYMENT_BINDING_MISMATCH');
     const configuration = {
-      notifyUrl: 'https://api.hbbtzn.com/api/v1/webhooks/wechat/payment',
-      notifyUrlsByScope: { [manifest.data_scope_ref.ref]: 'https://api.hbbtzn.com/api/v1/webhooks/wechat/payment' },
+      notifyUrl: 'https://api.fufuwang.com.cn/api/v1/webhooks/wechat/payment',
+      notifyUrlsByScope: { [manifest.data_scope_ref.ref]: 'https://api.fufuwang.com.cn/api/v1/webhooks/wechat/payment' },
     } as unknown as WechatPayConfig;
     expect(() => assertPurchasePaymentConfiguration(manifest, configuration)).not.toThrow();
     expect(() => assertPurchasePaymentConfiguration(manifest, {

@@ -9,7 +9,7 @@ https://:4430 {
 	encode gzip
 
 	@ordersReadPreflight {
-		host api.hbbtzn.com
+		host api.fufuwang.com.cn
 		method OPTIONS
 		path /api/v1/orders /api/v1/orders/*
 		header Access-Control-Request-Method GET
@@ -26,7 +26,7 @@ https://:4430 {
 	}
 
 	@purchaseWrite {
-		host api.hbbtzn.com
+		host api.fufuwang.com.cn
 		method POST OPTIONS
 		path /api/v1/checkouts/quotes /api/v1/orders /api/v1/payments/intents
 	}
@@ -42,7 +42,7 @@ https://:4430 {
 	}
 
 	@paymentRead {
-		host api.hbbtzn.com
+		host api.fufuwang.com.cn
 		method GET HEAD OPTIONS
 		path /api/v1/payments/intents/*
 	}
@@ -58,7 +58,7 @@ https://:4430 {
 	}
 
 	@ordersRead {
-		host api.hbbtzn.com
+		host api.fufuwang.com.cn
 		method GET HEAD
 		path /api/v1/orders /api/v1/orders/*
 	}
@@ -74,7 +74,7 @@ https://:4430 {
 	}
 
 	@storefrontPublicCatalog {
-		host h5.hbbtzn.com h6.hbbtzn.com hbbtzn.com mall.hbbtzn.com www.hbbtzn.com
+		host h5.fufuwang.com.cn h6.fufuwang.com.cn fufuwang.com.cn mall.fufuwang.com.cn www.fufuwang.com.cn
 		method GET HEAD OPTIONS
 		path /api/v1/catalog/public/products*
 	}
@@ -90,7 +90,7 @@ https://:4430 {
 	}
 
 	@webBusiness {
-		host api.hbbtzn.com
+		host api.fufuwang.com.cn
 		path /api/v1/members/me* /api/v1/organizations/layers* /api/v1/reports/dashboard* /api/v1/catalog/listings /api/v1/catalog/public/products* /api/v1/pricing/offers* /api/v1/inventory/availability* /api/v1/carts/current* /api/v1/benefits/accounts* /api/v1/benefits/ledgers*
 	}
 	handle @webBusiness {
@@ -105,7 +105,7 @@ https://:4430 {
 	}
 
 	@mallProvisioning {
-		host api.hbbtzn.com
+		host api.fufuwang.com.cn
 		method GET POST OPTIONS
 		path /api/v1/provisioning/malls /api/v1/provisioning/malls/* /api/v1/provisioning/node-tasks/*
 	}
@@ -121,7 +121,7 @@ https://:4430 {
 	}
 
 	@catalogImports {
-		host api.hbbtzn.com
+		host api.fufuwang.com.cn
 		path /api/v1/catalog/imports*
 	}
 	handle @catalogImports {
@@ -136,7 +136,7 @@ https://:4430 {
 	}
 
 	@catalogBatch {
-		host api.hbbtzn.com
+		host api.fufuwang.com.cn
 		method POST OPTIONS
 		path /api/v1/catalog/listings/batches
 	}
@@ -152,7 +152,7 @@ https://:4430 {
 	}
 
 	@catalogPublication {
-		host api.hbbtzn.com
+		host api.fufuwang.com.cn
 		method PUT DELETE OPTIONS
 		path_regexp publication ^/api/v1/catalog/listings/[^/]+/publication$
 	}
@@ -168,7 +168,7 @@ https://:4430 {
 	}
 
 	@paymentWebhook {
-		host api.hbbtzn.com
+		host api.fufuwang.com.cn
 		method POST
 		path /api/v1/webhooks/wechat/payment
 	}
@@ -184,7 +184,7 @@ https://:4430 {
 	}
 
 	@supportApi {
-		host api.hbbtzn.com
+		host api.fufuwang.com.cn
 		path /api/v1/support /api/v1/support/*
 	}
 	handle @supportApi {
@@ -199,7 +199,7 @@ https://:4430 {
 	}
 
 	@identityApi {
-		host api.hbbtzn.com
+		host api.fufuwang.com.cn
 		path /api/v1/*
 	}
 	handle @identityApi {
@@ -214,7 +214,7 @@ https://:4430 {
 	}
 
 	@gatewayHealth {
-		host api.hbbtzn.com
+		host api.fufuwang.com.cn
 		path /health/gateway
 	}
 	handle @gatewayHealth {
@@ -222,21 +222,21 @@ https://:4430 {
 		respond `{"status":"ready","nodeId":"node:hbbtzn:l1","manifestId":"manifest:hbbtzn:l1:v1"}` 200
 	}
 
-	@accounts host accounts.hbbtzn.com
+	@accounts host accounts.fufuwang.com.cn
 	handle @accounts {
 		root * /opt/sfl/nodes/hbbtzn-l1/targets/auth-web/current/static
 		try_files {path} /index.html
 		file_server
 	}
 
-	@console host console.hbbtzn.com
+	@console host console.fufuwang.com.cn
 	handle @console {
 		root * /opt/sfl/nodes/hbbtzn-l1/targets/console/current/static
 		try_files {path} /index.html
 		file_server
 	}
 
-	@storefront host h5.hbbtzn.com h6.hbbtzn.com hbbtzn.com mall.hbbtzn.com www.hbbtzn.com
+	@storefront host h5.fufuwang.com.cn h6.fufuwang.com.cn fufuwang.com.cn mall.fufuwang.com.cn www.fufuwang.com.cn
 	handle @storefront {
 		reverse_proxy 127.0.0.1:4410 {
 			header_up Host {http.request.host}

@@ -25,10 +25,10 @@ describe('browser harness', () => {
   });
 
   it('serves declared MSW handlers', async () => {
-    const msw = createMswHarness(http.get('https://smart.hbbtzn.com/api/health', () => HttpResponse.json({ ok: true })));
+    const msw = createMswHarness(http.get('https://smart.fufuwang.com.cn/api/health', () => HttpResponse.json({ ok: true })));
     msw.start();
     try {
-      const response = await fetch('https://smart.hbbtzn.com/api/health');
+      const response = await fetch('https://smart.fufuwang.com.cn/api/health');
       await expect(response.json()).resolves.toEqual({ ok: true });
     } finally {
       msw.reset();

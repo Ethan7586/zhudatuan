@@ -29,7 +29,7 @@ import { OperatorIdentityPage } from './OperatorIdentityPage';
 
 const invitation = Object.freeze({
   termsTitle: '服务协议', termsBody: '条款', privacyTitle: '隐私政策', privacyBody: '隐私', termsHash: 'a'.repeat(64),
-  organizationId: 'organization:one', organizationName: '宏泰甄选', target: 'console' as const,
+  organizationId: 'organization:one', organizationName: '福福网', target: 'console' as const,
   governanceLevel: 'senior_administrator' as const, effectiveAt: '2026-09-12T00:00:00.000Z', expiresAt: '2026-09-19T00:00:00.000Z',
 });
 
@@ -49,7 +49,7 @@ afterEach(() => {
 describe('operator invitation registration', () => {
   it('explains why an existing identity does not receive new password fields', async () => {
     render(React.createElement(OperatorIdentityPage, {
-      target: 'console', expectedOrigin: 'https://console.hbbtzn.com', displayName: '宏泰甄选', brand: 'hongtai', onAudienceSwitch: vi.fn(),
+      target: 'console', expectedOrigin: 'https://console.fufuwang.com.cn', displayName: '福福网', brand: 'hongtai', onAudienceSwitch: vi.fn(),
     }));
     await waitFor(() => expect(registration.resolveInvite).toHaveBeenCalled());
     fireEvent.change(screen.getByLabelText('手机号'), { target: { value: '19287247586' } });
@@ -64,7 +64,7 @@ describe('operator invitation registration', () => {
   it('clears a login password before another identity flow is opened', () => {
     window.history.replaceState({}, '', '/');
     render(React.createElement(OperatorIdentityPage, {
-      target: 'console', expectedOrigin: 'https://console.hbbtzn.com', displayName: '宏泰甄选', brand: 'hongtai', onAudienceSwitch: vi.fn(),
+      target: 'console', expectedOrigin: 'https://console.fufuwang.com.cn', displayName: '福福网', brand: 'hongtai', onAudienceSwitch: vi.fn(),
     }));
     fireEvent.change(screen.getByLabelText('密码'), { target: { value: 'temporary-password' } });
     fireEvent.click(screen.getByRole('tab', { name: '邀请注册' }));

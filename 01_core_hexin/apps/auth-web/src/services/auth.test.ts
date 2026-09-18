@@ -37,7 +37,7 @@ describe('public test authentication fixtures', () => {
 
   it('only permits the canonical storefront origin plus explicit local development', () => {
     expect(resolveStorefrontLoginOrigin()).toBe('https://fufu.wang');
-    expect(resolveStorefrontLoginOrigin('https://hbbtzn.com')).toBe('https://hbbtzn.com');
+    expect(resolveStorefrontLoginOrigin('https://fufuwang.com.cn')).toBe('https://fufuwang.com.cn');
     expect(resolveStorefrontLoginOrigin('http://127.0.0.1:3000', true)).toBe('http://127.0.0.1:3000');
     expect(() => resolveStorefrontLoginOrigin('https://example.com')).toThrow('不在允许清单');
     expect(() => resolveStorefrontLoginOrigin('http://127.0.0.1:3000')).toThrow('不在允许清单');

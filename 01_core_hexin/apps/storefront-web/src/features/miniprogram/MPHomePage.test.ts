@@ -13,7 +13,7 @@ vi.mock('./MPProductFeed', () => ({
 vi.mock('../../context/MallContext', () => ({
   useMall: () => ({
     addToCart: vi.fn(),
-    currentMall: { id: 'mall:one', mallName: '宏泰甄选' },
+    currentMall: { id: 'mall:one', mallName: '福福网' },
     presentationProducts: [],
     sessionStatus: 'authenticated',
     setMpPage: vi.fn(),
@@ -45,7 +45,7 @@ describe('mini-program home page', () => {
     expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
     expect(html.match(/aria-pressed="false"/g)).toHaveLength(3);
     expect(html).toContain('中秋关怀');
-    expect(html).toContain('金秋宏泰');
+    expect(html).toContain('金秋福福网');
     expect(html).toContain('双喜临门');
     expect(html).toContain('大武汉礼品');
   });

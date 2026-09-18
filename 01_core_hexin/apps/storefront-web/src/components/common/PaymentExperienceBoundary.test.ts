@@ -26,7 +26,7 @@ describe('payment experience boundary', () => {
   it('renders the amount and current state before the detailed payment bundle arrives', () => {
     const html = renderToStaticMarkup(React.createElement(PaymentStableCarrier, { session: {
       schema: 'storefront.payment-recovery.v1', scope: 'member:one:mall:one', orderId: 'order:one', paymentId: null,
-      amountMinor: 46644, currency: 'CNY', mallName: '宏泰甄选', createdAt: '2026-09-09T05:00:00.000Z', updatedAt: '2026-09-09T05:00:00.000Z',
+      amountMinor: 46644, currency: 'CNY', mallName: '福福网', createdAt: '2026-09-09T05:00:00.000Z', updatedAt: '2026-09-09T05:00:00.000Z',
       idempotencyKey: 'checkout:one', cartFingerprint: 'cart:one', cartItemIds: ['cart:one'], stage: 'verifying', retryCount: 0,
     } }));
     expect(html).toContain('data-payment-stable-carrier="true"');

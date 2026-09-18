@@ -55,7 +55,7 @@ function order(id: string, items: FrontendOrderItem[], supplierName: string): Fr
 }
 
 const presentationOrders = [
-  order('single', [orderItem('rice', '五常稻香米企业精选礼盒', '宏泰甄选自营')], '宏泰甄选自营'),
+  order('single', [orderItem('rice', '五常稻香米企业精选礼盒', '福福网自营')], '福福网自营'),
   order('split', [
     orderItem('grain', '生态杂粮组合装', '江城粮仓'),
     orderItem('kettle', '恒温电热水壶', '湖畔生活家电'),
@@ -83,7 +83,7 @@ describe('mobile order list presentation', () => {
 
     expect(html).toContain('aria-label="共 2 笔订单"');
     expect(html).not.toContain('进度实时同步');
-    expect(html).toContain('宏泰甄选自营');
+    expect(html).toContain('福福网自营');
     expect(html).toContain('合并支付订单');
     expect(html).toContain('来自 2 家商户 · 分 2 个包裹配送');
     expect(html).toContain('江城粮仓');

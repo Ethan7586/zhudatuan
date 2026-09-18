@@ -67,7 +67,7 @@ describe('storefront member read contract', () => {
   it('accepts complete profile, invitation and order read models without exposing member profile ids', () => {
     const detail = {
       ...page.items[0],
-      parent: { kind: 'mall', display_name: '宏泰甄选', identity_level: 'L1' },
+      parent: { kind: 'mall', display_name: '福福网', identity_level: 'L1' },
       inviter: {
         display_name: '邀请人', mobile_masked: '155****5544', bound_at: '2026-09-06T08:00:00.000Z',
         expires_at: null, relationship_status: 'active',

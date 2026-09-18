@@ -17,7 +17,7 @@ export async function createWechatPayTestKeys(): Promise<WechatPayTestKeys> {
       merchantSerialNo: '0123456789ABCDEF0123456789ABCDEF',
       merchantPrivateKeyPem: merchant.privateKeyPem,
       apiV3Key: '0123456789abcdef0123456789abcdef',
-      notifyUrl: 'https://hbbtzn.com/api/v1/webhooks/wechat/payment',
+      notifyUrl: 'https://fufuwang.com.cn/api/v1/webhooks/wechat/payment',
       notifyUrlsByScope: Object.freeze({}),
       platformKeys: [{ id: 'PUB_KEY_ID_TEST_PLATFORM_2026', publicKeyPem: platform.publicKeyPem, active: true }],
     },

@@ -4,7 +4,7 @@ import type { OperationDatabase } from '../../../../foundation/application/Modul
 import { CreateMall } from '../../03_application_yingyong/CreateMall';
 
 describe('mall provisioning engine', () => {
-  it('allocates h6.hbbtzn.com when h5 is already reserved', async () => {
+  it('allocates h6.fufuwang.com.cn when h5 is already reserved', async () => {
     const database = recordingDatabase([], () => []);
 
     await expect(new CreateMall().allocatePublicSlug(database)).resolves.toBe('h6');

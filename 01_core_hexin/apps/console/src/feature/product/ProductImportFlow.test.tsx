@@ -113,7 +113,7 @@ function RouteLocation() {
   return <output hidden data-testid="route-location">{location.pathname}</output>;
 }
 
-const scope = { kind: 'mall' as const, id: 'mall:hongtai', name: '宏泰甄选' };
+const scope = { kind: 'mall' as const, id: 'mall:hongtai', name: '福福网' };
 const context: ConsoleContext = {
   session: {
     actor: 'actor:catalog', membership: 'membership:catalog', accessVersion: 8,

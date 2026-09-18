@@ -10,10 +10,10 @@ describe('public catalog HTTP handler', () => {
       cover_url: null, amount_minor: '1', compare_minor: null, available_stock: '10', supplier_name: '平台自营', is_test: false,
     }]));
     const next = { handle: vi.fn(async () => new Response(null, { status: 404 })) };
-    const handler = new PublicCatalogHttpHandler(next, pool(query), 'zdt-l1-verify', ['https://hbbtzn.com']);
+    const handler = new PublicCatalogHttpHandler(next, pool(query), 'zdt-l1-verify', ['https://fufuwang.com.cn']);
 
-    const response = await handler.handle(new Request('https://hbbtzn.com/api/v1/catalog/public/products', {
-      headers: { origin: 'https://hbbtzn.com' },
+    const response = await handler.handle(new Request('https://fufuwang.com.cn/api/v1/catalog/public/products', {
+      headers: { origin: 'https://fufuwang.com.cn' },
     }));
 
     expect(response.status).toBe(200);
@@ -41,18 +41,18 @@ describe('public catalog HTTP handler', () => {
       { handle: vi.fn(async () => new Response(null, { status: 404 })) },
       pool(query),
       'zdt-l1-verify',
-      ['https://hbbtzn.com'],
+      ['https://fufuwang.com.cn'],
     );
 
     const crossNode = await handler.handle(new Request(
-      'https://hbbtzn.com/api/v1/catalog/public/products?mall=zhudatuan-storefront',
-      { headers: { origin: 'https://hbbtzn.com' } },
+      'https://fufuwang.com.cn/api/v1/catalog/public/products?mall=zhudatuan-storefront',
+      { headers: { origin: 'https://fufuwang.com.cn' } },
     ));
     expect(crossNode.status).toBe(404);
     expect(query).not.toHaveBeenCalled();
 
-    const ownNode = await handler.handle(new Request('https://hbbtzn.com/api/v1/catalog/public/products', {
-      headers: { origin: 'https://hbbtzn.com' },
+    const ownNode = await handler.handle(new Request('https://fufuwang.com.cn/api/v1/catalog/public/products', {
+      headers: { origin: 'https://fufuwang.com.cn' },
     }));
     expect(ownNode.status).toBe(200);
     expect(query).toHaveBeenCalledOnce();
@@ -66,13 +66,13 @@ describe('public catalog HTTP handler', () => {
       { handle: vi.fn(async () => new Response(null, { status: 404 })) },
       pool(query),
       'zhudatuan-storefront',
-      ['https://hbbtzn.com'],
-      { 'hbbtzn.com': 'zdt-l1-verify' },
+      ['https://fufuwang.com.cn'],
+      { 'fufuwang.com.cn': 'zdt-l1-verify' },
     );
 
     const response = await handler.handle(new Request(
-      'https://hbbtzn.com/api/v1/catalog/public/products?mall=zdt-l1-verify',
-      { headers: { origin: 'https://hbbtzn.com' } },
+      'https://fufuwang.com.cn/api/v1/catalog/public/products?mall=zdt-l1-verify',
+      { headers: { origin: 'https://fufuwang.com.cn' } },
     ));
 
     expect(response.status).toBe(200);
@@ -86,13 +86,13 @@ describe('public catalog HTTP handler', () => {
       { handle: vi.fn(async () => new Response(null, { status: 404 })) },
       pool(query),
       'zdt-l1-verify',
-      ['https://h6.hbbtzn.com'],
-      { 'h6.hbbtzn.com': 'zdt-l1-verify' },
+      ['https://h6.fufuwang.com.cn'],
+      { 'h6.fufuwang.com.cn': 'zdt-l1-verify' },
     );
 
     const response = await handler.handle(new Request(
-      'https://h6.hbbtzn.com/api/v1/catalog/public/products',
-      { headers: { origin: 'https://h6.hbbtzn.com' } },
+      'https://h6.fufuwang.com.cn/api/v1/catalog/public/products',
+      { headers: { origin: 'https://h6.fufuwang.com.cn' } },
     ));
 
     expect(response.status).toBe(200);

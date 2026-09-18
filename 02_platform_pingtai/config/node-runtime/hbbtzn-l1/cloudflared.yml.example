@@ -9,20 +9,20 @@ originRequest:
   connectTimeout: 5s
 
 ingress:
-  - hostname: api.hbbtzn.com
+  - hostname: api.fufuwang.com.cn
     service: https://127.0.0.1:4430
-  - hostname: accounts.hbbtzn.com
+  - hostname: accounts.fufuwang.com.cn
     service: https://127.0.0.1:4430
-  - hostname: console.hbbtzn.com
+  - hostname: console.fufuwang.com.cn
     service: https://127.0.0.1:4430
-  - hostname: hbbtzn.com
+  - hostname: fufuwang.com.cn
     service: https://127.0.0.1:4430
-  - hostname: www.hbbtzn.com
+  - hostname: www.fufuwang.com.cn
     service: https://127.0.0.1:4430
-  - hostname: h5.hbbtzn.com
+  - hostname: h5.fufuwang.com.cn
     service: https://127.0.0.1:4430
-  - hostname: h6.hbbtzn.com
+  - hostname: h6.fufuwang.com.cn
     service: https://127.0.0.1:4430
-  - hostname: mall.hbbtzn.com
+  - hostname: mall.fufuwang.com.cn
     service: https://127.0.0.1:4430
   - service: http_status:404

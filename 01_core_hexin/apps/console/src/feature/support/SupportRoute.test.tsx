@@ -88,15 +88,15 @@ const context: ConsoleContext = {
       'support.attachments.create', 'support.history.read'],
     csrf: 'csrf-support-console-test',
     target: 'console',
-    scope: { kind: 'enterprise', id: 'enterprise:1', name: '宏泰甄选' },
-    scopes: [{ kind: 'enterprise', id: 'enterprise:1', name: '宏泰甄选' }],
+    scope: { kind: 'enterprise', id: 'enterprise:1', name: '福福网' },
+    scopes: [{ kind: 'enterprise', id: 'enterprise:1', name: '福福网' }],
     governance: { level: 'administrator', exactOwner: false, organization: 'enterprise:1' },
     assurance: { level: 2, verified: '2026-08-30T08:00:00.000Z' },
     syncedAt: '2026-08-30T08:00:00.000Z',
   },
   profile: { display_name: '客服测试坐席', employee_no: 'SW-007' },
-  scope: { kind: 'enterprise', id: 'enterprise:1', name: '宏泰甄选' },
-  scopes: [{ kind: 'enterprise', id: 'enterprise:1', name: '宏泰甄选' }],
+  scope: { kind: 'enterprise', id: 'enterprise:1', name: '福福网' },
+  scopes: [{ kind: 'enterprise', id: 'enterprise:1', name: '福福网' }],
 };
 
 beforeAll(() => {
@@ -133,7 +133,7 @@ describe('Support Chat VI route', () => {
 
     const caseContext = screen.getByRole('complementary', { name: '工单上下文' });
     expect(within(caseContext).getByText('微信')).toBeTruthy();
-    expect(within(caseContext).getByText('宏泰甄选')).toBeTruthy();
+    expect(within(caseContext).getByText('福福网')).toBeTruthy();
     expect(within(caseContext).getByText('福利售后')).toBeTruthy();
     expect(within(caseContext).getByText('order:SW-20260830-1001')).toBeTruthy();
     expect(within(caseContext).queryByText('agent:wing-07')).toBeNull();

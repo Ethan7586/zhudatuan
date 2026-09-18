@@ -19,9 +19,9 @@ export const MorviaIdentityShell: React.FC<Readonly<{
             className="w-[250px] max-w-[74%]"
           />
         ) : (
-          <div className="hongtai-lockup" aria-label="宏泰甄选 Hongtai Select">
-            <span className="hongtai-mark">H</span>
-            <span><strong>宏泰甄选</strong><small>HONGTAI SELECT</small></span>
+          <div className="hongtai-lockup" aria-label="福福网">
+            <span className="hongtai-mark">福</span>
+            <span><strong>福福网</strong><small>fufuwang.com.cn</small></span>
           </div>
         )}
 

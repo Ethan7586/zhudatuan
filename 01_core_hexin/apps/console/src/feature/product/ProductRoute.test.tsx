@@ -599,7 +599,7 @@ const context: ConsoleContext = {
   scopes: [scope],
 };
 
-const mallScope = { kind: 'mall' as const, id: 'mall:hongtai', name: '宏泰甄选' };
+const mallScope = { kind: 'mall' as const, id: 'mall:hongtai', name: '福福网' };
 const mallContext: ConsoleContext = {
   ...context,
   session: {

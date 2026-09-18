@@ -25,7 +25,7 @@ vi.mock('../../context/MallContext', () => ({
       selectedSpec: {},
     }],
     checkoutSelectedCart: vi.fn(),
-    currentMall: { mallName: '宏泰甄选' },
+    currentMall: { mallName: '福福网' },
     isSubmittingOrder: false,
     removeCartItem: vi.fn(),
     setMpPage: vi.fn(),
@@ -44,7 +44,7 @@ describe('mini-program cart experience', () => {
   it('keeps selection and settlement clear while hiding special services by default', () => {
     const html = renderToStaticMarkup(React.createElement(MPCartPage));
 
-    expect(html).toContain('宏泰甄选');
+    expect(html).toContain('福福网');
     expect(html).toContain('福利卡可用额度');
     expect(html).toContain('管理');
     expect(html).toContain('配送等');

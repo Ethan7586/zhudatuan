@@ -14,7 +14,7 @@ describe('identity registration API runtime', () => {
     const manifest = await parseNodeManifest(JSON.parse(await readFile(path, 'utf8')));
     const environment = {
       APP_ENV: 'production',
-      API_ALLOWED_ORIGINS: 'https://accounts.hbbtzn.com,https://console.hbbtzn.com,https://h5.hbbtzn.com,https://h6.hbbtzn.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com',
+      API_ALLOWED_ORIGINS: 'https://accounts.fufuwang.com.cn,https://console.fufuwang.com.cn,https://h5.fufuwang.com.cn,https://h6.fufuwang.com.cn,https://fufuwang.com.cn,https://mall.fufuwang.com.cn,https://www.fufuwang.com.cn',
       DATABASE_API_CONNECTION_REF: 'hbbtzn/nodes/l1/database/identity-api',
       SESSION_KEY_REF: 'hbbtzn/nodes/l1/identity/session',
       IDENTITY_KEY_REF: 'hbbtzn/nodes/l1/identity/index',
