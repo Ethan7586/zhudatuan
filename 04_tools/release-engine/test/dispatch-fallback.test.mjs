@@ -24,11 +24,16 @@ printf '%s\\n' "$*" >> "$MOCK_LOG"
 if [ "$1" = workflow ] && [ "$2" = view ]; then exit 0; fi
 if [ "$1" = run ] && [ "$2" = list ]; then
   if [[ " $* " == *" --event "* ]]; then
+    request_id="$(<"$MOCK_STATE.request")"
+    [[ "$*" == *"Runner 1.7 [$request_id] "* ]] || { echo 999; exit 0; }
     if [ "$(<"$MOCK_STATE")" = hosted ]; then echo 102; else echo 101; fi
   else echo 100; fi
   exit 0
 fi
 if [ "$1" = workflow ] && [ "$2" = run ]; then
+  for arg in "$@"; do
+    if [[ "$arg" == request_id=* ]]; then printf '%s' "$arg" | sed 's/^request_id=//' > "$MOCK_STATE.request"; fi
+  done
   if [[ " $* " == *"execution_location=github-hosted"* ]]; then echo hosted > "$MOCK_STATE"; fi
   if [[ "$MOCK_MODE" == *-url ]]; then
     if [ "$(<"$MOCK_STATE")" = hosted ]; then echo 'https://github.com/Ethan7586/zhudatuan/actions/runs/102'; else echo 'https://github.com/Ethan7586/zhudatuan/actions/runs/101'; fi
@@ -39,7 +44,10 @@ if [ "$1" = run ] && [ "$2" = cancel ]; then
   echo cancelled > "$MOCK_STATE"
   exit 0
 fi
-if [ "$1" = run ] && [ "$2" = watch ]; then exit 0; fi
+if [ "$1" = run ] && [ "$2" = watch ]; then
+  if [ "$MOCK_MODE" = hosted-precore ] || [ "$MOCK_MODE" = hosted-failed ]; then exit 1; fi
+  exit 0
+fi
 if [ "$1" = run ] && [ "$2" = view ]; then
   if [[ " $* " == *" --log"* ]]; then echo 'RUNNER_1_6_RESULT={"state":"HEALTHY"}'; exit 0; fi
   if [[ " $* " == *" --json createdAt,jobs"* ]]; then
@@ -55,10 +63,12 @@ if [ "$1" = run ] && [ "$2" = view ]; then
     exit 0
   fi
   if [[ " $* " == *" --json jobs"* ]]; then
-    if [[ " $* " == *"Mark shared release core started"* ]]; then
+    if [[ " $* " == *"Retry pre-core startup on GitHub Hosted"* ]] && [[ " $* " == *".conclusion == \\"success\\""* ]]; then
+      if [ "$MOCK_MODE" = hosted-precore ]; then echo 1; else echo 0; fi
+    elif [[ " $* " == *"Mark shared release core started"* ]]; then
       if [[ "$MOCK_MODE" == started* ]] || [ "$MOCK_MODE" = hosted-core ] || { [ "$MOCK_MODE" = raced ] && [ "$(<"$MOCK_STATE")" = cancelled ]; }; then echo 1; else echo 0; fi
     elif [[ " $* " == *".conclusion == \\"failure\\""* ]]; then
-      if [ "$MOCK_MODE" = hosted-precore ]; then echo 1; else echo 0; fi
+      if [ "$MOCK_MODE" = hosted-precore ] || [ "$MOCK_MODE" = hosted-failed ]; then echo 1; else echo 0; fi
     elif [[ " $* " == *"shared release core"* ]]; then
       if [ "$MOCK_MODE" = precore ]; then echo 1; else echo 0; fi
     elif [ "$MOCK_MODE" = precore ] || [ "$MOCK_MODE" = hosted-precore ] || [[ "$MOCK_MODE" == started* ]]; then echo 1; else echo 0; fi
@@ -83,6 +93,10 @@ exit 1
 
 test('an unstarted Aliyun job is cancelled before one Hosted dispatch', async () => {
   const { output, calls } = await simulate('queued');
+  const requestIds = [...calls.matchAll(/-f request_id=([0-9a-f]{24})/g)].map((match) => match[1]);
+  assert.equal(requestIds.length, 2);
+  assert.notEqual(requestIds[0], requestIds[1], 'each dispatch needs its own run identity');
+  for (const requestId of requestIds) assert.match(calls, new RegExp(`Runner 1\\.7 \\[${requestId}\\] `));
   assert.match(calls, /run cancel 101/);
   assert.match(calls, /execution_location=github-hosted/);
   assert.equal((calls.match(/workflow run /g) ?? []).length, 2);
@@ -169,6 +183,11 @@ test('same-run Hosted preparation is left to finish after Aliyun failed', async 
   assert.doesNotMatch(calls, /run cancel/);
   assert.equal((calls.match(/workflow run /g) ?? []).length, 1);
   assert.match(output, /等待同一次 GitHub 运行中的 Hosted 接管/);
+  assert.match(output, /Hosted 接管已成功/);
+});
+
+test('a failed Hosted takeover keeps the command failed', async () => {
+  await assert.rejects(simulate('hosted-failed'));
 });
 
 test('GitHub timeline separates queue, routing, and checkout without counting fallback twice', () => {

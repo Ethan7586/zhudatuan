@@ -44,15 +44,16 @@ fi
 workflow='delivery-1-6.yml'
 previous_id="$(gh run list --workflow "$workflow" --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
 echo "Runner 1.7 ${operation}: ${identifier:-${physical_node}/${target}}"
-expected_title="Runner 1.7 ${operation} ${identifier:-none} ${target:-none} ${physical_node:-none}"
 run_id=''
 dispatch_run() {
   local after_id="$1"
   local execution_location="$2"
   local dispatch_output
+  local request_id
+  request_id="$(od -An -N12 -tx1 /dev/urandom | tr -d '[:space:]')"
   dispatch_output="$(gh workflow run "$workflow" --ref zdt-next \
     -f operation="$operation" -f identifier="$identifier" -f release_target="$target" -f physical_node="$physical_node" \
-    -f execution_location="$execution_location")"
+    -f execution_location="$execution_location" -f request_id="$request_id")"
   [ -z "$dispatch_output" ] || printf '%s\n' "$dispatch_output"
   echo '状态：QUEUED'
   run_id=''
@@ -61,7 +62,7 @@ dispatch_run() {
   else
     for attempt in {1..30}; do
       run_id="$(gh run list --workflow "$workflow" --event workflow_dispatch --limit 30 --json databaseId,displayTitle \
-        --jq ".[] | select(.databaseId > ${after_id} and .displayTitle == \"${expected_title}\") | .databaseId" | head -1)"
+        --jq ".[] | select(.databaseId > ${after_id} and (.displayTitle | startswith(\"Runner 1.7 [${request_id}] \"))) | .databaseId" | head -1)"
       [ -z "$run_id" ] || break
       sleep "$(( attempt < 3 ? attempt : 3 ))"
     done
@@ -120,6 +121,13 @@ fi
 
 watch_status=0
 gh run watch "$run_id" --exit-status || watch_status=$?
+if [ "$watch_status" -ne 0 ]; then
+  hosted_success="$(gh run view "$run_id" --json jobs --jq '[.jobs[]? | select(.name == "Retry pre-core startup on GitHub Hosted" and .conclusion == "success")] | length' 2>/dev/null || true)"
+  if [ "$hosted_success" = 1 ]; then
+    echo '阿里云启动失败，但同一次运行的 Hosted 接管已成功；以目标机回执为准。'
+    watch_status=0
+  fi
+fi
 run_log="$(gh run view "$run_id" --log 2>/dev/null || true)"
 printf '%s\n' "$run_log" | node scripts/delivery-timings.mjs log "${ZDT_DELIVERY_STARTED_MS:-}" "$operation" \
   || printf '%s\n' "$run_log" | sed -n '/RUNNER_1_6_RESULT=/p' | tail -1
