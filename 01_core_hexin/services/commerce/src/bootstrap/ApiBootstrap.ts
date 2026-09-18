@@ -68,7 +68,7 @@ export interface ApiBootstrapOptions {
   readonly gateEngine?: GateEngine;
   readonly nodeManifestRegistry?: NodeManifestRegistry;
   readonly arch?: ArchBoard;
-  readonly archMountNodeIds?: readonly string[];
+  readonly runtimeNodeIds?: readonly string[];
 }
 
 export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readonly<{
@@ -98,18 +98,32 @@ export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readon
     ?? (container.has(NODE_MANIFEST_REGISTRY) ? container.get(NODE_MANIFEST_REGISTRY) : undefined);
   if (nodeManifestRegistry !== undefined) arch.mountAll(
     nodeManifestRegistry.manifests
-      .filter((candidate) => options.archMountNodeIds === undefined || options.archMountNodeIds.includes(candidate.node_id))
+      .filter((candidate) => options.runtimeNodeIds === undefined || options.runtimeNodeIds.includes(candidate.node_id))
       .map((manifest) => manifest.node_id),
     routes.catalog().map(({ operation }) => operation),
   );
   container.freeze();
-  const nodeContextResolver = nodeManifestRegistry === undefined ? undefined : createNodeContextResolver(nodeManifestRegistry);
+  const nodeContextResolver = nodeManifestRegistry === undefined ? undefined
+    : restrictRuntimeNodes(createNodeContextResolver(nodeManifestRegistry), options.runtimeNodeIds);
   const allowedOrigins = nodeManifestRegistry === undefined
     ? options.allowedOrigins
     : expandRuntimeOrigins(options.allowedOrigins, nodeManifestRegistry, options.allowedOriginSurfaces ?? []);
   return Object.freeze({ app: new HttpApp(routes, allowedOrigins, undefined, undefined, new OperationMetrics(options.telemetry),
     options.gateEngine, nodeContextResolver, arch),
     modules: modules.catalog(), routes, arch, nodeContextResolver });
+}
+
+function restrictRuntimeNodes(resolver: NodeContextResolver, nodeIds: readonly string[] | undefined): NodeContextResolver {
+  if (nodeIds === undefined) return resolver;
+  const allowed = new Set(nodeIds);
+  return Object.freeze({
+    registry: resolver.registry,
+    resolve(host: string) {
+      const context = resolver.resolve(host);
+      if (!allowed.has(context.node_id)) throw new Error('SFL_NODE_MANIFEST_HOST_RUNTIME_MISMATCH');
+      return context;
+    },
+  });
 }
 
 function expandRuntimeOrigins(

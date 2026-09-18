@@ -8,6 +8,20 @@ import { ExtensionRegistry } from './ExtensionRegistry';
 import type { CommerceModule } from './ModuleRegistry';
 
 describe('API bootstrap SFL NodeContext assembly', () => {
+  it('keeps a single-node runtime from resolving another node through the shared registry', async () => {
+    const bootstrapped = await bootstrapApi({
+      modules: [],
+      extensions: new ExtensionRegistry({ verify: async () => true } as never),
+      configure: bindServerNodeManifestRegistry,
+      allowedOrigins: [], telemetry: commerceTelemetry(),
+      operationIds: [], runtimeNodeIds: ['node:hbbtzn:l1'],
+    });
+    expect(bootstrapped.nodeContextResolver?.resolve('accounts.hbbtzn.com').node_id).toBe('node:hbbtzn:l1');
+    expect(() => bootstrapped.nodeContextResolver?.resolve('api.fufu.wang'))
+      .toThrow('SFL_NODE_MANIFEST_HOST_RUNTIME_MISMATCH');
+    expect(bootstrapped.arch.state('node:zhudatuan:l0', 'member.profile.read')).toBe('unmounted');
+  });
+
   it('installs registered routes on Arch for each node without changing their owner', async () => {
     const received: string[] = [];
     const module: CommerceModule = {

@@ -15,7 +15,7 @@ Arch 主板实现在 `src/arch/ArchBoard.ts`，与 `src/member` 同属 `@shop/l-
 
 ## 现有接入
 
-`ApiMain`、`IdentityRegistrationApiMain` 和 `WebBusinessApiMain` 接入各自实际注册的全部接口；后两者只挂到当前运行 manifest 的节点，完整 API 使用现有服务端节点注册表。其他使用 `bootstrapApi` 的运行实例也按同样方式接入。会员、订单及其他业务、数据库、权限和 HTTP 路由继续由原模块处理。实际会员路径见 [接线图](WIRING.md)。
+`ApiMain`、`IdentityRegistrationApiMain` 和 `WebBusinessApiMain` 接入各自实际注册的全部接口；后两者以当前运行 manifest 的节点限定接线和入站 Host，完整 API 使用现有服务端节点注册表。节点入口校验留在运行层，不交给 Arch。其他使用 `bootstrapApi` 的运行实例也按同样方式接入。会员、订单及其他业务、数据库、权限和 HTTP 路由继续由原模块处理。实际会员路径见 [接线图](WIRING.md)。
 
 托管型 L 没有独立 manifest。对已有会话的标准操作，运行适配层使用原会话解析出的 hosted `node_id` 再穿一次 Arch；主板不解析登录态或节点归属。若宿主接口已断，托管节点不能绕过宿主。公开接口、状态持久化等未覆盖处见 [覆盖盘点](COVERAGE.md)。
 

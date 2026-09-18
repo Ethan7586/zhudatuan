@@ -2,9 +2,11 @@ import { request as httpRequest } from 'node:http';
 import { CONTRACT_VERSION } from '@shop/contract';
 import { resolveNodeContextByHost, type NodeContextResolver, type ResolvedNodeContext } from '@shop/config/sfl-node-kernel';
 import { describe, expect, it } from 'vitest';
-import { SERVER_NODE_MANIFEST_REGISTRY } from '../../bootstrap/ApiBootstrap';
+import { bootstrapApi, bindServerNodeManifestRegistry, SERVER_NODE_MANIFEST_REGISTRY } from '../../bootstrap/ApiBootstrap';
+import { ExtensionRegistry } from '../../bootstrap/ExtensionRegistry';
 import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
 import { requireRequestNodeContext } from '../security/AccessContext';
+import { commerceTelemetry } from '../telemetry/Telemetry';
 import { HttpApp } from './HttpApp';
 import { listen, trustedPeerAddress } from './NodeServer';
 
@@ -72,6 +74,30 @@ describe('NodeServer NodeContext ingress', () => {
       expect(response.status).toBe(421);
       expect(response.body).toContain('NODE_BOUNDARY_HOST_MISMATCH');
       expect(handled).toBe(false);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('rejects a known but foreign node Host before a single-node outer handler runs', async () => {
+    const bootstrapped = await bootstrapApi({
+      modules: [], operationIds: [], runtimeNodeIds: ['node:hbbtzn:l1'],
+      extensions: new ExtensionRegistry({ verify: async () => true } as never),
+      configure: bindServerNodeManifestRegistry, allowedOrigins: [], telemetry: commerceTelemetry(),
+    });
+    let handled = 0;
+    const server = listen({ handle: async () => {
+      handled += 1;
+      return new Response(null, { status: 204 });
+    } }, 0, '127.0.0.1', bootstrapped.nodeContextResolver);
+    await server.ready;
+    try {
+      expect((await nodeRequest(server.port(), 'accounts.hbbtzn.com')).status).toBe(204);
+      const foreign = await nodeRequest(server.port(), 'api.fufu.wang');
+      expect(foreign.status).toBe(421);
+      expect(foreign.body).toContain('NODE_BOUNDARY_HOST_MISMATCH');
+      expect((await nodeRequest(server.port(), 'api.fufu.wang', '/api/v1/catalog/public/products', 'GET')).status).toBe(421);
+      expect(handled).toBe(1);
     } finally {
       await server.close();
     }
