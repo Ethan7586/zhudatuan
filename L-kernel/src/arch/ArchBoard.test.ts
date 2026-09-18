@@ -24,11 +24,11 @@ describe('ArchBoard', () => {
     arch.setConnected('node:hbbtzn:l1', 'member.read', true);
     expect(arch.state('node:hbbtzn:l1', 'member.read')).toBe('connected');
     arch.unmount('node:hbbtzn:l1', 'member.read');
-    expect(arch.state('node:hbbtzn:l1', 'member.read')).toBe('unmounted');
+    expect(arch.state('node:hbbtzn:l1', 'member.read')).toBe('removed');
     expect(await arch.exchange('node:hbbtzn:l1', 'member.read', { value: 6 }, owner))
       .toEqual({ connected: false });
     arch.setConnected('node:hbbtzn:l1', 'member.read', true);
-    expect(arch.state('node:hbbtzn:l1', 'member.read')).toBe('unmounted');
+    expect(arch.state('node:hbbtzn:l1', 'member.read')).toBe('removed');
     expect(owner).toHaveBeenCalledTimes(3);
   });
 
@@ -50,7 +50,7 @@ describe('ArchBoard', () => {
     arch.unmount('node:l1', 'member.read');
     arch.mountAll(['node:l0', 'node:l1'], ['member.read', 'order.read']);
     expect(arch.inspect('node:l1', ['member.read', 'order.read'])).toEqual([
-      { nodeId: 'node:l1', interfaceId: 'member.read', state: 'unmounted' },
+      { nodeId: 'node:l1', interfaceId: 'member.read', state: 'removed' },
       { nodeId: 'node:l1', interfaceId: 'order.read', state: 'connected' },
     ]);
     expect(await arch.exchange('node:l1', 'member.read', null, owner)).toEqual({ connected: false });

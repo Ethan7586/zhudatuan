@@ -43,6 +43,7 @@ describe('API bootstrap SFL NodeContext assembly', () => {
     expect(received).toEqual(['node:hbbtzn:l1', 'node:zhudatuan:l0', 'node:hbbtzn:l1']);
 
     bootstrapped.arch.unmount('node:hbbtzn:l1', 'member.storefront.config.read');
+    expect(bootstrapped.arch.state('node:hbbtzn:l1', 'member.storefront.config.read')).toBe('removed');
     expect((await send('accounts.hbbtzn.com')).status).toBe(404);
     expect((await send('api.fufu.wang')).status).toBe(200);
     bootstrapped.arch.mountAll(['node:hbbtzn:l1'], ['member.storefront.config.read']);
