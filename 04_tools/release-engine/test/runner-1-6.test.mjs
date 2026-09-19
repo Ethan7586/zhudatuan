@@ -295,6 +295,7 @@ test('control-side command only dispatches and queries GitHub', async () => {
   const readme = await readFile(join(root, '02_platform_pingtai/infrastructure/github-actions-runner/README.md'), 'utf8');
   assert.match(readme, /Direct dispatch from GitHub's Actions page bypasses/);
   assert.match(readme, /Normal delivery selects only the cloud-neutral `zdt-build` label/);
+  assert.match(readme, /`Administration: read`/);
   assert.doesNotMatch(readme, /`zdt-aliyun-build` registrations remain preferred/);
   assert.doesNotMatch(`${dispatcher}\n${controller}`, /npm ci|npm run|\bssh\b|\bscp\b|runner-1-6\.mjs/);
 });
