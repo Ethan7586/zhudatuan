@@ -33,6 +33,7 @@ import { VerificationModule } from '../modules/verification/05_interface_jieru/V
 import { VoucherModule } from '../modules/voucher/05_interface_jieru/VoucherModule';
 import { EVENT_SCHEMA_TYPES } from './events';
 
+// L-ARCH-WIRING: available modules for the full runtime; individual services may select subsets.
 export const BUSINESS_MODULES: readonly CommerceModule[] = Object.freeze([
   IdentityModule, OrganizationModule, AccessModule, CapabilityModule, PartnerModule, MemberModule, QualificationModule,
   CatalogModule, PricingModule, InventoryModule, ExperienceModule, MarketingModule, ReferralModule, CartModule, CheckoutModule, OrderModule,

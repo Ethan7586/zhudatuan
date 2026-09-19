@@ -16,6 +16,7 @@ interface RegisteredRoute extends RouteDefinition {
   readonly parameters: readonly string[];
 }
 
+// L-ARCH-WIRING: startup-selected HTTP operation connections and request-to-handler lookup.
 export class RouteRegistry {
   private readonly routes: RegisteredRoute[] = [];
   private frozen = false;

@@ -71,6 +71,8 @@ export interface ApiBootstrapOptions {
   readonly runtimeNodeIds?: readonly string[];
 }
 
+// L-ARCH-WIRING: live API assembly; modules and operation IDs are selected at startup.
+// See L_ARCH_BOUNDARY.md. Business and access decisions remain in their existing owners.
 export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readonly<{
   app: HttpApp;
   modules: readonly string[];

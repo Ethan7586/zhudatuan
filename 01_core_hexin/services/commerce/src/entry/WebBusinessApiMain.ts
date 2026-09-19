@@ -33,7 +33,7 @@ const bootstrapped = await bootstrapApi({
   gateEngine: runtime.gateEngine,
   runtimeNodeIds: [runtime.manifest.node_id],
 });
-bootstrapped.arch.mount(runtime.manifest.node_id, PUBLIC_CATALOG_INTERFACE);
+bootstrapped.arch.mountAll([runtime.manifest.node_id], [PUBLIC_CATALOG_INTERFACE]);
 const app = new PublicCatalogHttpHandler(
   bootstrapped.app, runtime.pool, webBusinessApiPublicMallSlug(environment), allowedOrigins,
   webBusinessApiPublicMallHostMappings(environment), bootstrapped.arch, runtime.manifest.node_id,
