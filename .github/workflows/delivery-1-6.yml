@@ -95,7 +95,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
         shell: bash
-        run: gh api "repos/${GITHUB_REPOSITORY}/actions/runners" > "$RUNNER_TEMP/runners.json"
+        run: |
+          if [ -z "${GH_TOKEN:-}" ]; then
+            printf '{"error":"runner-read-token-missing"}\n' > "$RUNNER_TEMP/runners.json"
+            exit 0
+          fi
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runners" > "$RUNNER_TEMP/runners.json"
       - name: Select portable runner or GitHub Hosted
         id: route
         shell: bash

@@ -218,6 +218,8 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.execution_location.options, ['auto', 'github-hosted']);
   assert.match(workflowSource, /runs-on: \$\{\{ fromJSON\(needs\.route\.outputs\.runs_on\) \}\}/);
   assert.match(workflowSource, /needs\.route\.outputs\.runner_class == 'self-hosted'/);
+  assert.match(workflowSource, /GH_TOKEN: \$\{\{ secrets\.ZDT_RUNNER_READ_TOKEN \}\}/);
+  assert.match(workflowSource, /runner-read-token-missing/);
   for (const job of [workflow.jobs.execute, workflow.jobs['hosted-startup-fallback']]) {
     const cores = job.steps.filter((step) => String(step.uses ?? '').endsWith('/.github/actions/runner-1-6'));
     assert.equal(cores.length, 4);
@@ -292,6 +294,8 @@ test('control-side command only dispatches and queries GitHub', async () => {
   assert.match(dispatcher, /DELIVERY_COMMAND_RETURN_MS=/);
   const readme = await readFile(join(root, '02_platform_pingtai/infrastructure/github-actions-runner/README.md'), 'utf8');
   assert.match(readme, /Direct dispatch from GitHub's Actions page bypasses/);
+  assert.match(readme, /Normal delivery selects only the cloud-neutral `zdt-build` label/);
+  assert.doesNotMatch(readme, /`zdt-aliyun-build` registrations remain preferred/);
   assert.doesNotMatch(`${dispatcher}\n${controller}`, /npm ci|npm run|\bssh\b|\bscp\b|runner-1-6\.mjs/);
 });
 
@@ -582,4 +586,20 @@ test('Runner host scripts do not recreate the old build lock or bind installatio
     const script = await readFile(join(directory, name), 'utf8');
     assert.doesNotMatch(script, /i-2zeewhay0farxq8lucrc|EXPECTED_INSTANCE_ID/);
   }
+  assert.match(await readFile(join(directory, 'install-build-slot-2.sh'), 'utf8'), /x64\.complete/);
+});
+
+test('GCP bootstrap adds portable capacity without creating another release path', async () => {
+  const directory = join(root, '02_platform_pingtai/infrastructure/github-actions-runner');
+  const installer = await readFile(join(directory, 'restore-gcp-runner-environment.sh'), 'utf8');
+  const manifest = JSON.parse(await readFile(join(directory, 'gcp-runner-environment.json'), 'utf8'));
+  assert.match(installer, /--labels "\$runner_labels"/);
+  assert.match(installer, /runner_labels="zdt-build,zdt-build-\$\{slot\}"/);
+  assert.match(installer, /Slice=zdt-build\.slice/);
+  assert.match(installer, /x64\.complete/);
+  assert.doesNotMatch(installer, /zdt-aliyun-build|delivery-1-6\.yml|runner-1-6\.mjs|flock|\blease\b|\bclaim\b|\bseal\b/i);
+  assert.equal(manifest.runner.routeLabel, 'zdt-build');
+  assert.equal(manifest.runner.slots.length, 2);
+  assert.equal(manifest.delivery.workflow, '.github/workflows/delivery-1-6.yml');
+  assert.equal(manifest.delivery.sharedCore, '04_tools/release-engine/runner-1-6.mjs');
 });

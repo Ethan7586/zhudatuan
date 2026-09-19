@@ -177,6 +177,43 @@ test('a killed activation leaves current, previous, status, retry and manual rol
   assert.equal(rolledBack.result.readiness.status, 'ready');
 });
 
+test('a terminated activation stops the health command and restores previous', { skip: process.platform === 'win32' }, async () => {
+  const fixture = await createFixture();
+  const baseline = await createArtifact(fixture, 'healthy', 'a'.repeat(40));
+  await invoke(fixture, 'stage', baseline);
+  await invoke(fixture, 'activate', baseline);
+  const baselineCurrent = await readlink(join(fixture.pointerRoot, 'current'));
+
+  const startedPath = join(fixture.root, 'terminated-health-started');
+  const stoppedPath = join(fixture.root, 'terminated-health-stopped');
+  const healthScript = `const fs=require('node:fs');if(fs.readFileSync(process.argv[1],'utf8').trim()==='candidate'){process.on('SIGTERM',()=>{fs.writeFileSync(process.argv[3],'yes');process.exit(0)});fs.writeFileSync(process.argv[2],'yes');setInterval(()=>{},1000)}`;
+  fixture.policy.nodes.local.deployments.app.healthChecks = [{
+    argv: [process.execPath, '-e', healthScript, '{{currentDir}}/app.txt', startedPath, stoppedPath],
+  }];
+  fixture.policy.readiness.timeoutMs = 5_000;
+  await writePolicy(fixture);
+  const candidate = await createArtifact(fixture, 'candidate', 'b'.repeat(40));
+  await invoke(fixture, 'stage', candidate);
+  const child = spawn(process.execPath, [agent, 'activate', '--project', 'fixture', '--node', 'local', '--target', 'app', '--approval', `fixture:${candidate.sourceSha}`, '--expected-current', baselineCurrent], {
+    env: { ...process.env, AI_DELIVERY_POLICY_ROOT: fixture.policyRoot },
+    stdio: 'ignore',
+  });
+  const deadline = Date.now() + 2_000;
+  while (Date.now() < deadline && !(await access(startedPath).then(() => true, () => false))) {
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.equal(await access(startedPath).then(() => true, () => false), true, 'activation did not reach candidate health');
+  const exited = new Promise((resolve) => child.once('exit', resolve));
+  child.kill('SIGTERM');
+  const exitCode = await exited;
+  assert.equal(exitCode, 1);
+  assert.equal(await readFile(stoppedPath, 'utf8'), 'yes');
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), baselineCurrent);
+  const status = await invoke(fixture, 'status', candidate);
+  assert.equal(status.result.current, baselineCurrent);
+  assert.match(status.result.previous, new RegExp(baseline.sourceSha));
+});
+
 test('OSS direct mode checks health and automatically restores the immutable previous release', async () => {
   const fixture = await createFixture();
   fixture.policy.nodes.local.deployments.app.healthChecks = [

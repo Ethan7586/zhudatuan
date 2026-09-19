@@ -1361,6 +1361,7 @@ async function waitForReadiness(context, values) {
       try {
         successfulChecks = await runReadinessAttempt(checks, values, settings, deadline);
       } catch (error) {
+        if (error?.code === 'REMOTE_COMMAND_INTERRUPTED') throw error;
         lastError = errorEvidence(error);
       }
     } else {
@@ -1464,8 +1465,11 @@ function elapsedMs(started) {
 async function command(argv, options = {}) {
   const started = Date.now();
   const chunks = [];
+  let interruptedSignal = null;
   const result = await new Promise((resolvePromise, reject) => {
     const useProcessGroup = process.platform !== 'win32';
+    let escalation;
+    let closedResult;
     const child = spawn(argv[0], argv.slice(1), {
       shell: false,
       detached: useProcessGroup,
@@ -1475,29 +1479,69 @@ async function command(argv, options = {}) {
       ...(options.uid === undefined ? {} : { uid: options.uid }),
       ...(options.gid === undefined ? {} : { gid: options.gid }),
     });
-    child.stdout.on('data', (chunk) => chunks.push(chunk));
-    child.stderr.on('data', (chunk) => chunks.push(chunk));
-    child.on('error', reject);
-    const timer = setTimeout(() => {
+    const terminate = (signal) => {
       if (useProcessGroup && child.pid) {
         try {
-          process.kill(-child.pid, 'SIGKILL');
+          process.kill(-child.pid, signal);
           return;
         } catch (error) {
           if (error?.code === 'ESRCH') return;
         }
       }
-      child.kill('SIGKILL');
+      child.kill(signal);
+    };
+    const forwardedSignals = process.platform === 'win32' ? ['SIGINT', 'SIGTERM'] : ['SIGHUP', 'SIGINT', 'SIGTERM'];
+    const signalHandlers = new Map(forwardedSignals.map((signal) => [signal, () => {
+      interruptedSignal ??= signal;
+      terminate(signal);
+      if (escalation) return;
+      escalation = setTimeout(() => {
+        terminate('SIGKILL');
+        if (closedResult) resolvePromise(closedResult);
+      }, 2_000);
+      escalation.unref();
+    }]));
+    for (const [signal, handler] of signalHandlers) process.on(signal, handler);
+    const removeSignalHandlers = () => {
+      for (const [signal, handler] of signalHandlers) process.off(signal, handler);
+    };
+    child.stdout.on('data', (chunk) => chunks.push(chunk));
+    child.stderr.on('data', (chunk) => chunks.push(chunk));
+    child.on('error', (error) => {
+      removeSignalHandlers();
+      reject(error);
+    });
+    const timer = setTimeout(() => {
+      terminate('SIGKILL');
     }, options.timeoutMs ?? 30_000);
     child.on('close', (code, signal) => {
       clearTimeout(timer);
-      resolvePromise({ code, signal });
+      removeSignalHandlers();
+      const completed = { code, signal };
+      if (escalation && useProcessGroup && processGroupExists(child.pid)) {
+        closedResult = completed;
+        escalation.ref();
+        return;
+      }
+      if (escalation) clearTimeout(escalation);
+      resolvePromise(completed);
     });
   });
   const stdout = Buffer.concat(chunks).toString('utf8');
+  if (interruptedSignal) throw failure('REMOTE_COMMAND_INTERRUPTED', { argv, signal: interruptedSignal, outputTail: stdout.slice(-3000) });
   const accepted = options.acceptExitCodes ?? [0];
   assert(accepted.includes(result.code), 'REMOTE_COMMAND_FAILED', { argv, code: result.code, signal: result.signal, outputTail: stdout.slice(-3000) });
   return { stdout, durationMs: Date.now() - started };
+}
+
+function processGroupExists(pid) {
+  if (!pid) return false;
+  try {
+    process.kill(-pid, 0);
+    return true;
+  } catch (error) {
+    return error?.code === 'EPERM';
+  }
 }
 
 async function treeEvidence(root, ignored = new Set()) {

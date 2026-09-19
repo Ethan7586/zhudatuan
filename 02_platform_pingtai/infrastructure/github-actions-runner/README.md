@@ -44,9 +44,23 @@ For a migration-plus-service batch, `DELIVERY_END_TO_END_MS` covers the whole co
 
 ## Shared Runner host
 
-The three online Runner registrations can use one host with separate service directories and users; the workflow and release core do not change. The two build services share `zdt-build.slice`. `install-build-capacity-policy.sh` no longer creates a host lock or pins an ECS instance ID; when applied, it removes the retired lock file and tmpfiles entry. Its current default resource values preserve the old host's behavior; on an 8-core/16-GiB host, `ZDT_BUILD_CPU_QUOTA`, `ZDT_BUILD_MEMORY_HIGH`, and `ZDT_BUILD_MEMORY_MAX` can be set from observed L-kernel and build load. The primary release Runner is not included in the two-build-service slice. These scripts do not migrate services or restart the L-kernel by themselves.
+Up to three Runner registrations can use one host with separate service directories and users; the workflow and release core do not change. The two build services share `zdt-build.slice`. `install-build-capacity-policy.sh` no longer creates a host lock or pins an ECS instance ID; when applied, it removes the retired lock file and tmpfiles entry. Its current default resource values preserve the old host's behavior; on an 8-core/16-GiB host, `ZDT_BUILD_CPU_QUOTA`, `ZDT_BUILD_MEMORY_HIGH`, and `ZDT_BUILD_MEMORY_MAX` can be set from observed L-kernel and build load. The primary release Runner is not included in the two-build-service slice. These scripts do not migrate services or restart the L-kernel by themselves.
 
-Routing also understands the cloud-neutral `zdt-build` label for a future self-hosted build Runner, with optional `zdt-build-N` slot label. Existing `zdt-aliyun-build` registrations remain preferred and keep the same behavior. Both labels use the single workflow and shared core; either self-hosted class can hand off to GitHub Hosted before the core begins. The current Aliyun installation scripts still contain Aliyun-specific service names and sing-box settings, so they are not GCP installers. This change does not register or test a GCP Runner.
+Normal delivery selects only the cloud-neutral `zdt-build` label, with an optional `zdt-build-N` slot label. The retired `zdt-aliyun-build` label is ignored. A compatible Aliyun host can return to the same pool by registering with `zdt-build`; it does not need an Aliyun-specific route or a second workflow. Any selected self-hosted Runner can hand off to GitHub Hosted before the core begins. The older Aliyun installation scripts still contain Aliyun-specific service names and sing-box settings, so they are not GCP installers.
+
+Set `ZDT_RUNNER_READ_TOKEN` to a fine-grained GitHub token limited to this repository with `Actions: read` when instant self-hosted capacity discovery is required. GitHub's built-in workflow token cannot list repository Runner registrations. If the read token is absent or unreadable, routing remains available through GitHub Hosted instead of blocking delivery.
+
+## GCP build host
+
+`gcp-runner-environment.json` records the portable two-slot layout for an 8-vCPU/16-GiB persistent Google Compute Engine Linux host shared with L-kernel. Cloud Run is not used as a self-hosted Runner host because its instances are request-driven and replaceable. Both slots carry the cloud-neutral `zdt-build` label, so the existing workflow and shared release core require no GCP fork.
+
+On the GCE host, provide a fresh repository Runner registration token and run:
+
+```text
+sudo -E ./restore-gcp-runner-environment.sh
+```
+
+The script pins the same Runner and Node versions as the existing build fleet, creates `gcp-zdt-build-1` and `gcp-zdt-build-2`, and places both services in one `zdt-build.slice`. Existing L-kernel services are not modified or restarted. R2 and target SSH values remain repository variables or secrets and are not stored on the host or in Git.
 
 ## GitHub sing-box line
 
