@@ -1,7 +1,8 @@
 import { CONTRACT_VERSION } from '@shop/contract';
 import { resolveNodeContextByHost, type NodeContextResolver, type ResolvedNodeContext } from '@shop/config/sfl-node-kernel';
+import { ArchBoard } from '@shop/l-kernel/arch';
 import { createTelemetry } from '@shop/telemetry';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { SERVER_NODE_MANIFEST_REGISTRY } from '../../bootstrap/ApiBootstrap';
 import type { RouteHandler, RouteRegistry } from '../../bootstrap/RouteRegistry';
 import { requireRequestNodeContext } from '../security/AccessContext';
@@ -75,6 +76,21 @@ describe('HttpApp contract handshake', () => {
 
     expect(response.status).toBe(200);
     expect(resolveCount).toBe(0);
+  });
+
+  it('stops a disconnected interface before parsing, CSRF, gates, or its handler', async () => {
+    const arch = new ArchBoard([
+      { nodeId: 'unresolved', interfaceId: 'identity.sessions.create', state: 'disconnected' },
+    ]);
+    const handler = vi.fn(async () => ({ status: 200, body: { accepted: true } }));
+    const response = await new HttpApp(routes(handler), [], undefined, undefined, undefined, undefined, undefined, arch)
+      .handle(new Request('https://api.example/api/v1/identity/sessions', {
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: '{not-json',
+      }));
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({ code: 'NOT_FOUND' });
+    expect(handler).not.toHaveBeenCalled();
   });
 
   it('invokes a route when the retired contract version header is missing', async () => {

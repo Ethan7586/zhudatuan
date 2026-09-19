@@ -1,5 +1,6 @@
 import { CONTRACT_VERSION, OperationCatalog, type OperationId } from '@shop/contract';
 import type { GateContext, GateDecision, GatePlugin } from '@shop/kernel';
+import { ArchBoard } from '@shop/l-kernel/arch';
 import { describe, expect, it, vi } from 'vitest';
 import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
 import { GateEngine, GateRegistry } from '../security/gate_menjin';
@@ -77,6 +78,22 @@ describe('HttpApp observe gates', () => {
     expect(observed).toHaveBeenCalledWith(expect.objectContaining({
       decisions: [expect.objectContaining({ decision: 'error', reason_code: 'gate_plugin_error' })],
     }));
+  });
+
+  it('does not evaluate gates for a disconnected interface', async () => {
+    const evaluate = vi.fn(async (context: GateContext): Promise<GateDecision> => decision(context));
+    const engine = new GateEngine(new GateRegistry([plugin(evaluate)]), vi.fn());
+    const execute = vi.spyOn(engine, 'execute');
+    const arch = new ArchBoard([
+      { nodeId: 'unresolved', interfaceId: 'catalog.listings.read', state: 'disconnected' },
+    ]);
+
+    const response = await new HttpApp(routes('catalog.listings.read'), [], undefined, undefined, undefined, engine, undefined, arch)
+      .handle(request('/api/v1/catalog/listings'));
+
+    expect(response.status).toBe(404);
+    expect(execute).not.toHaveBeenCalled();
+    expect(evaluate).not.toHaveBeenCalled();
   });
 });
 

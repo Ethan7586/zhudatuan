@@ -39,6 +39,7 @@ const server = listen(
 for (const signal of ['SIGINT', 'SIGTERM'] as const)
   process.once(signal, async () => {
     await server.close();
+    await bootstrapped.archState?.close();
     await runtime.close();
     process.exit(0);
   });

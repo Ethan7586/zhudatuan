@@ -23,6 +23,7 @@ const server = listen(bootstrapped.app, purchaseApiPort(environment), '127.0.0.1
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, async () => {
   await server.close();
+  await bootstrapped.archState?.close();
   await runtime.close();
   process.exit(0);
 });

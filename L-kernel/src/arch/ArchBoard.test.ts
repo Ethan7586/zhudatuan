@@ -84,4 +84,19 @@ describe('ArchBoard', () => {
     expect(await restored.exchange('node:l0', 'order.read', null, async () => 'ok'))
       .toEqual({ connected: true, output: 'ok' });
   });
+
+  it('atomically replaces host-provided state before defaults are installed again', () => {
+    const arch = new ArchBoard([
+      { nodeId: 'node:l0', interfaceId: 'member.read', state: 'connected' },
+      { nodeId: 'node:l1', interfaceId: 'order.read', state: 'disconnected' },
+    ]);
+    arch.replace([
+      { nodeId: 'node:l0', interfaceId: 'member.read', state: 'removed' },
+      { nodeId: 'node:l2', interfaceId: 'catalog.read', state: 'connected' },
+    ]);
+
+    expect(arch.state('node:l1', 'order.read')).toBe('unmounted');
+    expect(arch.state('node:l0', 'member.read')).toBe('removed');
+    expect(arch.state('node:l2', 'catalog.read')).toBe('connected');
+  });
 });

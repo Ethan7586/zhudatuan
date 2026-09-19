@@ -76,7 +76,7 @@
     "check:sfl-recursive-runtime": "node --import tsx --test 04_tools/scripts/provisioning/autonode-engine.test.mjs 04_tools/scripts/provisioning/autonode-recursive.test.mjs 04_tools/scripts/provisioning/autonode-activation-engine.test.mjs 04_tools/scripts/provisioning/autonode-production-provider.test.mjs",
     "autonode:activate": "node --import tsx 04_tools/scripts/provisioning/autonode-activate.mjs",
     "check:sfl-node-operations": "node --test 04_tools/scripts/provisioning/autonode-operations.test.mjs",
-    "check:sfl-node-control": "node --test 04_tools/scripts/provisioning/autonode-task-engine.test.mjs",
+    "check:sfl-node-control": "node --test 04_tools/scripts/provisioning/autonode-task-engine.test.mjs 04_tools/scripts/provisioning/l-arch-state-file.test.mjs",
     "autonode:operate": "node 04_tools/scripts/provisioning/autonode-operate.mjs",
     "check:sfl-administrator-segment-scope": "node 04_tools/scripts/check/sfl-administrator-segment-scope.pg17-fixture.mjs",
     "check:session-membership-permission-consumption": "node 04_tools/scripts/check/session-membership-permission-consumption.pg17-fixture.mjs",

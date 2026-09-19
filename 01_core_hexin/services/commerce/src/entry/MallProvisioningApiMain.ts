@@ -29,6 +29,7 @@ const server = listen(bootstrapped.app, mallProvisioningApiPort(environment), '1
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, async () => {
   await server.close();
+  await bootstrapped.archState?.close();
   await runtime.close();
   process.exit(0);
 });

@@ -11,9 +11,6 @@ export function connectHostedOperation(usecase: OperationUsecase, arch: ArchBoar
     async invoke(request) {
       const node = request.access?.actor.nodeContext;
       if (!node?.host_node_id) return usecase.invoke(request);
-      // A hosted L inherits an already registered host interface on first use.
-      // mountAll preserves an explicit disconnect or removal for that hosted node.
-      arch.mountAll([node.node_id], [request.type]);
       const exchanged = await arch.exchange(node.node_id, request.type, request, (input) => usecase.invoke(input));
       if (!exchanged.connected) throw new Error('NOT_FOUND');
       return exchanged.output;

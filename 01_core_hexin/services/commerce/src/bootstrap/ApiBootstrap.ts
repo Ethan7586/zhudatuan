@@ -22,6 +22,7 @@ import type { OperationId } from '@shop/contract';
 import type { GateEngine } from '../foundation/security/gate_menjin';
 import { ArchBoard } from '@shop/l-kernel/arch';
 import { ARCH_BOARD } from './ArchOperationAdapter';
+import { ArchRuntimeState, configuredArchStatePath, readArchRuntimeState } from './ArchRuntimeState';
 
 export const NODE_MANIFEST_REGISTRY = token<NodeManifestRegistry>('foundation.node-manifest-registry');
 export const SERVER_NODE_MANIFEST_REGISTRY = await materializeNodeManifestRegistryDeclaration(
@@ -68,6 +69,7 @@ export interface ApiBootstrapOptions {
   readonly gateEngine?: GateEngine;
   readonly nodeManifestRegistry?: NodeManifestRegistry;
   readonly arch?: ArchBoard;
+  readonly archStatePath?: string;
   readonly runtimeNodeIds?: readonly string[];
 }
 
@@ -78,6 +80,7 @@ export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readon
   modules: readonly string[];
   routes: RouteRegistry;
   arch: ArchBoard;
+  archState: ArchRuntimeState | undefined;
   nodeContextResolver: NodeContextResolver | undefined;
 }>> {
   const container = new Container();
@@ -85,6 +88,8 @@ export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readon
   const commands = new CommandBus();
   const queries = new QueryBus();
   const routes = new RouteRegistry(options.operationIds);
+  const archStatePath = options.archStatePath ?? configuredArchStatePath();
+  const initialArchState = archStatePath === undefined ? null : await readArchRuntimeState(archStatePath);
   const arch = options.arch ?? new ArchBoard();
   container.bind(ARCH_BOARD, arch);
   const jobs = new JobRegistry();
@@ -101,14 +106,14 @@ export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readon
   const archOperations = routes.catalog()
     .map(({ operation }) => operation)
     .filter((operation) => !operation.startsWith('runtime.health.'));
-  if (nodeManifestRegistry !== undefined) arch.mountAll(
-    nodeManifestRegistry.manifests
-      .filter((candidate) => options.runtimeNodeIds === undefined || options.runtimeNodeIds.includes(candidate.node_id))
-      .map((manifest) => manifest.node_id),
-    archOperations,
-  );
-  // APIs without a node registry use the same exchange key.
-  arch.mountAll(['unresolved'], archOperations);
+  const archNodeIds = nodeManifestRegistry === undefined ? [] : nodeManifestRegistry.manifests
+    .filter((candidate) => options.runtimeNodeIds === undefined || options.runtimeNodeIds.includes(candidate.node_id))
+    .map((manifest) => manifest.node_id);
+  const defaultArchNodeIds = [...archNodeIds, 'unresolved'];
+  const archState = archStatePath === undefined ? undefined : new ArchRuntimeState(archStatePath, arch, initialArchState);
+  if (archState === undefined) arch.mountAll(defaultArchNodeIds, archOperations);
+  else archState.registerDefaults(defaultArchNodeIds, archOperations);
+  archState?.start();
   container.freeze();
   const nodeContextResolver = nodeManifestRegistry === undefined ? undefined
     : restrictRuntimeNodes(createNodeContextResolver(nodeManifestRegistry), options.runtimeNodeIds);
@@ -117,7 +122,7 @@ export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readon
     : expandRuntimeOrigins(options.allowedOrigins, nodeManifestRegistry, options.allowedOriginSurfaces ?? []);
   return Object.freeze({ app: new HttpApp(routes, allowedOrigins, undefined, undefined, new OperationMetrics(options.telemetry),
     options.gateEngine, nodeContextResolver, arch),
-    modules: modules.catalog(), routes, arch, nodeContextResolver });
+    modules: modules.catalog(), routes, arch, archState, nodeContextResolver });
 }
 
 function restrictRuntimeNodes(resolver: NodeContextResolver, nodeIds: readonly string[] | undefined): NodeContextResolver {
