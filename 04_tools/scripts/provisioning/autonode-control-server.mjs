@@ -2,6 +2,11 @@ import { createServer } from 'node:http';
 
 export const AUTONODE_CONTROL_API_SCHEMA_VERSION = 'sfl.autonode-control-api.v1';
 
+export function requireLoopbackControlHost(host) {
+  if (host !== '127.0.0.1' && host !== '::1') throw new Error('AUTONODE_CONTROL_HOST_NOT_LOOPBACK');
+  return host;
+}
+
 export function createAutoNodeControlServer(engine, archState) {
   if (!engine || typeof engine.submit !== 'function' || typeof engine.read !== 'function'
     || typeof engine.retry !== 'function' || typeof engine.list !== 'function') {
@@ -59,6 +64,8 @@ export function createAutoNodeControlServer(engine, archState) {
 }
 
 async function readBody(request) {
+  const contentType = request.headers['content-type']?.split(';', 1)[0]?.trim().toLowerCase();
+  if (contentType !== 'application/json') throw new Error('AUTONODE_CONTROL_CONTENT_TYPE_INVALID');
   let body = '';
   for await (const chunk of request) {
     body += chunk.toString('utf8');

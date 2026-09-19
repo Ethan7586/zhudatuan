@@ -26,7 +26,7 @@ export class LArchStateFile {
   async #update(input) {
     const change = parseChange(input);
     const current = await readDocument(this.path);
-    if (change.expected_revision !== undefined && change.expected_revision !== current.revision) {
+    if (change.expected_revision !== current.revision) {
       throw new Error(`L_ARCH_REVISION_CONFLICT:${current.revision}`);
     }
     const connections = new Map(current.connections.map((connection) => [key(connection), connection]));
@@ -95,8 +95,8 @@ function parseChange(value) {
   if (!['connected', 'disconnected', 'removed', 'unmounted'].includes(value.state)) {
     throw new Error('L_ARCH_CONNECTION_STATE_INVALID');
   }
-  if (value.expected_revision !== undefined
-    && (!Number.isSafeInteger(value.expected_revision) || value.expected_revision < 0)) {
+  if (!Object.hasOwn(value, 'expected_revision')) throw new Error('L_ARCH_EXPECTED_REVISION_REQUIRED');
+  if (!Number.isSafeInteger(value.expected_revision) || value.expected_revision < 0) {
     throw new Error('L_ARCH_EXPECTED_REVISION_INVALID');
   }
   return Object.freeze({ node_id, interface_id, state: value.state, expected_revision: value.expected_revision });
