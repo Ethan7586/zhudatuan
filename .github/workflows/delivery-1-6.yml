@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: One Runner 1.7 operation; use zdt-delivery for queued-Aliyun fallback
+        description: One Runner 1.7 operation; use zdt-delivery for pre-core startup fallback
         required: true
         type: choice
         options: [release, status, retry, rollback]
@@ -96,7 +96,7 @@ jobs:
           GH_TOKEN: ${{ secrets.ZDT_RUNNER_READ_TOKEN }}
         shell: bash
         run: gh api "repos/${GITHUB_REPOSITORY}/actions/runners" > "$RUNNER_TEMP/runners.json"
-      - name: Select Aliyun first, then portable or GitHub Hosted
+      - name: Select portable runner or GitHub Hosted
         id: route
         shell: bash
         run: |
@@ -118,13 +118,7 @@ jobs:
     outputs:
       core_started: ${{ steps.started.outputs.value }}
     env:
-      ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
-      ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
-      ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
-      ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
-      ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
-      ALIYUN_OSS_INTERNAL_ENDPOINT: ${{ secrets.ALIYUN_OSS_INTERNAL_ENDPOINT }}
-      ZDT_ARTIFACT_STORE: ${{ vars.ZDT_ARTIFACT_STORE || 'aliyun' }}
+      ZDT_ARTIFACT_STORE: ${{ vars.ZDT_ARTIFACT_STORE || 'r2' }}
       CLOUDFLARE_R2_ACCOUNT_ID: ${{ vars.CLOUDFLARE_R2_ACCOUNT_ID }}
       CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
       CLOUDFLARE_R2_ENDPOINT: ${{ vars.CLOUDFLARE_R2_ENDPOINT }}
@@ -205,17 +199,11 @@ jobs:
   hosted-startup-fallback:
     name: Retry pre-core startup on GitHub Hosted
     needs: [route, execute]
-    if: ${{ always() && (needs.route.outputs.runner_class == 'aliyun' || needs.route.outputs.runner_class == 'self-hosted') && needs.execute.result == 'failure' && needs.execute.outputs.core_started != 'true' }}
+    if: ${{ always() && needs.route.outputs.runner_class == 'self-hosted' && needs.execute.result == 'failure' && needs.execute.outputs.core_started != 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
-      ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
-      ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
-      ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
-      ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
-      ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
-      ALIYUN_OSS_INTERNAL_ENDPOINT: ${{ secrets.ALIYUN_OSS_INTERNAL_ENDPOINT }}
-      ZDT_ARTIFACT_STORE: ${{ vars.ZDT_ARTIFACT_STORE || 'aliyun' }}
+      ZDT_ARTIFACT_STORE: ${{ vars.ZDT_ARTIFACT_STORE || 'r2' }}
       CLOUDFLARE_R2_ACCOUNT_ID: ${{ vars.CLOUDFLARE_R2_ACCOUNT_ID }}
       CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
       CLOUDFLARE_R2_ENDPOINT: ${{ vars.CLOUDFLARE_R2_ENDPOINT }}
@@ -269,7 +257,7 @@ jobs:
       - name: Mark shared release core started
         shell: bash
         run: echo 'value=true' >> "$GITHUB_OUTPUT"
-      - name: Run the same release core after Aliyun startup failure
+      - name: Run the same release core after portable runner startup failure
         if: ${{ inputs.operation != 'status' }}
         uses: ./.runner-1-6/control-release/.github/actions/runner-1-6
         with:
@@ -281,7 +269,7 @@ jobs:
           physical-node: ${{ inputs.physical_node }}
           runner-class: github-hosted
           control-root: ${{ github.workspace }}/.runner-1-6/control-release
-      - name: Read live status with the same core after Aliyun startup failure
+      - name: Read live status with the same core after portable runner startup failure
         if: ${{ inputs.operation == 'status' }}
         uses: ./.runner-1-6/status-control/.github/actions/runner-1-6
         with:

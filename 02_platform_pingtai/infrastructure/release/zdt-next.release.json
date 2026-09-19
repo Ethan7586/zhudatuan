@@ -6,7 +6,7 @@
   "stateDirectory": ".ai-delivery",
   "transport": {
     "kind": "ssh",
-    "host": "root@123.57.232.253",
+    "host": "root@34.96.159.116",
     "hostEnv": "ZDT_RELEASE_SSH_HOST",
     "agent": "/usr/local/lib/ai-delivery/agent.mjs",
     "incomingRoot": "/opt/ai-delivery/incoming",

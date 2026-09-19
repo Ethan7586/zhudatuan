@@ -1,27 +1,22 @@
-const ALIYUN_LABEL = 'zdt-aliyun-build';
 const PORTABLE_LABEL = 'zdt-build';
 
 export function selectExecutionRunner(observation) {
   if (!observation || observation.error) return hosted('self-hosted-status-unavailable');
   const runners = Array.isArray(observation.runners) ? observation.runners : [];
-  const aliyun = runners.filter((runner) => hasLabel(runner, ALIYUN_LABEL));
-  const portable = runners.filter((runner) => hasLabel(runner, PORTABLE_LABEL) && !hasLabel(runner, ALIYUN_LABEL));
-  const candidates = [...aliyun, ...portable];
+  const candidates = runners.filter((runner) => hasLabel(runner, PORTABLE_LABEL));
   const available = candidates.find((runner) => runner.status === 'online' && runner.busy !== true);
   if (!available) {
     const reason = candidates.length === 0 ? 'self-hosted-runner-missing' : candidates.some((runner) => runner.status !== 'online') ? 'self-hosted-runner-offline' : 'self-hosted-runner-busy';
     return hosted(reason);
   }
   const labels = runnerLabels(available);
-  const legacy = hasLabel(available, ALIYUN_LABEL);
-  const routeLabel = legacy ? ALIYUN_LABEL : PORTABLE_LABEL;
   const linux = labels.find((label) => label.toLowerCase() === 'linux') ?? 'linux';
   const x64 = labels.find((label) => label.toLowerCase() === 'x64') ?? 'x64';
   return {
-    runnerClass: legacy ? 'aliyun' : 'self-hosted',
+    runnerClass: 'self-hosted',
     runnerName: available.name,
-    reason: legacy ? 'aliyun-ready' : 'self-hosted-ready',
-    runsOn: ['self-hosted', linux, x64, routeLabel],
+    reason: 'self-hosted-ready',
+    runsOn: ['self-hosted', linux, x64, PORTABLE_LABEL],
   };
 }
 
