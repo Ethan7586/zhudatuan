@@ -15,6 +15,7 @@ export async function runCommand(spec, context) {
   const startedAt = new Date().toISOString();
   const output = [];
   let timedOut = false;
+  let interruptedSignal = null;
   const result = await new Promise((resolve, reject) => {
     // Give each command its own process group so a timeout also stops its local descendants.
     const useProcessGroup = process.platform !== 'win32';
@@ -38,21 +39,36 @@ export async function runCommand(spec, context) {
       }
       child.kill(signal);
     };
-    if (spec.input !== undefined) child.stdin.end(spec.input);
-    child.stdout.on('data', (chunk) => output.push(chunk));
-    child.stderr.on('data', (chunk) => output.push(chunk));
-    child.on('error', reject);
-    const timer = setTimeout(() => {
-      timedOut = true;
-      terminate('SIGTERM');
+    const requestTermination = (signal, reason) => {
+      if (reason === 'timeout') timedOut = true;
+      else interruptedSignal ??= signal;
+      terminate(signal);
+      if (escalation) return;
       escalation = setTimeout(() => {
         terminate('SIGKILL');
         if (closedResult) resolve(closedResult);
       }, 2_000);
       escalation.unref();
+    };
+    const forwardedSignals = process.platform === 'win32' ? ['SIGINT', 'SIGTERM'] : ['SIGHUP', 'SIGINT', 'SIGTERM'];
+    const signalHandlers = new Map(forwardedSignals.map((signal) => [signal, () => requestTermination(signal, 'runner-interrupted')]));
+    for (const [signal, handler] of signalHandlers) process.on(signal, handler);
+    const removeSignalHandlers = () => {
+      for (const [signal, handler] of signalHandlers) process.off(signal, handler);
+    };
+    if (spec.input !== undefined) child.stdin.end(spec.input);
+    child.stdout.on('data', (chunk) => output.push(chunk));
+    child.stderr.on('data', (chunk) => output.push(chunk));
+    child.on('error', (error) => {
+      removeSignalHandlers();
+      reject(error);
+    });
+    const timer = setTimeout(() => {
+      requestTermination('SIGTERM', 'timeout');
     }, timeoutMs);
     child.on('close', (exitCode, signal) => {
       clearTimeout(timer);
+      removeSignalHandlers();
       const completed = { exitCode, signal };
       if (escalation && useProcessGroup && processGroupExists(child.pid)) {
         closedResult = completed;
@@ -69,12 +85,13 @@ export async function runCommand(spec, context) {
     await mkdir(dirname(context.logPath), { recursive: true });
     await writeFile(context.logPath, log);
   }
-  if (timedOut || result.exitCode !== 0) {
-    throw new DeliveryError(timedOut ? 'COMMAND_TIMEOUT' : 'COMMAND_FAILED', `${spec.name} failed`, {
+  if (timedOut || interruptedSignal || result.exitCode !== 0) {
+    const code = timedOut ? 'COMMAND_TIMEOUT' : interruptedSignal ? 'COMMAND_INTERRUPTED' : 'COMMAND_FAILED';
+    throw new DeliveryError(code, `${spec.name} failed`, {
       argv,
       cwd,
       exitCode: result.exitCode,
-      signal: result.signal,
+      signal: interruptedSignal ?? result.signal,
       timeoutMs,
       outputTail: log.slice(-4_000),
     });
