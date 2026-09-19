@@ -22,20 +22,53 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: zdt-next
+          ref: ${{ github.ref }}
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /04_tools/release-engine/
       - uses: actions/setup-node@v6
         with:
           node-version: 22.22.0
-      - name: Read three release descriptors without deploying
+      - name: Verify existing Cloudflare token against the release bucket
         env:
-          KNOWN_SOURCE_SHA: ${{ inputs.known_source_sha }}
-          FAILED_SOURCE_SHA: ${{ inputs.failed_source_sha }}
-          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
-          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
-          ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
-          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
-          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
-        run: node 04_tools/release-engine/diagnose-oss-read.mjs
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_R2_ACCOUNT_ID: 4dceba8f9d03d121208467416a73c948
+          CLOUDFLARE_R2_BUCKET: zdt-next-releases
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          token_result="$(curl -fsS https://api.cloudflare.com/client/v4/user/tokens/verify \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")"
+          access_key_id="$(jq -er '.result.id' <<<"$token_result")"
+          secret_access_key="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | sha256sum | cut -d' ' -f1)"
+          echo "::add-mask::$access_key_id"
+          echo "::add-mask::$secret_access_key"
+          npm ci --prefix 04_tools/release-engine --ignore-scripts --no-audit --no-fund
+          cd 04_tools/release-engine
+          CLOUDFLARE_R2_ACCESS_KEY_ID="$access_key_id" \
+          CLOUDFLARE_R2_SECRET_ACCESS_KEY="$secret_access_key" \
+          node --input-type=module <<'NODE'
+          import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+
+          const bucket = process.env.CLOUDFLARE_R2_BUCKET;
+          const key = `diagnostics/github-token-${process.env.GITHUB_RUN_ID}`;
+          const client = new S3Client({
+            region: 'auto',
+            endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+            credentials: {
+              accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
+              secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+            },
+          });
+
+          try {
+            await client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: 'probe' }));
+            const result = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+            const body = await result.Body.transformToString();
+            if (body !== 'probe') throw new Error('R2_PROBE_CONTENT_MISMATCH');
+            console.log(JSON.stringify({ r2: 'read-write-ok', bucket }));
+          } finally {
+            await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key })).catch(() => {});
+          }
+          NODE
