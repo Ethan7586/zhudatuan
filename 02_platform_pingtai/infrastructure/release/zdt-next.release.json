@@ -601,7 +601,7 @@
     {
       "id": "contracts-and-shared-packages",
       "targets": [],
-      "include": ["01_core_hexin/packages/**","01_core_hexin/services/commerce-api/**","01_core_hexin/extensions/**"],
+      "include": ["L-kernel/**","01_core_hexin/packages/**","01_core_hexin/services/commerce-api/**","01_core_hexin/extensions/**"],
       "exclude": ["01_core_hexin/packages/config/src/SflNode*"],
       "reason": "shared contract or runtime dependency",
       "dynamicImpact": "workspace-graph"
