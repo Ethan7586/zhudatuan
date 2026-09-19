@@ -69,6 +69,22 @@ describe('Arch runtime state', () => {
     await expect(readArchRuntimeState(path)).rejects.toThrow('L_ARCH_CONNECTION_DUPLICATE');
   });
 
+  it('keeps the active switch state when a stale host revision appears', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'l-arch-state-stale-'));
+    roots.push(root);
+    const path = join(root, 'state.json');
+    await save(path, 2, [connection('connected')]);
+    const initial = await readArchRuntimeState(path);
+    const board = new ArchBoard(initial?.connections);
+    const runtime = new ArchRuntimeState(path, board, initial);
+    runtime.registerDefaults(['node:l0'], ['member.read']);
+
+    await save(path, 1, [connection('disconnected')]);
+    await expect(runtime.refresh()).rejects.toThrow('L_ARCH_STATE_REVISION_REGRESSION:2:1');
+    expect(runtime.revision).toBe(2);
+    expect(board.state('node:l0', 'member.read')).toBe('connected');
+  });
+
   it('observes an atomically created host state file without restarting the API process', async () => {
     const root = await mkdtemp(join(tmpdir(), 'l-arch-state-watch-'));
     roots.push(root);

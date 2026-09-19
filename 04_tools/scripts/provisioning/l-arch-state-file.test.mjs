@@ -25,6 +25,10 @@ test('persists one versioned board state and restores it through a new host inst
     node_id: 'node:hbbtzn:l1', interface_id: 'member.profile.read', state: 'connected', expected_revision: 0,
   });
   assert.equal(connected.revision, 1);
+  const unchangedConnected = await first.update({
+    node_id: 'node:hbbtzn:l1', interface_id: 'member.profile.read', state: 'connected', expected_revision: 1,
+  });
+  assert.deepEqual(unchangedConnected, connected);
   const disconnected = await first.update({
     node_id: 'node:hbbtzn:l1', interface_id: 'member.profile.read', state: 'disconnected', expected_revision: 1,
   });
@@ -44,4 +48,8 @@ test('persists one versioned board state and restores it through a new host inst
   });
   assert.equal(unmounted.revision, 3);
   assert.deepEqual(unmounted.connections, []);
+  const unchangedUnmounted = await restarted.update({
+    node_id: 'node:hbbtzn:l1', interface_id: 'member.profile.read', state: 'unmounted', expected_revision: 3,
+  });
+  assert.deepEqual(unchangedUnmounted, unmounted);
 });

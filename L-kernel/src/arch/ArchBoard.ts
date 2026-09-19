@@ -16,12 +16,16 @@ export class ArchBoard {
   }
 
   replace(connections: readonly ArchConnection[]): void {
-    this.connections.clear();
+    const next = new Map<string, boolean | null>();
     for (const connection of connections) {
-      if (connection.state === 'connected') this.connections.set(key(connection.nodeId, connection.interfaceId), true);
-      else if (connection.state === 'disconnected') this.connections.set(key(connection.nodeId, connection.interfaceId), false);
-      else if (connection.state === 'removed') this.connections.set(key(connection.nodeId, connection.interfaceId), null);
+      const connectionKey = key(connection.nodeId, connection.interfaceId);
+      if (connection.state === 'connected') next.set(connectionKey, true);
+      else if (connection.state === 'disconnected') next.set(connectionKey, false);
+      else if (connection.state === 'removed') next.set(connectionKey, null);
+      else if (connection.state !== 'unmounted') throw new Error('L_ARCH_CONNECTION_STATE_INVALID');
     }
+    this.connections.clear();
+    for (const [connectionKey, connected] of next) this.connections.set(connectionKey, connected);
   }
 
   mount(nodeId: string, interfaceId: string): void {
@@ -29,8 +33,10 @@ export class ArchBoard {
   }
 
   mountAll(nodeIds: readonly string[], interfaceIds: readonly string[]): void {
-    for (const nodeId of nodeIds)
-      for (const interfaceId of interfaceIds)
+    const validatedNodeIds = nodeIds.map((nodeId) => identifier(nodeId, 'L_ARCH_NODE_ID_INVALID'));
+    const validatedInterfaceIds = interfaceIds.map((interfaceId) => identifier(interfaceId, 'L_ARCH_INTERFACE_ID_INVALID'));
+    for (const nodeId of validatedNodeIds)
+      for (const interfaceId of validatedInterfaceIds)
         if (!this.connections.has(key(nodeId, interfaceId))) this.mount(nodeId, interfaceId);
   }
 
@@ -81,7 +87,15 @@ export class ArchBoard {
 }
 
 function key(nodeId: string, interfaceId: string): string {
-  return JSON.stringify([nodeId, interfaceId]);
+  return JSON.stringify([
+    identifier(nodeId, 'L_ARCH_NODE_ID_INVALID'),
+    identifier(interfaceId, 'L_ARCH_INTERFACE_ID_INVALID'),
+  ]);
+}
+
+function identifier(value: string, code: string): string {
+  if (typeof value !== 'string' || value.trim() !== value || value.length < 1 || value.length > 240) throw new Error(code);
+  return value;
 }
 
 function compare(left: string, right: string): number {

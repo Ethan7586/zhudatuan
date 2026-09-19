@@ -5,8 +5,7 @@ import { token } from './Container';
 export const ARCH_BOARD = token<ArchBoard>('arch.board');
 
 /** The host resolves a hosted L through its existing session; Arch only sees its node and interface IDs. */
-export function connectHostedOperation(usecase: OperationUsecase, arch: ArchBoard | undefined): OperationUsecase {
-  if (arch === undefined) return usecase;
+export function connectHostedOperation(usecase: OperationUsecase, arch: ArchBoard): OperationUsecase {
   return {
     async invoke(request) {
       const node = request.access?.actor.nodeContext;

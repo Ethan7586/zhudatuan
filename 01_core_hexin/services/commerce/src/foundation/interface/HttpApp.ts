@@ -29,6 +29,7 @@ export class HttpApp {
     private readonly gateEngine?: GateEngine, private readonly nodeContexts?: NodeContextResolver,
     private readonly arch?: ArchBoard) {
     if (!Number.isSafeInteger(deadlineMilliseconds) || deadlineMilliseconds < 1) throw new Error('HTTP_DEADLINE_INVALID');
+    if (process.env.NODE_ENV === 'production' && arch === undefined) throw new Error('L_ARCH_BOARD_REQUIRED');
     this.origins = new Set(origins);
   }
 

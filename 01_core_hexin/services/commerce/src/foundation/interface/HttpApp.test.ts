@@ -20,6 +20,17 @@ function routes(handler: RouteHandler = async () => ({ status: 200, body: { acce
 }
 
 describe('HttpApp contract handshake', () => {
+  it('refuses a production business HTTP app that can bypass Arch', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    try {
+      expect(() => new HttpApp(routes(), [])).toThrow('L_ARCH_BOARD_REQUIRED');
+      expect(() => new HttpApp(routes(), [], undefined, undefined, undefined, undefined, undefined, new ArchBoard()))
+        .not.toThrow();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it('resolves one authoritative NodeContext and passes the same object to the operation', async () => {
     let resolveCount = 0;
     let resolved: ResolvedNodeContext | undefined;

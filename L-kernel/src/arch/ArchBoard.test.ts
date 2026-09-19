@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ArchBoard } from './ArchBoard';
+import { ArchBoard, type ArchConnectionState } from './ArchBoard';
 
 describe('ArchBoard', () => {
   it('mounts one interface, passes data to its owner, and isolates switches by node and interface', async () => {
@@ -98,5 +98,42 @@ describe('ArchBoard', () => {
     expect(arch.state('node:l1', 'order.read')).toBe('unmounted');
     expect(arch.state('node:l0', 'member.read')).toBe('removed');
     expect(arch.state('node:l2', 'catalog.read')).toBe('connected');
+  });
+
+  it('rejects malformed identifiers and state without partially changing the board', () => {
+    const arch = new ArchBoard([
+      { nodeId: 'node:l0', interfaceId: 'member.read', state: 'connected' },
+    ]);
+    const before = arch.snapshot();
+
+    expect(() => arch.replace([
+      { nodeId: 'node:l1', interfaceId: 'order.read', state: 'connected' },
+      { nodeId: ' node:l2', interfaceId: 'catalog.read', state: 'connected' },
+    ])).toThrow('L_ARCH_NODE_ID_INVALID');
+    expect(arch.snapshot()).toEqual(before);
+    expect(() => arch.replace([
+      { nodeId: 'node:l1', interfaceId: 'order.read', state: 'invalid' as ArchConnectionState },
+    ])).toThrow('L_ARCH_CONNECTION_STATE_INVALID');
+    expect(arch.snapshot()).toEqual(before);
+    expect(() => arch.mountAll(['node:l1', ''], ['order.read'])).toThrow('L_ARCH_NODE_ID_INVALID');
+    expect(arch.snapshot()).toEqual(before);
+    expect(() => arch.mount('node:l1', ' order.read')).toThrow('L_ARCH_INTERFACE_ID_INVALID');
+  });
+
+  it('keeps every switch independent across 24 nodes and 40 interfaces', async () => {
+    const arch = new ArchBoard();
+    const nodeIds = Array.from({ length: 24 }, (_, index) => `node:l:${index + 1}`);
+    const interfaceIds = Array.from({ length: 40 }, (_, index) => `board.${index + 1}.operation`);
+    arch.mountAll(nodeIds, interfaceIds);
+    arch.setConnected('node:l:12', 'board.20.operation', false);
+
+    expect(arch.snapshot()).toHaveLength(960);
+    expect(arch.state('node:l:12', 'board.20.operation')).toBe('disconnected');
+    expect(arch.state('node:l:12', 'board.21.operation')).toBe('connected');
+    expect(arch.state('node:l:13', 'board.20.operation')).toBe('connected');
+    await expect(arch.exchange('node:l:12', 'board.20.operation', null, async () => 'unexpected'))
+      .resolves.toEqual({ connected: false });
+    await expect(arch.exchange('node:l:24', 'board.40.operation', null, async () => 'ok'))
+      .resolves.toEqual({ connected: true, output: 'ok' });
   });
 });

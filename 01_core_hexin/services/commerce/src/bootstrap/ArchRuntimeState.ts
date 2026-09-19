@@ -72,6 +72,9 @@ export class ArchRuntimeState {
   async refresh(): Promise<void> {
     const document = await readArchRuntimeState(this.path);
     if (document === null || document.revision === this.appliedRevision) return;
+    if (this.appliedRevision !== null && document.revision < this.appliedRevision) {
+      throw new Error(`L_ARCH_STATE_REVISION_REGRESSION:${this.appliedRevision}:${document.revision}`);
+    }
     this.connections = document.connections;
     this.appliedRevision = document.revision;
     this.apply();

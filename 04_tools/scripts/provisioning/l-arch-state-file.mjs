@@ -31,6 +31,8 @@ export class LArchStateFile {
     }
     const connections = new Map(current.connections.map((connection) => [key(connection), connection]));
     const connectionKey = key(change);
+    const existing = connections.get(connectionKey);
+    if ((change.state === 'unmounted' && existing === undefined) || existing?.state === change.state) return current;
     if (change.state === 'unmounted') connections.delete(connectionKey);
     else connections.set(connectionKey, Object.freeze({
       nodeId: change.node_id,

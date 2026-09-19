@@ -343,6 +343,21 @@ test('shared Contract package expands through workspace consumers without a glob
   assert.match(plan.reasons.join('\n'), /workspace dependency graph selects/);
 });
 
+test('L-kernel changes rebuild only bundled commerce consumers and never create a deployable kernel', async () => {
+  const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const expected = ['catalog-api', 'catalog-jobs', 'identity-api', 'identity-notification-jobs', 'mall-provisioning-api', 'payment-jobs', 'payment-webhook-api', 'purchase-api', 'support-api', 'web-api'];
+  const sourcePlan = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: ['L-kernel/src/arch/ArchBoard.ts'] });
+  const manifestPlan = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: ['L-kernel/package.json'] });
+
+  assert.deepEqual(sourcePlan.targets, expected);
+  assert.deepEqual(manifestPlan.targets, expected);
+  assert.deepEqual(sourcePlan.impact.unknownFiles, []);
+  assert.deepEqual(manifestPlan.impact.unknownFiles, []);
+  assert.equal(Object.values(real.targets).some((target) => target.workspace === '@shop/l-kernel'), false);
+  assert.match(sourcePlan.reasons.join('\n'), /dependency graph selects/);
+  assert.match(manifestPlan.reasons.join('\n'), /workspace dependency graph selects/);
+});
+
 test('release tooling remains non-deploying and support keeps its physical host', async () => {
   const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
   assert.deepEqual(classifyChanges(real, [change('.github/workflows/delivery-1-6.yml')]).targets, []);
