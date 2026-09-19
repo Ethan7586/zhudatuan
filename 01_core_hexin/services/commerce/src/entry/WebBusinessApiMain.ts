@@ -33,7 +33,11 @@ const bootstrapped = await bootstrapApi({
   gateEngine: runtime.gateEngine,
   runtimeNodeIds: [runtime.manifest.node_id],
 });
-bootstrapped.arch.mountAll([runtime.manifest.node_id], [PUBLIC_CATALOG_INTERFACE]);
+if (bootstrapped.archState === undefined) {
+  bootstrapped.arch.mountAll([runtime.manifest.node_id], [PUBLIC_CATALOG_INTERFACE]);
+} else {
+  bootstrapped.archState.registerDefaults([runtime.manifest.node_id], [PUBLIC_CATALOG_INTERFACE]);
+}
 const app = new PublicCatalogHttpHandler(
   bootstrapped.app, runtime.pool, webBusinessApiPublicMallSlug(environment), allowedOrigins,
   webBusinessApiPublicMallHostMappings(environment), bootstrapped.arch, runtime.manifest.node_id,
@@ -42,6 +46,7 @@ const server = listen(app, webBusinessApiPort(environment), '127.0.0.1', bootstr
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, async () => {
   await server.close();
+  await bootstrapped.archState?.close();
   await runtime.close();
   process.exit(0);
 });

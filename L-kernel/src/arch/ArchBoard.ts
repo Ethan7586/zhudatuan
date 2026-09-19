@@ -12,7 +12,12 @@ export class ArchBoard {
   private readonly connections = new Map<string, boolean | null>();
 
   constructor(initial: readonly ArchConnection[] = []) {
-    for (const connection of initial) {
+    this.replace(initial);
+  }
+
+  replace(connections: readonly ArchConnection[]): void {
+    this.connections.clear();
+    for (const connection of connections) {
       if (connection.state === 'connected') this.connections.set(key(connection.nodeId, connection.interfaceId), true);
       else if (connection.state === 'disconnected') this.connections.set(key(connection.nodeId, connection.interfaceId), false);
       else if (connection.state === 'removed') this.connections.set(key(connection.nodeId, connection.interfaceId), null);

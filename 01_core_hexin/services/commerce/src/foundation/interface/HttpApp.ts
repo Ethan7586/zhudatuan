@@ -56,6 +56,14 @@ export class HttpApp {
         ? undefined
         : requestNodeContext(request.headers) ?? this.nodeContexts?.resolve(request.headers.get('host') ?? url.host);
       observedNodeContext = nodeContext;
+      const archNodeId = nodeContext?.node_id ?? 'unresolved';
+      if (this.arch !== undefined && !operation.id.startsWith('runtime.health.')
+        && this.arch.state(archNodeId, operation.id) !== 'connected') {
+        observedPhase = 'arch';
+        observedStatus = 404;
+        observedError = 'NOT_FOUND';
+        return secure(404, { code: 'NOT_FOUND', message: 'NOT_FOUND', requestId }, requestId, origin);
+      }
       const simpleSession = isSimpleIdentitySession(request, operation.id);
       if (simpleSession && !origin) throw new Error('ORIGIN_REQUIRED');
       const parsed = await parseBody(request, simpleSession);
@@ -78,7 +86,7 @@ export class HttpApp {
           query: url.searchParams, body: payload.body, rawBody: payload.raw, deadline: deadline.expiresAt, signal };
         return this.arch === undefined || operation.id.startsWith('runtime.health.')
           ? route.handler(input).then((output) => ({ connected: true as const, output }))
-          : this.arch.exchange(nodeContext?.node_id ?? 'unresolved', operation.id, input, route.handler);
+          : this.arch.exchange(archNodeId, operation.id, input, route.handler);
       });
       if (!exchanged.connected) {
         observedStatus = 404;

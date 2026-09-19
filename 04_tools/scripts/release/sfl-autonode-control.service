@@ -11,6 +11,7 @@ Environment=AUTONODE_CONTROL_PORT=4370
 Environment=AUTONODE_TASK_STATE_ROOT=/var/lib/sfl-autonode-control
 Environment=AUTONODE_ACTIVATION_STATE_ROOT=/var/lib/sfl-autonode-control/activation
 Environment=AUTONODE_PROVIDER_STATE_ROOT=/var/lib/sfl-autonode-control/provider
+Environment=L_ARCH_STATE_PATH=/var/lib/l-arch/state.json
 ExecStart=/usr/bin/node /opt/sfl/control/node-operations/current/runtime/autonode-control-main.mjs
 Restart=on-failure
 RestartSec=2

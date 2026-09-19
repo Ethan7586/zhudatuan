@@ -21,19 +21,21 @@ describe('hosted L Arch operation adapter', () => {
     const arch = new ArchBoard();
     const invoke = vi.fn(async (input: OperationRequest) => ({ status: 200, body: { node: input.access?.actor.nodeContext?.node_id } }));
     const connected = connectHostedOperation({ invoke }, arch);
+    await expect(connected.invoke(request('node:hosted:l2:a', 'node:host:l1'))).rejects.toThrow('NOT_FOUND');
+    expect(arch.state('node:hosted:l2:a', 'member.profile.read')).toBe('unmounted');
+    arch.mount('node:hosted:l2:a', 'member.profile.read');
     expect(await connected.invoke(request('node:hosted:l2:a', 'node:host:l1')))
       .toEqual({ status: 200, body: { node: 'node:hosted:l2:a' } });
     expect(arch.state('node:hosted:l2:a', 'member.profile.read')).toBe('connected');
 
     arch.setConnected('node:hosted:l2:a', 'member.profile.read', false);
     await expect(connected.invoke(request('node:hosted:l2:a', 'node:host:l1'))).rejects.toThrow('NOT_FOUND');
-    expect(await connected.invoke(request('node:hosted:l2:b', 'node:host:l1')))
-      .toEqual({ status: 200, body: { node: 'node:hosted:l2:b' } });
-    expect(arch.state('node:hosted:l2:b', 'member.profile.read')).toBe('connected');
+    await expect(connected.invoke(request('node:hosted:l2:b', 'node:host:l1'))).rejects.toThrow('NOT_FOUND');
+    expect(arch.state('node:hosted:l2:b', 'member.profile.read')).toBe('unmounted');
     expect(await connected.invoke(request('node:host:l1', null)))
       .toEqual({ status: 200, body: { node: 'node:host:l1' } });
     expect(arch.state('node:host:l1', 'member.profile.read')).toBe('unmounted');
-    expect(invoke).toHaveBeenCalledTimes(3);
+    expect(invoke).toHaveBeenCalledTimes(2);
   });
 
   it('passes through an operation without a session node', async () => {

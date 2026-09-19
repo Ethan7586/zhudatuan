@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { afterEach, test } from 'node:test';
 
 import { createAutoNodeControlServer } from './autonode-control-server.mjs';
+import { LArchStateFile } from './l-arch-state-file.mjs';
 import {
   AUTONODE_TASK_REQUEST_SCHEMA_VERSION,
   AutoNodeTaskEngine,
@@ -205,7 +206,8 @@ test('exposes submit, status and list through the localhost control API', async 
     plan: async () => ({ plan: { plan_digest: 'sha256:http' }, waiting_external: [] }),
     apply: async () => ({ status: 'ACTIVE', waiting_external: [] }),
   });
-  const server = createAutoNodeControlServer(engine);
+  const archState = new LArchStateFile(join(root, 'arch', 'state.json'));
+  const server = createAutoNodeControlServer(engine, archState);
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   const address = server.address();
   assert.ok(address && typeof address !== 'string');
@@ -228,6 +230,25 @@ test('exposes submit, status and list through the localhost control API', async 
     assert.equal((await status.json()).status, 'SUCCEEDED');
     const list = await fetch(`${base}/v1/tasks`);
     assert.equal((await list.json()).items.length, 1);
+
+    const emptyArch = await fetch(`${base}/v1/arch`);
+    assert.equal(emptyArch.status, 200);
+    assert.deepEqual(await emptyArch.json(), {
+      schema_version: 'l-arch-state.v1', revision: 0, updated_at: null, connections: [],
+    });
+    const changedArch = await fetch(`${base}/v1/arch`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        node_id: 'node:hbbtzn:l1', interface_id: 'member.profile.read', state: 'disconnected', expected_revision: 0,
+      }),
+    });
+    assert.equal(changedArch.status, 200);
+    assert.deepEqual((await changedArch.json()).connections, [{
+      nodeId: 'node:hbbtzn:l1', interfaceId: 'member.profile.read', state: 'disconnected',
+    }]);
+    const filteredArch = await fetch(`${base}/v1/arch?node_id=${encodeURIComponent('node:hbbtzn:l1')}`);
+    assert.equal((await filteredArch.json()).connections.length, 1);
   } finally {
     await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
   }

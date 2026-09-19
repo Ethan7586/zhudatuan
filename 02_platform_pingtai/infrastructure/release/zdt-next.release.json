@@ -332,7 +332,7 @@
       "id": "node-operations",
       "kind": "service",
       "tests": [
-        {"name":"node-operations-tests","argv":["node","--test","04_tools/scripts/provisioning/autonode-operations.test.mjs","04_tools/scripts/provisioning/autonode-task-engine.test.mjs"],"timeoutMs":120000}
+        {"name":"node-operations-tests","argv":["node","--test","04_tools/scripts/provisioning/autonode-operations.test.mjs","04_tools/scripts/provisioning/autonode-task-engine.test.mjs","04_tools/scripts/provisioning/l-arch-state-file.test.mjs"],"timeoutMs":120000}
       ],
       "typecheck": [],
       "build": [
@@ -344,6 +344,7 @@
         {"source":"04_tools/scripts/provisioning/autonode-operations-provider.mjs","destination":"runtime/autonode-operations-provider.mjs"},
         {"source":"04_tools/scripts/provisioning/autonode-control-main.mjs","destination":"runtime/autonode-control-main.mjs"},
         {"source":"04_tools/scripts/provisioning/autonode-control-server.mjs","destination":"runtime/autonode-control-server.mjs"},
+        {"source":"04_tools/scripts/provisioning/l-arch-state-file.mjs","destination":"runtime/l-arch-state-file.mjs"},
         {"source":"04_tools/scripts/provisioning/autonode-task-engine.mjs","destination":"runtime/autonode-task-engine.mjs"},
         {"source":"04_tools/scripts/provisioning/autonode-task-executor.mjs","destination":"runtime/autonode-task-executor.mjs"},
         {"source":"04_tools/release-engine/dist/node-operations/autonode-activate-runtime.mjs","destination":"runtime/autonode-activate-runtime.mjs"},
@@ -355,6 +356,7 @@
         "runtime/autonode-operations-provider.mjs",
         "runtime/autonode-control-main.mjs",
         "runtime/autonode-control-server.mjs",
+        "runtime/l-arch-state-file.mjs",
         "runtime/autonode-task-engine.mjs",
         "runtime/autonode-task-executor.mjs",
         "runtime/autonode-activate-runtime.mjs",
@@ -390,6 +392,7 @@
         "04_tools/scripts/provisioning/autonode-operate.mjs",
         "04_tools/scripts/provisioning/autonode-operations-engine.mjs",
         "04_tools/scripts/provisioning/autonode-operations-provider.mjs",
+        "04_tools/scripts/provisioning/l-arch-state-file.mjs",
         "04_tools/scripts/provisioning/autonode-control-main.mjs",
         "04_tools/scripts/provisioning/autonode-control-server.mjs",
         "04_tools/scripts/provisioning/autonode-task-engine.mjs",
