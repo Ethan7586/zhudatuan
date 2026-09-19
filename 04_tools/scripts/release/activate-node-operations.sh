@@ -32,7 +32,8 @@ mkdir -p "$staging_dir"
 tar -xzf "$archive_path" -C "$staging_dir"
 test -s "$staging_dir/release-version.json"
 for file in autonode-operate.mjs autonode-operations-engine.mjs autonode-operations-provider.mjs \
-  autonode-control-main.mjs autonode-control-server.mjs autonode-task-engine.mjs autonode-task-executor.mjs; do
+  autonode-control-main.mjs autonode-control-server.mjs l-arch-state-file.mjs \
+  autonode-task-engine.mjs autonode-task-executor.mjs; do
   test -s "$staging_dir/runtime/$file"
   /usr/bin/node --check "$staging_dir/runtime/$file"
 done
