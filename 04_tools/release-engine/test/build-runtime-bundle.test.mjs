@@ -26,6 +26,7 @@ test('node operations recovery bundle contains every runtime import', async (t) 
     'autonode-control-main.mjs',
     'autonode-control-server.mjs',
     'l-arch-state-file.mjs',
+    'l-arch-control.mjs',
     'autonode-task-engine.mjs',
     'autonode-task-executor.mjs',
     'autonode-activate-runtime.mjs',

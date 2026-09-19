@@ -21,6 +21,8 @@ Arch 主板实现在 `src/arch/ArchBoard.ts`，属于 `@shop/l-kernel`。它只�
 
 生产宿主使用 `/var/lib/l-arch/state.json` 保存版本化状态，API 进程监听同一文件并在 500 毫秒轮询周期内收敛。唯一修改入口位于与 Arch 并列、只监听回环地址的本机节点控制服务：`GET /v1/arch` 查看期望状态，`PUT /v1/arch` 携带当前 `expected_revision` 修改单个“节点 + 接口”。状态文件只含通用标识、状态和版本，不含任何 L 的业务资料。
 
+宿主附带的 `l-arch-control.mjs` 只访问本机控制服务：`LIST [节点] [接口]` 查看，`SET <节点> <接口> <connected|disconnected|removed|unmounted>` 修改。它会先读取 revision 再写入，冲突时明确失败，不替主板解释接口含义。
+
 生产业务 HTTP 装配没有 Arch 时拒绝启动；无效节点、接口或状态在改变主板前被拒绝。运行进程不会接受低于当前值的旧 revision，控制端对相同状态的重复请求保持幂等。`L-kernel/**` 变更由发布影响图自动展开到实际引用它的服务，L-kernel 自身仍不是部署目标。
 
 `runtime.health.*` 由运行层直接处理，不挂载、不经过 Arch；Jobs 和 Runner 与主板并列。它们不是业务接口开关，也不计入主板覆盖率。

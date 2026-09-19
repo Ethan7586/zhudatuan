@@ -35,6 +35,7 @@ if (releaseTarget === 'node-operations') {
     'autonode-control-main.mjs',
     'autonode-control-server.mjs',
     'l-arch-state-file.mjs',
+    'l-arch-control.mjs',
     'autonode-task-engine.mjs',
     'autonode-task-executor.mjs',
   ]) {
