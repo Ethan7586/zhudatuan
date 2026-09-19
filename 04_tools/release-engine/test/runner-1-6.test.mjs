@@ -218,6 +218,8 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.execution_location.options, ['auto', 'github-hosted']);
   assert.match(workflowSource, /runs-on: \$\{\{ fromJSON\(needs\.route\.outputs\.runs_on\) \}\}/);
   assert.match(workflowSource, /needs\.route\.outputs\.runner_class == 'self-hosted'/);
+  assert.match(workflowSource, /GH_TOKEN: \$\{\{ secrets\.ZDT_RUNNER_READ_TOKEN \}\}/);
+  assert.match(workflowSource, /runner-read-token-missing/);
   for (const job of [workflow.jobs.execute, workflow.jobs['hosted-startup-fallback']]) {
     const cores = job.steps.filter((step) => String(step.uses ?? '').endsWith('/.github/actions/runner-1-6'));
     assert.equal(cores.length, 4);

@@ -48,6 +48,8 @@ Up to three Runner registrations can use one host with separate service director
 
 Normal delivery selects only the cloud-neutral `zdt-build` label, with an optional `zdt-build-N` slot label. The retired `zdt-aliyun-build` label is ignored. A compatible Aliyun host can return to the same pool by registering with `zdt-build`; it does not need an Aliyun-specific route or a second workflow. Any selected self-hosted Runner can hand off to GitHub Hosted before the core begins. The older Aliyun installation scripts still contain Aliyun-specific service names and sing-box settings, so they are not GCP installers.
 
+Set `ZDT_RUNNER_READ_TOKEN` to a fine-grained GitHub token limited to this repository with `Actions: read` when instant self-hosted capacity discovery is required. GitHub's built-in workflow token cannot list repository Runner registrations. If the read token is absent or unreadable, routing remains available through GitHub Hosted instead of blocking delivery.
+
 ## GCP build host
 
 `gcp-runner-environment.json` records the portable two-slot layout for an 8-vCPU/16-GiB persistent Google Compute Engine Linux host shared with L-kernel. Cloud Run is not used as a self-hosted Runner host because its instances are request-driven and replaceable. Both slots carry the cloud-neutral `zdt-build` label, so the existing workflow and shared release core require no GCP fork.
