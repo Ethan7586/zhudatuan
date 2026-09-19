@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, test } from 'node:test';
 
-import { createAutoNodeControlServer } from './autonode-control-server.mjs';
+import { createAutoNodeControlServer, requireLoopbackControlHost } from './autonode-control-server.mjs';
 import { LArchStateFile } from './l-arch-state-file.mjs';
 import {
   AUTONODE_TASK_REQUEST_SCHEMA_VERSION,
@@ -13,6 +13,13 @@ import {
 } from './autonode-task-engine.mjs';
 
 const roots = [];
+
+test('keeps the unauthenticated local control API on loopback only', () => {
+  assert.equal(requireLoopbackControlHost('127.0.0.1'), '127.0.0.1');
+  assert.equal(requireLoopbackControlHost('::1'), '::1');
+  assert.throws(() => requireLoopbackControlHost('0.0.0.0'), /AUTONODE_CONTROL_HOST_NOT_LOOPBACK/);
+  assert.throws(() => requireLoopbackControlHost('10.170.0.3'), /AUTONODE_CONTROL_HOST_NOT_LOOPBACK/);
+});
 
 afterEach(async () => {
   await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true })));
@@ -236,6 +243,24 @@ test('exposes submit, status and list through the localhost control API', async 
     assert.deepEqual(await emptyArch.json(), {
       schema_version: 'l-arch-state.v1', revision: 0, updated_at: null, connections: [],
     });
+    const missingRevision = await fetch(`${base}/v1/arch`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        node_id: 'node:hbbtzn:l1', interface_id: 'member.profile.read', state: 'disconnected',
+      }),
+    });
+    assert.equal(missingRevision.status, 400);
+    assert.equal((await missingRevision.json()).code, 'L_ARCH_EXPECTED_REVISION_REQUIRED');
+    const wrongContentType = await fetch(`${base}/v1/arch`, {
+      method: 'PUT',
+      headers: { 'content-type': 'text/plain' },
+      body: JSON.stringify({
+        node_id: 'node:hbbtzn:l1', interface_id: 'member.profile.read', state: 'disconnected', expected_revision: 0,
+      }),
+    });
+    assert.equal(wrongContentType.status, 400);
+    assert.equal((await wrongContentType.json()).code, 'AUTONODE_CONTROL_CONTENT_TYPE_INVALID');
     const changedArch = await fetch(`${base}/v1/arch`, {
       method: 'PUT',
       headers: { 'content-type': 'application/json' },
