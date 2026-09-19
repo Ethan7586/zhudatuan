@@ -48,6 +48,18 @@ The three online Runner registrations can use one host with separate service dir
 
 Routing also understands the cloud-neutral `zdt-build` label for a future self-hosted build Runner, with optional `zdt-build-N` slot label. Existing `zdt-aliyun-build` registrations remain preferred and keep the same behavior. Both labels use the single workflow and shared core; either self-hosted class can hand off to GitHub Hosted before the core begins. The current Aliyun installation scripts still contain Aliyun-specific service names and sing-box settings, so they are not GCP installers. This change does not register or test a GCP Runner.
 
+## Rebuild the Aliyun Runner host
+
+The non-secret Aliyun Runner environment is versioned in `aliyun-runner-environment.json`. It records both Runner slots, labels, users, directories, pinned Runner and Node versions, systemd capacity, the GitHub-only sing-box line, and every repository variable or secret name used by the delivery workflow. It intentionally excludes machine credentials, cloud keys, caches, logs and production data.
+
+On a Linux x64 host with Node.js and sing-box installed, provide a fresh GitHub Runner registration token plus the existing sing-box line values and run:
+
+```text
+sudo -E ./restore-aliyun-runner-environment.sh
+```
+
+The restore entry creates both build slots and applies the shared capacity policy. GitHub then sees the `zdt-aliyun-build` label and the existing single workflow prefers Aliyun automatically. No release core, workflow or deployment authority is copied into a second path. Repository-level artifact and SSH values remain GitHub Actions variables or secrets named in the manifest.
+
 ## GitHub sing-box line
 
 `install-github-transport.sh` turns the sing-box installation on the Aliyun Runner host into a GitHub-only line. The Runner processes use a loopback HTTP proxy. sing-box sends `github.com`, `githubusercontent.com`, `githubassets.com`, and `ghcr.io` through the configured Shadowsocks endpoint; OSS, Aliyun metadata, production SSH, and every other destination remain direct.
