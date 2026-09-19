@@ -17,6 +17,7 @@ export interface JobsBootstrapOptions {
   readonly configure?: (container: Container) => void | Promise<void>;
 }
 
+// L-ARCH-WIRING: the existing job connection path, separate from HTTP route selection.
 export async function bootstrapJobs(options: JobsBootstrapOptions): Promise<JobRegistry> {
   const container = new Container();
   await options.configure?.(container);

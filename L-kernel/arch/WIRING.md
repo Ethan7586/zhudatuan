@@ -6,10 +6,10 @@ flowchart LR
   B --> C[现有节点上下文<br/>node_id / Realm]
   C --> D{ArchBoard<br/>节点 + 接口}
   D -->|connected| E[原会员 handler]
-  D -->|disconnected| F[仅该接口返回 404]
+  D -->|未挂载 / 断开 / 移除| F[仅该接口返回 404]
   E --> G[原会员业务与数据库]
   G --> H[原响应]
-  D -->|unmounted| I[未安装接口的原 handler]
+  B -->|runtime.health.*| I[原健康处理者<br/>不经过 Arch]
 ```
 
 | HTTP 运行入口 | 已插入的会员接口来源 | 节点来源 | 原业务处理者 |
@@ -18,4 +18,4 @@ flowchart LR
 | `WebBusinessApiMain` | 已注册的 `WebMemberModule` 接口 | 该运行实例加载的 node manifest | 原 `WebMemberOperations` 与会员应用动作 |
 | `ApiMain` | 已注册的 `MemberModule` 接口 | 现有服务端节点注册表 | 原 `MemberOperations` |
 
-安装发生在 `bootstrapApi` 完成原模块与路由注册之后。它从 `routes.catalog()` 取当前实例实际注册的接口，不维护第二份接口清单，也不限定业务板块。每个节点、每个接口分别接断。会员的权限、数据范围、业务事实和响应仍由原路径决定。当前是本地代码接线，尚未生产部署；尚未继承的会员新规则也未因接线自动落地。
+安装发生在 `bootstrapApi` 完成原模块与路由注册之后。它从 `routes.catalog()` 取当前实例实际注册的业务接口，不维护第二份接口清单，也不限定业务板块。每个节点、每个接口分别接断；未安装接口不能旁路。会员的权限、数据范围、业务事实和响应仍由原路径决定。当前结论只证明代码接线，不等同于生产部署；尚未继承的会员新规则也不会因接线自动落地。

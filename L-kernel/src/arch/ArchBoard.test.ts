@@ -6,6 +6,8 @@ describe('ArchBoard', () => {
     const arch = new ArchBoard();
     const owner = vi.fn(async (input: { value: number }) => ({ doubled: input.value * 2 }));
     expect(arch.state('node:hbbtzn:l1', 'member.read')).toBe('unmounted');
+    expect(await arch.exchange('node:hbbtzn:l1', 'member.read', { value: 1 }, owner))
+      .toEqual({ connected: false });
     arch.mount('node:hbbtzn:l1', 'member.read');
     expect(await arch.exchange('node:hbbtzn:l1', 'member.read', { value: 2 }, owner))
       .toEqual({ connected: true, output: { doubled: 4 } });
@@ -14,9 +16,9 @@ describe('ArchBoard', () => {
       .toEqual({ connected: false });
     expect(arch.state('node:hbbtzn:l1', 'member.write')).toBe('unmounted');
     expect(await arch.exchange('node:hbbtzn:l1', 'member.write', { value: 4 }, owner))
-      .toEqual({ connected: true, output: { doubled: 8 } });
+      .toEqual({ connected: false });
     expect(await arch.exchange('node:other:l1', 'member.read', { value: 5 }, owner))
-      .toEqual({ connected: true, output: { doubled: 10 } });
+      .toEqual({ connected: false });
     expect(arch.inspect('node:hbbtzn:l1', ['member.read', 'member.write'])).toEqual([
       { nodeId: 'node:hbbtzn:l1', interfaceId: 'member.read', state: 'disconnected' },
       { nodeId: 'node:hbbtzn:l1', interfaceId: 'member.write', state: 'unmounted' },
@@ -29,7 +31,7 @@ describe('ArchBoard', () => {
       .toEqual({ connected: false });
     arch.setConnected('node:hbbtzn:l1', 'member.read', true);
     expect(arch.state('node:hbbtzn:l1', 'member.read')).toBe('removed');
-    expect(owner).toHaveBeenCalledTimes(3);
+    expect(owner).toHaveBeenCalledOnce();
   });
 
   it('mounts an existing host catalog for every node without resetting disconnected interfaces', () => {
@@ -58,5 +60,28 @@ describe('ArchBoard', () => {
     arch.mount('node:l1', 'member.read');
     expect(await arch.exchange('node:l1', 'member.read', null, owner)).toEqual({ connected: true, output: 'ok' });
     expect(owner).toHaveBeenCalledTimes(2);
+  });
+
+  it('exports stable state and accepts it again without owning its storage', async () => {
+    const original = new ArchBoard();
+    original.mountAll(['node:l1', 'node:l0'], ['order.read', 'member.read']);
+    original.setConnected('node:l1', 'order.read', false);
+    original.unmount('node:l0', 'member.read');
+
+    const snapshot = original.snapshot();
+    expect(snapshot).toEqual([
+      { nodeId: 'node:l0', interfaceId: 'member.read', state: 'removed' },
+      { nodeId: 'node:l0', interfaceId: 'order.read', state: 'connected' },
+      { nodeId: 'node:l1', interfaceId: 'member.read', state: 'connected' },
+      { nodeId: 'node:l1', interfaceId: 'order.read', state: 'disconnected' },
+    ]);
+
+    const restored = new ArchBoard(snapshot);
+    restored.mountAll(['node:l0', 'node:l1'], ['member.read', 'order.read']);
+    expect(restored.snapshot()).toEqual(snapshot);
+    expect(await restored.exchange('node:l1', 'order.read', null, async () => 'unexpected'))
+      .toEqual({ connected: false });
+    expect(await restored.exchange('node:l0', 'order.read', null, async () => 'ok'))
+      .toEqual({ connected: true, output: 'ok' });
   });
 });

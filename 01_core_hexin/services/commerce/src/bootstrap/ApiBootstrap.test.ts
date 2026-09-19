@@ -33,6 +33,35 @@ describe('API bootstrap SFL NodeContext assembly', () => {
     expect(called).toBe(2);
   });
 
+  it('keeps an injected disconnected state when startup installs the live route catalog', async () => {
+    let called = 0;
+    const arch = new ArchBoard([
+      { nodeId: 'unresolved', interfaceId: 'support.cases.read', state: 'disconnected' },
+    ]);
+    const module: CommerceModule = {
+      id: 'arch-restored-state-test', dependencies: [],
+      register({ routes }) {
+        routes.register({ operation: 'support.cases.read', handler: async () => {
+          called += 1;
+          return { status: 200, body: { ok: true } };
+        } });
+      },
+    };
+    const bootstrapped = await bootstrapApi({
+      modules: [module], arch,
+      extensions: new ExtensionRegistry({ verify: async () => true } as never),
+      allowedOrigins: [], telemetry: commerceTelemetry(), operationIds: ['support.cases.read'],
+    });
+    const request = () => bootstrapped.app.handle(new Request('http://127.0.0.1/api/v1/support/cases'));
+
+    expect(bootstrapped.arch.state('unresolved', 'support.cases.read')).toBe('disconnected');
+    expect((await request()).status).toBe(404);
+    expect(called).toBe(0);
+    bootstrapped.arch.setConnected('unresolved', 'support.cases.read', true);
+    expect((await request()).status).toBe(200);
+    expect(called).toBe(1);
+  });
+
   it('keeps a single-node runtime from resolving another node through the shared registry', async () => {
     const bootstrapped = await bootstrapApi({
       modules: [],

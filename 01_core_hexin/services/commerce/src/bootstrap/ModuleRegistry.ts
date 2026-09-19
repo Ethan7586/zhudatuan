@@ -21,6 +21,7 @@ export interface CommerceModule {
   register(context: ModuleContext): void | Promise<void>;
 }
 
+// L-ARCH-WIRING: connect selected modules in dependency order; no business facts live here.
 export class ModuleRegistry {
   private readonly modules = new Map<string, CommerceModule>();
 
