@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-09-19",
+  "scope": "Rebuildable Aliyun Runner host configuration; not a disk image and not a secret store",
+  "repository": "Ethan7586/zhudatuan",
+  "platform": {
+    "os": "Linux",
+    "architecture": "x86_64",
+    "requiredCommands": ["curl", "node", "sing-box", "systemctl", "tar", "xz"]
+  },
+  "runner": {
+    "version": "2.337.0",
+    "nodeVersion": "22.22.0",
+    "routeLabel": "zdt-aliyun-build",
+    "slots": [
+      {
+        "name": "aliyun-staging-zdt-build",
+        "user": "zdt-build",
+        "root": "/opt/actions-runner-build",
+        "labels": ["zdt-aliyun-build", "zdt-aliyun-build-1"]
+      },
+      {
+        "name": "aliyun-staging-zdt-build-2",
+        "user": "zdt-build-2",
+        "root": "/opt/actions-runner-build-2",
+        "labels": ["zdt-aliyun-build", "zdt-aliyun-build-2"]
+      }
+    ]
+  },
+  "capacity": {
+    "systemdSlice": "zdt-build.slice",
+    "cpuQuota": "350%",
+    "memoryHigh": "6G",
+    "memoryMax": "6800M",
+    "tasksMax": 3072
+  },
+  "network": {
+    "service": "zdt-github-line.service",
+    "config": "/etc/sing-box/zdt-github-line.json",
+    "environment": "/etc/zdt-runner/github-network.env",
+    "proxy": "http://127.0.0.1:7890",
+    "proxiedTraffic": "GitHub domains only",
+    "directTraffic": "Aliyun OSS, metadata and production SSH"
+  },
+  "runtimeInputs": [
+    "RUNNER_REGISTRATION_TOKEN",
+    "ZDT_GITHUB_LINE_SERVER",
+    "ZDT_GITHUB_LINE_SERVER_PORT",
+    "ZDT_GITHUB_LINE_METHOD",
+    "ZDT_GITHUB_LINE_PASSWORD"
+  ],
+  "githubRepositoryVariables": [
+    "ZDT_ARTIFACT_STORE",
+    "CLOUDFLARE_R2_ACCOUNT_ID",
+    "CLOUDFLARE_R2_BUCKET",
+    "CLOUDFLARE_R2_ENDPOINT"
+  ],
+  "githubRepositorySecrets": [
+    "CLOUDFLARE_R2_ACCESS_KEY_ID",
+    "CLOUDFLARE_R2_SECRET_ACCESS_KEY",
+    "ALIYUN_OSS_ACCESS_KEY_ID",
+    "ALIYUN_OSS_ACCESS_KEY_SECRET",
+    "ALIYUN_OSS_SECURITY_TOKEN",
+    "ALIYUN_OSS_BUCKET",
+    "ALIYUN_OSS_ENDPOINT",
+    "ALIYUN_OSS_INTERNAL_ENDPOINT",
+    "ZDT_RELEASE_SSH_KEY"
+  ],
+  "excludedFromGit": [
+    "Runner registration credentials",
+    "sing-box password",
+    "SSH private keys",
+    "cloud access keys",
+    "build cache and work directories",
+    "application databases, logs and production data"
+  ],
+  "restoreCommand": "sudo -E ./restore-aliyun-runner-environment.sh"
+}
