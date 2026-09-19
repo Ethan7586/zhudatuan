@@ -292,6 +292,8 @@ test('control-side command only dispatches and queries GitHub', async () => {
   assert.match(dispatcher, /DELIVERY_COMMAND_RETURN_MS=/);
   const readme = await readFile(join(root, '02_platform_pingtai/infrastructure/github-actions-runner/README.md'), 'utf8');
   assert.match(readme, /Direct dispatch from GitHub's Actions page bypasses/);
+  assert.match(readme, /Normal delivery selects only the cloud-neutral `zdt-build` label/);
+  assert.doesNotMatch(readme, /`zdt-aliyun-build` registrations remain preferred/);
   assert.doesNotMatch(`${dispatcher}\n${controller}`, /npm ci|npm run|\bssh\b|\bscp\b|runner-1-6\.mjs/);
 });
 
@@ -582,6 +584,7 @@ test('Runner host scripts do not recreate the old build lock or bind installatio
     const script = await readFile(join(directory, name), 'utf8');
     assert.doesNotMatch(script, /i-2zeewhay0farxq8lucrc|EXPECTED_INSTANCE_ID/);
   }
+  assert.match(await readFile(join(directory, 'install-build-slot-2.sh'), 'utf8'), /x64\.complete/);
 });
 
 test('GCP bootstrap adds portable capacity without creating another release path', async () => {
@@ -591,6 +594,7 @@ test('GCP bootstrap adds portable capacity without creating another release path
   assert.match(installer, /--labels "\$runner_labels"/);
   assert.match(installer, /runner_labels="zdt-build,zdt-build-\$\{slot\}"/);
   assert.match(installer, /Slice=zdt-build\.slice/);
+  assert.match(installer, /x64\.complete/);
   assert.doesNotMatch(installer, /zdt-aliyun-build|delivery-1-6\.yml|runner-1-6\.mjs|flock|\blease\b|\bclaim\b|\bseal\b/i);
   assert.equal(manifest.runner.routeLabel, 'zdt-build');
   assert.equal(manifest.runner.slots.length, 2);

@@ -65,6 +65,8 @@ if [ ! -x "$node_root/bin/node" ]; then
   test "$($node_root/bin/node --version)" = "v${NODE_VERSION}"
   test "$($node_root/bin/npm --version)" = '10.9.4'
 fi
+install -o "$RUNNER_USER" -g "$RUNNER_USER" -m 0600 /dev/null \
+  "$RUNNER_ROOT/_work/_tool/node/$NODE_VERSION/x64.complete"
 drop_in="/etc/systemd/system/${service_name}.d"
 install -d -m 0755 "$drop_in"
 env_tmp="$(mktemp "$RUNNER_ROOT/.env.new.XXXXXX")"

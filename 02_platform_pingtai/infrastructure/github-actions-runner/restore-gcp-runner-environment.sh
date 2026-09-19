@@ -83,6 +83,8 @@ for slot in 1 2; do
     test "$("$node_root/bin/node" --version)" = "v${NODE_VERSION}"
     test "$("$node_root/bin/npm" --version)" = '10.9.4'
   fi
+  install -o "$runner_user" -g "$runner_user" -m 0600 /dev/null \
+    "$runner_root/_work/_tool/node/$NODE_VERSION/x64.complete"
 
   drop_in="/etc/systemd/system/${service_name}.d"
   install -d -m 0755 "$drop_in"
