@@ -583,3 +583,17 @@ test('Runner host scripts do not recreate the old build lock or bind installatio
     assert.doesNotMatch(script, /i-2zeewhay0farxq8lucrc|EXPECTED_INSTANCE_ID/);
   }
 });
+
+test('GCP bootstrap adds portable capacity without creating another release path', async () => {
+  const directory = join(root, '02_platform_pingtai/infrastructure/github-actions-runner');
+  const installer = await readFile(join(directory, 'restore-gcp-runner-environment.sh'), 'utf8');
+  const manifest = JSON.parse(await readFile(join(directory, 'gcp-runner-environment.json'), 'utf8'));
+  assert.match(installer, /--labels "\$runner_labels"/);
+  assert.match(installer, /runner_labels="zdt-build,zdt-build-\$\{slot\}"/);
+  assert.match(installer, /Slice=zdt-build\.slice/);
+  assert.doesNotMatch(installer, /zdt-aliyun-build|delivery-1-6\.yml|runner-1-6\.mjs|flock|\blease\b|\bclaim\b|\bseal\b/i);
+  assert.equal(manifest.runner.routeLabel, 'zdt-build');
+  assert.equal(manifest.runner.slots.length, 2);
+  assert.equal(manifest.delivery.workflow, '.github/workflows/delivery-1-6.yml');
+  assert.equal(manifest.delivery.sharedCore, '04_tools/release-engine/runner-1-6.mjs');
+});

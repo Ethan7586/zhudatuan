@@ -48,6 +48,18 @@ The three online Runner registrations can use one host with separate service dir
 
 Routing also understands the cloud-neutral `zdt-build` label for a future self-hosted build Runner, with optional `zdt-build-N` slot label. Existing `zdt-aliyun-build` registrations remain preferred and keep the same behavior. Both labels use the single workflow and shared core; either self-hosted class can hand off to GitHub Hosted before the core begins. The current Aliyun installation scripts still contain Aliyun-specific service names and sing-box settings, so they are not GCP installers. This change does not register or test a GCP Runner.
 
+## GCP build host
+
+`gcp-runner-environment.json` records the portable two-slot layout for an 8-vCPU/16-GiB persistent Google Compute Engine Linux host shared with L-kernel. Cloud Run is not used as a self-hosted Runner host because its instances are request-driven and replaceable. Both slots carry the cloud-neutral `zdt-build` label, so the existing workflow and shared release core require no GCP fork.
+
+On the GCE host, provide a fresh repository Runner registration token and run:
+
+```text
+sudo -E ./restore-gcp-runner-environment.sh
+```
+
+The script pins the same Runner and Node versions as the existing build fleet, creates `gcp-zdt-build-1` and `gcp-zdt-build-2`, and places both services in one `zdt-build.slice`. Existing L-kernel services are not modified or restarted. R2 and target SSH values remain repository variables or secrets and are not stored on the host or in Git.
+
 ## GitHub sing-box line
 
 `install-github-transport.sh` turns the sing-box installation on the Aliyun Runner host into a GitHub-only line. The Runner processes use a loopback HTTP proxy. sing-box sends `github.com`, `githubusercontent.com`, `githubassets.com`, and `ghcr.io` through the configured Shadowsocks endpoint; OSS, Aliyun metadata, production SSH, and every other destination remain direct.

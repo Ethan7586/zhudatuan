@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-09-19",
+  "scope": "Two portable build Runner slots co-located with L-kernel on one persistent GCP Linux host",
+  "repository": "Ethan7586/zhudatuan",
+  "host": {
+    "platform": "Google Compute Engine",
+    "os": "Linux",
+    "architecture": "x86_64",
+    "plannedCpuCount": 8,
+    "plannedMemoryGiB": 16,
+    "cloudRunSupported": false
+  },
+  "runner": {
+    "version": "2.337.0",
+    "nodeVersion": "22.22.0",
+    "routeLabel": "zdt-build",
+    "slots": [
+      {
+        "name": "gcp-zdt-build-1",
+        "user": "zdt-build-1",
+        "root": "/opt/actions-runner-build-1",
+        "labels": ["zdt-build", "zdt-build-1"]
+      },
+      {
+        "name": "gcp-zdt-build-2",
+        "user": "zdt-build-2",
+        "root": "/opt/actions-runner-build-2",
+        "labels": ["zdt-build", "zdt-build-2"]
+      }
+    ]
+  },
+  "sharedCapacity": {
+    "systemdSlice": "zdt-build.slice",
+    "cpuQuota": "350%",
+    "memoryHigh": "6G",
+    "memoryMax": "6800M",
+    "tasksMax": 3072
+  },
+  "delivery": {
+    "workflow": ".github/workflows/delivery-1-6.yml",
+    "sharedCore": "04_tools/release-engine/runner-1-6.mjs",
+    "artifactStore": "r2",
+    "hostedFallbackBeforeCore": true
+  },
+  "runtimeInputs": ["RUNNER_REGISTRATION_TOKEN"],
+  "githubRepositoryVariables": [
+    "ZDT_ARTIFACT_STORE",
+    "CLOUDFLARE_R2_ACCOUNT_ID",
+    "CLOUDFLARE_R2_BUCKET",
+    "CLOUDFLARE_R2_ENDPOINT"
+  ],
+  "githubRepositorySecrets": [
+    "CLOUDFLARE_R2_ACCESS_KEY_ID",
+    "CLOUDFLARE_R2_SECRET_ACCESS_KEY",
+    "ZDT_RELEASE_SSH_KEY"
+  ],
+  "restoreCommand": "sudo -E ./restore-gcp-runner-environment.sh"
+}
