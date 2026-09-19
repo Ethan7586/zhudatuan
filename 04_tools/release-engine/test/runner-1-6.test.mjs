@@ -77,7 +77,7 @@ test('failed release emits control identity and a useful next action', async () 
   );
 });
 
-test('Aliyun is selected only when a matching runner is online and idle', () => {
+test('retired Aliyun runners are ignored by normal delivery', () => {
   const selected = selectExecutionRunner({
     runners: [
       {
@@ -88,11 +88,11 @@ test('Aliyun is selected only when a matching runner is online and idle', () => 
       },
     ],
   });
-  assert.equal(selected.runnerClass, 'aliyun');
-  assert.deepEqual(selected.runsOn, ['self-hosted', 'Linux', 'X64', 'zdt-aliyun-build']);
+  assert.equal(selected.runnerClass, 'github-hosted');
+  assert.equal(selected.reason, 'self-hosted-runner-missing');
 });
 
-test('concurrent Aliyun routes share the build pool instead of pinning one slot', () => {
+test('retired Aliyun build pools never receive normal delivery work', () => {
   const runners = [1, 2].map((slot) => ({
     name: `aliyun-${slot}`,
     status: 'online',
@@ -101,25 +101,25 @@ test('concurrent Aliyun routes share the build pool instead of pinning one slot'
   }));
   const first = selectExecutionRunner({ runners });
   const second = selectExecutionRunner({ runners });
-  assert.deepEqual(first.runsOn, ['self-hosted', 'Linux', 'X64', 'zdt-aliyun-build']);
-  assert.deepEqual(second.runsOn, first.runsOn);
+  assert.deepEqual(first.runsOn, ['ubuntu-24.04']);
+  assert.deepEqual(second.runsOn, ['ubuntu-24.04']);
 });
 
-test('portable self-hosted Runner is selectable while Aliyun remains first', () => {
+test('portable self-hosted Runner is selected while retired Aliyun is ignored', () => {
   const portable = { name: 'gcp-build', status: 'online', busy: false, labels: ['self-hosted', 'Linux', 'X64', 'zdt-build', 'zdt-build-2'] };
   const aliyun = { name: 'aliyun-build', status: 'online', busy: false, labels: ['self-hosted', 'Linux', 'X64', 'zdt-aliyun-build'] };
   const selected = selectExecutionRunner({ runners: [portable] });
   assert.equal(selected.runnerClass, 'self-hosted');
   assert.equal(selected.runnerName, 'gcp-build');
   assert.deepEqual(selected.runsOn, ['self-hosted', 'Linux', 'X64', 'zdt-build']);
-  assert.equal(selectExecutionRunner({ runners: [portable, aliyun] }).runnerName, 'aliyun-build');
-  assert.equal(selectExecutionRunner({ runners: [{ ...aliyun, busy: true }, portable] }).runnerName, 'gcp-build');
+  assert.equal(selectExecutionRunner({ runners: [portable, aliyun] }).runnerName, 'gcp-build');
+  assert.equal(selectExecutionRunner({ runners: [{ ...portable, busy: true }, aliyun] }).runnerClass, 'github-hosted');
 });
 
 for (const [name, observation, reason] of [
   ['missing', { runners: [] }, 'self-hosted-runner-missing'],
-  ['offline', { runners: [{ status: 'offline', busy: false, labels: ['zdt-aliyun-build'] }] }, 'self-hosted-runner-offline'],
-  ['busy', { runners: [{ status: 'online', busy: true, labels: ['zdt-aliyun-build'] }] }, 'self-hosted-runner-busy'],
+  ['offline', { runners: [{ status: 'offline', busy: false, labels: ['zdt-build'] }] }, 'self-hosted-runner-offline'],
+  ['busy', { runners: [{ status: 'online', busy: true, labels: ['zdt-build'] }] }, 'self-hosted-runner-busy'],
   ['unreadable', { error: 'forbidden' }, 'self-hosted-status-unavailable'],
 ])
   test(`GitHub Hosted is selected when self-hosted capacity is ${name}`, () => {
@@ -237,8 +237,8 @@ test('workflow has one entry, stateless routing, one shared core and pre-core ho
     const marker = job.steps.findIndex((step) => step.name === 'Mark shared release core started');
     assert.ok(marker > job.steps.findIndex((step) => step.with?.phase === 'prepare'));
     assert.ok(marker < job.steps.findIndex((step) => step.with?.phase === 'run'));
-    assert.equal(job.env.ALIYUN_OSS_ENDPOINT, '${{ secrets.ALIYUN_OSS_ENDPOINT }}');
-    assert.equal(job.env.ZDT_ARTIFACT_STORE, "${{ vars.ZDT_ARTIFACT_STORE || 'aliyun' }}");
+    assert.equal(job.env.ALIYUN_OSS_ENDPOINT, undefined);
+    assert.equal(job.env.ZDT_ARTIFACT_STORE, "${{ vars.ZDT_ARTIFACT_STORE || 'r2' }}");
     assert.equal(job.env.CLOUDFLARE_R2_ACCESS_KEY_ID, '${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}');
     assert.equal(job.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY, '${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}');
     assert.equal(job.env.ZDT_RELEASE_SSH_KEY, '${{ secrets.ZDT_RELEASE_SSH_KEY }}');
@@ -528,6 +528,17 @@ test('production frontend builds receive their existing required environment', a
     VITE_AUTH_BASE_URL: 'https://accounts.hbbtzn.com',
     VITE_CLIENT_VERSION: '0.0.0-g{{sourceSha}}',
   });
+});
+
+test('normal delivery trusts and targets the GCP L0 host', async () => {
+  const release = JSON.parse(await readFile(join(root, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8'));
+  const knownHosts = await readFile(join(root, '02_platform_pingtai/infrastructure/release/zdt-next.ssh-known-hosts'), 'utf8');
+  const workflow = await readFile(join(root, '.github/workflows/delivery-1-6.yml'), 'utf8');
+  assert.equal(release.transport.host, 'root@34.96.159.116');
+  assert.match(knownHosts, /^34\.96\.159\.116 ssh-ed25519 /m);
+  assert.doesNotMatch(knownHosts, /123\.57\.232\.253/);
+  assert.doesNotMatch(workflow, /ALIYUN_OSS_/);
+  assert.match(workflow, /ZDT_ARTIFACT_STORE: \$\{\{ vars\.ZDT_ARTIFACT_STORE \|\| 'r2' \}\}/);
 });
 
 test('Aliyun runners use a GitHub-only sing-box line without delivery locks', async () => {

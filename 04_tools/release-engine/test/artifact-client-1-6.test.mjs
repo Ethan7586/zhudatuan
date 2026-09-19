@@ -5,17 +5,17 @@ import test from 'node:test';
 import { artifactClientFromEnvironment, artifactDownloadClientFromEnvironment } from '../src/artifact-client-1-6.mjs';
 import { createR2Client, r2ClientFromEnvironment } from '../src/r2-client-1-6.mjs';
 
-test('artifact storage keeps Aliyun as the existing default', async () => {
+test('artifact storage uses Cloudflare R2 by default', async () => {
   const environment = {
-    ALIYUN_OSS_ACCESS_KEY_ID: 'key', ALIYUN_OSS_ACCESS_KEY_SECRET: 'secret',
-    ALIYUN_OSS_BUCKET: 'releases', ALIYUN_OSS_ENDPOINT: 'oss.example.test',
-    ALIYUN_OSS_INTERNAL_ENDPOINT: 'oss-internal.example.test',
+    CLOUDFLARE_R2_ACCOUNT_ID: '0123456789abcdef0123456789abcdef',
+    CLOUDFLARE_R2_BUCKET: 'releases',
+    CLOUDFLARE_R2_ACCESS_KEY_ID: 'key',
+    CLOUDFLARE_R2_SECRET_ACCESS_KEY: 'secret',
   };
   const client = await artifactClientFromEnvironment(environment);
   const download = artifactDownloadClientFromEnvironment(client, environment);
-  assert.equal(client.endpoint, 'oss.example.test');
-  assert.equal(download.endpoint, 'oss-internal.example.test');
-  assert.match(download.signGet('release.json'), /OSSAccessKeyId=/);
+  assert.equal(client.endpoint, 'https://0123456789abcdef0123456789abcdef.r2.cloudflarestorage.com');
+  assert.equal(download, client);
 });
 
 test('R2 client keeps the artifact contract and uses the same endpoint for downloads', async () => {
